@@ -2,11 +2,13 @@ package org.scec.vtk.grid;
 
 import java.awt.Color;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
 import org.apache.log4j.chainsaw.Main;
 import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultAccessor;
 import org.scec.vtk.tools.Transform;
 
 import vtk.vtkCellArray;
@@ -28,7 +30,8 @@ public class MakeGrids {
 		
 	}
 	public ArrayList<GlobeBox> getGlobeBox(){
-		File calGrid = new File("C:/Users/sanskriti/workspace/scec_vdo_new/data/GridsPlugin/California.grat");
+		URL calGridURL = MakeGrids.class.getResource("resources/California.grat");
+		File calGrid = new File(calGridURL.getPath());
 		GraticulePreset graticule = new GraticulePreset(calGrid);
 		int upperLat, lowerLat, upperLon, lowerLon;
 		upperLat = (graticule.getUpperLatitude());
