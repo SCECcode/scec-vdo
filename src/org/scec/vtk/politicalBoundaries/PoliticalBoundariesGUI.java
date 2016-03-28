@@ -1,7 +1,9 @@
 package org.scec.vtk.politicalBoundaries;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -12,13 +14,18 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.plaf.basic.BasicTabbedPaneUI.TabbedPaneLayout;
 import javax.swing.text.Segment;
 
+import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 
+import javafx.scene.control.TabPane;
 import vtk.vtkActor;
 import vtk.vtkCellArray;
 import vtk.vtkDoubleArray;
@@ -35,253 +42,116 @@ import vtk.vtkTransformPolyDataFilter;
 
 public class PoliticalBoundariesGUI {
 	private JPanel politicalBoundaryMainPanel;
-	private JPanel politicalBoundarySubPanel;
-	private ArrayList<ArrayList> actorPoliticalBoundariesMain;
+	private JTabbedPane politicalBoundarySubPanelLowerTab;
+	private JPanel politicalBoundarySubPanelLower;
+	private JPanel politicalBoundarySubPanelUpper;
+	//private ArrayList<ArrayList> actorPoliticalBoundariesMain;
 	private ArrayList<vtkActor> actorPoliticalBoundariesSegments;
-	private ArrayList<JCheckBox> usCheckBoxButtons;
-	Dimension d;
+	private ArrayList<JCheckBox> lowerCheckBoxButtons;
+	private ArrayList<JCheckBox> upperCheckBoxButtons;
+	Dimension dMainPanel,dSubPanel;
 	public PoliticalBoundariesGUI(){
-		this.politicalBoundaryMainPanel = new JPanel(new BorderLayout());
+		this.politicalBoundaryMainPanel = new JPanel(new GridLayout(0,1));
 		
-		//this.politicalBoundaryMainPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		this.politicalBoundaryMainPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		this.politicalBoundaryMainPanel.setName("Political Boundaries");
-		d = new Dimension(Prefs.getPluginWidth(),Prefs.getPluginHeight());
-		this.politicalBoundaryMainPanel.setPreferredSize(d);
+		dMainPanel = new Dimension(Prefs.getPluginWidth(),Prefs.getPluginHeight());
+		dSubPanel = new Dimension(Prefs.getPluginWidth(),100);
+		this.politicalBoundaryMainPanel.setPreferredSize(dMainPanel);
 		this.politicalBoundaryMainPanel.setOpaque(false);
-		this.politicalBoundarySubPanel=new JPanel();
-		this.politicalBoundarySubPanel.setLayout(new BoxLayout(this.politicalBoundarySubPanel, BoxLayout.Y_AXIS));
-        
-		this.actorPoliticalBoundariesMain = new ArrayList<ArrayList>();
+		
+		this.politicalBoundarySubPanelLowerTab = new JTabbedPane();
+		
+		this.politicalBoundarySubPanelLower=new JPanel();
+		//this.politicalBoundarySubPanelLower.setLayout(new BoxLayout(this.politicalBoundarySubPanelLower, BoxLayout.Y_AXIS));
+		
+		
+		
+		//this.politicalBoundarySubPanelLower.setPreferredSize(dSubPanel);
+		 
+		this.politicalBoundarySubPanelUpper=new JPanel();
+		this.politicalBoundarySubPanelUpper.setLayout(new BoxLayout(this.politicalBoundarySubPanelUpper, BoxLayout.Y_AXIS));
+        //this.politicalBoundarySubPanelUpper.setMinimumSize(dSubPanel);
+		//this.actorPoliticalBoundariesMain = new ArrayList<ArrayList>();
 		this.actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
 		
 		//loadRegion();
 	}
-	public JPanel loadRegion()
+	
+	public JPanel loadAllRegions()
 	{
+		this.upperCheckBoxButtons = new ArrayList<JCheckBox>();
+		this.lowerCheckBoxButtons = new ArrayList<JCheckBox>();
 		
-		this.usCheckBoxButtons = new ArrayList<JCheckBox>();
+		createCheckBoxes("Africa", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
+		createCheckBoxes("Asia", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
+		createCheckBoxes("Europe", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
+		createCheckBoxes("North America", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
+		createCheckBoxes("Oceania", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
+		createCheckBoxes("South America", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
+		createCheckBoxes("United States", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,true);
 		
+		addPanelToMainPanel(this.politicalBoundarySubPanelUpper);
+		
+		//default
+		addTabbedPanelToMainPanel(politicalBoundarySubPanelLower,"us_complete.txt","United States",true);
+		addTabbedPanelToMainPanel(politicalBoundarySubPanelLower,"africa.txt","Africa",false);
+		addTabbedPanelToMainPanel(politicalBoundarySubPanelLower,"asia.txt","Asia",false);
+		addTabbedPanelToMainPanel(politicalBoundarySubPanelLower,"europe.txt","Europe",false);
+		addTabbedPanelToMainPanel(politicalBoundarySubPanelLower,"north_america.txt","North America",false);
+		addTabbedPanelToMainPanel(politicalBoundarySubPanelLower,"oceania.txt","Oceania",false);
+		addTabbedPanelToMainPanel(politicalBoundarySubPanelLower,"south_america.txt","South America",false);
+		
+
+		return this.politicalBoundaryMainPanel;
+
+	}
+	
+	
+	
+	public void addPanelToMainPanel(JPanel panel)
+	{
+		this.politicalBoundaryMainPanel.add(panel);
+		JScrollPane scrollPane =  addScroller(panel);
+		this.politicalBoundaryMainPanel.add(scrollPane);
+		//this.politicalBoundaryMainPanel.repaint();
+	}
+	
+	public void addTabbedPanelToMainPanel(JPanel panel,String filename,String tabname,boolean isSelected)
+	{
+		panel=new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		loadRegion(filename,this.lowerCheckBoxButtons,panel,itemListenerLower,isSelected);
+		
+		//this.politicalBoundarySubPanelLowerTab.addTab(tabname, panel);
+		JScrollPane scrollPane =  addScroller(panel);
+		this.politicalBoundarySubPanelLowerTab.addTab(tabname,scrollPane);
+		this.politicalBoundaryMainPanel.add(this.politicalBoundarySubPanelLowerTab);
+	}
+	
+	public JScrollPane addScroller(JPanel panel)
+	{
+		JScrollPane scroller = new JScrollPane(panel);
+        scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        //set scroll speed
+        JScrollBar bar = scroller.getVerticalScrollBar();
+        bar.setBlockIncrement(20);
+        bar.setUnitIncrement(20);
+        scroller.setVerticalScrollBar(bar);
+        scroller.setPreferredSize(dSubPanel);
+		return scroller;
+	}
+	public void loadRegion(String filename,ArrayList<JCheckBox> jCheckBoxList, JPanel panel,ItemListener itemListener,boolean isSelected)
+	{
+
 		PoliticalBoundariesRegion newBoundaries = new PoliticalBoundariesRegion(); 
-		String usBoundariesPath = this.getClass().getResource("resources/sourcefiles/us_complete.txt").getPath();
+		String usBoundariesPath = this.getClass().getResource("resources/sourcefiles/"+filename).getPath();
 		ArrayList us_boundaries = (ArrayList<ArrayList>) newBoundaries.buildBoundaries(usBoundariesPath);
 		//vtkPolyData us_boundaries = (vtkPolyData) newBoundaries.buildBoundaries(this.getClass().getResource("resources/sourcefiles/us.vtk").getPath());
 		ArrayList<String> usStateNames = newBoundaries.getUSStateNames();
 		
-		
-		
-	////us_boundaries.size()
-				/*for(int j=0;j<us_boundaries.size();j++)
-				{
-					//state
-					vtkCellArray  cellsPolyLine= new vtkCellArray();
-					vtkPolyData linesPolyData = new vtkPolyData();
-					vtkPoints segmentpointsAll = new vtkPoints();
-					ArrayList us_boundariesState = (ArrayList) us_boundaries.get(j);
-					vtkGeoAssignCoordinates assign = new vtkGeoAssignCoordinates();
-					vtkDoubleArray latitude = new vtkDoubleArray();
-					latitude.SetName("latitude");
-					vtkDoubleArray	longitude = new vtkDoubleArray();
-					longitude.SetName("longitude");
-					
-					
-					createCheckBoxes(usStateNames.get(j));
-					int countpts = 0;
-					for(int k=0;k<us_boundariesState.size();k++)
-					{
-						//segments
-						vtkPoints segmentpoints = (vtkPoints) us_boundariesState.get(k);
-						// Create the polydata where we will store all the geometric data
-						
-						vtkPolyLine polyLine = new vtkPolyLine();
-						polyLine.GetPointIds().SetNumberOfIds(segmentpoints.GetNumberOfPoints());
-						//int s = segmentpoints.GetNumberOfPoints();
-						for(int i = 0; i <  segmentpoints.GetNumberOfPoints(); i++)
-						{
-							polyLine.GetPointIds().SetId(i,countpts);
-							
-							
-							double[] pt = segmentpoints.GetPoint(i);
-							latitude.InsertNextValue(pt[0]);
-					        longitude.InsertNextValue(pt[1]);	
-					        
-					        segmentpointsAll.InsertNextPoint(segmentpoints.GetPoint(i));
-					        countpts++;
-						}
-						//countpts = countpts + segmentpoints.GetNumberOfPoints()-1;
-						cellsPolyLine.InsertNextCell(polyLine);
-						//actorBoundary.GetProperty().SetPointSize(20);
-					}
-					linesPolyData.SetPoints(segmentpointsAll);
-					linesPolyData.SetLines(cellsPolyLine);
-					
-					assign.SetInputData(linesPolyData);
-					//assign.set
-					assign.SetLatitudeArrayName("latitude");
-					assign.SetLongitudeArrayName("longitude");
-					
-					assign.SetGlobeRadius(Transform.re);
-					
-					assign.Update();
-					 
-					
-					
-					vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-					mapper.SetInputConnection(assign.GetOutputPort());
-					
-					//mapper.SetVertexPointSize(0);
-					//mapper.SetEdgeLineWidth(2);
-					//mapper.EdgeVisibilityOn();
-					
-					vtkActor plyOutActor = new vtkActor();
-					plyOutActor.SetMapper(mapper);
-					//plyOutActor.GetProperty().SetRepresentationToWireframe();
-					actorPoliticalBoundariesSegments.add(plyOutActor);
-					
-					//actorPoliticalBoundariesMain.add(actorPoliticalBoundariesSegments);
-				}*/
-		/*segmentpoints = us_boundaries.GetPoints();
-		
-		//vtkPolyData us_boundariesNew = new vtkPolyData();
-		for(int i = 0; i <  segmentpoints.GetNumberOfPoints(); i++)
-		{
-			double[] pt = segmentpoints.GetPoint(i);
-			latitude.InsertNextValue(pt[1]);
-	        longitude.InsertNextValue(pt[0]);	
-	        
-		}
-		
-		assign.SetInputDataObject(us_boundaries);
-		//assign.set
-		assign.SetLatitudeArrayName("latitude");
-		assign.SetLongitudeArrayName("longitude");
-		
-		assign.SetGlobeRadius(Transform.re);
-		
-		assign.Update();
-		 
-		
-		
-		vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-		mapper.SetInputConnection(assign.GetOutputPort());
-		
-		//mapper.SetVertexPointSize(0);
-		//mapper.SetEdgeLineWidth(2);
-		//mapper.EdgeVisibilityOn();
-		
-		vtkActor plyOutActor = new vtkActor();
-		plyOutActor.SetMapper(mapper);
-		plyOutActor.GetProperty().SetRepresentationToWireframe();
-		actorPoliticalBoundariesSegments.add(plyOutActor);*/
-		/*for(int i = 0; i <  segmentpoints.GetNumberOfPoints(); i++)
-		{
-			//connect all edges
-			g.AddGraphEdge(countpts, (countpts+1));
-			countpts=countpts+1;
-		}*/
-			////us_boundaries.size()
-			/*for(int j=0;j<us_boundaries.size();j++)
-			{
-				//state
-				vtkCellArray  cellsPolyLine= new vtkCellArray();
-				vtkPolyData linesPolyData = new vtkPolyData();
-				vtkPoints segmentpointsAll = new vtkPoints();
-				ArrayList us_boundariesState = (ArrayList) us_boundaries.get(j);
-				
-				createCheckBoxes(usStateNames.get(j));
-				int countpts = 0;
-				for(int k=0;k<us_boundariesState.size();k++)
-				{
-					//segments
-					vtkPoints segmentpoints = (vtkPoints) us_boundariesState.get(k);
-					// Create the polydata where we will store all the geometric data
-					
-					vtkPolyLine polyLine = new vtkPolyLine();
-					polyLine.GetPointIds().SetNumberOfIds(segmentpoints.GetNumberOfPoints());
-					//int s = segmentpoints.GetNumberOfPoints();
-					for(int i = 0; i <  segmentpoints.GetNumberOfPoints(); i++)
-					{
-						polyLine.GetPointIds().SetId(i,countpts);
-						segmentpointsAll.InsertNextPoint(segmentpoints.GetPoint(i));
-						countpts++;
-						
-					}
-					//countpts = countpts + segmentpoints.GetNumberOfPoints()-1;
-					cellsPolyLine.InsertNextCell(polyLine);
-					//actorBoundary.GetProperty().SetPointSize(20);
-				}
-				linesPolyData.SetPoints(segmentpointsAll);
-				linesPolyData.SetLines(cellsPolyLine);
-				vtkSphericalTransform vts= new vtkSphericalTransform();
 
-				
-				vtkTransformPolyDataFilter tpoly2 = new vtkTransformPolyDataFilter();
-				tpoly2.SetInputData(linesPolyData);
-				tpoly2.SetTransform(vts);
-
-
-				vtkPolyDataMapper mapperBoundary = new vtkPolyDataMapper();
-				mapperBoundary.SetInputConnection(tpoly2.GetOutputPort());
-				vtkActor actorBoundary =new vtkActor();
-				actorBoundary.SetMapper(mapperBoundary);
-				actorBoundary.GetProperty().SetColor(1,0,1);
-				actorBoundary.VisibilityOff();
-				actorPoliticalBoundariesSegments.add(actorBoundary);
-				
-				//actorPoliticalBoundariesMain.add(actorPoliticalBoundariesSegments);
-			}
-		////us_boundaries.size()
-		/*for(int j=0;j<us_boundaries.size();j++)
-		{
-			//state
-			vtkCellArray  cellsPolyLine= new vtkCellArray();
-			vtkPolyData linesPolyData = new vtkPolyData();
-			vtkPoints segmentpointsAll = new vtkPoints();
-			ArrayList us_boundariesState = (ArrayList) us_boundaries.get(j);
-			
-			createCheckBoxes(usStateNames.get(j));
-			int countpts = 0;
-			for(int k=0;k<us_boundariesState.size();k++)
-			{
-				//segments
-				vtkPoints segmentpoints = (vtkPoints) us_boundariesState.get(k);
-				// Create the polydata where we will store all the geometric data
-				
-				vtkPolyLine polyLine = new vtkPolyLine();
-				polyLine.GetPointIds().SetNumberOfIds(segmentpoints.GetNumberOfPoints());
-				//int s = segmentpoints.GetNumberOfPoints();
-				for(int i = 0; i <  segmentpoints.GetNumberOfPoints(); i++)
-				{
-					polyLine.GetPointIds().SetId(i,countpts);
-					segmentpointsAll.InsertNextPoint(segmentpoints.GetPoint(i));
-					countpts++;
-					
-				}
-				//countpts = countpts + segmentpoints.GetNumberOfPoints()-1;
-				cellsPolyLine.InsertNextCell(polyLine);
-				//actorBoundary.GetProperty().SetPointSize(20);
-			}
-			linesPolyData.SetPoints(segmentpointsAll);
-			linesPolyData.SetLines(cellsPolyLine);
-			vtkSphericalTransform vts= new vtkSphericalTransform();
-
-			
-			vtkTransformPolyDataFilter tpoly2 = new vtkTransformPolyDataFilter();
-			tpoly2.SetInputData(linesPolyData);
-			tpoly2.SetTransform(vts);
-
-
-			vtkPolyDataMapper mapperBoundary = new vtkPolyDataMapper();
-			mapperBoundary.SetInputConnection(tpoly2.GetOutputPort());
-			vtkActor actorBoundary =new vtkActor();
-			actorBoundary.SetMapper(mapperBoundary);
-			actorBoundary.GetProperty().SetColor(1,0,1);
-			actorBoundary.VisibilityOff();
-			actorPoliticalBoundariesSegments.add(actorBoundary);
-			
-			//actorPoliticalBoundariesMain.add(actorPoliticalBoundariesSegments);
-		}
-		//add subPanel to main Panel
-		*/
 		int countpts = 0;
 		for(int j=0;j<us_boundaries.size();j++)
 		{
@@ -289,7 +159,10 @@ public class PoliticalBoundariesGUI {
 			vtkPoints segmentpointsAll = new vtkPoints();
 			ArrayList us_boundariesState = (ArrayList) us_boundaries.get(j);
 			
-			createCheckBoxes(usStateNames.get(j));
+			if(isSelected && j==4)
+			createCheckBoxes(usStateNames.get(j), jCheckBoxList,panel,itemListener,isSelected);
+			else
+				createCheckBoxes(usStateNames.get(j), jCheckBoxList,panel,itemListener,false);
 			
 			vtkMutableDirectedGraph g = new vtkMutableDirectedGraph();
 			vtkGeoAssignCoordinates assign = new vtkGeoAssignCoordinates();
@@ -342,14 +215,16 @@ public class PoliticalBoundariesGUI {
 			
 			vtkActor plyOutActor = new vtkActor();
 			plyOutActor.SetMapper(mapper);
+			plyOutActor.GetProperty().SetColor(1,1,1);
+			if(isSelected && j == 4)
+				plyOutActor.VisibilityOn();
+			else
+				plyOutActor.VisibilityOff();
 			actorPoliticalBoundariesSegments.add(plyOutActor);
 		}
-		//actorPoliticalBoundariesSegments.add(globe);
-		//add subPanel to main Panel
-		//politicalBoundaryMainPanel.add(politicalBoundarySubPanel);
 		  
-		politicalBoundaryMainPanel.add(politicalBoundarySubPanel);
-		JScrollPane scroller = new JScrollPane(this.politicalBoundarySubPanel);
+		/*politicalBoundaryMainPanel.add(politicalBoundarySubPanelLower);
+		JScrollPane scroller = new JScrollPane(this.politicalBoundarySubPanelLower);
         scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         //set scroll speed
@@ -359,29 +234,106 @@ public class PoliticalBoundariesGUI {
         scroller.setVerticalScrollBar(bar);
         scroller.setMinimumSize(d);
 		 this.politicalBoundaryMainPanel.add(scroller);
-		return this.politicalBoundaryMainPanel;
+		return this.politicalBoundaryMainPanel;*/
 	}
-	private void createCheckBoxes(String checkBoxLabel)
+	private void createCheckBoxes(String checkBoxLabel, ArrayList<JCheckBox> jCheckBoxList, JPanel panel,ItemListener itemListener,boolean isSelected)
 	{
 		JCheckBox checkBoxButton = new JCheckBox(checkBoxLabel);
 		checkBoxButton.addItemListener(itemListener);
-		checkBoxButton.setSelected(true);
-		this.usCheckBoxButtons.add(checkBoxButton);
-		this.politicalBoundarySubPanel.add(checkBoxButton);
+		checkBoxButton.setSelected(isSelected);
+		jCheckBoxList.add(checkBoxButton);
+		panel.add(checkBoxButton);
 	}
 	
-	ItemListener itemListener = new ItemListener() {
+	ItemListener itemListenerUpper = new ItemListener() {
 		public void itemStateChanged(ItemEvent e) {
 		    Object source = e.getItemSelectable();
 		    
 		
 		    if (e.getStateChange() == ItemEvent.DESELECTED){
-		    for(int i=0;i<usCheckBoxButtons.size();i++)
-		    {	
-		    	vtkActor actor =	actorPoliticalBoundariesSegments.get(i);
+		    	for(int i=0;i<upperCheckBoxButtons.size();i++)
+			    {	
+		    	if (source == upperCheckBoxButtons.get(i)) {
+		    		for(int j= 0;j<politicalBoundarySubPanelLowerTab.getTabCount();j++)
+		    		{
+		    			if(politicalBoundarySubPanelLowerTab.getTitleAt(j) == upperCheckBoxButtons.get(i).getText())
+		    			{
+		    				
+		    				JScrollPane sp = (JScrollPane)  politicalBoundarySubPanelLowerTab.getComponentAt(j);
+		    				JViewport vp = (JViewport) sp.getComponent(0);
+		    				JPanel p = (JPanel) vp.getComponent(0);
+		    				
+		    				for(int k=0;k<p.getComponentCount();k++)
+		    			    {	
+		    					if(lowerCheckBoxButtons.contains(p.getComponent(k)))
+		    			    	{
+		    						int segIndex = lowerCheckBoxButtons.indexOf(p.getComponent(k));
+		    						vtkActor actor = actorPoliticalBoundariesSegments.get(segIndex);
+		    						actor.VisibilityOff();
+		    						lowerCheckBoxButtons.get(segIndex).setSelected(false);
+		    					}
+		    			    }
+		    				//politicalBoundarySubPanelLowerTab.(j);
+		    				 politicalBoundarySubPanelLowerTab.setSelectedIndex(j);
+		    			}
+		    		}
+		    		//Info.getMainGUI().updatePoliticalBoundaries();
+		    		Info.getMainGUI().updateRenderWindow();
+		    	}
+		    	}
 		    	
-		    	if (source == usCheckBoxButtons.get(i)) {
-		    		MainGUI.updateRenderWindow(actor);
+		    }
+		    else
+		    {
+		    	for(int i=0;i<upperCheckBoxButtons.size();i++)
+			    {	
+		    	if (source == upperCheckBoxButtons.get(i)) {
+		    		for(int j= 0;j<politicalBoundarySubPanelLowerTab.getTabCount();j++)
+		    		{
+		    			if(politicalBoundarySubPanelLowerTab.getTitleAt(j) == upperCheckBoxButtons.get(i).getText())
+		    			{
+		    				
+		    				JScrollPane sp = (JScrollPane)  politicalBoundarySubPanelLowerTab.getComponentAt(j);
+		    				JViewport vp = (JViewport) sp.getComponent(0);
+		    				JPanel p = (JPanel) vp.getComponent(0);
+		    				
+		    				for(int k=0;k<p.getComponentCount();k++)
+		    			    {	
+		    					if(lowerCheckBoxButtons.contains(p.getComponent(k)))
+		    			    	{
+		    						int segIndex = lowerCheckBoxButtons.indexOf(p.getComponent(k));
+		    						vtkActor actor = actorPoliticalBoundariesSegments.get(segIndex);
+		    						actor.VisibilityOn();
+		    						lowerCheckBoxButtons.get(segIndex).setSelected(true);
+		    					}
+		    			    }
+		    				 politicalBoundarySubPanelLowerTab.setSelectedIndex(j);
+		    				//politicalBoundarySubPanelLowerTab.addTab(politicalBoundarySubPanelLowerTab.getTitleAt(j), sp);
+		    				
+		    			}
+		    		}
+		    		//Info.getMainGUI().updatePoliticalBoundaries();
+		    		Info.getMainGUI().updateRenderWindow();
+		    	}
+		    	}
+		    	
+		    	
+		    }
+		    }
+	};
+	
+	ItemListener itemListenerLower = new ItemListener() {
+		public void itemStateChanged(ItemEvent e) {
+		    Object source = e.getItemSelectable();
+		    
+		
+		    if (e.getStateChange() == ItemEvent.DESELECTED){
+		    for(int i=0;i<lowerCheckBoxButtons.size();i++)
+		    {	
+		    	vtkActor actor = actorPoliticalBoundariesSegments.get(i);
+		    	
+		    	if (source == lowerCheckBoxButtons.get(i)) {
+		    		Info.getMainGUI().updateRenderWindow();
 		    		actor.VisibilityOff();
 			
 		    		break;
@@ -390,15 +342,14 @@ public class PoliticalBoundariesGUI {
 		    }
 		    else
 		    {
-		        for(int i=0;i<usCheckBoxButtons.size();i++)
+		        for(int i=0;i<lowerCheckBoxButtons.size();i++)
 			    {	
-			    	vtkActor actor =	actorPoliticalBoundariesSegments.get(i);
+			    	vtkActor actor = actorPoliticalBoundariesSegments.get(i);
 			    	
-			    	if (source == usCheckBoxButtons.get(i)) {
+			    	if (source == lowerCheckBoxButtons.get(i)) {
 			        //...make a note of it...
 			    		actor.VisibilityOn();
-
-			    		MainGUI.updateRenderWindow(actor);
+			    		Info.getMainGUI().updateRenderWindow();
 			    		break;
 			    	}
 			    }

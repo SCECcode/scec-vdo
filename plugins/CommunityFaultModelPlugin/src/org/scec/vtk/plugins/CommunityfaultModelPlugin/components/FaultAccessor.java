@@ -16,12 +16,16 @@ import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.utils.AbstractDataAccessor;
 import org.scec.vtk.plugins.utils.DataImport;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
+import vtk.vtkCharArray;
+import vtk.vtkDataArray;
+import vtk.vtkDataObjectTree;
 import vtk.vtkDoubleArray;
 import vtk.vtkGeoAssignCoordinates;
 import vtk.vtkMapper;
@@ -33,6 +37,7 @@ import vtk.vtkPolyDataWriter;
 import vtk.vtkSphericalTransform;
 import vtk.vtkTransformPolyDataFilter;
 import vtk.vtkTriangle;
+import vtk.vtkUnsignedCharArray;
 import vtk.vtkXMLPolyDataReader;
 import vtk.vtkXMLPolyDataWriter;
 
@@ -72,7 +77,7 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
     protected vtkDoubleArray lat = new vtkDoubleArray();
     protected vtkDoubleArray lon = new vtkDoubleArray();
     // master branch group to which behaviors and faultBranchGroups are added
-    private static ArrayList<vtkActor> masterFaultBranchGroup;
+    private static ArrayList<vtkActor> masterFaultBranchGroup = new ArrayList<vtkActor>();
 
     // j3d parts of a Fault3D
     private vtkActor faultBranchGroup;
@@ -180,47 +185,27 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
     	vtkPolyDataReader objIn = new vtkPolyDataReader();
     	objIn.SetFileName(getDataFile().getAbsolutePath());
     	objIn.Update();
-    	/*vtkSphericalTransform vts= new vtkSphericalTransform();
-        
-		vtkTransformPolyDataFilter tpoly2 = new vtkTransformPolyDataFilter();
-		tpoly2.SetInputData(objIn.GetOutput());
-		tpoly2.SetTransform(vts);
-		tpoly2.Update();*/
-    	/*vtkDoubleArray latitude = this.lat;
-    	latitude.SetName("latitude");
-    	vtkDoubleArray longitude = this.lon;
-    	longitude.SetName("longitude");*/
     	
-    	//vtkGeoAssignCoordinates assign = new vtkGeoAssignCoordinates();
-    	vtkPolyData pd = objIn.GetOutput();
+    	//create new polygon to overwrite default polygon points color
+    	vtkPolyData pd =  new vtkPolyData();
+    	pd.SetPoints(objIn.GetOutput().GetPoints());
+    	pd.SetPolys(objIn.GetOutput().GetPolys());
 	 
-    	
-    	
-		/*assign.SetInputData(pd);
-		//assign.set
-		assign.SetLatitudeArrayName("latitude");
-		assign.SetLongitudeArrayName("longitude");
-		assign.SetGlobeRadius(Transform.re);
-		
-		assign.Update();
-		 
-	
-		vtkPolyDataMapper mapperassign = new vtkPolyDataMapper();
-		mapperassign.SetInputConnection(assign.GetOutputPort());
-		*/
+
 		vtkPolyDataMapper mapperassign1 = new vtkPolyDataMapper();
-		mapperassign1.SetInputData(objIn.GetOutput());
+		mapperassign1.SetInputData(pd);
 		
-		//vtkActor tempactor = new vtkActor();
-		//tempactor.SetMapper(mapperassign);
-		//System.out.println(tempactor.GetPosition()[0]);
-			//vtkPolyDataMapper mapperassign =new vtkPolyDataMapper();
-			//mapperassign.SetInputConnection(tpoly2.GetOutputPort());
-			//mapperassign.SetInputData();
 			this.faultBranchGroup = new vtkActor();
 			this.faultBranchGroup.SetMapper(mapperassign1);
-			//setFaultBranch(this.faultBranchGroup);
-			//this.faultBranchGroup.SetPosition(tempactor.GetPosition());
+			
+			vtkDoubleArray c1 = (vtkDoubleArray) objIn.GetOutput().GetPointData().GetScalars("Colors");
+			double[] c = c1.GetTuple3(0);
+			Color color = new Color((int)c[0], (int) c[1], (int)c[2]); 
+			setColor(color);
+			c[0] /= Info.rgbMax;
+			c[1] /= Info.rgbMax;
+			c[2] /= Info.rgbMax;
+			this.faultBranchGroup.GetProperty().SetColor(c);
     }
        catch (Exception e) {
            log.debug("problem reading binary data file");
@@ -290,12 +275,29 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
             polydata.SetPoints(this.vertices);
  			polydata.SetPolys(this.triangles);
  			
+ 			Color defaultColorFault = getColor();
+        	// Setup the colors array vtk
+ 			vtkDoubleArray colors =new vtkDoubleArray();
+        	colors.SetNumberOfComponents(3);
+      	  	colors.SetName("Colors");
+            if (defaultColorFault == null && this.colors == null) {
+            	defaultColorFault = Color.lightGray;
+            }
+            if(this.colors!=null)
+            {
+            	defaultColorFault =this.colors;
+            }
+            // Add the color we have created to the array
+        	colors.InsertNextTuple3(defaultColorFault.getRed(), defaultColorFault.getGreen(),defaultColorFault.getBlue());
+        	colors.InsertNextTuple3(defaultColorFault.getRed(), defaultColorFault.getGreen(),defaultColorFault.getBlue());
+ 			colors.InsertNextTuple3(defaultColorFault.getRed(), defaultColorFault.getGreen(),defaultColorFault.getBlue());
+ 			
+        	polydata.GetPointData().SetScalars(colors);
             objOut.SetInputData(polydata);
             //objOut.writeObject(this.triangles);
-            /*if (getColor() == null) {
-                objOut.writeObject(Color.BLUE);
-            }*/
-            objOut.Write();
+            
+            
+        	objOut.Write();
         }
         catch (Exception e) {
             log.debug("problem writing binary data file");
@@ -585,20 +587,21 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
         // TODO checking if onnbject is live is handled by LibraryModel
         this.color = newColor;
         
-        /*if (this.faultRepresentation != null) {
-            this.fillMaterial.setDiffuseColor(new Color3f(newColor));
+        if (this.faultRepresentation != null) {
+            /*this.fillMaterial.setDiffuseColor(new Color3f(newColor));
             this.fillMaterial.setAmbientColor(new Color3f(newColor));
             this.fillMaterial.setSpecularColor(new Color3f(newColor));
             this.meshMaterial.setDiffuseColor(new Color3f(newColor.darker()));
-            this.meshMaterial.setAmbientColor(new Color3f(newColor.darker()));
+            this.meshMaterial.setAmbientColor(new Color3f(newColor.darker()));*/
+        	this.faultBranchGroup.GetProperty().SetColor(newColor.getRed(),newColor.getGreen(),newColor.getBlue());
 
         }
-        if (this.meshMaterial.getLightingEnable()==false){//assume that if one is set, so are both to save time
+        /*if (this.meshMaterial.getLightingEnable()==false){//assume that if one is set, so are both to save time
         	this.meshMaterial.setLightingEnable(true);
         	this.fillMaterial.setLightingEnable(true);
-        }
+        }*/
         writeColorElement((this.displayAttributes.getChild("color")), this.color);
-        */
+        
     }
     
     

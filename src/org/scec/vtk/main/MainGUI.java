@@ -71,8 +71,12 @@ import vtk.vtkCamera;
 import vtk.vtkGlobeSource;
 import vtk.vtkNativeLibrary;
 import vtk.vtkPanel;
+import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkTextActor;
+import vtk.vtkTextActor3D;
 import vtk.vtkTransform;
+import vtk.vtkVectorText;
 
 public  class MainGUI extends JFrame implements ChangeListener{
 	private final int BORDER_SIZE = 10;
@@ -184,7 +188,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		//System.out.println("user.dir is: " + System.getProperty("user.dir"));
 		return getCWD;
 	}
-	public static void updateActors(ArrayList<vtkActor> allCFMActors)
+	public void updateActors(ArrayList<vtkActor> allCFMActors)
 	{
 		
 	    if(allCFMActors.size()>0){
@@ -194,9 +198,8 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    	renderWindow.GetRenderer().AddActor(allCFMActors.get(i));
 	    	
 	    }
-	    //updateRenderWindow();
-	    updateRenderWindow(allCFMActors.get(allCFMActors.size()-1));
 	    }
+	    updateRenderWindow();
 	}
 	
 	/*public static void addActorsToAllActors(ArrayList<vtkActor> ar)
@@ -217,13 +220,13 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	{
 		pbGUI = new PoliticalBoundariesGUI();
 		
-		addPluginGUI("org.scec.vdo.politicalBoundaries","Political Boundaries",pbGUI.loadRegion());
+		addPluginGUI("org.scec.vdo.politicalBoundaries","Political Boundaries",pbGUI.loadAllRegions());
 	
 		
 		//regions - us
 		
     
-     ArrayList<ArrayList> actorPoliticalBoundariesMain = new ArrayList<ArrayList>();
+    // ArrayList<ArrayList> actorPoliticalBoundariesMain = new ArrayList<ArrayList>();
 	 ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
 	 actorPoliticalBoundariesSegments = pbGUI.getPoliticalBoundaries();
 	 
@@ -247,8 +250,49 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	 vtkActor tempGlobeScene = new vtkActor();
 	 vtkPolyDataMapper tempMapper = (vtkPolyDataMapper) (gbs.get(0)).globeScene; 
 	 tempGlobeScene.SetMapper(tempMapper);
+	 tempGlobeScene.GetProperty().SetColor(1,1,1);
 	 renderWindow.GetRenderer().AddActor(tempGlobeScene);
-		 
+	 
+	 vtkPolyData  plyGrid = tempMapper.GetInput();
+	 int upperLat = mgrids.upperLat;
+	 int numpts = (int) Math.ceil(plyGrid.GetNumberOfPoints()/2);
+	 for(int i =0;i<numpts;i++)
+	 {
+		 if(i % 2 == 1){
+		double[] point = plyGrid.GetPoint(i);
+		point[0]-=35.0;point[1]-=35.0;
+
+		vtkTextActor3D textActor = new vtkTextActor3D();
+
+		 textActor.SetInput(Integer.toString(upperLat));
+		 textActor.GetTextProperty().SetFontSize ( 44 );
+		 textActor.GetTextProperty().SetColor(1,1,1);
+		 textActor.SetPosition(point);
+		 textActor.VisibilityOn();
+		 if(i % 2 == 1 && i !=0)
+			 upperLat--;
+		 renderWindow.GetRenderer().AddActor(textActor);
+		 }
+	 }
+	 int upperLon = mgrids.upperLon;
+	 for(int i =plyGrid.GetNumberOfPoints()-1;i>=numpts;i--)
+	 {
+		 if(i % 2 == 0){
+		 double[] point = plyGrid.GetPoint(i);
+		 //point[1]+=35.0;
+			vtkTextActor3D textActor = new vtkTextActor3D();
+			
+			 textActor.SetInput(Integer.toString(upperLon));
+			 textActor.GetTextProperty().SetFontSize ( 44 );
+			 textActor.GetTextProperty().SetColor(1,1,1);
+			 textActor.SetPosition(point);
+			//actor.SetPosition(point);
+			 textActor.VisibilityOn();
+			 if(i % 2 == 0 && i !=0)
+				 upperLon++;
+			 renderWindow.GetRenderer().AddActor(textActor);
+		 }
+	 }
 	renderWindow.GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
 	
 	}
@@ -302,7 +346,10 @@ public  class MainGUI extends JFrame implements ChangeListener{
 
 		// Add the tab to the tab panel
 		pluginTabPane.addTab(title, pluginTab);
-		pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
+		if(id !="org.scec.vdo.politicalBoundaries")
+			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
+		else
+			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
 		pluginTabPane.setSelectedIndex(pluginTabPane.getTabCount() - 1);		
 
 		// If the split pane was removed, re-add it
@@ -365,6 +412,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 					alreadyResized = false;
 					//pluginSplitPane = null;
 					//setContentPane(all);
+					
 					updateCanvasSize();
 					SwingUtilities.updateComponentTreeUI(this);
 				}
@@ -391,7 +439,23 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		// TODO Auto-generated method stub
 		return (pluginTabPane.getTabCount() > 0);
 	}
-
+//update political boundaries
+	public  void updatePoliticalBoundaries()
+	{
+		ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
+		 actorPoliticalBoundariesSegments = pbGUI.getPoliticalBoundaries();
+		 
+		 if(actorPoliticalBoundariesSegments.size()>0){
+		 
+			// actorPoliticalBoundariesSegments = actorPoliticalBoundariesMain.get(i);
+			 for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
+			 {
+				 vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
+				 renderWindow.GetRenderer().AddActor(pbActor);
+			 }
+		 
+		 }
+	}
 	
 
 	//update renderwindow and focus on actor
@@ -401,9 +465,9 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		renderWindow.repaint(); 
 	}
 	//just update renderwindow
-	public static void updateRenderWindow()
+	public  void updateRenderWindow()
 	{
-		updateActors(getActorToAllActors());
+		//updateActors(getActorToAllActors());
 		renderWindow.repaint();
 	}
 	 

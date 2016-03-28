@@ -399,8 +399,9 @@ public abstract class AbstractLibraryModel extends AbstractTableModel {
      * 
      * @param owner used for confirm dialog positioning
      * @param rows specifying objects for deletion
+     * @return 
      */
-    public void deleteObjects(Component owner, int[] rows) {
+    public int deleteObjects(Component owner, int[] rows) {
         // remove group from list
         int delete = JOptionPane.showConfirmDialog(
                 owner,
@@ -410,12 +411,13 @@ public abstract class AbstractLibraryModel extends AbstractTableModel {
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
         if (delete == JOptionPane.NO_OPTION ||
-            delete == JOptionPane.CLOSED_OPTION) return; 
+            delete == JOptionPane.CLOSED_OPTION) return delete; 
         for (int i=0; i<rows.length; i++) {
             getObjectAtRow(rows[i]-i).getAttributeFile().delete();
             getObjectAtRow(rows[i]-i).getDataFile().delete();
             removeObjectAtRow(rows[i]-i);
         }
+		return delete;
     }
     
     /**

@@ -20,6 +20,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -48,6 +49,8 @@ import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
 
 import vtk.vtkActor;
+
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultAccessor;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTable;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTableModel;
@@ -525,11 +528,11 @@ public void actionPerformed(ActionEvent e) {
         libModel.setLoadedStateForRows(true, this.faultTable.getSelectedRows());
         processTableSelectionChange();
         //libModel.toggleVisibilityForRows(this.faultTable.getSelectedRows());
-        int[] rows = this.faultTable.getSelectedRows();
+        int[] selectedRows = this.faultTable.getSelectedRows();
         ArrayList<vtkActor> actors =	getMasterFaultBranchGroup();
-        for(int i=0;i<rows.length;i++)
+        for(int i=0;i<selectedRows.length;i++)
 	    {	
-        	vtkActor actor = actors.get(rows[i]);
+        	vtkActor actor = actors.get(selectedRows[i]);
 	    	int visisble = actor.GetVisibility();
 	    	if (visisble == 0) {
 	    		actor.VisibilityOn();
@@ -549,6 +552,17 @@ public void actionPerformed(ActionEvent e) {
         Color newColor = this.colorChooser.getColor();
         if (newColor != null) {
             libModel.setColorForRows(newColor, this.faultTable.getSelectedRows());
+            //update mesh color of the actor
+            int[] selectedRows = this.faultTable.getSelectedRows();
+            ArrayList<vtkActor> actors = getMasterFaultBranchGroup();
+            for(int i=0;i<selectedRows.length;i++)
+    	    {	
+            	vtkActor actor = getMasterFaultBranchGroup().get(selectedRows[i]);
+            	//only between 0 and 1;
+            	double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
+    	    	actor.GetProperty().SetColor(color);
+    	    }
+            Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
         }
     } else if (src == this.editFaultsButton) {
         runObjectInfoDialog(this.faultTable.getSelected());
@@ -563,34 +577,43 @@ public void actionPerformed(ActionEvent e) {
             ArrayList newObjects = tsImport.processFiles();
             if (newObjects.size() > 0) {
                 this.faultTable.addFaults(newObjects);
-                List loadedRows =  this.faultTable.getLibraryModel().getAllObjects();
+                int faultTableRows = this.faultTable.getRowCount();
+                //reloading as the faults are sorted alphabetically 
                 getMasterFaultBranchGroup().clear();
+                List loadedRows = this.faultTable.getLibraryModel().getAllObjects();
         		for(int i = 0; i < loadedRows.size(); i++)
         		{
-        			FaultAccessor fa = (FaultAccessor)loadedRows.get(i);
-        			fa.readDataFile();
-        			//allCFMActors.add(fa.getFaultBranch());
-        			
-        			fa.setFaultBranch(fa.getFaultBranch());
+        			Fault3D  fault =(Fault3D) loadedRows.get(i);
+        			vtkActor actor = (fault.getFaultBranch()); 
+        			getMasterFaultBranchGroup().add(actor);
         		}
-            	//;
                 Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
             }
         }
     } else if (src == this.remFaultsButton) {
-    	//remove actors
-        int[] rows = this.faultTable.getSelectedRows();
-        ArrayList<vtkActor> actors =	getMasterFaultBranchGroup();
-        for(int i =0;i<rows.length;i++)
-        {
-        	vtkActor actor = actors.get(rows[i]);
-        	actor.VisibilityOff();
-        	getMasterFaultBranchGroup().remove(rows[i]);
-        }
-        Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
-        libModel.deleteObjects(
+    	 int[] selectedRows = this.faultTable.getSelectedRows();
+    	 
+        int delete = libModel.deleteObjects(
                 this.faultTable,
-                this.faultTable.getSelectedRows());
+                selectedRows);
+        if (delete == JOptionPane.NO_OPTION ||
+                delete == JOptionPane.CLOSED_OPTION) {
+        	Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
+        }
+        else
+        {
+        	//remove actors
+            ArrayList<vtkActor> actors = getMasterFaultBranchGroup();
+            for(int i =0;i<selectedRows.length;i++)
+            {
+            	vtkActor actor = actors.get(selectedRows[i]-i);
+            	actor.VisibilityOff();
+            	getMasterFaultBranchGroup().remove(selectedRows[i]-i);
+            }
+            Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
+        }
+        
+        
         
     }else if(src == this.filterButton){
     	this.setROIFilter();

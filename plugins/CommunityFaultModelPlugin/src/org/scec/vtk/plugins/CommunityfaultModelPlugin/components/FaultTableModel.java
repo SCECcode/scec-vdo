@@ -125,7 +125,7 @@ public class FaultTableModel extends AbstractLibraryModel {
      */
     public void toggleMeshStateForRows(int[] rows) {
         // adjust mesh state for all based on mesh state of the first selection
-       /* int meshState = MeshStateIcon.MESH_NO_FILL;
+        int meshState = MeshStateIcon.MESH_NO_FILL;
         for (int i=0; i<rows.length; i++) {
             if (getLoadedStateForRow(rows[i])) {
                 meshState = getMeshStateForRow(rows[i]);
@@ -134,7 +134,7 @@ public class FaultTableModel extends AbstractLibraryModel {
         }
         for (int i=0; i<rows.length; i++) {
             setMeshStateForRow((meshState+1)%5, rows[i]);
-        }*/
+        }
     }
     
     /**
