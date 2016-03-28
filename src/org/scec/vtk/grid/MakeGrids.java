@@ -29,11 +29,12 @@ public class MakeGrids {
 	public MakeGrids(){
 		
 	}
+	public int upperLat, lowerLat, upperLon, lowerLon;
 	public ArrayList<GlobeBox> getGlobeBox(){
 		URL calGridURL = MakeGrids.class.getResource("resources/California.grat");
 		File calGrid = new File(calGridURL.getPath());
 		GraticulePreset graticule = new GraticulePreset(calGrid);
-		int upperLat, lowerLat, upperLon, lowerLon;
+		
 		upperLat = (graticule.getUpperLatitude());
 		lowerLat = (graticule.getLowerLatitude());
 		upperLon = (graticule.getLeftLongitude());

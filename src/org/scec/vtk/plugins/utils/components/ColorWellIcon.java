@@ -157,10 +157,10 @@ public class ColorWellIcon implements Icon {
             g.setColor(Color.GRAY);
             g.drawRect(x, y, this.width, this.height);
         }
-        if(this.color1==null)
+        /*if(this.color1==null)
         	this.color1=Color.black;
         if(this.color2==null)
-        	this.color2=Color.black;
+        	this.color2=Color.black;*/
         // draw color box/rect
         if (this.color1.equals(this.color2)) {
             // draw solid color icon

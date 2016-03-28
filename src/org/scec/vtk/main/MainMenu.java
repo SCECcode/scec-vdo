@@ -1,6 +1,7 @@
 package org.scec.vtk.main;
 
 import java.awt.CheckboxMenuItem;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Menu;
 import java.awt.MenuBar;
@@ -28,6 +29,7 @@ import vtk.vtkAlgorithm;
 import vtk.vtkAppendPolyData;
 import vtk.vtkDataObject;
 import vtk.vtkDataSet;
+import vtk.vtkDoubleArray;
 import vtk.vtkGenericDataObjectWriter;
 import vtk.vtkGeoAssignCoordinates;
 import vtk.vtkGraph;
@@ -40,6 +42,7 @@ import vtk.vtkPNGWriter;
 import vtk.vtkPanel;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
 import vtk.vtkRenderWindow;
 import vtk.vtkSTLWriter;
@@ -158,12 +161,34 @@ public class MainMenu implements ActionListener ,ItemListener{
 			for(int i = 0; i <actorlist.GetNumberOfItems();i++)
 			{
 				 vtkActor pbActor = (vtkActor) actorlist.GetItemAsObject(i);
+				 //double[] c = pbActor.GetProperty().GetColor();
+				 //vtkDoubleArray dc = new vtkDoubleArray();
+				 if(pbActor.GetVisibility() == 1)
+				 {
 				 vtkPolyDataMapper gmapper = (vtkPolyDataMapper) pbActor.GetMapper();
-				 mainData.AddInputData(gmapper.GetInput());
+				 //dc.SetNumberOfComponents(3);
+				 //dc.SetName("Colors");
+				 //for(int j = 0;j<3;j++)
+				 //{
+				 //dc.InsertNextTuple3(c[0]*Info.rgbMax, c[1]*Info.rgbMax, c[2]*Info.rgbMax);
+				// }
+				 /*if(c[0]==0)
+				 {
+					 System.out.println("here");
+				 }*/
+				 vtkPolyData pd  = new vtkPolyData();
+				 //vtkPolyData pd = gmapper.GetInput();
+				 pd.SetPoints(gmapper.GetInput().GetPoints());
+				 pd.SetLines(gmapper.GetInput().GetLines());
+				 pd.SetPolys(gmapper.GetInput().GetPolys());
+				 //pd.GetPointData().SetScalars(dc);
+				 mainData.AddInputData(pd);
 				 mainData.Update();
+				 }
 			}
 			objExporter.SetInputConnection(mainData.GetOutputPort());
 			objExporter.Write();
+			System.out.println("done");
 		}
 		/*ArrayList<ArrayList> actorPoliticalBoundariesMain = new ArrayList<ArrayList>();
 		 ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
@@ -187,20 +212,32 @@ public class MainMenu implements ActionListener ,ItemListener{
 	{
 
 		 
-		  vtkOBJReader reader =new vtkOBJReader();
-		  reader.SetFileName("testScene.obj");
-		  
+		vtkPolyDataReader reader =new vtkPolyDataReader();
+		  reader.SetFileName("testAll.vtk");
+		  reader.Update();
 		  //vtkXMLPolyDataReader reader = new vtkXMLPolyDataReader();
 		  //reader.SetFileName("Coastlines_Los_Alamos.vtp");
 		  //reader.Update();
-		 
+		  vtkDoubleArray c1 = (vtkDoubleArray) reader.GetOutput().GetPointData().GetScalars("Colors");
+			double[] c = c1.GetTuple3(0);
+			Color color = new Color((int)c[0], (int) c[1], (int)c[2]); 
+			//setColor(color);
+			c[0] /= Info.rgbMax;
+			c[1] /= Info.rgbMax;
+			c[2] /= Info.rgbMax;
+			
+			vtkPolyData pd = new vtkPolyData();
+			pd.SetPoints(reader.GetOutput().GetPoints());
+			pd.SetLines(reader.GetOutput().GetLines());
+			pd.SetPolys(reader.GetOutput().GetPolys());
+			//pd.GetPointData().SetScalars(id0)
 		  // Visualize
 		  vtkPolyDataMapper mapper =new vtkPolyDataMapper();
-		  mapper.SetInputConnection(reader.GetOutputPort());
-		 
+		  //mapper.SetInputConnection(reader.GetOutputPort());
+		 mapper.SetInputData(pd);
 		  vtkActor actor = new vtkActor();
 		  actor.SetMapper(mapper);
-		  
+		  actor.GetProperty().SetColor(c);
 		  vtkPanel renderWindow = MainGUI.getRenderWindow();
 		  renderWindow.GetRenderer().AddActor(actor);
 		  MainGUI.updateRenderWindow(actor);
@@ -445,8 +482,8 @@ public class MainMenu implements ActionListener ,ItemListener{
 		
 		// Passivate plugin
 		Plugin plugin = loadedPlugins.get(id);
-		plugin.passivate();
 		plugin.unload();
+		plugin.passivate();
 		getActivePlugins().remove(id);
 		loadedPlugins.remove(id);
 	}

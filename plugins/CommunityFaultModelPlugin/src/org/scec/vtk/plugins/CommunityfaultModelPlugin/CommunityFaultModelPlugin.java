@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
 import org.jdom.Element;
+import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.ActionPlugin;
 import org.scec.vtk.plugins.PluginInfo;
 
@@ -63,8 +64,16 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
     }
     public void unload()
 	{
-    	f3DGui.getMasterFaultBranchGroup().clear();
-		//super.unload();
+    	ArrayList<vtkActor> actors = f3DGui.getMasterFaultBranchGroup();
+        for(int i=0;i<f3DGui.getMasterFaultBranchGroup().size();i++)
+	    {	
+        	vtkActor actor = f3DGui.getMasterFaultBranchGroup().get(i);
+        	actor.VisibilityOff();
+        	actor.Delete();
+	    }
+        Info.getMainGUI().updateActors(f3DGui.getMasterFaultBranchGroup());
+        f3DGui.getMasterFaultBranchGroup().clear();
+		super.unload();
 		f3DGui=null;
 	}
     

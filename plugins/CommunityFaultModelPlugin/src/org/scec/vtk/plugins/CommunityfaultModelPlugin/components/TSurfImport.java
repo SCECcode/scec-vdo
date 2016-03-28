@@ -382,18 +382,18 @@ public class TSurfImport implements DataImport {
                                     Float.parseFloat(temp.substring(13, temp.length())),
                                     Float.parseFloat(data.nextToken()),
                                     Float.parseFloat(data.nextToken()));
-                            //actorassign.GetProperty().SetColor(c.getRed(),c.getGreen(),c.getBlue());
+                            actorassign.GetProperty().SetColor(c.getRed(),c.getGreen(),c.getBlue());
                         }
                         catch (NumberFormatException nfe) {
-                        	c=Color.BLUE;
-                        	//actorassign.GetProperty().SetColor(Color.BLUE.getRed(),Color.BLUE.getGreen(),Color.BLUE.getBlue());
+                        	c=Color.lightGray;
+                        	//actorassign.GetProperty().SetColor(Color.lightGray.getRed(),Color.lightGray.getGreen(),Color.lightGray.getBlue());
                         }
                     }
                     else
                     {
                     	// doublecheck that color gets set
-                    	c=Color.BLUE;
-                    	//actorassign.GetProperty().SetColor(Color.BLUE.getRed(),Color.BLUE.getGreen(),Color.BLUE.getBlue());
+                    	c=Color.lightGray;
+                    	//actorassign.GetProperty().SetColor(Color.lightGray.getRed(),Color.lightGray.getGreen(),Color.lightGray.getBlue());
                     }
                     
                 }
