@@ -36,7 +36,7 @@ public class GlobeBox {
     //private Material lineMaterial;
     //private ColoringAttributes lineColAtts;
     //private ColoringAttributes textColAtts;
-    private Color lineColor;
+    private Color lineColor = null;
     
 	boolean bLatTexts;				// whether or not data for latitude text exist
 	boolean bLonTexts; 				// whether or not data for longitude text exist
@@ -50,7 +50,10 @@ public class GlobeBox {
 	public GlobeLayout getLayout(){
 		return layout;
 	}
-	
+	public void setLineColor(Color c)
+	{
+		this.lineColor = c;
+	}
 	/*public GlobeBox(TransformGroup globalTransformG, GlobeLayout layout, Color3f color, boolean showTextLabels) {
 		this.layout = layout;
 		//this.globeScene = new BranchGroup();
@@ -422,6 +425,10 @@ public class GlobeBox {
         textColAtts.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
         textAppearance.setColoringAttributes(textColAtts);    
         */
+	}
+	public Color getLineColor() {
+		// TODO Auto-generated method stub
+		return this.lineColor;
 	}
 
 	/*public BranchGroup getGlobeScene() {

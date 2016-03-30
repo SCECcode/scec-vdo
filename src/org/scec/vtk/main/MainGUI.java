@@ -59,7 +59,9 @@ import org.apache.log4j.Logger;
 import org.scec.vtk.plugins.ClickablePlugin;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.grid.GlobeBox;
-import org.scec.vtk.grid.MakeGrids;
+import org.scec.vtk.grid.GraticuleGUI;
+import org.scec.vtk.grid.GraticulePlugin;
+import org.scec.vtk.grid.ViewRange;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.tools.Prefs;
@@ -89,6 +91,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
 	private int yCenter = BORDER_SIZE / 2;
+	private ViewRange viewRange;
 	private static final Logger log = Logger.getLogger(MainGUI.class);
 	// In the static constructor we load in the native code.
 	  // The libraries must be in your path to work.
@@ -116,9 +119,13 @@ public  class MainGUI extends JFrame implements ChangeListener{
 
 	private int xeBorder=0;
 	private int ysBorder=0;
-
+	private GraticuleGUI gridGUI;
+	GraticulePlugin gridPlugin;
+	private ViewRange viewrange;
 	private static ArrayList<vtkActor> allActors = new ArrayList<vtkActor>();
 	
+	 vtkActor tempGlobeScene = new vtkActor();
+	private boolean gridDisplay = true;
 	public MainGUI() {
 		
 		/*vtkTransform transform = new  vtkTransform();
@@ -160,10 +167,10 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		mainMenu = new MainMenu();
 		pluginGUIPanel = new JPanel();
 		pluginTabPane =   new JTabbedPane();
-		
+		Info.setMainGUI(this);
 		setUpPluginTabs();
 		addDefaultActors();
-		Info.setMainGUI(this);
+		renderWindow.GetRenderer().AddActor(tempGlobeScene);
 		
         try {
         	mainMenu.availablePlugins = Plugins.getAvailablePlugins();
@@ -243,59 +250,86 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	 
 	 }
 	
+	 setViewRange(new ViewRange());
 	 //draw Grid
-	 MakeGrids mgrids = new MakeGrids();
-	 
-	 ArrayList<GlobeBox> gbs = mgrids.getGlobeBox();
-	 vtkActor tempGlobeScene = new vtkActor();
-	 vtkPolyDataMapper tempMapper = (vtkPolyDataMapper) (gbs.get(0)).globeScene; 
-	 tempGlobeScene.SetMapper(tempMapper);
-	 tempGlobeScene.GetProperty().SetColor(1,1,1);
-	 renderWindow.GetRenderer().AddActor(tempGlobeScene);
-	 
-	 vtkPolyData  plyGrid = tempMapper.GetInput();
-	 int upperLat = mgrids.upperLat;
-	 int numpts = (int) Math.ceil(plyGrid.GetNumberOfPoints()/2);
-	 for(int i =0;i<numpts;i++)
-	 {
-		 if(i % 2 == 1){
-		double[] point = plyGrid.GetPoint(i);
-		point[0]-=35.0;point[1]-=35.0;
+	 gridGUI = new GraticuleGUI(gridPlugin);
+	 addPluginGUI("org.scec.vdo.graticulePlugin","Graticule",gridGUI);
+	 makeGrids(gridGUI.getGlobeBox(1.0));
+	
+	}
+	
+	public void makeGrids(ArrayList<GlobeBox> gbs)
+	{
 
-		vtkTextActor3D textActor = new vtkTextActor3D();
+		 vtkPolyDataMapper tempMapper = (vtkPolyDataMapper) (gbs.get(0)).globeScene; 
+		 tempGlobeScene.SetMapper(tempMapper);
+		 if(gbs.get(0).getLineColor() != null)
+			 tempGlobeScene.GetProperty().SetColor(Info.convertColor(gbs.get(0).getLineColor()));
+		 else
+			 tempGlobeScene.GetProperty().SetColor(1,1,1);
+		 tempGlobeScene.Modified();
+		 //renderWindow.GetRenderer().Render();
+		 
+		 vtkPolyData  plyGrid = tempMapper.GetInput();
+		 int upperLat = gridGUI.upperLat;
+		 int numpts = (int) Math.ceil(plyGrid.GetNumberOfPoints()/2);
+		 for(int i =0;i<numpts;i++)
+		 {
+			 if(i % 2 == 1){
+			double[] point = plyGrid.GetPoint(i);
+			point[0]-=35.0;point[1]-=35.0;
 
-		 textActor.SetInput(Integer.toString(upperLat));
-		 textActor.GetTextProperty().SetFontSize ( 44 );
-		 textActor.GetTextProperty().SetColor(1,1,1);
-		 textActor.SetPosition(point);
-		 textActor.VisibilityOn();
-		 if(i % 2 == 1 && i !=0)
-			 upperLat--;
-		 renderWindow.GetRenderer().AddActor(textActor);
-		 }
-	 }
-	 int upperLon = mgrids.upperLon;
-	 for(int i =plyGrid.GetNumberOfPoints()-1;i>=numpts;i--)
-	 {
-		 if(i % 2 == 0){
-		 double[] point = plyGrid.GetPoint(i);
-		 //point[1]+=35.0;
 			vtkTextActor3D textActor = new vtkTextActor3D();
-			
-			 textActor.SetInput(Integer.toString(upperLon));
+
+			 textActor.SetInput(Integer.toString(upperLat));
 			 textActor.GetTextProperty().SetFontSize ( 44 );
 			 textActor.GetTextProperty().SetColor(1,1,1);
 			 textActor.SetPosition(point);
-			//actor.SetPosition(point);
 			 textActor.VisibilityOn();
-			 if(i % 2 == 0 && i !=0)
-				 upperLon++;
-			 renderWindow.GetRenderer().AddActor(textActor);
+			 if(i % 2 == 1 && i !=0)
+				 upperLat--;
+			 //renderWindow.GetRenderer().AddActor(textActor);
+			 }
 		 }
-	 }
-	renderWindow.GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
-	
+		 int upperLon = gridGUI.upperLon;
+		 for(int i =plyGrid.GetNumberOfPoints()-1;i>=numpts;i--)
+		 {
+			 if(i % 2 == 0){
+			 double[] point = plyGrid.GetPoint(i);
+			 //point[1]+=35.0;
+				vtkTextActor3D textActor = new vtkTextActor3D();
+				
+				 textActor.SetInput(Integer.toString(upperLon));
+				 textActor.GetTextProperty().SetFontSize ( 44 );
+				 textActor.GetTextProperty().SetColor(1,1,1);
+				 textActor.SetPosition(point);
+				//actor.SetPosition(point);
+				 textActor.VisibilityOn();
+				 if(i % 2 == 0 && i !=0)
+					 upperLon++;
+				 //renderWindow.GetRenderer().AddActor(textActor);
+			 }
+		 }
+		renderWindow.GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
 	}
+	public void toggleGridDisplay() {
+		if (!this.gridDisplay) {
+			tempGlobeScene.VisibilityOn();
+			gridDisplay = true;
+		} else {
+			tempGlobeScene.VisibilityOff();
+			gridDisplay = false;
+		}
+	}
+	public boolean getGridDisplayBool() {
+		return this.gridDisplay;
+	}
+
+	public vtkActor getGrid() {
+		// TODO Auto-generated method stub
+		return this.tempGlobeScene;
+	}
+	
 	
 	private void setUpPluginTabs() {
 		pluginGUIPanel.add(pluginTabPane);
@@ -318,22 +352,24 @@ public  class MainGUI extends JFrame implements ChangeListener{
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 	}
+	//viewRange
+	private void setViewRange(ViewRange viewRange) {
+		this.viewRange = viewRange;
+	}
+
+	public ViewRange getViewRange() {
+		return this.viewRange;
+	}
 	
 	public void addPluginGUI(String id, String title, JPanel gui) {
 
-		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries") {
+		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin") {
 			//Logger
 			log.debug("Cannot add gui for inactive plugin " + id);
 			return;
 		}
 
 		boolean showing = isPluginGuiShowing();
-
-		//Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
-		//all.setMinimumSize(d);
-		//pluginGUIScrollPane.setMinimumSize(d);
-		//pluginGUIScrollPane.setPreferredSize(d);
-
 
 		// Create a new plugin tab
 		JPanel allPanel = new JPanel();
@@ -346,45 +382,14 @@ public  class MainGUI extends JFrame implements ChangeListener{
 
 		// Add the tab to the tab panel
 		pluginTabPane.addTab(title, pluginTab);
-		if(id !="org.scec.vdo.politicalBoundaries")
+		if(id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin")
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
 		else
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
 		pluginTabPane.setSelectedIndex(pluginTabPane.getTabCount() - 1);		
 
-		// If the split pane was removed, re-add it
-		/*if (pluginSplitPane == null) {
-			pluginSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-					false, all, pluginGUIScrollPane);
-			((JSplitPane) pluginSplitPane).setOneTouchExpandable(false);
-			((JSplitPane) pluginSplitPane).setDividerSize(0);
-			((JSplitPane) pluginSplitPane).setResizeWeight(1);
-			((JSplitPane) pluginSplitPane).setDividerLocation(0.5);
-			remove(all);
-			setContentPane((Container) pluginSplitPane);
-		}*/
-
-		// Note: pluginTabPane.getGraphics() will return null if pluginSplitPane
-		// has not been created
-		//.update(pluginTabPane.getGraphics()); // forces it to show
 		pluginTabPane.repaint();
-		// the new tab
-
-		/*if (!alreadyResized) {
-			((JSplitPane) pluginSplitPane).setDividerLocation(this.getWidth()
-					- pluginTabPane.getPreferredSize().width - 60);
-			alreadyResized = true;
-		}*/
-
-		// I think this means that if we enable the first plugin
-		// and the plugin split pane gets created, and we are
-		// showing the navigation map HUD, then we need to
-		// update the HUD.
-		/*if (showNavMap && (showing != isPluginGuiShowing())) {
-			viewPlatform.setPlatformGeometry(getHUDGeometry());
-			you.setRedDot(keyBehv.getFocalPoint());
-		}*/
-
+		
 		SwingUtilities.updateComponentTreeUI(this);
 	}
 
@@ -461,6 +466,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	//update renderwindow and focus on actor
 	public static void updateRenderWindow(vtkActor actor)
 	{
+		renderWindow.GetRenderer().Render();
 		renderWindow.GetRenderer().ResetCamera(actor.GetBounds());
 		renderWindow.repaint(); 
 	}
@@ -468,6 +474,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	public  void updateRenderWindow()
 	{
 		//updateActors(getActorToAllActors());
+		renderWindow.GetRenderer().Render();
 		renderWindow.repaint();
 	}
 	 
@@ -820,6 +827,7 @@ private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 					MenuSelectionManager.defaultManager().setSelectedPath(path);
 			}*/
 		}
+
 	
 	
 	
