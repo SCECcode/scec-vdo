@@ -31,14 +31,23 @@ import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 
+import vtk.vtkActor;
 import vtk.vtkCellArray;
+import vtk.vtkCellData;
 import vtk.vtkDoubleArray;
 import vtk.vtkGeoAssignCoordinates;
 import vtk.vtkGraphToPolyData;
+import vtk.vtkIntArray;
+import vtk.vtkLabelPlacementMapper;
+import vtk.vtkLabeledDataMapper;
+import vtk.vtkLine;
 import vtk.vtkMutableDirectedGraph;
+import vtk.vtkPointSetToLabelHierarchy;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkStringArray;
+import vtk.vtkVertexGlyphFilter;
 
 public class GraticuleGUI extends JPanel implements ActionListener{
 	protected DisplayAttributes displayAttributes; //From location plugin; contains font color, cone color...
@@ -72,13 +81,13 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 	private boolean labelsOn = true;
 	private JCheckBox latLonLabelsCheckBox = new JCheckBox("Display latitude and longitude labels.", labelsOn);
-	
+
 	//private Switch switchNode;
 	private GlobeBox gb1;
 	private GlobeBox gb2;
 	private GlobeBox gb3;
 	private GlobeBox gb4;
-	
+
 
 	private JPanel
 	gridDimensionsPanel,
@@ -112,143 +121,168 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	relIntensityProp_extentsWval1 = new IntegerTextField(3, false, 3),
 	relIntensityProp_extentsEval1 = new IntegerTextField(3, false, 3),
 	relIntensityProp_extentsSval1 = new IntegerTextField(2, false, 3);
-	
+
 	public int upperLat, lowerLat, upperLon, lowerLon;
 
 	public ArrayList<GlobeBox> getGlobeBox(double spacing){
 		URL calGridURL = GraticuleGUI.class.getResource("resources/California.grat");
 		File calGrid = new File(calGridURL.getPath());
 		GraticulePreset graticule = new GraticulePreset(calGrid);
-		
+
 		upperLat = (graticule.getUpperLatitude());
 		lowerLat = (graticule.getLowerLatitude());
 		upperLon = (graticule.getLeftLongitude());
 		lowerLon = (graticule.getRightLongitude());
-		
+
 		ArrayList<GlobeBox> gbs = makeNewGrid(upperLat, lowerLat,  upperLon, lowerLon,spacing); //double spacing)
 		return gbs;
 	}
-	 private ArrayList<GlobeBox> makeGrids(int upperLat, int lowerLat,
-	  				int leftLong, int rightLong, double spacing) {
+	private ArrayList<GlobeBox> makeGrids(int upperLat, int lowerLat,
+			int leftLong, int rightLong, double spacing) {
 
-				  //for latitude lines
+		// Add label array.
+		vtkStringArray labels =new vtkStringArray();
+		labels.SetName("labels");
+		vtkIntArray sizes = new vtkIntArray();
+		sizes.SetName("sizes");
+		vtkPolyData temp = new vtkPolyData();
 		
-		 
-				  vtkPoints allPoints = new vtkPoints();
-				  int countPts =0;
-				  vtkCellArray lines =  new vtkCellArray();
-				  vtkPolyData linesPolyData =new vtkPolyData();
-				  
-				  vtkDoubleArray lat = new vtkDoubleArray();
-				  vtkDoubleArray lon = new vtkDoubleArray();
-				  vtkDoubleArray gridName = new vtkDoubleArray();
-				  lat.SetName("latitude");
-				  lon.SetName("longitude");
-				  vtkMutableDirectedGraph graph1 = new vtkMutableDirectedGraph();
-				  vtkMutableDirectedGraph graph2 = new vtkMutableDirectedGraph();
-						  //j-- is spacing 
-				//INVERT IMAGE//
-					double leftLon  = 1 * rightLong;
-					double rightLon = 1 * leftLong; 
-					//END IMAGE INVERT//
-				  for(double j = upperLat;j>=lowerLat;j-=spacing,countPts+=2)
-				  {
-					  
-					  //double[] pt = new double[3];
-					  	//pt[0] = Transform.calcRadius(j);
-				         // Phi= deg2rad(latitude);
-						//pt[1] = (j);
-				         //Theta= deg2rad(longitude);
-						//pt[2] = (leftLon);
-						
-						graph1.AddVertex();
-						lat.InsertNextValue(j);
-						lon.InsertNextValue( leftLon);
-						//allPoints.InsertNextPoint(Transform.customTransform(pt));
-						
-				         //Theta= deg2rad(longitude);
-						//pt[2] = (rightLon);
-						graph1.AddVertex();
-						lat.InsertNextValue( j);
-						lon.InsertNextValue( rightLon);
-						/*allPoints.InsertNextPoint(Transform.customTransform(pt));
-						vtkLine line0 = new vtkLine();
-						line0.GetPointIds().SetId(0, countPts); // the second 0 is the index of the Origin in linesPolyData's points
-						line0.GetPointIds().SetId(1, countPts+1); // the second 1 is the index of P0 in linesPolyData's points
-						lines.InsertNextCell(line0);*/
-						graph1.AddGraphEdge(countPts, countPts+1);
-						gridName.InsertNextValue(j);
-				  }
-				  //longitutde lines
-				  for(double j = leftLon;j>=rightLon;j-=spacing,countPts+=2)
-				  {
-					  /*double[] pt = new double[3];
-					  	pt[0] = Transform.calcRadius(upperLat);
-				         // Phi= deg2rad(latitude);
-						pt[1] = (upperLat);
-				         //Theta= deg2rad(longitude);
-						pt[2] = (j);
-						
-						allPoints.InsertNextPoint(Transform.customTransform(pt));*/
-					  	graph1.AddVertex();
-						lat.InsertNextValue( upperLat);
-						lon.InsertNextValue( j);
-						
-						graph1.AddVertex();
-						lat.InsertNextValue( lowerLat);
-						lon.InsertNextValue( j);
-				         //Theta= deg2rad(longitude);
-						/*pt[0] = Transform.calcRadius(lowerLat);
-				         // Phi= deg2rad(latitude);
-						pt[1] = (lowerLat);
-						
-						allPoints.InsertNextPoint(Transform.customTransform(pt));
-						
-						vtkLine line0 = new vtkLine();
-						line0.GetPointIds().SetId(0, countPts); // the second 0 is the index of the Origin in linesPolyData's points
-						line0.GetPointIds().SetId(1, countPts+1); // the second 1 is the index of P0 in linesPolyData's points
-						lines.InsertNextCell(line0);*/
-						graph1.AddGraphEdge(countPts, countPts+1);
-				  }
-				  //linesPolyData.SetPoints(allPoints);
-				  // linesPolyData.SetLines(lines);
-				  graph1.GetVertexData().AddArray(lat);
-			        graph1.GetVertexData().AddArray(lon);
-			        
-			        vtkGraphToPolyData graphToPolyData = new vtkGraphToPolyData();
-					graphToPolyData.SetInputData(graph1);
-					
-					graphToPolyData.Update();
-					
-					linesPolyData = graphToPolyData.GetOutput();
-					
-					vtkGeoAssignCoordinates assign = new vtkGeoAssignCoordinates();
+		//for latitude lines
 
-					assign.SetInputData(linesPolyData);
-					//assign.set
-					assign.SetLatitudeArrayName("latitude");
-					assign.SetLongitudeArrayName("longitude");
-					assign.SetGlobeRadius(Transform.re);
-					
-					assign.Update();
-					
-				   vtkPolyDataMapper globeMapper = new vtkPolyDataMapper();
-				
-					/*vtkSphericalTransform vts= new vtkSphericalTransform();
-					vtkTransformPolyDataFilter tpoly21 = new vtkTransformPolyDataFilter();
-					tpoly21.SetTransform(vts);
-			 		tpoly21.SetInputData(linesPolyData);*/
-			 			
-					globeMapper.SetInputConnection(assign.GetOutputPort());
-				  
-				  
-	  			ArrayList<GlobeBox> gbs = new ArrayList<GlobeBox>(4);
-	  			Color tempColor3f = new Color(255,255,255);
-	  			GlobeLayout gl = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing);
-	  			gbs.add(new GlobeBox(gl, tempColor3f, true));
-	  			gbs.get(0).globeScene = globeMapper;
-	  			//gbs.add(new GlobeBox(tg, gl, tempColor3f, latLonLabelsCheckBox.isSelected()));
-	  			/*GlobeLayout g2 = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing * 2);
+
+		vtkPoints allPoints = new vtkPoints();
+		vtkPoints labelPoints = new vtkPoints();
+		//vtkPoints lonLabelPoints = new vtkPoints();
+		int countPts =0;
+		vtkCellArray lines =  new vtkCellArray();
+		vtkPolyData linesPolyData =new vtkPolyData();
+
+		vtkDoubleArray lat = new vtkDoubleArray();
+		vtkDoubleArray lon = new vtkDoubleArray();
+		lat.SetName("latitude");
+		lon.SetName("longitude");
+		
+		//j-- is spacing 
+		//INVERT IMAGE//
+		double leftLon  = 1 * rightLong;
+		double rightLon = 1 * leftLong; 
+		//END IMAGE INVERT//
+		int numOfLat = (int) (Math.ceil((upperLat-lowerLat)/spacing)+1);
+		numOfLat += (int) (Math.ceil((leftLon-rightLon)/spacing)+1);
+		labels.SetNumberOfValues(numOfLat+1);
+		sizes.SetNumberOfValues(numOfLat);
+		int labelLatCt=0;
+		for(double j = upperLat;j>=lowerLat;j-=spacing,labelLatCt++)
+		{
+
+			double[] pt = new double[3];
+			pt[0] = Transform.calcRadius(j);
+			// Phi= deg2rad(latitude);
+			pt[1] = (j);
+			//Theta= deg2rad(longitude);
+			pt[2] = (leftLon);
+
+			allPoints.InsertNextPoint(Transform.customTransform(pt));
+			//Theta= deg2rad(longitude);
+			//countPts++;
+			for(double k=(leftLon-spacing);k>=rightLon;k-=spacing)
+			{
+				pt[2] = k;//(rightLon);
+				allPoints.InsertNextPoint(Transform.customTransform(pt));
+				vtkLine line0 = new vtkLine();
+				line0.GetPointIds().SetId(0, countPts); // the second 0 is the index of the Origin in linesPolyData's points
+				//countPts++;
+				line0.GetPointIds().SetId(1, countPts+1); // the second 1 is the index of P0 in linesPolyData's points
+				countPts++;
+				lines.InsertNextCell(line0);
+			}
+			countPts++;
+			pt[2] = (rightLon);
+			labels.SetValue(labelLatCt, Double.toString(j));
+			labelPoints.InsertNextPoint(Transform.customTransform(pt));
+			
+		}
+
+		//longitutde lines
+		for(double j = leftLon;j>=rightLon;j-=spacing,labelLatCt++)
+		{
+			double[] pt = new double[3];
+			pt[0] = Transform.calcRadius(upperLat);
+			// Phi= deg2rad(latitude);
+			pt[1] = (upperLat);
+			//Theta= deg2rad(longitude);
+			pt[2] = (j);
+
+			allPoints.InsertNextPoint(Transform.customTransform(pt));
+			labels.SetValue(labelLatCt, Double.toString(j));
+
+			labelPoints.InsertNextPoint(Transform.customTransform(pt));
+
+			
+			for(double k = (upperLat-spacing);k>=lowerLat;k-=spacing)
+			{
+				//Theta= deg2rad(longitude);
+				pt[0] = Transform.calcRadius(k);
+				// Phi= deg2rad(latitude);
+				pt[1] = (k);
+			allPoints.InsertNextPoint(Transform.customTransform(pt));
+			vtkLine line0 = new vtkLine();
+			line0.GetPointIds().SetId(0, countPts);
+			//countPts++;// the second 0 is the index of the Origin in linesPolyData's points
+			line0.GetPointIds().SetId(1, countPts+1);
+			countPts++;// the second 1 is the index of P0 in linesPolyData's points
+			lines.InsertNextCell(line0);
+			}
+			countPts++;
+			//graph1.AddGraphEdge(countPts, countPts+1);
+		}
+		linesPolyData.SetPoints(allPoints);
+		linesPolyData.SetLines(lines);
+
+		temp.SetPoints(labelPoints);
+
+		// Generate the label hierarchy.
+		temp.GetPointData().AddArray(labels);
+		vtkPointSetToLabelHierarchy pointSetToLabelHierarchyFilter =new vtkPointSetToLabelHierarchy();
+		pointSetToLabelHierarchyFilter.SetInputData(temp);
+		pointSetToLabelHierarchyFilter.SetLabelArrayName("labels");
+		pointSetToLabelHierarchyFilter.Update();
+
+
+
+		vtkGeoAssignCoordinates assign = new vtkGeoAssignCoordinates();
+
+		assign.SetInputData(linesPolyData);
+		//assign.set
+		assign.SetLatitudeArrayName("latitude");
+		assign.SetLongitudeArrayName("longitude");
+		assign.SetGlobeRadius(Transform.re);
+
+		assign.Update();
+
+
+		vtkPolyDataMapper globeMapper = new vtkPolyDataMapper();
+
+		globeMapper.SetInputConnection(assign.GetOutputPort());
+
+		vtkPolyDataMapper pointMapper = new vtkPolyDataMapper();
+		pointMapper.SetInputData(temp);
+
+
+
+		vtkLabelPlacementMapper cellMapper = new vtkLabelPlacementMapper();
+		cellMapper.SetInputConnection(pointSetToLabelHierarchyFilter.GetOutputPort());
+
+		ArrayList<GlobeBox> gbs = new ArrayList<GlobeBox>(4);
+		Color tempColor3f = new Color(255,255,255);
+		GlobeLayout gl = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing);
+		gbs.add(new GlobeBox(gl, tempColor3f, true));
+		gbs.get(0).globeScene = globeMapper;
+		gbs.get(0).labelMapperLat= cellMapper;
+		gbs.get(0).ptMapper = pointMapper;  
+
+		//gbs.add(new GlobeBox(tg, gl, tempColor3f, latLonLabelsCheckBox.isSelected()));
+		/*GlobeLayout g2 = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing * 2);
 	  			gbs.add(new GlobeBox(g2, tempColor3f, true));
 	  			gbs.get(1).drawGlobe();
 	  			//gbs.add(new GlobeBox(tg, g2, tempColor3f, latLonLabelsCheckBox.isSelected()));
@@ -259,46 +293,46 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	  			GlobeLayout g4 = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing * 6);
 	  			gbs.add(new GlobeBox(g4, tempColor3f, true));
 	  			gbs.get(3).drawGlobe();*/
-	  			//gbs.add(new GlobeBox(tg, g4, tempColor3f, latLonLabelsCheckBox.isSelected()));
-	  			return gbs;
-	  		}
-		  
-	
-		  public ArrayList<GlobeBox> makeNewGrid(int upperLat, int lowerLat, int leftLong,
-					int rightLong, double spacing) {
-				//globeView = Geo3dInfo.getMainWindow();
-				//if (!globeView.getGridDisplayBool())
-					//globeView.toggleGridDisplay();
-				ArrayList<GlobeBox> gbs = makeGrids(upperLat, lowerLat, leftLong, rightLong,
-						spacing);
-				// globeView.setGlobeBox(gbs[0]);
-				return gbs;
-				/*globeView.getSwitchNode().removeAllChildren();
+		//gbs.add(new GlobeBox(tg, g4, tempColor3f, latLonLabelsCheckBox.isSelected()));
+		return gbs;
+	}
+
+
+	public ArrayList<GlobeBox> makeNewGrid(int upperLat, int lowerLat, int leftLong,
+			int rightLong, double spacing) {
+		//globeView = Geo3dInfo.getMainWindow();
+		//if (!globeView.getGridDisplayBool())
+		//globeView.toggleGridDisplay();
+		ArrayList<GlobeBox> gbs = makeGrids(upperLat, lowerLat, leftLong, rightLong,
+				spacing);
+		// globeView.setGlobeBox(gbs[0]);
+		return gbs;
+		/*globeView.getSwitchNode().removeAllChildren();
 				globeView.getSwitchNode().addChild(( gbs.get(0)).drawGlobe());
 				globeView.getSwitchNode().addChild(( gbs.get(1)).drawGlobe());
 				globeView.getSwitchNode().addChild(( gbs.get(2)).drawGlobe());
 				globeView.getSwitchNode().addChild(( gbs.get(3)).drawGlobe());*/
-			}
-		public  ArrayList<GlobeBox> makeNewGrid(double spacing) {
-				//globeView = Geo3dInfo.getMainWindow();
-				//if (!globeView.getGridDisplayBool())
-					//globeView.toggleGridDisplay();
-				ArrayList<GlobeBox> gbs = makeGrids(Integer
-						.parseInt(relIntensityProp_extentsNval1.getText()), Integer
-						.parseInt(relIntensityProp_extentsSval1.getText()), Integer
-						.parseInt(relIntensityProp_extentsWval1.getText()), Integer
-						.parseInt(relIntensityProp_extentsEval1.getText()), spacing);
-				// globeView.setGlobeBox(gbs[0]);
-				if(curColor!=null)
-					gbs.get(0).setLineColor(curColor);
-				return gbs;
-				//grids = gbs;
-				/*globeView.getSwitchNode().removeAllChildren();
+	}
+	public  ArrayList<GlobeBox> makeNewGrid(double spacing) {
+		//globeView = Geo3dInfo.getMainWindow();
+		//if (!globeView.getGridDisplayBool())
+		//globeView.toggleGridDisplay();
+		ArrayList<GlobeBox> gbs = makeGrids(Integer
+				.parseInt(relIntensityProp_extentsNval1.getText()), Integer
+				.parseInt(relIntensityProp_extentsSval1.getText()), Integer
+				.parseInt(relIntensityProp_extentsWval1.getText()), Integer
+				.parseInt(relIntensityProp_extentsEval1.getText()), spacing);
+		// globeView.setGlobeBox(gbs[0]);
+		if(curColor!=null)
+			gbs.get(0).setLineColor(curColor);
+		return gbs;
+		//grids = gbs;
+		/*globeView.getSwitchNode().removeAllChildren();
 				globeView.getSwitchNode().addChild(((GlobeBox) gbs.get(0)).drawGlobe());
 				globeView.getSwitchNode().addChild(((GlobeBox) gbs.get(1)).drawGlobe());
 				globeView.getSwitchNode().addChild(((GlobeBox) gbs.get(2)).drawGlobe());
 				globeView.getSwitchNode().addChild(((GlobeBox) gbs.get(3)).drawGlobe());*/
-			}
+	}
 	public GraticuleGUI(GraticulePlugin plug)
 	{
 		super();
@@ -317,8 +351,8 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		midPanel.setLayout(new BorderLayout());
 		midPanel.add(gridDimensionsPanel, BorderLayout.CENTER);
 		midPanel.setBorder(	BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15),
-							BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Grid Dimensions"),
-							BorderFactory.createEmptyBorder(10, 10, 10, 10))));
+				BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Grid Dimensions"),
+						BorderFactory.createEmptyBorder(10, 10, 10, 10))));
 		midPanel.setMaximumSize(new Dimension(400, 200));
 		add(getGridSettingsPanel());
 		add(midPanel);
@@ -354,7 +388,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		this.secondsceneRadioButton.addActionListener(this);
 		this.noneRadioButton.addActionListener(this);
 		this.customRadioButton.addActionListener(this);
-		
+
 		this.displayButtons.add(this.noneRadioButton);
 		this.displayButtons.add(this.firstsceneRadioButton);
 		this.displayButtons.add(this.secondsceneRadioButton);
@@ -373,8 +407,8 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		bckgroundColorChooser.addActionListener(this);
 
 		this.displayPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15),
-									BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Grid Settings"),
-									BorderFactory.createEmptyBorder(15, 15, 15, 15))));
+				BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Grid Settings"),
+						BorderFactory.createEmptyBorder(15, 15, 15, 15))));
 		Box bx = new Box(0);
 		bx.add(this.customRadioButton);
 		bx.add(this.customTextBox);
@@ -391,7 +425,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		bx3.add(bckColorUserInstructions);
 		bx3.add(bckgroundColorChooser);
 		displayPanel.add(bx3);
-		
+
 
 		// Default
 		this.firstsceneRadioButton.setSelected(true);
@@ -407,7 +441,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		return this.displayPanel;
 	}
 
-	
+
 	public void makeCompassPanel()
 	{
 		compassPanel = new JPanel();
@@ -420,8 +454,8 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		if (Prefs.getOS() != Prefs.OSX)
 		{
 			compassPanel.setBorder(	BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16),
-									BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Compass Settings"),
-									BorderFactory.createEmptyBorder(0, 16, 16, 16))));
+					BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Compass Settings"),
+							BorderFactory.createEmptyBorder(0, 16, 16, 16))));
 		}
 		compassPanel.add(displayAttributes);
 		compassPanel.add(showCompass);
@@ -524,7 +558,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	private JPanel makebuttonPanel() {
 		buttonPanel = new JPanel();
 		buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
-		graticuleappsProp_apply = new JButton("Apply"); // "Apply" button
+		graticuleappsProp_apply = new JButton("Apply"); // "button
 		graticuleappsProp_apply.addActionListener(this);
 		graticuleappsProp_apply.setActionCommand("apply");
 
@@ -535,12 +569,12 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		return (buttonPanel);
 	}
 
-	
-	
+
+
 	public void apply() {
 		if (!Info.getMainGUI().getGridDisplayBool())
 			Info.getMainGUI().toggleGridDisplay();
-		
+
 		if (firstsceneRadioButton.isSelected()) {
 			gridWidth = 1.0;
 			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth));
@@ -567,7 +601,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 				}
 			} catch (NumberFormatException nfe) {
 				customTextBox
-						.setText("Please enter a number greater than .1");
+				.setText("Please enter a number greater than .1");
 				customTextBox.setSelectionStart(0);
 				customTextBox.setSelectionEnd(customTextBox.getText()
 						.length());
@@ -596,12 +630,12 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			}
 		}
 	}
-	
+
 	public void setGridColor(Color color) {
 		curColor = color;
 		this.colorChooser.setColor(color);
 	}
-	
+
 	public void setLabelsDisplayed(boolean displayed) {
 		this.latLonLabelsCheckBox.setSelected(displayed);
 	}
@@ -632,9 +666,9 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		else if (arg0.getSource() == presetsComboBox)
 		{
 			GraticulePreset preset = presetModel.getPreset(presetsComboBox.getSelectedIndex());
-			
+
 			//Info.getMainGUI().makeGrids(makegrids.makeNewGrid(preset.getUpperLatitude(),preset.getLowerLatitude(),
-					//preset.getLeftLongitude(),preset.getRightLongitude(),1));
+			//preset.getLeftLongitude(),preset.getRightLongitude(),1));
 			Info.getMainGUI().updateRenderWindow();
 			relIntensityProp_extentsNval1.setText(preset.getUpperLatitude()+"");
 			relIntensityProp_extentsSval1.setText(preset.getLowerLatitude()+"");
@@ -652,11 +686,11 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		relIntensityProp_extentsNval1.setText(range.getUpperLatitudeAsString());
 		relIntensityProp_extentsSval1.setText(range.getLowerLatitudeAsString());
 		relIntensityProp_extentsEval1
-				.setText(range.getRightLongitudeAsString());
+		.setText(range.getRightLongitudeAsString());
 		relIntensityProp_extentsWval1.setText(range.getLeftLongitudeAsString());
 		if (firstTime) { // needed to fix bug in save state...doesn't save
-							// initial values if they are never changed without
-							// this code
+			// initial values if they are never changed without
+			// this code
 			this.upperLatitude = range.getUpperLatitude();
 			this.lowerLatitude = range.getLowerLatitude();
 

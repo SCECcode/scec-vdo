@@ -12,6 +12,7 @@ import org.scec.vtk.tools.Transform;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
+import vtk.vtkLabelPlacementMapper;
 import vtk.vtkMapper;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
@@ -46,6 +47,8 @@ public class GlobeBox {
 	
 	private boolean showLabels;
 	//private BranchGroup labelsGroup; //group for storing the lat and lon text labels
+	public vtkLabelPlacementMapper labelMapperLat;
+	public vtkPolyDataMapper ptMapper;
 	
 	public GlobeLayout getLayout(){
 		return layout;

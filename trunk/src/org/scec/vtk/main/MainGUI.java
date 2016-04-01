@@ -58,6 +58,8 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import org.apache.log4j.Logger;
 import org.scec.vtk.plugins.ClickablePlugin;
 import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.drawingTools.DrawingToolsGUI;
+import org.scec.vtk.drawingTools.DrawingToolsPlugin;
 import org.scec.vtk.grid.GlobeBox;
 import org.scec.vtk.grid.GraticuleGUI;
 import org.scec.vtk.grid.GraticulePlugin;
@@ -68,6 +70,7 @@ import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.plugins.Plugins;
 
 import vtk.vtkActor;
+import vtk.vtkActor2D;
 import vtk.vtkAxesActor;
 import vtk.vtkCamera;
 import vtk.vtkGlobeSource;
@@ -125,7 +128,12 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	private static ArrayList<vtkActor> allActors = new ArrayList<vtkActor>();
 	
 	 vtkActor tempGlobeScene = new vtkActor();
+	 vtkActor2D labelActor =new vtkActor2D();
+	 vtkActor pointActor = new 
+			    vtkActor();
 	private boolean gridDisplay = true;
+	private DrawingToolsGUI drawingTool;
+	private DrawingToolsPlugin drawingToolPlugin;
 	public MainGUI() {
 		
 		/*vtkTransform transform = new  vtkTransform();
@@ -169,8 +177,11 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		pluginTabPane =   new JTabbedPane();
 		Info.setMainGUI(this);
 		setUpPluginTabs();
-		addDefaultActors();
 		renderWindow.GetRenderer().AddActor(tempGlobeScene);
+		renderWindow.GetRenderer().AddActor(pointActor);
+		renderWindow.GetRenderer().AddActor(labelActor);
+		addDefaultActors();
+		
 		
         try {
         	mainMenu.availablePlugins = Plugins.getAvailablePlugins();
@@ -207,6 +218,20 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    }
 	    }
 	    updateRenderWindow();
+	}
+	public void updateTextActors(ArrayList<vtkActor> allTextActors)
+	{
+		
+	    if(allTextActors.size()>0){
+	    	//loading form previous import
+	    for(int i =0;i<allTextActors.size();i++)
+	    {
+	    	renderWindow.GetRenderer().AddActor(allTextActors.get(i));
+	    	
+	    }
+	    }
+	    updateRenderWindow();
+	    renderWindow.GetRenderer().ResetCamera(allTextActors.get(allTextActors.size()-1).GetBounds());
 	}
 	
 	/*public static void addActorsToAllActors(ArrayList<vtkActor> ar)
@@ -256,6 +281,11 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	 addPluginGUI("org.scec.vdo.graticulePlugin","Graticule",gridGUI);
 	 makeGrids(gridGUI.getGlobeBox(1.0));
 	
+	 
+	//draw DrawingTools
+	drawingTool = new DrawingToolsGUI(drawingToolPlugin);
+	addPluginGUI("org.scec.vdo.drawingToolsPlugin","Drawing Tools",drawingTool);
+		
 	}
 	
 	public void makeGrids(ArrayList<GlobeBox> gbs)
@@ -271,45 +301,12 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		 //renderWindow.GetRenderer().Render();
 		 
 		 vtkPolyData  plyGrid = tempMapper.GetInput();
-		 int upperLat = gridGUI.upperLat;
-		 int numpts = (int) Math.ceil(plyGrid.GetNumberOfPoints()/2);
-		 for(int i =0;i<numpts;i++)
-		 {
-			 if(i % 2 == 1){
-			double[] point = plyGrid.GetPoint(i);
-			point[0]-=35.0;point[1]-=35.0;
+		 
 
-			vtkTextActor3D textActor = new vtkTextActor3D();
-
-			 textActor.SetInput(Integer.toString(upperLat));
-			 textActor.GetTextProperty().SetFontSize ( 44 );
-			 textActor.GetTextProperty().SetColor(1,1,1);
-			 textActor.SetPosition(point);
-			 textActor.VisibilityOn();
-			 if(i % 2 == 1 && i !=0)
-				 upperLat--;
-			 //renderWindow.GetRenderer().AddActor(textActor);
-			 }
-		 }
-		 int upperLon = gridGUI.upperLon;
-		 for(int i =plyGrid.GetNumberOfPoints()-1;i>=numpts;i--)
-		 {
-			 if(i % 2 == 0){
-			 double[] point = plyGrid.GetPoint(i);
-			 //point[1]+=35.0;
-				vtkTextActor3D textActor = new vtkTextActor3D();
-				
-				 textActor.SetInput(Integer.toString(upperLon));
-				 textActor.GetTextProperty().SetFontSize ( 44 );
-				 textActor.GetTextProperty().SetColor(1,1,1);
-				 textActor.SetPosition(point);
-				//actor.SetPosition(point);
-				 textActor.VisibilityOn();
-				 if(i % 2 == 0 && i !=0)
-					 upperLon++;
-				 //renderWindow.GetRenderer().AddActor(textActor);
-			 }
-		 }
+		 pointActor.SetMapper(gbs.get(0).ptMapper);
+		 pointActor.Modified();
+		 labelActor.SetMapper(gbs.get(0).labelMapperLat);
+		 labelActor.Modified();
 		renderWindow.GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
 	}
 	public void toggleGridDisplay() {
@@ -363,7 +360,8 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	
 	public void addPluginGUI(String id, String title, JPanel gui) {
 
-		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin") {
+		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin"
+				&& id != "org.scec.vdo.drawingToolsPlugin") {
 			//Logger
 			log.debug("Cannot add gui for inactive plugin " + id);
 			return;
@@ -382,7 +380,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 
 		// Add the tab to the tab panel
 		pluginTabPane.addTab(title, pluginTab);
-		if(id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin")
+		if(id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin" && id != "org.scec.vdo.drawingToolsPlugin")
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
 		else
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
