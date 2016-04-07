@@ -179,7 +179,12 @@ public abstract class AbstractDataAccessor implements DataAccessor {
      */
     public boolean equals(Object obj) throws ClassCastException {
         if (obj instanceof DataAccessor) {
-            if (((DataAccessor)obj).getAttributeFile().equals(getAttributeFile())) {
+        	if(((DataAccessor)obj).getAttributeFile() == null)
+        	{
+        		if(((DataAccessor)obj).getDisplayName().equals(getDisplayName()))
+        		{return true;}
+        	}
+        	else if (((DataAccessor)obj).getAttributeFile().equals(getAttributeFile())) {
                 return true;
             }
             return false;
@@ -397,7 +402,8 @@ public abstract class AbstractDataAccessor implements DataAccessor {
      */
     public void setDisplayName(String name) {
         this.displayName = name;
-        this.object_info.getChild("display_name").setText(name);
+        if(this.object_info!=null)
+        	this.object_info.getChild("display_name").setText(name);
     }
 
     /**

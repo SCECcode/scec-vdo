@@ -2,6 +2,7 @@ package org.scec.vtk.plugins.CommunityfaultModelPlugin;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -592,7 +593,7 @@ public void actionPerformed(ActionEvent e) {
         }
     } else if (src == this.remFaultsButton) {
     	 int[] selectedRows = this.faultTable.getSelectedRows();
-    	 
+    	 ArrayList<vtkActor> removedActors = new ArrayList<vtkActor>();
         int delete = libModel.deleteObjects(
                 this.faultTable,
                 selectedRows);
@@ -607,10 +608,10 @@ public void actionPerformed(ActionEvent e) {
             for(int i =0;i<selectedRows.length;i++)
             {
             	vtkActor actor = actors.get(selectedRows[i]-i);
-            	actor.VisibilityOff();
+				removedActors.add(actor);
             	getMasterFaultBranchGroup().remove(selectedRows[i]-i);
             }
-            Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
+            Info.getMainGUI().removeActors(removedActors);
         }
         
         

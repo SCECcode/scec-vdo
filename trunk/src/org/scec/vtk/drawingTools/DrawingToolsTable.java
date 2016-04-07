@@ -12,6 +12,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelListener;
 
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.CommunityFaultModelGUI;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTable;
@@ -25,7 +26,7 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
     Component tableOwner;
     
     // table access fields
-    private DrawingToolsTableModel tableModel = new DrawingToolsTableModel();
+    private DrawingToolsTableModel tableModel;
     private ListSelectionModel selModel;
 
     /**
@@ -41,13 +42,16 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
 
 	private void init() {
 		// TODO Auto-generated method stub
+		this.tableModel = new DrawingToolsTableModel();
+		this.tableModel.addTableModelListener((TableModelListener)this.tableOwner);
+        setModel(this.tableModel);
 		 // set to monitor mouse clicks
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 
                 // Get column and row values for X and Y clicked
             	DrawingToolsTableModel libModel = DrawingToolsTable.this.getLibraryModel();
-                CommunityFaultModelGUI gui = (CommunityFaultModelGUI)DrawingToolsTable.this.tableOwner;
+            	DrawingToolsGUI gui = (DrawingToolsGUI)DrawingToolsTable.this.tableOwner;
                 int col = DrawingToolsTable.this.getColumnModel().getColumnIndexAtX(e.getX());
                 int row = e.getY() / getRowHeight();
                 
@@ -71,9 +75,9 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
                
         // Set up selection model and register GUI as listener for 
         // button en/disabling.
-       // this.selModel = getSelectionModel();
-        //this.selModel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-       // this.selModel.addListSelectionListener((ListSelectionListener)this.tableOwner);
+        this.selModel = getSelectionModel();
+        this.selModel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        this.selModel.addListSelectionListener((ListSelectionListener)this.tableOwner);
         
         // visual set up
         this.setTableHeader(null);
@@ -94,5 +98,17 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
 	public void stateChanged(ChangeEvent arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public ArrayList getSelected() {
+		// TODO Auto-generated method stub
+	    	DrawingToolsTableModel libModel = DrawingToolsTable.this.getLibraryModel();
+	        ArrayList selectedObjects = new ArrayList();
+	        for (int i=0; i<libModel.getRowCount(); i++) {
+	        	if(libModel.getLoadedStateForRow(i)){
+	        		selectedObjects.add(this.tableModel.getObjectAtRow(i));
+	        	}
+	        }
+	        return selectedObjects;
 	}
 }

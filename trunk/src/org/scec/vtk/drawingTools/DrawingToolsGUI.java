@@ -10,18 +10,29 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTableModel;
 import org.scec.vtk.plugins.utils.AbstractLibraryModel;
+import org.scec.vtk.plugins.utils.DataAccessor;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorButton;
 import org.scec.vtk.plugins.utils.components.EditButton;
 import org.scec.vtk.plugins.utils.components.MeshButton;
+import org.scec.vtk.plugins.utils.components.ObjectInfoDialog;
 import org.scec.vtk.plugins.utils.components.RemoveButton;
 import org.scec.vtk.plugins.utils.components.ShowButton;
 import org.scec.vtk.tools.Prefs;
@@ -32,7 +43,7 @@ import vtk.vtkPolyDataMapper;
 import vtk.vtkTextActor3D;
 import vtk.vtkVectorText;
 
-public class DrawingToolsGUI extends JPanel implements ActionListener{
+public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelectionListener, TableModelListener{
 
 	private JPanel drawingToolSubPanelUpper;
 	private ArrayList<vtkActor> actorDrawingToolSegments;
@@ -44,6 +55,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener{
 	private DrawingToolsTable DrawingToolTable;
 	//private DrawingToolTable drawingToolObj;
 	private boolean loaded = false;
+	private EditButton editDrawingToolsButton;
 	
 	public DrawingToolsGUI(DrawingToolsPlugin plugin){
 		
@@ -92,7 +104,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener{
 	    this.showDrawingToolsButton = new ShowButton(this, "Toggle visibility of selected Text(s)");
 	    this.colorDrawingToolsButton = new ColorButton(this, "Change color of selected Text(s)");
 	    //this.meshDrawingToolsButton = new MeshButton(this, "Toggle mesh state of selected DrawingTool(s)s");
-	    //this.editDrawingToolsButton = new EditButton(this, "Edit DrawingTool information");
+	    this.editDrawingToolsButton = new EditButton(this, "Edit DrawingTool information");
 	    this.addDrawingToolsButton = new AddButton(this, "Add new Text");
 	    this.remDrawingToolsButton = new RemoveButton(this, "Remove selected Text(s)");
 
@@ -108,7 +120,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener{
 	    bar.add(Box.createHorizontalStrut(buttonSpace));
 	    //bar.add(this.meshDrawingToolsButton);
 	   // bar.add(Box.createHorizontalStrut(buttonSpace));
-	    //bar.add(this.editDrawingToolsButton);
+	    bar.add(this.editDrawingToolsButton);
 	    bar.add(Box.createHorizontalGlue());
 	    bar.add(Box.createHorizontalStrut(buttonSpace));
 	    bar.add(Box.createHorizontalGlue());
@@ -129,13 +141,19 @@ public class DrawingToolsGUI extends JPanel implements ActionListener{
 	    if (src == this.showDrawingToolsButton) {
 	    	int[] selectedRows =  this.DrawingToolTable.getSelectedRows();
 	    }
-	    if (src == this.addDrawingToolsButton) {
+	    else if (src == this.editDrawingToolsButton) {
+	        runObjectInfoDialog(this.DrawingToolTable.getSelectedRows());
+	    }
+	    else if (src == this.addDrawingToolsButton) {
 	    	 DrawingTool drawingToolObj = new DrawingTool();
-	    	 drawingToolObj.setDisplayName("New Text");
-	    	 drawingToolObj.setInMemory(true);
+	    	 //drawingToolObj.newDocument(); 
+	    	 String text = "test text";
+	    	 ArrayList a = drawingTooltablemodel.getAllObjects();
+	    	 drawingToolObj.setDisplayName(text +" -"+ Integer.toString(a.size()+1));
+	    	 //drawingToolObj.setInMemory(true);
 	    	ArrayList newObjects = new ArrayList<>();
 	    	vtkVectorText newText = new vtkVectorText();
-	    	newText.SetText( "cursor:" );
+	    	newText.SetText(text);
 	    	 //newText.GetTextProperty().SetFontSize ( 12 );
 	    	// Create a mapper and actor
 	    	  vtkPolyDataMapper mapper =new vtkPolyDataMapper();
@@ -154,8 +172,99 @@ public class DrawingToolsGUI extends JPanel implements ActionListener{
 	    	 newObjects.add(drawingToolObj);
 	    	 this.DrawingToolTable.addDrawingTool(newObjects);
 	    	 drawingToolObj.getMasterFaultBranchGroup().add(actor);
-	    	 Info.getMainGUI().updateTextActors(drawingToolObj.getMasterFaultBranchGroup());
+	    	 Info.getMainGUI().updateActors(drawingToolObj.getMasterFaultBranchGroup());
 	    }
+	    if (src == this.remDrawingToolsButton) {
+	    	int[] selectedRows = this.DrawingToolTable.getSelectedRows();
+	    	DrawingTool drawingToolObj = new DrawingTool();
+	        int delete = drawingTooltablemodel.deleteObjects(
+	                this.DrawingToolTable,
+	                selectedRows);
+	        if (delete == JOptionPane.NO_OPTION ||
+	                delete == JOptionPane.CLOSED_OPTION) {
+	        	//Info.getMainGUI().removeTextActors(drawingToolObj.getMasterFaultBranchGroup());
+	        }
+	        else
+	        {
+	        	//remove actors
+	            ArrayList<vtkActor> actors = drawingToolObj.getMasterFaultBranchGroup();
+	            ArrayList<vtkActor> removedActors = new ArrayList<>();
+	            for(int i =0;i<selectedRows.length;i++)
+	            {
+	            	vtkActor actor = actors.get(selectedRows[i]-i);
+	            	//actor.Delete();
+	            	removedActors.add(actor);
+	            	drawingToolObj.getMasterFaultBranchGroup().remove(selectedRows[i]-i);
+	            }
+	            Info.getMainGUI().removeActors(removedActors);
+	        }
+	    }
+	}
+	private void runObjectInfoDialog(int[] objects) {
+		//ToDo: change dialog to change text and position and rotation and scale
+		DrawingTool drawingToolObj = new DrawingTool();
+		ArrayList<vtkActor> actors = drawingToolObj .getMasterFaultBranchGroup();
+	     String displayTextInput = JOptionPane.showInputDialog(
+	    		 this.DrawingToolTable,
+	                "Change text:",
+	                "Set Drawing Text",
+	                JOptionPane.QUESTION_MESSAGE);
+	        if (displayTextInput == null) return;
+	        else
+	        {
+	        	for(int i =0;i<objects.length;i++)
+	        	{
+	        		vtkVectorText newText = new vtkVectorText();
+	    	    	newText.SetText(displayTextInput);
+	    	    	vtkPolyDataMapper mapper =new vtkPolyDataMapper();
+	    	    	mapper.SetInputConnection(newText.GetOutputPort());
+	        		vtkActor actor = actors.get(objects[i]);
+	        		actor.SetMapper(mapper);
+	        		Info.getMainGUI().updateActors(drawingToolObj.getMasterFaultBranchGroup());
+	        	}
+	        }
+		}
+	
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		// TODO Auto-generated method stub
+		 Object src = e.getSource();
+		    DrawingToolsTableModel libModel  = this.DrawingToolTable.getLibraryModel();
+		    if (e.getValueIsAdjusting()) return;
+
+		   if (src == this.DrawingToolTable.getSelectionModel()) {
+		        processTableSelectionChange();
+		    }
+	}
+	public void processTableSelectionChange() {
+		// TODO Auto-generated method stub
+		  int[] selectedRows = this.DrawingToolTable.getSelectedRows();
+		    if (selectedRows.length > 0) {
+		        this.remDrawingToolsButton.setEnabled(true);
+		        this.editDrawingToolsButton.setEnabled(true);
+		        if (this.DrawingToolTable.getLibraryModel().allAreLoaded(selectedRows)) {
+		            enablePropertyEditButtons(true);
+		        } else if (this.DrawingToolTable.getLibraryModel().noneAreLoaded(selectedRows)) {
+		            enablePropertyEditButtons(true);
+		        } else {
+		            enablePropertyEditButtons(true);
+		        }
+		    } else {
+		        enablePropertyEditButtons(false);
+		        this.remDrawingToolsButton.setEnabled(false);
+		        this.editDrawingToolsButton.setEnabled(false);
+		    }
+
+		   
+	}
+	private void enablePropertyEditButtons(boolean enable) {
+		// TODO Auto-generated method stub
+		this.showDrawingToolsButton.setEnabled(enable);
 	}
 
 }

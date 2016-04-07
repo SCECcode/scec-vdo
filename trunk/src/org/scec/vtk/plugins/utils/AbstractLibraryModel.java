@@ -413,8 +413,10 @@ public abstract class AbstractLibraryModel extends AbstractTableModel {
         if (delete == JOptionPane.NO_OPTION ||
             delete == JOptionPane.CLOSED_OPTION) return delete; 
         for (int i=0; i<rows.length; i++) {
-            getObjectAtRow(rows[i]-i).getAttributeFile().delete();
-            getObjectAtRow(rows[i]-i).getDataFile().delete();
+        	if(getObjectAtRow(rows[i]-i).getAttributeFile()!=null)
+        		getObjectAtRow(rows[i]-i).getAttributeFile().delete();
+        	if(getObjectAtRow(rows[i]-i).getDataFile()!=null)
+        		getObjectAtRow(rows[i]-i).getDataFile().delete();
             removeObjectAtRow(rows[i]-i);
         }
 		return delete;
