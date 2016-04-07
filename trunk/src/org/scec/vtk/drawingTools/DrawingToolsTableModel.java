@@ -11,7 +11,7 @@ public class DrawingToolsTableModel extends AbstractLibraryModel {
 	@Override
 	public int getColumnCount() {
 		// TODO Auto-generated method stub
-		return 0;
+		return 1;
 	}
 
 	public Object getColorForRow(int row) {

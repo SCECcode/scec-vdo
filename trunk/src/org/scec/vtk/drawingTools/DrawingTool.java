@@ -3,15 +3,16 @@ package org.scec.vtk.drawingTools;
 import java.io.File;
 import java.util.ArrayList;
 
+import org.scec.vtk.plugins.utils.AbstractDataAccessor;
 import org.scec.vtk.plugins.utils.DataAccessor;
 
 import vtk.vtkActor;
 import vtk.vtkTextActor3D;
 
-public class DrawingTool implements DataAccessor{
+public class DrawingTool extends AbstractDataAccessor{
 
 	private static ArrayList<vtkActor> masterDrawingToolBranchGroup = new ArrayList<vtkActor>(); 
-	@Override
+	/*@Override
 	public int compareTo(Object arg0) {
 		// TODO Auto-generated method stub
 		return 0;
@@ -129,7 +130,7 @@ public class DrawingTool implements DataAccessor{
 	public void setNotes(String notes) {
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 	 public void setMasterFaultBranchGroup(ArrayList<vtkActor> masterFaultBranchGroup) 
 	    {
 	    	this.masterDrawingToolBranchGroup = masterFaultBranchGroup;

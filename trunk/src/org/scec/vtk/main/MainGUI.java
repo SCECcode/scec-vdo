@@ -71,6 +71,7 @@ import org.scec.vtk.tools.plugins.Plugins;
 
 import vtk.vtkActor;
 import vtk.vtkActor2D;
+import vtk.vtkActorCollection;
 import vtk.vtkAxesActor;
 import vtk.vtkCamera;
 import vtk.vtkGlobeSource;
@@ -126,7 +127,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	GraticulePlugin gridPlugin;
 	private ViewRange viewrange;
 	private static ArrayList<vtkActor> allActors = new ArrayList<vtkActor>();
-	
+	private static ArrayList<vtkActor> allTextActors = new ArrayList<vtkActor>();
 	 vtkActor tempGlobeScene = new vtkActor();
 	 vtkActor2D labelActor =new vtkActor2D();
 	 vtkActor pointActor = new 
@@ -206,7 +207,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		//System.out.println("user.dir is: " + System.getProperty("user.dir"));
 		return getCWD;
 	}
-	public void updateActors(ArrayList<vtkActor> allCFMActors)
+	/*public void updateActors(ArrayList<vtkActor> allCFMActors)
 	{
 		
 	    if(allCFMActors.size()>0){
@@ -218,22 +219,64 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    }
 	    }
 	    updateRenderWindow();
-	}
-	public void updateTextActors(ArrayList<vtkActor> allTextActors)
+	}*/
+	public void updateActors(ArrayList<vtkActor> allTextActors)
 	{
-		
-	    if(allTextActors.size()>0){
-	    	//loading form previous import
-	    for(int i =0;i<allTextActors.size();i++)
-	    {
-	    	renderWindow.GetRenderer().AddActor(allTextActors.get(i));
-	    	
-	    }
-	    }
+		vtkActorCollection renderedActors = renderWindow.GetRenderer().GetActors();
+		boolean c = false;
+		if(allTextActors.size()>0){
+	    		
+	    		for(int j =0;j<allTextActors.size();j++)
+			    {
+	    			c=false;
+	    			for(int i =0;i<renderedActors.GetNumberOfItems();i++)
+	    		    {
+	    		    	vtkActor actor = (vtkActor) renderedActors.GetItemAsObject(i);
+	    		    	if(allTextActors.get(j).equals(actor))
+	    		    	{
+	    		    		//actor exists just update it
+	    		    		actor.Modified();
+	    		    		c=true;
+	    		    	}
+	 
+	    		    }
+	    				//actor hasn't been added to render window add it to the render window
+	    		    	if (c==false)
+	    		    		renderWindow.GetRenderer().AddActor(allTextActors.get(j));
+			    	
+			    }
+		}
 	    updateRenderWindow();
-	    renderWindow.GetRenderer().ResetCamera(allTextActors.get(allTextActors.size()-1).GetBounds());
+	    //renderWindow.GetRenderer().ResetCamera(allTextActors.get(allTextActors.size()-1).GetBounds());
 	}
-	
+	public void removeActors(ArrayList<vtkActor> allTextActors)
+	{
+		vtkActorCollection renderedActors = renderWindow.GetRenderer().GetActors();
+			if(allTextActors.size()>0){
+		    	//loading form previous import
+				for(int j =0;j<allTextActors.size();j++)
+			    {
+	    			boolean c = false;
+	    			for(int i =0;i<renderedActors.GetNumberOfItems();i++)
+	    		    {
+	    		    	vtkActor actor = (vtkActor) renderedActors.GetItemAsObject(i);
+	    		    	if(allTextActors.get(j).equals(actor))
+	    		    	{
+	    		    		//actor exists just update it
+	    		    		 renderWindow.GetRenderer().RemoveActor(actor);
+	    		    		c=true;
+	    		    	}
+	 
+	    		    }
+	    				//actor hasn't been added to render window add it to the render window
+	    		    	if (c==false)
+	    		    		System.out.println("no actor found to remove");
+			    	
+			    }
+		}
+	    updateRenderWindow();
+	    //renderWindow.GetRenderer().ResetCamera(allTextActors.get(allTextActors.size()-1).GetBounds());
+	}
 	/*public static void addActorsToAllActors(ArrayList<vtkActor> ar)
 	{
 		allActors.addAll(ar);

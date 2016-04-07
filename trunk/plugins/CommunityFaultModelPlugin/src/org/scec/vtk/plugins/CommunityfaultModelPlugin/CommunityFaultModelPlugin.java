@@ -64,14 +64,8 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
     }
     public void unload()
 	{
-    	ArrayList<vtkActor> actors = f3DGui.getMasterFaultBranchGroup();
-        for(int i=0;i<f3DGui.getMasterFaultBranchGroup().size();i++)
-	    {	
-        	vtkActor actor = f3DGui.getMasterFaultBranchGroup().get(i);
-        	actor.VisibilityOff();
-        	actor.Delete();
-	    }
-        Info.getMainGUI().updateActors(f3DGui.getMasterFaultBranchGroup());
+
+        Info.getMainGUI().removeActors(f3DGui.getMasterFaultBranchGroup());
         f3DGui.getMasterFaultBranchGroup().clear();
 		super.unload();
 		f3DGui=null;
