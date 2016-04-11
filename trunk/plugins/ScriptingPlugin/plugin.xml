@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<plugins xmlns="http://www.scec.org/vdo/plugin-descriptor" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.scec.org/vdo/plugin-descriptor plugin.xsd"
+	version="1.0">
+	
+	<plugin id="org.scec.vdo.plugins.ScriptingPlugin" name="Scripting Plugin" short-name="Scripting Plugin"
+		version="0.1" creator="P. Powers"
+		plugin-class="org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin">
+		
+		<menu-item menu="Render" submenu="Scripting"/>
+			
+	</plugin>
+</plugins>
