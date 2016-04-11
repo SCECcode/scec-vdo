@@ -402,7 +402,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 				//System.out.println("**************** Loaded plugins: " + loadedPlugins);
 
 				plugin.activate();
-				Info.getMainGUI().updateActors(plugin.getActors());
+				
 
 			} else {
 				// Just in case loading fails for some odd reason

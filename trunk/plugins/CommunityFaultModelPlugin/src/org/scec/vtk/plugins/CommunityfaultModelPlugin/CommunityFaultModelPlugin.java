@@ -85,6 +85,8 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
 			//allCFMActors.add(fa.getFaultBranch());
 			fa.setFaultBranch(fa.getFaultBranch());
 		}
+		if(loadedRows.size()>0)
+			Info.getMainGUI().updateActors(getActors());
     	}
 		
     }
