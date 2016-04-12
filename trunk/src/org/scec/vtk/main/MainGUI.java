@@ -507,7 +507,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	//update renderwindow and focus on actor
 	public static void updateRenderWindow(vtkActor actor)
 	{
-		renderWindow.GetRenderer().Render();
+		renderWindow.Render();
 		renderWindow.GetRenderer().ResetCamera(actor.GetBounds());
 		renderWindow.repaint(); 
 	}
@@ -515,7 +515,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	public  void updateRenderWindow()
 	{
 		//updateActors(getActorToAllActors());
-		renderWindow.GetRenderer().Render();
+		renderWindow.Render();
 		renderWindow.repaint();
 	}
 	 
