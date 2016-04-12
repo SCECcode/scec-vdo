@@ -3,10 +3,14 @@ package org.scec.vtk.plugins.ScriptingPlugin;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 
@@ -29,6 +33,7 @@ import vtk.vtkCameraInterpolator;
 import vtk.vtkCameraRepresentation;
 import vtk.vtkCardinalSpline;
 import vtk.vtkCellArray;
+import vtk.vtkCellPicker;
 import vtk.vtkCommand;
 import vtk.vtkGlyph3D;
 import vtk.vtkMath;
@@ -114,7 +119,7 @@ import vtk.vtkTubeFilter;
 //};*/
 public class ScriptingPluginGUI extends JPanel implements ActionListener{
 
-	class CueAnimator
+	/*class CueAnimator
 	{
 
 	  void StartCue()
@@ -182,9 +187,9 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 	        {
 	        this->Actor->Delete();
 	        this->Actor=0;
-	        }*/
+	        }
 	    }
-	};
+	};*/
 	
 		private JPanel scriptingPluginSubPanelUpper;
 		//private ArrayList<vtkActor> actorDrawingToolSegments;
@@ -219,6 +224,33 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			this.scriptingPluginSubPanelUpper.add(this.addScriptingPluginButton);
 			this.scriptingPluginSubPanelUpper.add(this.playScriptingPluginButton);
 			add(this.scriptingPluginSubPanelUpper);
+			
+			//mouse event
+			/*final vtkCellPicker cellPicker = new vtkCellPicker();
+			 
+		    // Show the point on the sphere the mouse is hovering over in the status bar
+		    Info.getMainGUI().getRenderWindow().addMouseMotionListener(new MouseAdapter()
+		    {
+		    	 //public void mouseClicked(MouseEvent e)
+			      //{
+		    		 public void mousePressed(MouseEvent e) {
+		                  if (e.getButton() == MouseEvent.BUTTON3) {
+		     
+		        // The call to Pick needs to be surrounded by lock and unlock to prevent crashes.
+		    	  Info.getMainGUI().getRenderWindow().lock();
+		        int pickSucceeded = cellPicker.Pick(e.getX(), Info.getMainGUI().getRenderWindow().getHeight()-e.getY()-1,
+		            0.0, Info.getMainGUI().getRenderWindow().GetRenderer());
+		        Info.getMainGUI().getRenderWindow().unlock();
+		 
+		        if (pickSucceeded == 1)
+		        {
+		          double[] p = cellPicker.GetPickPosition();
+		          System.out.println("Position: " + p[0] + ", " + p[1] + ", " + p[2]);
+		          framePoints.add(p);
+		        }
+			    	  }
+		      }
+		    });*/
 
 		}
 		
@@ -241,9 +273,9 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			    vtkMath math=new vtkMath();
 			    vtkPoints inputPoints = new vtkPoints();
 			    for (int i=0; i<numberOfInputPoints; i++) {
-			      double x =math.Random(0, 1);// framePoints.get(i)[0]; //math.Random(0, 1);
-			      double y = math.Random(0, 1);//framePoints.get(i)[1]; //math.Random(0, 1);
-			      double z =math.Random(0, 1);// framePoints.get(i)[2]; //math.Random(0, 1);
+			      double x = framePoints.get(i)[0]; //math.Random(0, 1);
+			      double y = framePoints.get(i)[1]; //math.Random(0, 1);
+			      double z = framePoints.get(i)[2]; //math.Random(0, 1);
 			      aSplineX.AddPoint(i, x);
 			      aSplineY.AddPoint(i, y);
 			      aSplineZ.AddPoint(i, z);
@@ -325,29 +357,62 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			      profile.GetProperty().SetSpecularPower(30);
 		}
 
-		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
 			Object src = e.getSource();
 			if(src == this.addScriptingPluginButton)
 			{
-				KeyFrame kf = new KeyFrame();
-				double[] campos = kf.getCamPos();
+				//KeyFrame kf = new KeyFrame();
+				//double[] campos = kf.getCamPos();
+				//framePoints.add(campos);
+				
+				 vtkActor ac = new vtkActor();
+			   	   ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
+					 actorPoliticalBoundariesSegments = Info.getMainGUI().pbGUI.getPoliticalBoundaries();
+					 
+					 if(actorPoliticalBoundariesSegments.size()>0){
+					 ac = actorPoliticalBoundariesSegments.get(4);
+					 }
+				
+					
+				double[] campos = ac.GetCenter();
+				 System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
+				campos[0] = ac.GetCenter()[0]+2000;
 				framePoints.add(campos);
+				System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
+				campos = ac.GetCenter();
+				campos[0] = ac.GetCenter()[0]-2000;
+				framePoints.add(campos);
+				System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
+				campos = ac.GetCenter();
+				campos[1] = ac.GetCenter()[1]+2000;
+				framePoints.add(campos);
+				System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
+				campos = ac.GetCenter();
+				campos[1] = ac.GetCenter()[1]-2000;
+				framePoints.add(campos);
+				System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
+				
+				createSplines();
+				
+				//renderer.AddActor(glyph);
+				ArrayList<vtkActor> nw = new ArrayList<>();
+				nw.add(profile);
+				nw.add(glyph);
+				Info.getMainGUI().updateActors(nw);
+				profile.VisibilityOff();
+				Info.getMainGUI().updateRenderWindow(profile);
 			}
 			else if(src == this.playScriptingPluginButton)
 				{
 				vtkRenderWindowInteractor iren = new vtkRenderWindowInteractor();
 				if(framePoints.size()>=2)
 				{
-					createSplines();
-				
-					//renderer.AddActor(glyph);
-					ArrayList<vtkActor> nw = new ArrayList<>();
-					nw.add(profile);
-					nw.add(glyph);
-					Info.getMainGUI().updateActors(nw);
+					
+					
+					
+					
 					//Info.getMainGUI().getRenderWindow().GetRenderer().AddActor(profile);
 					//Info.getMainGUI().getRenderWindow().GetRenderer().AddActor(glyph);
 					//Info.getMainGUI().updateRenderWindow(glyph);
@@ -370,28 +435,80 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 					   scene.SetStartTime(3);
 					   scene.SetEndTime(20);
 
-					   // Create an Animation Cue.
+					   
+					   System.out.println("start animation");
+			             scene.Initialize();
+			             double starttime = scene.GetStartTime();
+			             double endtime = scene.GetEndTime();
+			             double CurrentTime = scene.GetDeltaTime();
+			             System.out.println(starttime);
+			             System.out.println(endtime);
+			             System.out.println(CurrentTime);
+			             int TimerCount = 0;
+			             
+			             vtkPoints points = pointsToMoveCameraOn;
+				   	      vtkCamera camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+				   	      vtkActor ac = new vtkActor();
+				   	   ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
+						 actorPoliticalBoundariesSegments = Info.getMainGUI().pbGUI.getPoliticalBoundaries();
+						 
+						 if(actorPoliticalBoundariesSegments.size()>0){
+						 ac = actorPoliticalBoundariesSegments.get(4);
+						 }
+			             
+			             while (TimerCount<=points.GetNumberOfPoints())//endtime)
+			             { ++TimerCount;
+			             vtkCamera cam = new vtkCamera();
+			   	      
+			   	   //System.out.println(CurrentTime);
+					if(TimerCount<points .GetNumberOfPoints())
+			   	      {
+			   	    	    cam.SetPosition(points.GetPoint(TimerCount));
+			   	    	    cam.SetFocalPoint(ac.GetCenter());
+			   	    	    System.out.println(TimerCount);
+			   	    	    System.out.println(cam.GetPosition()[0]);
+			   	    	    System.out.println(cam.GetPosition()[1]);
+			   	    	    System.out.println(cam.GetPosition()[2]);
+			   	    	    //renWin.GetRenderer().ResetCameraClippingRange();
+			   	    	    Info.getMainGUI().updateRenderWindow();
+			   	    	    //renWin.GetRenderer().ResetCameraClippingRange();
+			   	    	   // renWin.GetRenderWindow().Render();
+			   	    	 Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cam);
+			   	    	    //renWin.GetRenderer().GetActiveCamera().UpdateViewport(renWin.GetRenderer());
+			   	    	    //;
+			   	    	 try {
+							Thread.sleep(1 * 100);
+						} catch (InterruptedException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+			   	    	   // renWin.repaint();
+			   	    	}
+			             }
+			             Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(camold);
+					   /*// Create an Animation Cue.
 					   vtkAnimationCue cue1 = new vtkAnimationCue();
 					   cue1.SetStartTime(5);
 					   cue1.SetEndTime(13);
-					   scene.AddCue(cue1);
-					CueAnimator cb = new CueAnimator();
+					   scene.AddCue(cue1);*/
+					//CueAnimator cb = new CueAnimator();
 					  //cb.actor = ;
 					 // cb.cam = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-					  cb.points = pointsToMoveCameraOn;
-					  cb.iren = iren;
-					  cb.ren = Info.getMainGUI().getRenderWindow().GetRenderer();
-					  cb.info.SetStartTime(5);
-					  cb.info.SetEndTime(13);
-					  scene.AddObserver("StartAnimationCueEvent", cb, "StartCue");
-					  scene.AddObserver("EndAnimationCueEvent", cb, "EndCue");
-					  scene.AddObserver("AnimationCueTickEvent", cb, "Tick");
+					  //cb.points = pointsToMoveCameraOn;
+					  //cb.iren = iren;
+					  //cb.ren = Info.getMainGUI().getRenderWindow().GetRenderer();
+					  //cb.info.SetStartTime(5);
+					  //cb.info.SetEndTime(13);
+					 // scene.AddObserver("StartAnimationCueEvent", cb, "StartCue");
+					  //scene.AddObserver("EndAnimationCueEvent", cb, "EndCue");
+					  //scene.AddObserver("AnimationCueTickEvent", cb, "Tick");
 					    
-					scene.Play();
-					scene.Stop();
+					//scene.Play();
+					//scene.Stop();
 					  //int timerId = iren.CreateRepeatingTimer(100);
 					  //iren.Start();//.InvokeEvent("TimerEvent");
 				}
+				
 				else
 				{
 					 iren.InvokeEvent("EndInteractionEvent");
