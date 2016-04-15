@@ -74,9 +74,11 @@ import vtk.vtkActor2D;
 import vtk.vtkActorCollection;
 import vtk.vtkAxesActor;
 import vtk.vtkCamera;
+import vtk.vtkCellPicker;
 import vtk.vtkGlobeSource;
 import vtk.vtkNativeLibrary;
 import vtk.vtkPanel;
+import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkTextActor;
@@ -135,6 +137,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	private boolean gridDisplay = true;
 	private DrawingToolsGUI drawingTool;
 	private DrawingToolsPlugin drawingToolPlugin;
+	private double[] pointerPosition;
 	public MainGUI() {
 		
 		/*vtkTransform transform = new  vtkTransform();
@@ -183,7 +186,34 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		renderWindow.GetRenderer().AddActor(labelActor);
 		addDefaultActors();
 		
-		
+		//mouse event
+		final vtkCellPicker cellPicker = new vtkCellPicker();
+		 
+	    // Show the point on the sphere the mouse is hovering over in the status bar
+		renderWindow.addMouseListener(new MouseAdapter()
+	    {
+	    	 //public void mouseClicked(MouseEvent e)
+		      //{
+	    		 public void mousePressed(MouseEvent e) {
+	                  if (e.getButton() == MouseEvent.BUTTON3) {
+	     
+	        // The call to Pick needs to be surrounded by lock and unlock to prevent crashes.
+	                	  renderWindow.lock();
+	        int pickSucceeded = cellPicker.Pick(e.getX(), renderWindow.getHeight()-e.getY()-1,
+	            0.0, renderWindow.GetRenderer());
+	        renderWindow.unlock();
+	 
+	        if (pickSucceeded == 0)
+	        {
+	        	//gets points position 
+	          double[] p = cellPicker.GetPickPosition();
+	          setPointerPosition(cellPicker.GetPickPosition());
+	          System.out.println("Position: " + p[0] + ", " + p[1] + ", " + p[2]);
+	          //framePoints.add(p);
+	        }
+		    	  }
+	      }
+	    });
         try {
         	mainMenu.availablePlugins = Plugins.getAvailablePlugins();
         	mainMenu.setupPluginMenus();
@@ -194,7 +224,14 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		}
 	}
 
-	
+	public void setPointerPosition(double[] ds)
+	{
+		pointerPosition = ds;
+	}
+	public double[] getPointerPosition()
+	{
+		return pointerPosition;
+	}
 	public static File getRootPluginDir(){
 		return  new File( getCWD() + File.separator+ "data");
 	}
