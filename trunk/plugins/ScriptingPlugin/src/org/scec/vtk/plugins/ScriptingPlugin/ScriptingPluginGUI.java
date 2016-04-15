@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 
@@ -23,6 +24,7 @@ import org.scec.vtk.plugins.utils.components.EditButton;
 import org.scec.vtk.plugins.utils.components.PlayButton;
 import org.scec.vtk.plugins.utils.components.RemoveButton;
 import org.scec.vtk.plugins.utils.components.ShowButton;
+import org.scec.vtk.plugins.utils.components.StopButton;
 import org.scec.vtk.tools.Prefs;
 
 import vtk.vtkActor;
@@ -119,92 +121,63 @@ import vtk.vtkTubeFilter;
 //};*/
 public class ScriptingPluginGUI extends JPanel implements ActionListener{
 
-	/*class CueAnimator
+	class CueAnimator
 	{
 
 	  void StartCue()
 	    {
 	      System.out.println("*** IN StartCue " );
 	      this.TimerCount = 0;
-	      cam = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-	      
-	      //ren.Render();
+	      camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 	    }
 	 
 	  void Tick()
 	    {
-		  //System.out.println("*** IN timer" );
-	      TimerCount +=
-	        ((info.GetAnimationTime() -
-	                             info.GetStartTime())/
-	         (info.GetEndTime()-info.GetStartTime())) + 1;
-		  //++this.TimerCount;
-	      if(this.TimerCount<points.GetNumberOfPoints())
+		  camnew = new vtkCamera();
+		  ++this.TimerCount;
+		  
+	      if(this.TimerCount<pointsPosition.GetNumberOfPoints())
 	      {
-	    	    cam.SetPosition(points.GetPoint(TimerCount));
-	    	    //cam.SetFocalPoint(actor.GetPosition());
-	    	    System.out.println(this.TimerCount);
-	    	    System.out.println(cam.GetPosition()[0]);
-	    	    System.out.println(cam.GetPosition()[1]);
-	    	    System.out.println(cam.GetPosition()[2]);
-	    	    
-	    	    Info.getMainGUI().updateRenderWindow();
-	    	    //ren.Render();
-	    	}
-	      ren.Render();
+
+	    	  camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
+	    	  camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
+	    	  camnew.SetViewUp(pointsViewUp.GetPoint(TimerCount)[0],pointsViewUp.GetPoint(TimerCount)[1],pointsViewUp.GetPoint(TimerCount)[2]);
+	    	  camnew.OrthogonalizeViewUp();
+	    	  Info.getMainGUI().updateRenderWindow();
+	    	  Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(camnew);
+	    	  Info.getMainGUI().getRenderWindow().GetRenderer().ResetCameraClippingRange();
+	      }
 	    }
 	 
 	  void EndCue()
 	    {
-	     // (void)ren;
-	      // don't remove the actor for the regression image.
-//	      ren->RemoveActor(this->Actor);
 		  System.out.println("*** IN EndCue " );
-	      //this.Cleanup();
 	    }
 
 	  public vtkRenderWindowInteractor iren;
 	  public vtkRenderer ren;
 	  public vtkCamera cam;
-	  vtkPoints points = new vtkPoints();
+	  public vtkCamera camnew;
+	  public vtkCamera camold;
+	  vtkPoints pointsPosition = new vtkPoints();
+	  vtkPoints pointsFocalPoint = new vtkPoints();
+	  vtkPoints pointsViewUp = new vtkPoints();
 	  public vtkActor actor;
 	  int TimerCount = 0;
 	  vtkAnimationCue info = new vtkAnimationCue();
-	  void Cleanup()
-	    {
-	      /*if(this->SphereSource!=0)
-	        {
-	        this->SphereSource->Delete();
-	        this->SphereSource=0;
-	        }
-	 
-	      if(this->Mapper!=0)
-	        {
-	        this->Mapper->Delete();
-	        this->Mapper=0;
-	        }
-	      if(this->Actor!=0)
-	        {
-	        this->Actor->Delete();
-	        this->Actor=0;
-	        }
-	    }
-	};*/
+	  vtkCameraInterpolator incam = new vtkCameraInterpolator();
+	};
 	
 		private JPanel scriptingPluginSubPanelUpper;
-		//private ArrayList<vtkActor> actorDrawingToolSegments;
-		//private JPanel drawingToolSubPanelLower;
-		//private ShowButton showDrawingToolsButton;
-		//private ColorButton colorDrawingToolsButton;
+
 		private AddButton addScriptingPluginButton;
-		private ShowButton playScriptingPluginButton;
-		//private RemoveButton remDrawingToolsButton;
-		//private DrawingToolsTable DrawingToolTable;
-		//private DrawingToolTable drawingToolObj;
-		//private boolean loaded = false;
-		//private EditButton editDrawingToolsButton;
-		ArrayList<double[]> framePoints = new ArrayList<>();
-		vtkPoints pointsToMoveCameraOn = new vtkPoints();
+		private PlayButton playScriptingPluginButton;
+		private StopButton stopScriptingPluginButton;
+
+		ArrayList<vtkCamera> framePoints = new ArrayList<>();
+		vtkPoints pointsToMoveCameraOnPosition = new vtkPoints();
+		vtkPoints pointsToMoveCameraOnFocalPoint = new vtkPoints();
+		vtkPoints pointsToMoveCameraOnViewUp = new vtkPoints();
 		vtkActor profile = new vtkActor();
 		 vtkActor glyph = new vtkActor();
 		@SuppressWarnings("deprecation")
@@ -219,51 +192,54 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			this.scriptingPluginSubPanelUpper=new JPanel();
 			this.scriptingPluginSubPanelUpper.setLayout(new BoxLayout(this.scriptingPluginSubPanelUpper, BoxLayout.Y_AXIS));
 			this.addScriptingPluginButton = new AddButton(this, "Add new Text");
-			this.playScriptingPluginButton = new ShowButton(this, "play");
+			this.addScriptingPluginButton.setEnabled(true);
+			this.playScriptingPluginButton = new PlayButton(this, "Play");
 			this.playScriptingPluginButton.setEnabled(true);
+			this.stopScriptingPluginButton = new StopButton(this, "Stop");
+			this.stopScriptingPluginButton.setEnabled(true);
 			this.scriptingPluginSubPanelUpper.add(this.addScriptingPluginButton);
 			this.scriptingPluginSubPanelUpper.add(this.playScriptingPluginButton);
 			add(this.scriptingPluginSubPanelUpper);
 			
-			//mouse event
-			/*final vtkCellPicker cellPicker = new vtkCellPicker();
-			 
-		    // Show the point on the sphere the mouse is hovering over in the status bar
-		    Info.getMainGUI().getRenderWindow().addMouseMotionListener(new MouseAdapter()
+			
+			Info.getMainGUI().getRenderWindow().addMouseListener(new MouseAdapter()
 		    {
 		    	 //public void mouseClicked(MouseEvent e)
 			      //{
-		    		 public void mousePressed(MouseEvent e) {
+				/* public void mousePressed(MouseEvent e) {
 		                  if (e.getButton() == MouseEvent.BUTTON3) {
-		     
-		        // The call to Pick needs to be surrounded by lock and unlock to prevent crashes.
-		    	  Info.getMainGUI().getRenderWindow().lock();
-		        int pickSucceeded = cellPicker.Pick(e.getX(), Info.getMainGUI().getRenderWindow().getHeight()-e.getY()-1,
-		            0.0, Info.getMainGUI().getRenderWindow().GetRenderer());
-		        Info.getMainGUI().getRenderWindow().unlock();
-		 
-		        if (pickSucceeded == 1)
-		        {
-		          double[] p = cellPicker.GetPickPosition();
-		          System.out.println("Position: " + p[0] + ", " + p[1] + ", " + p[2]);
-		          framePoints.add(p);
-		        }
-			    	  }
-		      }
-		    });*/
-
+			     double[] pointerPosition = Info.getMainGUI().getPointerPosition();
+			     framePoints.add(pointerPosition);
+			     System.out.println("Position1: " + pointerPosition[0] + ", " + pointerPosition[1] + ", " + pointerPosition[2]);
+			     
+			     if(framePoints.size()>=2){
+						createSplines();
+						
+						//renderer.AddActor(glyph);
+						ArrayList<vtkActor> nw = new ArrayList<>();
+						nw.add(profile);
+						nw.add(glyph);
+						Info.getMainGUI().updateActors(nw);
+						//profile.VisibilityOff();
+						Info.getMainGUI().updateRenderWindow(profile);
+						}
+			     }
+		    		 }*/
+		    });
 		}
 		
-		public void createSplines()
+		public void createSplines(String interpolateValue)
 		{
 			 int numberOfInputPoints = framePoints.size();//8;
-			 
+			 vtkPoints pointsToMoveCameraOn = new vtkPoints();
+			 //profile = new vtkActor();
 			    // One spline for each direction.
 			    vtkCardinalSpline aSplineX, aSplineY, aSplineZ;
 			    aSplineX = new vtkCardinalSpline();
 			    aSplineY = new vtkCardinalSpline();
 			    aSplineZ = new vtkCardinalSpline();
-			    vtkParametricSpline aspline = new vtkParametricSpline();
+			   
+			   
 
 			/*  Generate random (pivot) points and add the corresponding
 			 *  coordinates to the splines.
@@ -271,18 +247,38 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			 *  aSplineY will interpolate the y values of the points
 			 *  aSplineZ will interpolate the z values of the points */
 			    vtkMath math=new vtkMath();
+			    double x=0,y=0,z=0;
 			    vtkPoints inputPoints = new vtkPoints();
 			    for (int i=0; i<numberOfInputPoints; i++) {
-			      double x = framePoints.get(i)[0]; //math.Random(0, 1);
-			      double y = framePoints.get(i)[1]; //math.Random(0, 1);
-			      double z = framePoints.get(i)[2]; //math.Random(0, 1);
+			    	 if(interpolateValue.equals("position"))
+					    {
+			       x= framePoints.get(i).GetPosition()[0]; //math.Random(0, 1);
+			      y = framePoints.get(i).GetPosition()[1]; //math.Random(0, 1);
+			      z = framePoints.get(i).GetPosition()[2]; //math.Random(0, 1);
+					    }
+			    	 ////TODO remove focal points interpolation
+			    	 else if(interpolateValue.equals("focalPoints"))
+			    	 {
+			    		 x= framePoints.get(i).GetFocalPoint()[0]; //math.Random(0, 1);
+					      y = framePoints.get(i).GetFocalPoint()[1]; //math.Random(0, 1);
+					      z = framePoints.get(i).GetFocalPoint()[2]; //math.Random(0, 1);
+			    	 }
+			    	 else if(interpolateValue.equals("viewUp"))
+			    	 {
+			    		 x= framePoints.get(i).GetViewUp()[0]; //math.Random(0, 1);
+					      y = framePoints.get(i).GetViewUp()[1]; //math.Random(0, 1);
+					      z = framePoints.get(i).GetViewUp()[2]; //math.Random(0, 1);
+			    	 }	 
 			      aSplineX.AddPoint(i, x);
 			      aSplineY.AddPoint(i, y);
 			      aSplineZ.AddPoint(i, z);
 			      //aspline.SetXSpline(id0);
 			      inputPoints.InsertPoint(i, x, y, z);
 			    } //i loop
-			    aspline.SetPoints(inputPoints);
+			   
+			    // position draw splines
+			    if(interpolateValue.equals("position"))
+			    {
 			    // The following section will create glyphs for the pivot points
 			    // in order to make the effect of the spline more clear.
 
@@ -292,7 +288,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 
 			    // Use sphere as glyph source.
 			    vtkSphereSource balls = new vtkSphereSource();
-			      balls.SetRadius(.01);
+			      balls.SetRadius(3);//.01);
 			      balls.SetPhiResolution(10);
 			      balls.SetThetaResolution(10);
 
@@ -310,17 +306,11 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			      glyph.GetProperty().SetSpecularPower(30);
 
 			    // Generate the polyline for the spline.
-			    
+			    }
 			    vtkPolyData profileData = new vtkPolyData();
-
-			    
-			   /* vtkParametricFunctionSource functionSource = new vtkParametricFunctionSource();
-			    	  functionSource.SetParametricFunction(aspline);
-			    	  functionSource.Update();*/
 			    
 			    // Number of points on the spline
-			    int numberOfOutputPoints = 400;//functionSource.GetOutput().GetNumberOfPoints();//50;
-			    //pointsToMoveCameraOn  = functionSource.GetOutput().GetPoints();
+			    int numberOfOutputPoints = 400;//50;
 			    // Interpolate x, y and z by using the three spline filters and
 			    // create new points
 			    double t;
@@ -330,7 +320,21 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			      pointsToMoveCameraOn.InsertPoint(i, aSplineX.Evaluate(t), aSplineY.Evaluate(t),
 			    		  aSplineZ.Evaluate(t));
 			    }//i loop
-
+			    if(interpolateValue.equals("position"))
+			    {
+			    	pointsToMoveCameraOnPosition = pointsToMoveCameraOn;
+			    }
+			    else if(interpolateValue.equals("focalPoints"))
+			    {
+			    	pointsToMoveCameraOnFocalPoint = pointsToMoveCameraOn;
+			    }
+			    else if(interpolateValue.equals("viewUp"))
+		    	 {
+			    	pointsToMoveCameraOnViewUp = pointsToMoveCameraOn;
+		    	 }
+			    // position draw splines
+			    if(interpolateValue.equals("position"))
+			    {
 			    // Create the polyline.
 			    vtkCellArray lines = new vtkCellArray();
 			    lines.InsertNextCell(numberOfOutputPoints);
@@ -344,7 +348,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			      profileTubes.SetNumberOfSides(8);
 			      profileTubes.SetInputData(profileData);
 			      
-			      profileTubes.SetRadius(.005);
+			      profileTubes.SetRadius(0.5);//.005);
 
 			    vtkPolyDataMapper profileMapper = new vtkPolyDataMapper();
 			      profileMapper.SetInputConnection(profileTubes.GetOutputPort());
@@ -355,164 +359,94 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 			      profile.GetProperty().SetDiffuseColor(1.0, 0.0, 0.0);
 			      profile.GetProperty().SetSpecular(.3);
 			      profile.GetProperty().SetSpecularPower(30);
+			    }
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
 			Object src = e.getSource();
+			 vtkAnimationScene scene = new vtkAnimationScene();
+
 			if(src == this.addScriptingPluginButton)
 			{
-				//KeyFrame kf = new KeyFrame();
-				//double[] campos = kf.getCamPos();
-				//framePoints.add(campos);
+			
+				KeyFrame kf = new KeyFrame();
+				vtkCamera c = kf.getCamPos();
+				vtkCamera c2 = new vtkCamera();
+				c2.SetPosition(c.GetPosition()[0], c.GetPosition()[1], c.GetPosition()[2]);
+				c2.SetFocalPoint(c.GetFocalPoint()[0], c.GetFocalPoint()[1], c.GetFocalPoint()[2]);
+				c2.SetViewUp(c.GetViewUp()[0], c.GetViewUp()[1], c.GetViewUp()[2]);
+				framePoints.add(c2);
+				int s= framePoints.size();
+				System.out.println(framePoints.get(s-1).GetPosition()[0]);
+				System.out.println(framePoints.get(s-1).GetPosition()[1]);
+				System.out.println(framePoints.get(s-1).GetPosition()[2]);
 				
-				 vtkActor ac = new vtkActor();
-			   	   ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-					 actorPoliticalBoundariesSegments = Info.getMainGUI().pbGUI.getPoliticalBoundaries();
-					 
-					 if(actorPoliticalBoundariesSegments.size()>0){
-					 ac = actorPoliticalBoundariesSegments.get(4);
-					 }
-				
-					
-				double[] campos = ac.GetCenter();
-				 System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
-				campos[0] = ac.GetCenter()[0]+2000;
-				framePoints.add(campos);
-				System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
-				campos = ac.GetCenter();
-				campos[0] = ac.GetCenter()[0]-2000;
-				framePoints.add(campos);
-				System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
-				campos = ac.GetCenter();
-				campos[1] = ac.GetCenter()[1]+2000;
-				framePoints.add(campos);
-				System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
-				campos = ac.GetCenter();
-				campos[1] = ac.GetCenter()[1]-2000;
-				framePoints.add(campos);
-				System.out.println("Position: " + campos[0] + ", " + campos[1] + ", " + campos[2]);
-				
-				createSplines();
-				
-				//renderer.AddActor(glyph);
-				ArrayList<vtkActor> nw = new ArrayList<>();
-				nw.add(profile);
-				nw.add(glyph);
-				Info.getMainGUI().updateActors(nw);
-				profile.VisibilityOff();
-				Info.getMainGUI().updateRenderWindow(profile);
 			}
 			else if(src == this.playScriptingPluginButton)
 				{
 				vtkRenderWindowInteractor iren = new vtkRenderWindowInteractor();
+				if(framePoints.size()>=2){
+					createSplines("position");
+					createSplines("focalPoints");
+					createSplines("viewUp");
+					
+					//renderer.AddActor(glyph);
+					ArrayList<vtkActor> nw = new ArrayList<>();
+					nw.add(profile);
+					nw.add(glyph);
+					Info.getMainGUI().updateActors(nw);
+					//profile.VisibilityOff();
+					Info.getMainGUI().updateRenderWindow(profile);
+					}
 				if(framePoints.size()>=2)
 				{
-					
-					
-					
-					
-					//Info.getMainGUI().getRenderWindow().GetRenderer().AddActor(profile);
-					//Info.getMainGUI().getRenderWindow().GetRenderer().AddActor(glyph);
-					//Info.getMainGUI().updateRenderWindow(glyph);
-					//iren.SetRenderWindow(Info.getMainGUI().getRenderWindow().GetRenderWindow());
-					
-				  	//iren.Initialize();
-				  		// Sign up to receive TimerEvent
-				  		//vtkTimerCallback cb = new vtkTimerCallback();
-					 vtkAnimationScene scene = new vtkAnimationScene();
-					   //if (argc >= 2 && strcmp(argv[1],"real") == 0)
-					   //  {
+
+
+					 //the frame rate affects sequence mode
 					     scene.SetModeToRealTime();//SetModeToSequence();//
-					    // }
-					   //else
-					    // {
-					     //.repaint();.scene->SetModeToSequence();
-					     //}
+
 					   scene.SetLoop(0);//loop once 
-					   scene.SetFrameRate(1);
+					   scene.SetFrameRate(5);
 					   scene.SetStartTime(3);
 					   scene.SetEndTime(20);
 
-					   
-					   System.out.println("start animation");
-			             scene.Initialize();
-			             double starttime = scene.GetStartTime();
-			             double endtime = scene.GetEndTime();
-			             double CurrentTime = scene.GetDeltaTime();
-			             System.out.println(starttime);
-			             System.out.println(endtime);
-			             System.out.println(CurrentTime);
-			             int TimerCount = 0;
-			             
-			             vtkPoints points = pointsToMoveCameraOn;
-				   	      vtkCamera camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-				   	      vtkActor ac = new vtkActor();
-				   	   ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-						 actorPoliticalBoundariesSegments = Info.getMainGUI().pbGUI.getPoliticalBoundaries();
-						 
-						 if(actorPoliticalBoundariesSegments.size()>0){
-						 ac = actorPoliticalBoundariesSegments.get(4);
-						 }
-			             
-			             while (TimerCount<=points.GetNumberOfPoints())//endtime)
-			             { ++TimerCount;
-			             vtkCamera cam = new vtkCamera();
-			   	      
-			   	   //System.out.println(CurrentTime);
-					if(TimerCount<points .GetNumberOfPoints())
-			   	      {
-			   	    	    cam.SetPosition(points.GetPoint(TimerCount));
-			   	    	    cam.SetFocalPoint(ac.GetCenter());
-			   	    	    System.out.println(TimerCount);
-			   	    	    System.out.println(cam.GetPosition()[0]);
-			   	    	    System.out.println(cam.GetPosition()[1]);
-			   	    	    System.out.println(cam.GetPosition()[2]);
-			   	    	    //renWin.GetRenderer().ResetCameraClippingRange();
-			   	    	    Info.getMainGUI().updateRenderWindow();
-			   	    	    //renWin.GetRenderer().ResetCameraClippingRange();
-			   	    	   // renWin.GetRenderWindow().Render();
-			   	    	 Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cam);
-			   	    	    //renWin.GetRenderer().GetActiveCamera().UpdateViewport(renWin.GetRenderer());
-			   	    	    //;
-			   	    	 try {
-							Thread.sleep(1 * 100);
-						} catch (InterruptedException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-			   	    	   // renWin.repaint();
-			   	    	}
-			             }
-			             Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(camold);
-					   /*// Create an Animation Cue.
+					   // Create an Animation Cue.
 					   vtkAnimationCue cue1 = new vtkAnimationCue();
 					   cue1.SetStartTime(5);
 					   cue1.SetEndTime(13);
-					   scene.AddCue(cue1);*/
-					//CueAnimator cb = new CueAnimator();
-					  //cb.actor = ;
-					 // cb.cam = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-					  //cb.points = pointsToMoveCameraOn;
-					  //cb.iren = iren;
-					  //cb.ren = Info.getMainGUI().getRenderWindow().GetRenderer();
-					  //cb.info.SetStartTime(5);
-					  //cb.info.SetEndTime(13);
-					 // scene.AddObserver("StartAnimationCueEvent", cb, "StartCue");
-					  //scene.AddObserver("EndAnimationCueEvent", cb, "EndCue");
-					  //scene.AddObserver("AnimationCueTickEvent", cb, "Tick");
+					   scene.AddCue(cue1);
+					   CueAnimator cb = new CueAnimator();
+					   
+					   	   ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
+							 actorPoliticalBoundariesSegments = Info.getMainGUI().pbGUI.getPoliticalBoundaries();
+							 
+							 if(actorPoliticalBoundariesSegments.size()>0){
+								 cb.actor = actorPoliticalBoundariesSegments.get(4);
+							 }
 					    
-					//scene.Play();
-					//scene.Stop();
-					  //int timerId = iren.CreateRepeatingTimer(100);
-					  //iren.Start();//.InvokeEvent("TimerEvent");
+					   cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+					   cb.pointsPosition = pointsToMoveCameraOnPosition;
+					   cb.pointsFocalPoint = pointsToMoveCameraOnFocalPoint;
+					   cb.pointsViewUp = pointsToMoveCameraOnViewUp;
+					   cue1.AddObserver("StartAnimationCueEvent", cb, "StartCue");
+					   cue1.AddObserver("EndAnimationCueEvent", cb, "EndCue");
+					   cue1.AddObserver("AnimationCueTickEvent", cb, "Tick");
+					    
+					  scene.Play();
+					  scene.Stop();
+					  Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cb.camold);
 				}
-				
+				 if(src == this.stopScriptingPluginButton)
+				{
+					scene.Stop();
+				}
 				else
 				{
 					 iren.InvokeEvent("EndInteractionEvent");
 				}
 				}
 		}
+
 }

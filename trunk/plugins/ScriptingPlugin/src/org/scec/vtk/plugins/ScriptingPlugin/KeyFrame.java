@@ -13,14 +13,14 @@ public class KeyFrame {
 	// TODO Auto-generated constructor stub
 	 camPos = new double[3];
 	 cam = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-	 camPos = cam.GetPosition();
+	// camPos = cam.GetPosition();
 }
- public double[] getCamPos()
+ public vtkCamera getCamPos()
  {
-	 return camPos;
+	 return cam;
  }
- public void setCamPos(double[] campos)
+ public void setCamPos(vtkCamera campos)
  {
-	 this.camPos = campos;
+	 this.cam = campos;
  }
 }
