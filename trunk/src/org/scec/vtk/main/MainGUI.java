@@ -2,6 +2,7 @@ package org.scec.vtk.main;
 
 import java.awt.BorderLayout;
 import java.awt.CheckboxMenuItem;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -175,7 +176,9 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new GridLayout());
 		renderWindow.setFocusable(true);
+		renderWindow.GetRenderer().SetBackground(0.2,0.3,0);
 		mainPanel.add(renderWindow);
+		
 		mainMenu = new MainMenu();
 		pluginGUIPanel = new JPanel();
 		pluginTabPane =   new JTabbedPane();
