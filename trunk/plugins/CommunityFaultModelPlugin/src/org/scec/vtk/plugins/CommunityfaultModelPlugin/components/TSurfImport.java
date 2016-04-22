@@ -330,7 +330,7 @@ public class TSurfImport implements DataImport {
                         //INVERT IMAGE
                         //latlon[2] = -1 * latlon[2];
                 		//END INVERT IMAGE
-                        graph.AddVertex();
+                        //graph.AddVertex();
                         obj.lat.InsertNextValue(latlon[0]);
                         obj.lon.InsertNextValue(latlon[1]);
 
@@ -357,9 +357,9 @@ public class TSurfImport implements DataImport {
                         	  triangle.GetPointIds().SetId(1, triangle1[1]);
                         	  triangle.GetPointIds().SetId(2, triangle1[2]);
                         	  
-                        	  graph.AddGraphEdge(triangle1[0], triangle1[1]);
-                        	  graph.AddGraphEdge(triangle1[1], triangle1[2]);
-                        	  graph.AddGraphEdge(triangle1[2], triangle1[0]);
+                        	  //graph.AddGraphEdge(triangle1[0], triangle1[1]);
+                        	  //graph.AddGraphEdge(triangle1[1], triangle1[2]);
+                        	  //graph.AddGraphEdge(triangle1[2], triangle1[0]);
                         	  
                         	triangles.InsertNextCell(triangle);
                         continue;
