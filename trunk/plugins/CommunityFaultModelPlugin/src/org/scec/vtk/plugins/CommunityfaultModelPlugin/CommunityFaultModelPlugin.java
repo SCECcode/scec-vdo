@@ -97,9 +97,9 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
     		actorMasterFaultBranchGroup = new ArrayList<vtkActor>();
     	return actorMasterFaultBranchGroup;
     }
-    public Element getState()
+    /*public Element getState()
     {
-    	Element root = new Element("fault3DPlugin");
+    	/*Element root = new Element("fault3DPlugin");
     	if(guidisplayed){
     		root.setAttribute("displayed","true");
     		List loadedRows = f3DGui.faultTable.getLibraryModel().getAllObjects();
@@ -148,11 +148,11 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
     	}
 
     	return root;
-    }
+    }*/
     
     public void setState(Element e)
     {
-    	Element root = e.getChild("fault3DPlugin");
+    	/*Element root = e.getChild("fault3DPlugin");
     	if(root.getAttributeValue("displayed").equals("true")){
     		ListSelectionModel lsm = f3DGui.faultTable.getSelectionModel();
     		FaultTableModel ftm = f3DGui.faultTable.getLibraryModel();
@@ -202,7 +202,7 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
     				root.removeChild("fault");
     			}
     		}
-    	}
+    	}*/
     }    
     
     /*public void setClickableEnabled(boolean enable){

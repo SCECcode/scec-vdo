@@ -176,7 +176,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new GridLayout());
 		renderWindow.setFocusable(true);
-		renderWindow.GetRenderer().SetBackground(0.2,0.3,0);
+		renderWindow.GetRenderer().SetBackground(0,0,0);
 		mainPanel.add(renderWindow);
 		
 		mainMenu = new MainMenu();

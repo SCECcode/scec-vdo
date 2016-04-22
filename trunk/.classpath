@@ -3,10 +3,13 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="plugins/CommunityFaultModelPlugin/src"/>
 	<classpathentry kind="src" path="plugins/ScriptingPlugin/src"/>
+	<classpathentry kind="src" path="plugins/EarthquakeCatalogPlugin/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/vtk.jar"/>
 	<classpathentry kind="lib" path="lib/jmf.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="lib" path="lib/opensha.jar"/>
+	<classpathentry kind="lib" path="lib/EventWebService.jar"/>
+	<classpathentry kind="output" path="classes"/>
 </classpath>
