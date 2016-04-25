@@ -23,6 +23,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,6 +38,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
@@ -59,7 +61,9 @@ import org.opensha.commons.util.ExceptionUtils;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogAccessor;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogTable;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.ComcatResourcesDialog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.FocalMechIcons;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.FocalMechRenderer;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.SourceCatalog;
@@ -319,6 +323,8 @@ MouseListener {
 
 		private CatalogTable catalogTable;
 
+		private ComcatResourcesDialog netSourceDialog;
+
 		// init data store
 		static {
 			String sourceStore =
@@ -379,7 +385,7 @@ MouseListener {
 			this.propsTabbedPane.add(getPropsExtentsPanel());
 			this.propsTabbedPane.add(getPropsAnimationPanel());
 			this.propsTabbedPane.add(getSpaceTimePanel());
-			this.propsTabbedPane.setEnabledAt(1, false);
+			//this.propsTabbedPane.setEnabledAt(1, false);
 			//this.propsTabbedPane.add(getPropsDisplayPanel());
 			//this.propsTabbedPane.add(riGUI);
 
@@ -1034,7 +1040,7 @@ MouseListener {
 			//this.propsAnimationPanel.add(animLabel,       new GridBagConstraints( 1, 13, 1, 1, 0.0, 0.0, a_r, f, new Insets(8,0,0,0), 0, 0 ));
 			this.propsAnimationPanel.add(EarthquakeCatalogPluginGUI.progbar,    new GridBagConstraints( 1, 13, 1, 1, 0.0, 0.0, a_l, f, new Insets(8,10,0,0), 0, 0 ));
 			this.propsAnimationPanel.add(EarthquakeCatalogPluginGUI.progLabel,       new GridBagConstraints( 0, 14, 120, 1, 0.0, 0.0, a_c, f, new Insets(8,20,8,0), 200, 0 ));
-
+			this.catProp_playButton.setEnabled(true);
 			return this.propsAnimationPanel;
 		}
 		
@@ -1923,94 +1929,62 @@ MouseListener {
 		}
 
 		
-		public void getComcatData(double minDepth,double maxDepth,double minMagnitude,double maxMagnitude,double minLat,double maxLat,double minLon,double maxLon,String startTime,String endTime)
-		{
-			 EventWebService service = null;
-			 masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
-				try {
-					//call usgs service to obtain earthquake catalog
-					service = new EventWebService(new URL("http://earthquake.usgs.gov/fdsnws/event/1/"));
-				} catch (MalformedURLException e) {
-					ExceptionUtils.throwAsRuntimeException(e);
-				}
-				
-				//create query url
-				EventQuery query = new EventQuery();
-				
-				//TODO: Preconditions.checkState(minDepth < maxDepth, "Min depth must be less than max depth");
-				if(minDepth>0)
-				query.setMinDepth(new BigDecimal(minDepth));
-				if(maxDepth>0)
-				query.setMaxDepth(new BigDecimal(maxDepth));
-				if(minMagnitude>0)
-				query.setMinMagnitude(new BigDecimal(minMagnitude));
-				if(maxMagnitude>0)
-				query.setMaxMagnitude(new BigDecimal(maxMagnitude));
-				
-				query.setMinLatitude(new BigDecimal(minLat));
-				query.setMaxLatitude(new BigDecimal(maxLat));
-				
-				query.setMinLongitude(new BigDecimal(minLon));
-				query.setMaxLongitude(new BigDecimal(maxLon));
-				
-				Date startDate,endDate;
-				try {
-					startDate = new  SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH).parse(startTime);
-					query.setStartTime(startDate);
-					endDate = new  SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH).parse(endTime);
-					query.setEndTime(endDate);
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				try {
-					//print the URL
-					System.out.println(service.getUrl(query, Format.GEOJSON));
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				}
-			List<JsonEvent> events;
-			try {
-				//get the events from the query
-				events = service.getEvents(query);
-			} catch (Exception e) {
-				throw ExceptionUtils.asRuntimeException(e);
-			}
-			System.out.println(events.size());
-			for (JsonEvent event : events) {
-				//plot the earthquakes as spheres with radius as magnitude
-				double[] xForm = new double[3];
-				double[] latlon = new double[3];
-				vtkSphereSource sphereSource = new vtkSphereSource();
-				 latlon[0] = Transform.calcRadius(event.getLatitude().doubleValue()) + event.getDepth().doubleValue();
-                 // Phi= deg2rad(latitude);
-                 latlon[1] = (event.getLatitude().doubleValue());
-                 //Theta= deg2rad(longitude);
-                 latlon[2] =  (event.getLongitude().doubleValue());
-                 
-                 xForm = Transform.customTransform(latlon);
-                 
-				sphereSource.SetCenter(xForm[0], xForm[1], xForm[2]);
-				sphereSource.SetRadius(event.getMag().doubleValue());
-		    	
-				vtkPolyDataMapper mapperEQCatalog = new vtkPolyDataMapper();
-				mapperEQCatalog.SetInputConnection(sphereSource.GetOutputPort());
-				
-				vtkActor actorEQCatalog = new vtkActor();
-				actorEQCatalog.SetMapper(mapperEQCatalog);
-				actorEQCatalog.GetProperty().SetColor(1,1,0);
-				masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
-			}
-			
-			Info.getMainGUI().updateActors(masterEarthquakeCatalogBranchGroup);
-			Info.getMainGUI().updateRenderWindow();
-		}
-
+		
 		public void actionPerformed(ActionEvent e) {
 		
 			Object src = e.getSource();
 			if (src == newInternetSourceButton){
-				getComcatData(0,0,0,0,32,36,-122,-114,"2016/04/15","2016/04/22");
+				if (this.netSourceDialog == null) {
+					this.netSourceDialog = new ComcatResourcesDialog(this);
+				}
+				ComcatResourcesDialog dialog = this.netSourceDialog;
+				
+				dialog.setLocationRelativeTo(null);
+				dialog.setVisible(true);
+				
+			}
+			if (src == this.helpButton){
+				JOptionPane.showMessageDialog(this,
+						"Click on any catalog to highlight it. \n" +
+						"Once it is highlighted, click the checkbox \n" +
+						"to display your catalog. \n \n" +
+						"To import an earthquake catalog from file on \n" +
+						"your computer, acquire one from an online \n" +
+						"network, or filter one out of an existing catalog,\n" +
+						"click the appropriate button on the left.\n \n",
+						"Need Help?",
+						JOptionPane.PLAIN_MESSAGE);
+
+
+			}
+			if (src == catProp_playButton)
+			{
+				//ascending order as per the time
+				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
+				ArrayList<vtkActor> earthquakeActors = this.netSourceDialog.getAllEarthquakesActors();
+				
+				for(int i =0;i<earthquakeActors.size();i++)
+				{
+					earthquakeActors.get(i).VisibilityOff();
+				}
+				Info.getMainGUI().updateRenderWindow();
+				for(int i =0;i<earthquakeActors.size();i++)
+				{
+					earthquakeActors.get(i).VisibilityOn();
+					Info.getMainGUI().updateRenderWindow();
+					Earthquake eq = earthquakeList.get(i);
+				
+					/*Date date = new Date(eq.getTime);
+					DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
+					String dateFormatted = formatter.format(date);*/
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+						
 			}
 			/*CatalogTableModel libModel  = this.catalogTable.getLibraryModel();
 			EQCatalog libCat = this.catalogTable.getSelectedValue();
