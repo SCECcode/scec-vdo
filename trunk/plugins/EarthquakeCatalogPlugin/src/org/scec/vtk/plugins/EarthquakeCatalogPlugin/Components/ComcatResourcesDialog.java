@@ -112,7 +112,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		
 		private String defaultName="";
 
-		private ArrayList<vtkActor> masterEarthquakeCatalogBranchGroup; //to keep actors
+		//private ArrayList<vtkActor> masterEarthquakeCatalogBranchGroup; //to keep actors
 		private ArrayList<Earthquake> masterEarthquakeCatalogsList = new ArrayList<>(); //to keep earthquakeInfo in memory
 		
 		public  ComcatResourcesDialog(JPanel parent) {
@@ -692,7 +692,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		public void getComcatData(double minDepth,double maxDepth,double minMagnitude,double maxMagnitude,double minLat,double maxLat,double minLon,double maxLon,String startTime,String endTime,int limit)
 		{
 			 EventWebService service = null;
-			 masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
+			 //masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
 				try {
 					//call usgs service to obtain earthquake catalog
 					service = new EventWebService(new URL("http://earthquake.usgs.gov/fdsnws/event/1/"));
@@ -747,10 +747,12 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				throw ExceptionUtils.asRuntimeException(e);
 			}
 			System.out.println(events);
+			ArrayList<vtkActor> masterEarthquakeCatalogBranchGroup = new ArrayList<>();
 			for (JsonEvent event : events) {
 				//plot the earthquakes as spheres with radius as magnitude
 				double[] xForm = new double[3];
 				double[] latlon = new double[3];
+				double depth=0,mag=0,lon=0,lat=0;
 				vtkSphereSource sphereSource = new vtkSphereSource();
 				 latlon[0] = Transform.calcRadius(event.getLatitude().doubleValue()) + event.getDepth().doubleValue();
                  // Phi= deg2rad(latitude);
@@ -775,9 +777,16 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				actorEQCatalog.SetMapper(mapperEQCatalog);
 				actorEQCatalog.GetProperty().SetColor(1,1,0);
 				masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
-				Earthquake eq = new Earthquake(minDepth,maxDepth,minMagnitude,maxMagnitude, minLat, maxLat, minLon, maxLon, startTime, endTime,limit);
-				//Earthquake eq = new Earthquake(event.getDepth().doubleValue(), event.getMag().doubleValue(), event.getLatitude().doubleValue(), maxMagnitude, minLat, maxLat, minLon, maxLon, startTime, endTime,limit);
-				 if(!masterEarthquakeCatalogsList.contains(eq))
+				if(event.getMag()!=null)
+					mag= event.getMag().doubleValue();
+				if(event.getDepth()!=null)
+					depth= event.getDepth().doubleValue();
+				if(event.getLatitude()!=null)
+					lat= event.getLatitude().doubleValue();
+				if(event.getLongitude()!=null)
+					lon= event.getLongitude().doubleValue();
+				Earthquake eq = new Earthquake(depth,mag,lat,lon, startTime, endTime,limit,actorEQCatalog);
+				if(!masterEarthquakeCatalogsList.contains(eq))
 					masterEarthquakeCatalogsList.add(eq);
 			}
 			
@@ -859,10 +868,6 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		public ArrayList<Earthquake> getAllEarthquakes()
 		{
 			return masterEarthquakeCatalogsList;
-		}
-		public ArrayList<vtkActor> getAllEarthquakesActors()
-		{
-			return masterEarthquakeCatalogBranchGroup;
 		}
 		/*public void setLatMin(String value) { latMinField.setText(value); }
 		public void setLatMax(String value) { latMaxField.setText(value); }

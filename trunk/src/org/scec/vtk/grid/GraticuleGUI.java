@@ -172,11 +172,14 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		labels.SetNumberOfValues(numOfLat+1);
 		sizes.SetNumberOfValues(numOfLat);
 		int labelLatCt=0;
+		int maxDepth = 10; 	// DO NOT JUST CHANGE THIS NUMBER. if you really need another depth, you must add it as
+							// an option in the graticule plugin, and then LEAVE 10 AS THE DEFAULT.
+							// Graticule anf grid lines match
 		for(double j = upperLat;j>=lowerLat;j-=spacing,labelLatCt++)
 		{
 
 			double[] pt = new double[3];
-			pt[0] = Transform.calcRadius(j);
+			pt[0] = Transform.calcRadius(j) + maxDepth;
 			// Phi= deg2rad(latitude);
 			pt[1] = (j);
 			//Theta= deg2rad(longitude);
@@ -207,7 +210,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		for(double j = leftLon;j>=rightLon;j-=spacing,labelLatCt++)
 		{
 			double[] pt = new double[3];
-			pt[0] = Transform.calcRadius(upperLat);
+			pt[0] = Transform.calcRadius(upperLat) + maxDepth;
 			// Phi= deg2rad(latitude);
 			pt[1] = (upperLat);
 			//Theta= deg2rad(longitude);
@@ -222,7 +225,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			for(double k = (upperLat-spacing);k>=lowerLat;k-=spacing)
 			{
 				//Theta= deg2rad(longitude);
-				pt[0] = Transform.calcRadius(k);
+				pt[0] = Transform.calcRadius(k) + maxDepth;
 				// Phi= deg2rad(latitude);
 				pt[1] = (k);
 			allPoints.InsertNextPoint(Transform.customTransform(pt));

@@ -71,53 +71,8 @@ import vtk.vtkWindowToImageFilter;
 //TODO: UI and cleanup class del temp files
 public class ScriptingPluginGUI extends JPanel implements ActionListener{
 
-	class CueAnimator
-	{
-
-		void StartCue()
-		{
-			System.out.println("*** IN StartCue " );
-			this.TimerCount = 0;
-			camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-		}
-
-		void Tick()
-		{
-			camnew = new vtkCamera();
-			++this.TimerCount;
-
-			if(this.TimerCount<pointsPosition.GetNumberOfPoints())
-			{
-
-				camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
-				camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
-				camnew.SetViewUp(pointsViewUp.GetPoint(TimerCount)[0],pointsViewUp.GetPoint(TimerCount)[1],pointsViewUp.GetPoint(TimerCount)[2]);
-				camnew.OrthogonalizeViewUp();
-				Info.getMainGUI().updateRenderWindow();
-				Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(camnew);
-				Info.getMainGUI().getRenderWindow().GetRenderer().ResetCameraClippingRange();
-			}
-		}
-
-		void EndCue()
-		{
-			System.out.println("*** IN EndCue " );
-		}
-
-		public vtkRenderWindowInteractor iren;
-		public vtkRenderer ren;
-		public vtkCamera cam;
-		public vtkCamera camnew;
-		public vtkCamera camold;
-		vtkPoints pointsPosition = new vtkPoints();
-		vtkPoints pointsFocalPoint = new vtkPoints();
-		vtkPoints pointsViewUp = new vtkPoints();
-		public vtkActor actor;
-		int TimerCount = 0;
-		vtkAnimationCue info = new vtkAnimationCue();
-		vtkCameraInterpolator incam = new vtkCameraInterpolator();
-	};
-	class CueAnimatorRender
+	
+	/*class CueAnimatorRender
 	{
 
 		void StartCue()
@@ -221,7 +176,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 		int height = renderSize[1];
 		vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();
 		int FPS = 15;
-	};
+	};*/
 	private JPanel scriptingPluginSubPanelUpper;
 	private JFileChooser fc = new JFileChooser();
 	protected File movieFile;
@@ -238,8 +193,8 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 	vtkPoints pointsToMoveCameraOnViewUp = new vtkPoints();
 	vtkActor profile = new vtkActor();
 	vtkActor glyph = new vtkActor();
-	private JpegImagesToMovie jpegToImages = new JpegImagesToMovie();
-	private Vector imagesToConvert = new Vector<>();
+	//private JpegImagesToMovie jpegToImages = new JpegImagesToMovie();
+	//private Vector imagesToConvert = new Vector<>();
 
 	vtkActor focusActor = new vtkActor();
 	boolean resetScene = false;
@@ -501,7 +456,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 				cb.actor = focusActor;
 				scene.AddObserver("StartAnimationCueEvent", cb, "StartCue");
 				scene.AddObserver("EndAnimationCueEvent", cb, "EndCue");
-				scene.AddObserver("AnimationCueTickEvent", cb, "Tick");
+				scene.AddObserver("AnimationCueTickEvent", cb, "TickCameraAniamtion");
 
 				cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 
@@ -529,7 +484,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 					scene.SetModeToRealTime();//SetModeToSequence();//
 
 					scene.SetLoop(0);//loop once 
-					scene.SetFrameRate(15);
+					//scene.SetFrameRate(15);
 					scene.SetStartTime(3);
 					scene.SetEndTime(20);
 
@@ -538,7 +493,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 					cue1.SetStartTime(5);
 					cue1.SetEndTime(13);
 					scene.AddCue(cue1);
-					CueAnimatorRender cb1 = new CueAnimatorRender();
+					CueAnimator cb1 = new CueAnimator();
 
 					ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
 					actorPoliticalBoundariesSegments = Info.getMainGUI().pbGUI.getPoliticalBoundaries();
@@ -551,9 +506,10 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 					cb1.pointsPosition = pointsToMoveCameraOnPosition;
 					cb1.pointsFocalPoint = pointsToMoveCameraOnFocalPoint;
 					cb1.pointsViewUp = pointsToMoveCameraOnViewUp;
-					cue1.AddObserver("StartAnimationCueEvent", cb1, "StartCue");
-					cue1.AddObserver("EndAnimationCueEvent", cb1, "EndCue");
-					cue1.AddObserver("AnimationCueTickEvent", cb1, "Tick");
+					
+					scene.AddObserver("StartAnimationCueEvent", cb1, "StartCue");
+					scene.AddObserver("EndAnimationCueEvent", cb1, "EndCueCameraAniamtionRender");
+					scene.AddObserver("AnimationCueTickEvent", cb1, "TickCameraAniamtionRender");
 
 					scene.Play();
 					scene.Stop();
@@ -561,6 +517,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener{
 					try {
 						m = new MediaLocator(movieFile.toURL()+ ".mov");
 						System.out.println("Writing " + m.getURL());
+						cb1.m = m;
 					} catch (MalformedURLException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
