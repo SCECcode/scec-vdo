@@ -187,6 +187,8 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		renderWindow.GetRenderer().AddActor(tempGlobeScene);
 		renderWindow.GetRenderer().AddActor(pointActor);
 		renderWindow.GetRenderer().AddActor(labelActor);
+		renderWindow.GetRenderWindow().SetPointSmoothing(35);
+		renderWindow.GetRenderWindow().PointSmoothingOn();
 		addDefaultActors();
 		
 		//mouse event

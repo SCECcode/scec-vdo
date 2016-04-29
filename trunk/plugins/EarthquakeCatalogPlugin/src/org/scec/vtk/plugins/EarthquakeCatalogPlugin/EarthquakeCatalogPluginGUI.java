@@ -69,6 +69,7 @@ import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.FocalMechRenderer
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.SourceCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity.RelativeIntensity;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity.RelativeIntensityGUI;
+import org.scec.vtk.plugins.ScriptingPlugin.CueAnimator;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.DataFileChooser;
@@ -94,8 +95,21 @@ import gov.usgs.earthquake.event.JsonEvent;
 import javafx.animation.Animation;
 
 import vtk.vtkActor;
+import vtk.vtkAnimationCue;
+import vtk.vtkAnimationScene;
+import vtk.vtkAssignAttribute;
+import vtk.vtkDataSetAttributes;
+import vtk.vtkGlyph3D;
+import vtk.vtkGradientFilter;
+import vtk.vtkLookupTable;
+import vtk.vtkPointData;
+import vtk.vtkPoints;
+import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkRegularPolygonSource;
 import vtk.vtkSphereSource;
+import vtk.vtkUnsignedCharArray;
+import vtk.vtkVertexGlyphFilter;
 
 public class EarthquakeCatalogPluginGUI extends JPanel implements
 ActionListener,
@@ -203,13 +217,13 @@ MouseListener {
 		private JLabel          dispProp_geometry;				// "Geometry:" label
 		private JRadioButton    dispProp_geomPoint;				// "Point" radio button
 		private JRadioButton    dispProp_geomSphere;			// "Sphere" radio button
-		private JRadioButton	dispProp_geomCow;				// "Cow" radio button
+		//private JRadioButton	dispProp_geomCow;				// "Cow" radio button
 		// Magnitude scaling:
 		private JLabel          dispProp_scaling;				// "Magnitude scaling:" label
-		private JComboBox       dispProp_scaleMenu;				// Scaling options
+		//private JComboBox       dispProp_scaleMenu;				// Scaling options
 		private JSlider			dispProp_slider;				// Additional scaling options
-		private JLabel          dispProp_pscaling;				// "Magnitude scaling:" label
-		private JComboBox       dispProp_pscaleMenu;			// Point display size
+		//private JLabel          dispProp_pscaling;				// "Magnitude scaling:" label
+		//private JComboBox       dispProp_pscaleMenu;			// Point display size
 		// Color:
 		private JLabel          dispProp_color;					// "Color:" label
 		private ColorWellButton dispProp_colButton;				// Color button
@@ -238,7 +252,7 @@ MouseListener {
 		private JLabel 			dispProp_focalExtLabel;				// "Extension" label
 		private ColorWellButton dispProp_focalExtColButton;			// Extension color well
 		// Apply:
-		private JButton			dispProp_apply;					// "Apply" button
+		//private JButton			dispProp_apply;					// "Apply" button
 		// Earthquake Transparency
 		private JSlider transparencySlider;
 		private  JLabel transLabel;
@@ -325,6 +339,12 @@ MouseListener {
 
 		private ComcatResourcesDialog netSourceDialog;
 
+		ArrayList<vtkActor> earthquakePointActorList = new ArrayList<>();
+
+
+
+		//private CueAnimator cb;
+		
 		// init data store
 		static {
 			String sourceStore =
@@ -386,7 +406,7 @@ MouseListener {
 			this.propsTabbedPane.add(getPropsAnimationPanel());
 			this.propsTabbedPane.add(getSpaceTimePanel());
 			//this.propsTabbedPane.setEnabledAt(1, false);
-			//this.propsTabbedPane.add(getPropsDisplayPanel());
+			this.propsTabbedPane.add(getPropsDisplayPanel());
 			//this.propsTabbedPane.add(riGUI);
 
 			// assemble lower pane
@@ -496,7 +516,7 @@ MouseListener {
 			// components.
 
 			// set values first for components that do not change access to others
-			this.dispProp_scaleMenu.setSelectedIndex(catalog.getScaling());
+			//this.dispProp_scaleMenu.setSelectedIndex(catalog.getScaling());
 			this.dispProp_colButton.setColor(catalog.getColor1(), catalog.getColor2());
 			this.dispProp_focalCompColButton.setColor(catalog.getDiscCompColor());
 			this.dispProp_focalExtColButton.setColor(catalog.getDiscExtColor());
@@ -544,9 +564,9 @@ MouseListener {
 			setGeometryEnabled(true);
 			if (catalog.getGeometry() == EQCatalog.GEOMETRY_SPHERE) {
 				this.dispProp_geomSphere.doClick();
-			} else if (catalog.getGeometry() == EQCatalog.GEOMETRY_COW){
+			} /*else if (catalog.getGeometry() == EQCatalog.GEOMETRY_COW){
 				this.dispProp_geomCow.doClick();
-			} else{
+			} */else{
 				this.dispProp_geomPoint.doClick();
 			}
 		}
@@ -1066,31 +1086,41 @@ MouseListener {
 
 			this.dispProp_geomSphere = new JRadioButton("Sphere");
 			this.dispProp_geomSphere.addActionListener(this);
+			this.dispProp_geomSphere.setSelected(true);
 			this.dispProp_geomSphere.setOpaque(false);
 
-			this.dispProp_geomCow = new JRadioButton("Cow");
+			/*this.dispProp_geomCow = new JRadioButton("Cow");
 			this.dispProp_geomCow.addActionListener(this);
-			this.dispProp_geomCow.setOpaque(false);
+			this.dispProp_geomCow.setOpaque(false);*/
 
 			ButtonGroup dispProp_geomButGrp = new ButtonGroup();
 			dispProp_geomButGrp.add(this.dispProp_geomPoint);
 			dispProp_geomButGrp.add(this.dispProp_geomSphere);
-			dispProp_geomButGrp.add(this.dispProp_geomCow);
+			//dispProp_geomButGrp.add(this.dispProp_geomCow);
 
 			// MAGNITUDE SCALING
 			this.dispProp_scaling = new JLabel("Magnitude scaling:");
 
-			String[] scaleMenuItems = {"None","0.05","0.1","0.2","0.5","1.0","2.0","4.0","10.0"};
-			this.dispProp_scaleMenu = new JComboBox(scaleMenuItems);
+			
+			//Transparency
+			this.dispProp_slider=new JSlider(1,10,5);
+			this.dispProp_slider.setMajorTickSpacing(2);
+			this.dispProp_slider.setMinorTickSpacing(1);
+			//transparencySlider.setPaintLabels(true);
+			this.dispProp_slider.setPaintTicks(true);
+			this.dispProp_slider.addChangeListener(this);
+			this.dispProp_slider.setSnapToTicks(true);
+			
+			/*this.dispProp_scaleMenu = new JComboBox(scaleMenuItems);
 			this.dispProp_scaleMenu.setOpaque(false);
 			this.dispProp_scaleMenu.addActionListener(this);
 			BasicComboBoxRenderer scaleRender = new BasicComboBoxRenderer();
 			scaleRender.setHorizontalAlignment(SwingConstants.CENTER);
 			this.dispProp_scaleMenu.setRenderer(scaleRender);
 			Dimension menuSize = new Dimension(80, this.dispProp_scaleMenu.getPreferredSize().height);
-			this.dispProp_scaleMenu.setPreferredSize(menuSize);
+			this.dispProp_scaleMenu.setPreferredSize(menuSize);*/
 
-			this.dispProp_slider = new JSlider(0,100);
+			/*this.dispProp_slider = new JSlider(0,100);
 			this.dispProp_slider.setMajorTickSpacing(25);
 			this.dispProp_slider.setMinorTickSpacing(5);
 			this.dispProp_slider.setPaintLabels(true);
@@ -1099,14 +1129,14 @@ MouseListener {
 			this.dispProp_slider.setValue(50);
 			this.dispProp_slider.setMaximumSize(new Dimension(120,18));
 			this.dispProp_slider.setMinimumSize(new Dimension(120,18));
-			this.dispProp_slider.setPreferredSize(new Dimension(120,18));
+			this.dispProp_slider.setPreferredSize(new Dimension(120,18));*/
 
-			this.dispProp_pscaling = new JLabel("Point scaling:");
+			/*this.dispProp_pscaling = new JLabel("Point scaling:");
 
 			Integer[] pscaleMenuItems = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 			this.dispProp_pscaleMenu = new JComboBox(pscaleMenuItems);
 			this.dispProp_pscaleMenu.setOpaque(false);
-			dispProp_pscaleMenu.addActionListener(this);
+			dispProp_pscaleMenu.addActionListener(this);*/
 
 			//Transparency
 			transparencySlider=new JSlider(0,100,100);
@@ -1145,7 +1175,7 @@ MouseListener {
 
 			this.dispProp_focalBallDropDownBox.addActionListener(this);
 			this.dispProp_focalBallDropDownBox.setRenderer(new FocalMechRenderer());
-			this.dispProp_focalBallDropDownBox.setPreferredSize(menuSize);
+			//this.dispProp_focalBallDropDownBox.setPreferredSize(menuSize);
 
 			// DISC
 			this.dispProp_focalDisc = new JRadioButton("Disc:");
@@ -1201,6 +1231,7 @@ MouseListener {
 
 			this.dispProp_gradMag = new JRadioButton("Magnitude");
 			this.dispProp_gradMag.addActionListener(this);
+			this.dispProp_gradMag.setSelected(true);
 			this.dispProp_gradMag.setOpaque(false);
 
 			ButtonGroup dispProp_gradButtonGroup = new ButtonGroup();
@@ -1208,14 +1239,14 @@ MouseListener {
 			dispProp_gradButtonGroup.add(this.dispProp_gradDepth);
 
 			// APPLY
-			this.dispProp_apply = new JButton("Apply");
+			/*this.dispProp_apply = new JButton("Apply");
 			this.dispProp_apply.addActionListener(this);
 			this.dispProp_apply.setEnabled(false);
-			this.dispProp_apply.setOpaque(false);
+			this.dispProp_apply.setOpaque(false);*/
 
 			assemblePropsDispPanel(false);
 
-			disableDisplayPanelComponents();
+			//disableDisplayPanelComponents();
 
 			return this.propsDisplayPanel;
 		}
@@ -1237,18 +1268,18 @@ MouseListener {
 			//        this.propsDisplayPanel.add(this.dispProp_geomSphere,	new GridBagConstraints( 1, 0, 1, 1, 0.0, 0.0, a_r, f, new Insets( 0,10,0,0), 80, 0 ));
 
 			int offset = 0;
-			if (showCowOption) {
+			/*if (showCowOption) {
 				this.propsDisplayPanel.add(this.dispProp_geomCow,	new GridBagConstraints( 1, 2, 1, 1, 0.0, 0.0, a_l, f, new Insets( 0,10,0,0), 0, 0 ));
 				offset = 1;
-			}
+			}*/
 
 			this.propsDisplayPanel.add(this.dispProp_scaling,		new GridBagConstraints( 0, 2+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_scaleMenu,		new GridBagConstraints( 1, 2+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,0,0), 0, 0 ));
+			//this.propsDisplayPanel.add(this.dispProp_scaleMenu,		new GridBagConstraints( 1, 2+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_slider,		new GridBagConstraints( 1, 2+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10,20,0,10), 0, 0 ));
 
-			this.propsDisplayPanel.add(this.dispProp_pscaling,		new GridBagConstraints( 0, 3+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
+			/*this.propsDisplayPanel.add(this.dispProp_pscaling,		new GridBagConstraints( 0, 3+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_pscaleMenu,		new GridBagConstraints( 1, 3+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,0,0), 0, 0 ));
-
+*/
 			int oso; //OS offset
 			if (Prefs.getOS() == Prefs.OSX)
 				oso = oso_osx;
@@ -1262,7 +1293,8 @@ MouseListener {
 			this.propsDisplayPanel.add(this.transparencySlider,		new GridBagConstraints( 1, 4+offset, 2, 1, 0.0, 0.0, a_c, f, new Insets(0, 0,0,0), 0, 0 ));
 			offset++;
 
-			this.propsDisplayPanel.add(this.dispProp_focalmechanism,		new GridBagConstraints( 0, 4+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,				0,0), 0, 0 ));
+			//TODO focal mechanism
+			/*this.propsDisplayPanel.add(this.dispProp_focalmechanism,		new GridBagConstraints( 0, 4+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,				0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_focalNone,				new GridBagConstraints( 1, 4+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,				0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_focalBall,				new GridBagConstraints( 1, 5+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,				0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_focalBallDropDownBox,	new GridBagConstraints( 1, 5+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,60,				0,0), 0, 0 ));
@@ -1271,11 +1303,11 @@ MouseListener {
 			this.propsDisplayPanel.add(this.dispProp_focalCompLabel,		new GridBagConstraints( 1, 6+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,90+oso,0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_focalExtColButton,		new GridBagConstraints( 1, 7+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,60+oso,0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_focalExtLabel,			new GridBagConstraints( 1, 7+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,90+oso,0,0), 0, 0 ));
-
+			*/
 			this.propsDisplayPanel.add(this.dispProp_color,			new GridBagConstraints( 0, 8+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10, 10,0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_colButton,		new GridBagConstraints( 1, 8+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,0,0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.lowerGradientLabel,       new GridBagConstraints(1, 9+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(0,0,0,0), 0, 0));
-			this.propsDisplayPanel.add(this.higherGradientLabel,      new GridBagConstraints(1, 9+ offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(0, 0, 0, 0), 83, 0));
+			this.propsDisplayPanel.add(this.higherGradientLabel,      new GridBagConstraints(1, 9+ offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(0, 0, 0, 0), 103, 0));
 
 			// had to hack this up to get it to display correctly on Mac OS X
 			this.propsDisplayPanel.add(this.dispProp_gradient,		new GridBagConstraints( 0, 10+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));// had to hack this up to get it to display correctly on Mac OS X
@@ -1294,8 +1326,8 @@ MouseListener {
 			this.propsDisplayPanel.add(this.dispProp_discreteeqcolor,	new GridBagConstraints( 1, 8+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
 			this.propsDisplayPanel.add(this.dispProp_discreteCheckBox,new GridBagConstraints( 1, 8+offset, 1, 1, 0.0, 0.0, a_c, f, new Insets(10,0,0,0), 0, 0 ));
 
-			this.propsDisplayPanel.add(this.dispProp_apply,			new GridBagConstraints( 1, 11+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets( 0, 0,4,4), 0, 0 ));
-
+			//this.propsDisplayPanel.add(this.dispProp_apply,			new GridBagConstraints( 1, 11+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets( 0, 0,4,4), 0, 0 ));
+			 	
 			this.propsDisplayPanel.repaint();
 		}
 
@@ -1309,33 +1341,33 @@ MouseListener {
 		}
 
 		private void disableDisplayPanelComponents() {
-			setGeometryEnabled(false);
-			setMagScaleEnabled(false);
-			setPointScaleEnabled(false);
+			setGeometryEnabled(true);
+			setMagScaleEnabled(true);
+			//setPointScaleEnabled(false);
 			setColorEnabled(false);
 			setRecentEQColorEnabled(false);
 			setDiscreteEQColorEnabled(false);
 			setGradApplyEnabled(false);
 			setFocalMechEnabled(false);
 
-			this.dispProp_apply.setEnabled(false);
+			//this.dispProp_apply.setEnabled(false);
 		}
 
 		private void setGeometryEnabled(boolean enable) {
 			this.dispProp_geometry.setEnabled(enable);
 			this.dispProp_geomPoint.setEnabled(enable);
 			this.dispProp_geomSphere.setEnabled(enable);
-			this.dispProp_geomCow.setEnabled(enable);
+			//this.dispProp_geomCow.setEnabled(enable);
 		}
 		private void setMagScaleEnabled(boolean enable) {
 			this.dispProp_scaling.setEnabled(enable);
-			this.dispProp_scaleMenu.setEnabled(enable);
+			//this.dispProp_scaleMenu.setEnabled(enable);
 			this.dispProp_slider.setEnabled(enable);
 		}
-		private void setPointScaleEnabled(boolean enable) {
+		/*private void setPointScaleEnabled(boolean enable) {
 			this.dispProp_pscaling.setEnabled(enable);
 			this.dispProp_pscaleMenu.setEnabled(enable);
-		}
+		}*/
 		private void setColorEnabled(boolean enable) {
 			this.dispProp_color.setEnabled(enable);
 			this.dispProp_colButton.setEnabled(enable);
@@ -1866,17 +1898,51 @@ MouseListener {
 		 */
 		public void stateChanged(ChangeEvent e) {
 			Object src = e.getSource();
-			this.propsTabbedPane.setEnabledAt(1, true);
-			this.propsTabbedPane.setEnabledAt(2, true);
+			//this.propsTabbedPane.setEnabledAt(1, true);
+			//this.propsTabbedPane.setEnabledAt(2, true);
 			//            }
-			setAttributePanels();
+			//setAttributePanels();
 			//        }
 			if(src == dispProp_slider){
 				//setPropertyChange(true, EQCatalog.CHANGE_SIZE_SLIDER);
+				int scale = dispProp_slider.getValue();
+				double[] scaleMenuItems = {0.05,0.1,0.2,0.5,1.0,2.0,3.0,4.0,5.0,6.0};
+				
+				double scaleSet = 0.05;
+				switch(scale)
+				{
+				case 1:scaleSet =scaleMenuItems[0];break;
+				case 2:scaleSet =scaleMenuItems[1];break;
+				case 3:scaleSet =scaleMenuItems[2];break;
+				case 4:scaleSet =scaleMenuItems[3];break;
+				case 5:scaleSet =scaleMenuItems[4];break;
+				case 6:scaleSet =scaleMenuItems[5];break;
+				case 7:scaleSet =scaleMenuItems[6];break;
+				case 8:scaleSet =scaleMenuItems[7];break;
+				case 9:scaleSet =scaleMenuItems[8];break;
+				case 10:scaleSet =scaleMenuItems[9];break;
+				}
+				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
+				if(!earthquakePointActorList.isEmpty() && earthquakePointActorList.get(0).GetVisibility() == 1)
+				{
+					earthquakePointActorList.get(0).GetProperty().SetPointSize(scaleSet);//SetScale(scaleSet,scaleSet,scaleSet);
+				}
+				else if(!earthquakeList.isEmpty() )
+				for(int i = 0;i<earthquakeList.size();i++)
+				{
+					Earthquake eq = earthquakeList.get(i);
+					eq.getEarthquakeCatalogActor().VisibilityOn();
+					vtkSphereSource srcReference = (vtkSphereSource) eq.getEarthquakeCatalogActor().GetMapper().GetInputConnection(0, 0).GetProducer();//(scaleSet);//,scaleSet,scaleSet);
+					srcReference.SetRadius(eq.getMag()*scaleSet);
+					eq.getEarthquakeCatalogActor().Modified();
+				}
+				
+				Info.getMainGUI().updateRenderWindow();
 			}
 			if(src == transparencySlider)
 			{
-				//setPropertyChange(false, EQCatalog.CHANGE_TRANSPARENCY_SLIDER);
+				double transparency = transparencySlider.getValue();
+				System.out.println(transparency);
 			}
 			if (src == depthSlider) {
 				depthSliderValue = depthSlider.getValue();
@@ -1933,6 +1999,8 @@ MouseListener {
 		public void actionPerformed(ActionEvent e) {
 		
 			Object src = e.getSource();
+			vtkAnimationScene scene = new vtkAnimationScene();
+			CueAnimator cb;
 			if (src == newInternetSourceButton){
 				if (this.netSourceDialog == null) {
 					this.netSourceDialog = new ComcatResourcesDialog(this);
@@ -1961,30 +2029,161 @@ MouseListener {
 			{
 				//ascending order as per the time
 				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
-				ArrayList<vtkActor> earthquakeActors = this.netSourceDialog.getAllEarthquakesActors();
-				
-				for(int i =0;i<earthquakeActors.size();i++)
-				{
-					earthquakeActors.get(i).VisibilityOff();
-				}
-				Info.getMainGUI().updateRenderWindow();
-				for(int i =0;i<earthquakeActors.size();i++)
-				{
-					earthquakeActors.get(i).VisibilityOn();
-					Info.getMainGUI().updateRenderWindow();
-					Earthquake eq = earthquakeList.get(i);
-				
+				//ArrayList<vtkActor> earthquakeActors = this.netSourceDialog.getAllEarthquakesActors();
+					scene.RemoveAllCues();
+					//the frame rate affects sequence mode
+					scene.SetModeToSequence();//SetModeToRealTime();//
+
+					scene.SetLoop(0);//loop once 
+					scene.SetFrameRate(15);
+					scene.SetStartTime(3);
+					scene.SetEndTime(20);
+
+					// Create an Animation Cue.
+					vtkAnimationCue cue1 = new vtkAnimationCue();
+					cue1.SetStartTime(5);
+					cue1.SetEndTime(13);
+					scene.AddCue(cue1);
+					cb = new CueAnimator();
+					scene.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
+					scene.AddObserver("EndAnimationCueEvent", cb, "EndCue");
+					scene.AddObserver("AnimationCueTickEvent", cb, "TickEarthquakeCatalogAniamtion");
+					
+					cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+					cb.earthquakeList = earthquakeList;
+					scene.Play();
+					scene.Stop();
+					Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cb.camold);
 					/*Date date = new Date(eq.getTime);
 					DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
 					String dateFormatted = formatter.format(date);*/
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+			}
+			
+			//display panel buttons
+			if (src == this.dispProp_geomPoint) {
+				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
+				earthquakePointActorList = new ArrayList<>();
+				vtkPoints points = new vtkPoints();
+				if(!earthquakeList.isEmpty())
+				for(int i = 0;i<earthquakeList.size();i++)
+				{
+					Earthquake eq = earthquakeList.get(i);
+					eq.getEarthquakeCatalogActor().VisibilityOff();
+					points.InsertNextPoint(eq.getEarthquakeCatalogActor().GetCenter());
+					
+				}
+				vtkPolyData  eqpoly = new vtkPolyData();
+				eqpoly.SetPoints(points);//(vtkPolyData) eq.getEarthquakeCatalogActor().GetMapper().GetInputAsDataSet();
+				vtkVertexGlyphFilter vertexFilter =new vtkVertexGlyphFilter();
+				vertexFilter.SetInputData(eqpoly);
+				vertexFilter.Update();
+				 
+				vtkPolyData polydata = new vtkPolyData();
+				polydata.ShallowCopy(vertexFilter.GetOutput());
+				
+				// Visualization
+				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+				  mapper.SetInputData(polydata);
+              vtkActor actor = new vtkActor();
+				  actor.SetMapper(mapper);
+				  actor.GetProperty().SetPointSize(1);
+				  earthquakePointActorList.add(actor);
+				Info.getMainGUI().updateActors(earthquakePointActorList);
+				//make points circular instead of square
+				Info.getMainGUI().getRenderWindow().GetRenderWindow().PointSmoothingOn();
+			}
+			else if (src == this.dispProp_geomSphere) {
+				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
+				if(!earthquakePointActorList.isEmpty())
+				{
+					earthquakePointActorList.get(0).VisibilityOff();
+				}
+				if(!earthquakeList.isEmpty() )
+				for(int i = 0;i<earthquakeList.size();i++)
+				{
+					Earthquake eq = earthquakeList.get(i);
+					
+					eq.getEarthquakeCatalogActor().VisibilityOn();
+				}
+				Info.getMainGUI().updateRenderWindow();
+			}
+			else if(src==this.dispProp_colButton)
+			{
+				
+				if (this.colorChooser == null) {
+					this.colorChooser = new GradientColorChooser(this);
+				}
+				Color[] newColor = this.colorChooser.getColors(
+						this.dispProp_colButton.getColor1(),
+						this.dispProp_colButton.getColor2());
+				if (newColor != null) {
+					this.dispProp_colButton.setColor(newColor[0], newColor[1]);
+					if (newColor[0].equals(newColor[1])) {
+						setGradApplyEnabled(false);
+						this.higherGradientLabel.setVisible(false);
+						this.lowerGradientLabel.setVisible(false);
+					} else {
+						setGradApplyEnabled(true);
+						this.higherGradientLabel.setVisible(true);
+						this.lowerGradientLabel.setVisible(true);
 					}
 				}
-						
+				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
+				ArrayList<vtkActor> gradientActor = new ArrayList<>();
+				// Create the color map
+				
+				float[] hsvMin = new float[3];
+				Color.RGBtoHSB(newColor[0].getRed(),newColor[0].getGreen(),newColor[0].getBlue(),hsvMin);
+				
+				float[] hsvMax = new float[3];
+				Color.RGBtoHSB(newColor[1].getRed(),newColor[1].getGreen(),newColor[1].getBlue(),hsvMax);
+				
+				 vtkLookupTable colorLookupTable = new  vtkLookupTable();
+				  //colorLookupTable.SetTableRange(0, 10);
+				 System.out.println(hsvMin[0]);
+				 System.out.println(hsvMax[1]);
+				 colorLookupTable.SetRampToLinear();
+				  colorLookupTable.SetHueRange(hsvMin[0],hsvMax[0]);
+				  colorLookupTable.SetSaturationRange(hsvMin[1],hsvMax[1]);
+				  colorLookupTable.SetValueRange(hsvMin[2],hsvMax[2]);
+				  //colorLookupTable.SetNumberOfColors(32);
+				  colorLookupTable.Build();
+				 
+				  // Generate the colors for each point based on the color map
+				  vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
+				  colors.SetNumberOfComponents(3);
+				  colors.SetName("Colors");
+				 
+				 
+				if(!earthquakeList.isEmpty() )
+					for(int i = 0;i<earthquakeList.size();i++)
+					{
+						Earthquake eq = earthquakeList.get(i);
+						vtkPolyData outputPolyData = (vtkPolyData) eq.getEarthquakeCatalogActor().GetMapper().GetInputAsDataSet();
+					
+
+						    //double[] p = new double[3];
+						    //outputPolyData.GetPoint(i,p);
+						     
+						 
+						    double[] dcolor = new double[3];
+						    colorLookupTable.GetColor(eq.getMag(), dcolor);
+
+						   /*char[] color=new char[3];
+						    for(int j = 0; j < 3; j++)
+						      {
+						      color[j] = (char)(255.0 * dcolor[j]);
+						      }
+		
+						    colors.InsertValue(0,color[0]);
+						    colors.InsertValue(1,color[1]);
+						    colors.InsertValue(2,color[2]);*/
+						    
+						    eq.getEarthquakeCatalogActor().GetProperty().SetColor(dcolor[0],dcolor[1],dcolor[2]);
+						    //outputPolyData.GetPointData().SetScalars(colors);
+					}
+				//Info.getMainGUI().updateActors(gradientActor);
+				Info.getMainGUI().updateRenderWindow();
 			}
 			/*CatalogTableModel libModel  = this.catalogTable.getLibraryModel();
 			EQCatalog libCat = this.catalogTable.getSelectedValue();
