@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -38,6 +39,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.SurfacePlugin.Component.GoogleStaticMapsURLGenerator;
 import org.scec.vtk.plugins.SurfacePlugin.Component.LatLonBoundingBox;
 import org.scec.vtk.plugins.SurfacePlugin.Component.LoadedFilesProperties;
@@ -46,6 +48,10 @@ import org.scec.vtk.plugins.SurfacePlugin.Component.WMSService;
 import org.scec.vtk.plugins.SurfacePlugin.Component.WMSStyle;
 import org.scec.vtk.plugins.SurfacePlugin.Component.WMSUrlGenerator;
 import org.scec.vtk.tools.Prefs;
+
+import vtk.vtkActor;
+import vtk.vtkConeSource;
+import vtk.vtkPolyDataMapper;
 
 
 
@@ -791,9 +797,7 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 			}
 			
 		
-			temp.addGeographicSurfaceInfo(new GeographicSurfaceInfo(temp.getSurfaceFilePath(), ul, lr));
-				ipg.getImagePluginGUIParent().display(temp.getGeoInfo());
-				System.out.println("ipg == null");
+			
 			
 			
 		} catch (NumberFormatException nfe) {
@@ -835,11 +839,15 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 					lr[1] = lr[1]+360; //to deal with the fact that the lr.y < ul.y, but that's ok
 				}
 			}
-			
-			    temp.addImageInfo(new ImageInfo(temp.getImageFilePath(), ul, lr, meshType));
-			    ipg.getImagePluginGUIParent().display(temp.getImgInfo());
+			//image file info
+			   temp.addImageInfo(new ImageInfo(temp.getImageFilePath(), ul, lr, meshType));
+			   /*   ipg.getImagePluginGUIParent().display(temp.getImgInfo());
 			    temp.setShow(true);
-			    temp.setPlot(true);
+			    temp.setPlot(true);*/
+			//create surface plus texture
+			temp.addGeographicSurfaceInfo(new GeographicSurfaceInfo(temp.getSurfaceFilePath(), ul, lr));
+			ipg.getImagePluginGUIParent().display(temp.getGeoInfo(),temp.getImageInfo());
+			System.out.println("ipg == null");
 			
 		} catch (NumberFormatException nfe) {
 			JOptionPane.showMessageDialog(this, "Bad data.");
@@ -930,8 +938,22 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 		}
 		if(source == displayButton)
 		{
-			new Thread() {
-				public void run() {
+			//Create a cone
+			  /*vtkConeSource coneSource = new vtkConeSource();
+			  coneSource.Update();
+			 
+			  //Create a mapper and actor
+			  vtkPolyDataMapper mapper =new vtkPolyDataMapper();
+			  //mapper.SetInputConnection(coneSource.GetOutputPort());
+			  mapper.SetInputData(coneSource.GetOutput());
+				 vtkActor actor = new vtkActor();
+				  actor.SetMapper(mapper);
+				  //actor.GetProperty().SetRepresentationToWireframe();
+			ArrayList<vtkActor> surfaceActors = new ArrayList<>();
+			surfaceActors.add(actor);
+			Info.getMainGUI().updateActors(surfaceActors);*/
+			//new Thread() {
+				//public void run() {
 					displayButton.setEnabled(false);
 					saveDisplayButton.setEnabled(false);
 					cancelButton.setEnabled(false);
@@ -1021,8 +1043,8 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 						cancelButton.setEnabled(true);
 					}
 				}
-			}.start();
-		}
+			//}.start();
+		//}
 	}
 
 	private void setImageLoadPanel(boolean internet) {

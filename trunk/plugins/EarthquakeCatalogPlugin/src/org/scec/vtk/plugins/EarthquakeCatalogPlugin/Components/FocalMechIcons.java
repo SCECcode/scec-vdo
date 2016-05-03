@@ -1,9 +1,9 @@
 package org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components;
 
-import javax.media.j3d.Texture;
+//import javax.media.j3d.Texture;
 import javax.swing.ImageIcon;
 
-import com.sun.j3d.utils.image.TextureLoader;
+//import com.sun.j3d.utils.image.TextureLoader;
 
 /**
  * This class wraps static focal mechanism <code>ImageIcon</code> objects so that
@@ -157,7 +157,7 @@ public class FocalMechIcons {
      * @param pattern value that identifies focal mechanism colors
      * @return a focal mechanism <code>Texture</code>
      */
-    public static Texture getTexture(int pattern) {
+   /* public static Texture getTexture(int pattern) {
         String textureName = 
             "resources/img/focal_" +
             getStringForPattern(pattern) +
@@ -167,7 +167,7 @@ public class FocalMechIcons {
                 "RGB",
                 null);
         return loader.getTexture();
-    }
+    }*/
     
 
     
