@@ -754,7 +754,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				double[] latlon = new double[3];
 				double depth=0,mag=0,lon=0,lat=0;
 				vtkSphereSource sphereSource = new vtkSphereSource();
-				 latlon[0] = Transform.calcRadius(event.getLatitude().doubleValue()) + event.getDepth().doubleValue();
+				 latlon[0] = Transform.calcRadius(event.getLatitude().doubleValue()) + (-event.getDepth().doubleValue());
                  // Phi= deg2rad(latitude);
                  latlon[1] = (event.getLatitude().doubleValue());
                  //Theta= deg2rad(longitude);

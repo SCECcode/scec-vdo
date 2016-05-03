@@ -20,11 +20,25 @@ import com.google.common.base.Throwables;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
+import vtk.vtkConeSource;
 import vtk.vtkDataSetMapper;
+import vtk.vtkDoubleArray;
+import vtk.vtkFloatArray;
+import vtk.vtkImageReader;
+import vtk.vtkJPEGReader;
+import vtk.vtkLight;
+import vtk.vtkOpenGLTexture;
+import vtk.vtkPNGReader;
+import vtk.vtkPlaneSource;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkSphereSource;
+import vtk.vtkTexture;
+import vtk.vtkTextureMapToPlane;
+import vtk.vtkTextureMapToSphere;
 import vtk.vtkTriangleStrip;
+import vtk.vtkTriangularTCoords;
 
 public class SurfacePluginGUI {
 	
@@ -110,12 +124,19 @@ public class SurfacePluginGUI {
 		//numVertices, TriangleStripArray.COORDINATES | TriangleStripArray.TEXTURE_COORDINATE_2, strips);
 		
 		triangleStrip.GetPointIds().SetNumberOfIds(numVertices);
+		vtkFloatArray textureCoordinates =new vtkFloatArray();
+		textureCoordinates.SetNumberOfComponents(2);
+		textureCoordinates.SetNumberOfTuples(numVertices);
+		textureCoordinates.SetName("TextureCoordinates");
+		
+		
 		//Point3d[][] pt = new Point3d[latIncrements][2*longIncrements+2]; //all the points will be stored here
 		vtkPoints pts = new vtkPoints();
 		double latStep = (n-s)/(double)latIncrements;
 		double longStep = (e-w)/(double)longIncrements;
 		double[] firstLineOfData = new double[horizontalItems];
 		double[] secondLineOfData = new double[horizontalItems];
+		double lon,lat;
 		for (int i=0; i<latIncrements; i++) {
 			//we fill the Triangle strip array by going bottom, top, bottom, top, so we need z values
 			//from two different latitudes.  Each latitude corresponds to one of the double arrays
@@ -137,9 +158,10 @@ public class SurfacePluginGUI {
 	                latlon[1] = (s+i*latStep);
 	                 //longitude;
 	                latlon[2] =  (w+j*longStep);
-	                 
+	                 lat =latlon[1];
+	                 lon =latlon[2];
 	                xForm = Transform.customTransform(latlon);
-	                 
+	                textureCoordinates.InsertTuple2(num,(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)));//, xForm[2]);
 					pts.InsertPoint(num,xForm);
 					//pt[i][2*j+1] = LatLongToPoint.plotPoint(s+(i+1)*latStep, w+j*longStep, firstLineOfData[j]/200.0+altitude);
 					
@@ -148,13 +170,21 @@ public class SurfacePluginGUI {
 	                latlon[1] = (s+(i+1)*latStep);
 	                 //longitude;
 	                latlon[2] =  (w+j*longStep);
-	                 
+	                lat =latlon[1];
+	                 lon =latlon[2];
 	                xForm = Transform.customTransform(latlon);
 	                 
 					pts.InsertPoint(num+1,xForm);
-					
+					//(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)
+					textureCoordinates.InsertTuple2(num+1,(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)));
+					//textureCoordinates.InsertNextValue(xForm[0]);
+	                //textureCoordinates.InsertNextValue(xForm[1]);
+	                //textureCoordinates.InsertNextValue(xForm[2]);
+					//textureCoordinates.InsertNextValue(num+1);
 					triangleStrip.GetPointIds().SetId(num,num);
 					triangleStrip.GetPointIds().SetId(num+1,num+1);
+					
+					
 
 				} catch (Exception ex) {
 					System.out.println("Exception " + ex);
@@ -163,6 +193,7 @@ public class SurfacePluginGUI {
 			}
 		}
 
+		
 		//copy all the points into the TriangleStripArray
 		//t.setCoordinates(0, pts);
 		//t.setCapability(TriangleStripArray.ALLOW_TEXCOORD_READ);
@@ -172,14 +203,17 @@ public class SurfacePluginGUI {
 		vtkCellArray cells = new vtkCellArray();
 		cells.InsertNextCell(triangleStrip);
 			 
+		
+		
+		
 		vtkPolyData triangleStripPolydata =new vtkPolyData();
 		triangleStripPolydata.SetPoints(pts);
 		triangleStripPolydata.SetStrips(cells);
-			 		
+		triangleStripPolydata.GetPointData().SetTCoords(textureCoordinates);
 		
 		return triangleStripPolydata;
 	}
-	public void display(GeographicSurfaceInfo si) { //creates the surface
+	public void display(GeographicSurfaceInfo si,ImageInfo ii) { //creates the surface
 		data = new ArrayList<double[]>();
 		
 		//bg = new BranchGroup();
@@ -189,17 +223,50 @@ public class SurfacePluginGUI {
 		} catch (IOException e) {
 			Throwables.propagate(e);
 		}
+		//texture file
+		vtkJPEGReader jPEGReader = new vtkJPEGReader();
+		
+		jPEGReader.SetFileName(ii.getFilename());
+		
 		vtkPolyData polydata = new vtkPolyData(); 
 		polydata = createSurface(si);
 			  // Create an actor and mapper
-		vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-			  mapper.SetInputData(polydata);
-						 
+		
+		
+		// Read the image which will be the texture
+		 //jPEGReader.SetFileName("C:/Users/Public/Pictures/Sample Pictures/green.png");
+		// Create a plane
+		  /*vtkPlaneSource plane =new vtkPlaneSource();
+		  plane.SetCenter(0.0, 0.0, 0.0);
+		  plane.SetNormal(0.0, 0.0, 1.0);*/
+		  
+		  // Apply the texture
+		  vtkTexture texture = new vtkTexture();
+		 // texture.SetInputData(jPEGReader.GetOutput());
+		  texture.SetInputConnection(jPEGReader.GetOutputPort());
+		 
+		  //vtkTextureMapToPlane texturePlane = new vtkTextureMapToPlane();
+		  //texturePlane.SetInputData(polydata);
+		  //texturePlane.SetInputConnection(plane.GetOutputPort());
+		//Create a cone
+		  //vtkConeSource coneSource = new vtkConeSource();
+		  //coneSource.Update();
+		 
+		  //Create a mapper and actor
+		  vtkPolyDataMapper mapper =new vtkPolyDataMapper();
+		  //mapper.SetInputConnection(texturePlane.GetOutputPort());
+		  mapper.SetInputData(polydata);
+		  //mapper.ScalarVisibilityOff();
 			 vtkActor actor = new vtkActor();
 			  actor.SetMapper(mapper);
-			  actor.GetProperty().SetRepresentationToWireframe();
+			  actor.SetTexture(texture);
+			  actor.GetProperty().SetOpacity(0.5);
+			 // actor.GeneralTextureTransform();
+			  //actor.GetProperty().SetRepresentationToWireframe();
 		surfaceActors.add(actor);
 		Info.getMainGUI().updateActors(surfaceActors);
+		Info.getMainGUI().updateRenderWindow(actor);
+		
 		//Info.getMainGUI().updateRenderWindow();
 		/*TriangleStripArray t = createSurface(si);
 		t.setCapability(TriangleStripArray.ALLOW_TEXCOORD_READ);
@@ -273,7 +340,7 @@ public class SurfacePluginGUI {
 			file = lfp.getSurfaceFilePath();
 		else{
 			file = lfp.getGeoInfo().getFilename();
-			display(lfp.getGeoInfo());
+			display(lfp.getGeoInfo(),lfp.getImageInfo());
 		}
 		if(file.equalsIgnoreCase("-")){
 			data = "-";
