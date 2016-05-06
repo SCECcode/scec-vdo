@@ -19,7 +19,7 @@ public class PoliticalBoundariesRegion  {
 		vtkPoints currentBoundary = new vtkPoints();
 		vtkCellArray vtkVertices = new vtkCellArray();
 		Color traceColor1 = new Color(1.0f,1.0f,1.0f); // white
-		ArrayList<String> usStateNames;
+		ArrayList<String> usStateNames = new ArrayList<>();
 		
 		/*Complete Highway Source File. Segments are not known to be in a particular order, other 
 		 * than all belonging to one highway

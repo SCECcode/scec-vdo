@@ -33,7 +33,7 @@ public class MainSplashScreen  extends Frame implements ActionListener {
 	        
 	        final SplashScreen splash = SplashScreen.getSplashScreen();
 	        if (splash == null) {
-	            //System.out.println("SplashScreen.getSplashScreen() returned null");
+	            System.out.println("SplashScreen.getSplashScreen() returned null");
 	            return;
 	        }
 	        Graphics2D g = splash.createGraphics();
