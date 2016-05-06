@@ -17,7 +17,8 @@ public class GraticulePresetModel
 	
 	private void load()
 	{
-		File dir = new File(GraticulePresetModel.class.getResource("resources").getPath());
+		//System.out.println(GraticuleGUI.class.getResource("resources/").getPath());
+		File dir = new File(GraticuleGUI.class.getResource("resources/").getPath());
 		File[] files = dir.listFiles();
 		
 		for (File f : files)

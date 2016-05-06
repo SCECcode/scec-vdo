@@ -780,7 +780,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				if(event.getMag()!=null)
 					mag= event.getMag().doubleValue();
 				if(event.getDepth()!=null)
-					depth= event.getDepth().doubleValue();
+					depth= -event.getDepth().doubleValue();
 				if(event.getLatitude()!=null)
 					lat= event.getLatitude().doubleValue();
 				if(event.getLongitude()!=null)
