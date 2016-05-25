@@ -16,7 +16,14 @@ public class Transform {
 		return radius;
 	}
 
+public static double[] transformLatLonHeight(double lat, double lon, double height) {
+	return Transform.customTransform(new double[]{Transform.calcRadius(lat)+height, lat, lon});
+}
 
+public static double[] transformLatLon(double lat, double lon) {
+	return Transform.customTransform(new double[]{Transform.calcRadius(lat), lat, lon});
+}
+	
 public static double[] customTransform(double[] latlon)
 {
 	
