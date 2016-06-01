@@ -89,7 +89,7 @@ import vtk.vtkVectorText;
 
 public  class MainGUI extends JFrame implements ChangeListener{
 	private final int BORDER_SIZE = 10;
-	private static JFrame frame ;
+//	private static JFrame frame ;
 	private static vtkPanel renderWindow;
 	private static JTabbedPane pluginTabPane;
 	//Create Main Panel
@@ -120,7 +120,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 
 	private static JPanel pluginGUIPanel;
 	private static JScrollPane pluginGUIScrollPane;
-	private static  JSplitPane pluginSplitPane;
+	private static JSplitPane pluginSplitPane;
 	private static boolean alreadyResized;
 	private static Object id;
 
@@ -170,20 +170,47 @@ public  class MainGUI extends JFrame implements ChangeListener{
         //add ui classes 
         //createMenu();
         
+		/*
+		 * The GUI hierarchy is:
+		 * 	This class (MainGUI) extends JFrame
+		 * 		pluginSplitPane
+		 * 			mainPanel - separate Panel to hold renderWindow so we can handle it if all the plugin tabs are closed
+		 * 				renderWindow
+		 * 			pluginGUIScrollPane, so the pluginGUI scrolls if needed
+		 * 				pluginGUIPanel, the panel containing all the plugin GUI tabs
+		 * 					pluginTabPane, the pane with all the plugin GUI tabs.  New tabs are added here.
+		 * 				
+ 		 */
+		
+		
 		renderWindow = new vtkPanel();
 		vtkCamera camera = new vtkCamera();
 		renderWindow.GetRenderer().SetActiveCamera(camera);
-		mainPanel = new JPanel();
-		mainPanel.setLayout(new GridLayout());
+		mainPanel = new JPanel(new BorderLayout());
+		mainPanel.add(renderWindow, BorderLayout.CENTER);
+		
 		renderWindow.setFocusable(true);
 		renderWindow.GetRenderer().SetBackground(0,0,0);
-		mainPanel.add(renderWindow);
 		
 		mainMenu = new MainMenu();
 		pluginGUIPanel = new JPanel();
-		pluginTabPane =   new JTabbedPane();
+		pluginTabPane =  new JTabbedPane();
+		
 		Info.setMainGUI(this);
 		setUpPluginTabs();
+		
+		pluginSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainPanel, pluginGUIScrollPane);
+		pluginSplitPane.setOneTouchExpandable(false);
+		pluginSplitPane.setResizeWeight(1);
+		pluginSplitPane.setDividerLocation(0.5);
+
+		//Set preferred sizes
+		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
+		pluginGUIScrollPane.setMinimumSize(d);
+		pluginGUIScrollPane.setPreferredSize(d);
+		mainPanel.setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
+		renderWindow.setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
+
 		renderWindow.GetRenderer().AddActor(tempGlobeScene);
 		renderWindow.GetRenderer().AddActor(pointActor);
 		renderWindow.GetRenderer().AddActor(labelActor);
@@ -223,6 +250,8 @@ public  class MainGUI extends JFrame implements ChangeListener{
         	mainMenu.availablePlugins = Plugins.getAvailablePlugins();
         	mainMenu.setupPluginMenus();
 			setMainFrame();
+			//Update the divider location so that the plugin pane doesn't require horizontal scrolling
+			pluginSplitPane.setDividerLocation(this.getWidth() - pluginTabPane.getPreferredSize().width - 60);
 			
 		} catch (IOException ioe) {
 			throw new RuntimeException("Unable to get available plugins", ioe);
@@ -418,21 +447,21 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		pluginTabPane.addChangeListener((ChangeListener) this);
 		pluginTabPane.setBorder(BorderFactory.createEtchedBorder());
 		pluginGUIScrollPane = new JScrollPane(pluginGUIPanel);
-		pluginSplitPane = null;
+//		pluginSplitPane = null;
 	}
 	//create frame and tabbed pane in main window
 	private void setMainFrame()
-	{
+	{	
+		this.setTitle("SCEC VDO VTK");
+		this.setMenuBar(mainMenu.getMenuBar());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setSize(new Dimension(Prefs.getTotalWidth(), Prefs.getMainHeight()));
+		this.setContentPane(pluginSplitPane);
+		//This has to be done here, after the pluginSplitPane has been added to the GUI
+		pluginSplitPane.setDividerSize(0);
+		this.setLocationRelativeTo(null);
+		this.setVisible(true);
 		
-		mainPanel.add(pluginGUIPanel);
-		frame = new JFrame("Scec VDO VTK");
-		frame.setMenuBar(mainMenu.getMenuBar());     
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().setLayout(new BorderLayout());
-        frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
-        frame.setSize(1200, 800);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
 	}
 	//viewRange
 	private void setViewRange(ViewRange viewRange) {
