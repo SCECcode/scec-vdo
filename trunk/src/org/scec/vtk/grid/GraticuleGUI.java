@@ -201,7 +201,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			}
 			countPts++;
 			pt[2] = (rightLon);
-			labels.SetValue(labelLatCt, Double.toString(j));
+			labels.SetValue(labelLatCt, new DecimalFormat("#.######").format(j));
 			labelPoints.InsertNextPoint(Transform.customTransform(pt));
 			
 		}
@@ -217,7 +217,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			pt[2] = (j);
 
 			allPoints.InsertNextPoint(Transform.customTransform(pt));
-			labels.SetValue(labelLatCt, Double.toString(j));
+			labels.SetValue(labelLatCt, new DecimalFormat("#.######").format(j));
 
 			labelPoints.InsertNextPoint(Transform.customTransform(pt));
 
