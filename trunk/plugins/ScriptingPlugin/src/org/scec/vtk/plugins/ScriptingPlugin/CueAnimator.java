@@ -118,7 +118,7 @@ public class CueAnimator {
 
 					for(int i =0;i<imagePixelData.size();i++){
 						String fileName;
-						fileName = Prefs.getLibLoc() + "/tmp/Capture" + i + ".jpeg";
+						fileName = Prefs.getLibLoc() + "/tmp/Capture" + i + ".jpg";
 						File file = new File(fileName);
 
 						vtkPixelData = imagePixelData.get(i);
