@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="lib/jmf.jar"/>
 	<classpathentry kind="lib" path="lib/opensha.jar"/>
 	<classpathentry kind="lib" path="lib/EventWebService.jar"/>
+	<classpathentry kind="lib" path="lib/sdoutl.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
