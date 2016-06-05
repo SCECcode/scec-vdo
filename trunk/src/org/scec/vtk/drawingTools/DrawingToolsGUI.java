@@ -24,6 +24,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTableModel;
 import org.scec.vtk.plugins.utils.AbstractLibraryModel;
@@ -57,6 +58,13 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	private boolean loaded = false;
 	private EditButton editDrawingToolsButton;
 	
+	private static String[] columnNames = {"Show","",
+			"Label",
+			"Size",
+			"Lat",
+			"Lon",
+		"Alt"};
+	public LabelTableModel labelModel = new LabelTableModel(columnNames);
 	public DrawingToolsGUI(DrawingToolsPlugin plugin){
 		
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -146,33 +154,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    }
 	    else if (src == this.addDrawingToolsButton) {
 	    	 DrawingTool drawingToolObj = new DrawingTool();
-	    	 //drawingToolObj.newDocument(); 
-	    	 String text = "test text";
-	    	 ArrayList a = drawingTooltablemodel.getAllObjects();
-	    	 drawingToolObj.setDisplayName(text +" -"+ Integer.toString(a.size()+1));
-	    	 //drawingToolObj.setInMemory(true);
-	    	ArrayList newObjects = new ArrayList<>();
-	    	vtkVectorText newText = new vtkVectorText();
-	    	newText.SetText(text);
-	    	 //newText.GetTextProperty().SetFontSize ( 12 );
-	    	// Create a mapper and actor
-	    	  vtkPolyDataMapper mapper =new vtkPolyDataMapper();
-	    	  mapper.SetInputConnection(newText.GetOutputPort());
-	    	  
-	    	  vtkActor actor = new vtkActor();
-	    	  actor.SetMapper(mapper);
-	    	  actor.GetProperty().SetColor(1.0, 0.0, 0.0);
-	    	  actor.SetScale(30,30,30);
-	    	  actor.RotateY(90);
-	    	  actor.RotateZ(90);
-	    	  actor.RotateX(30);
-	    	 double[] pt= {Transform.calcRadius(37),37,-120};
-	    	 actor.SetPosition( Transform.customTransform(pt));
-	    	 actor.GetProperty().SetColor (1,0,0);
-	    	 newObjects.add(drawingToolObj);
+	    	 drawingToolObj.addDrawingTool();
+	    	 ArrayList newObjects = new ArrayList<>();
 	    	 this.DrawingToolTable.addDrawingTool(newObjects);
-	    	 drawingToolObj.getMasterFaultBranchGroup().add(actor);
-	    	 Info.getMainGUI().updateActors(drawingToolObj.getMasterFaultBranchGroup());
+	    	 
 	    }
 	    if (src == this.remDrawingToolsButton) {
 	    	int[] selectedRows = this.DrawingToolTable.getSelectedRows();
