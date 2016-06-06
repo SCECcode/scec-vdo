@@ -4,11 +4,8 @@ import java.awt.Color;
 import java.util.Enumeration;
 import java.util.HashMap;
 
-import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.BranchGroup;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
-import javax.vecmath.Point3d;
 
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 import org.opensha.commons.param.Parameter;
@@ -22,6 +19,7 @@ import org.scec.geo3d.library.wgcep.faults.colorers.ColorerChangeListener;
 import org.scec.geo3d.library.wgcep.faults.colorers.FaultColorer;
 import org.scec.geo3d.library.wgcep.gui.anim.AnimationListener;
 import org.scec.geo3d.library.wgcep.gui.dist.VisibleFaultSurfacesProvider;
+import org.scec.geo3d.library.wgcep.surfaces.FaultSectionActorList;
 import org.scec.geo3d.library.wgcep.surfaces.GeometryGenerator;
 import org.scec.geo3d.library.wgcep.surfaces.events.GeometryGeneratorChangeListener;
 import org.scec.geo3d.library.wgcep.surfaces.events.GeometrySettingsChangeListener;
@@ -35,6 +33,10 @@ import org.scec.geo3d.library.wgcep.tree.events.CustomColorSelectionListener;
 import org.scec.geo3d.library.wgcep.tree.events.TreeChangeListener;
 import org.scec.geo3d.library.wgcep.tree.events.VisibilityChangeListener;
 import org.scec.geo3d.library.wgcep.tree.gui.FaultTreeTable;
+
+import vtk.vtkActor;
+import vtk.vtkPanel;
+import vtk.vtkRenderer;
 
 import com.google.common.base.Preconditions;
 
@@ -50,12 +52,16 @@ ParameterChangeListener,
 VisibleFaultSurfacesProvider,
 AnimationListener {
 	
+	// TODO:
+	// everything related to pick behaviour
+	
 	private static final boolean D = false;
 	
-	private HashMap<AbstractFaultSection, BranchGroup> branches =
-		new HashMap<AbstractFaultSection, BranchGroup>();
-	private BranchGroup masterBG;
-	private BranchGroup faultBG;
+	private vtkPanel rendererPanel;
+	
+	private HashMap<AbstractFaultSection, FaultSectionActorList> actorsMap =
+		new HashMap<AbstractFaultSection, FaultSectionActorList>();
+	private vtkRenderer renderer;
 	
 	private HashMap<AbstractFaultSection, RuptureSurface> surfaces =
 		new HashMap<AbstractFaultSection, RuptureSurface>();
@@ -74,14 +80,14 @@ AnimationListener {
 	
 	private Color defaultFaultColor;
 	
-	private PickHandler defaultPickHandler;
-	private FaultSectionPickBehavior pickBehavior;
+//	private PickHandler defaultPickHandler;
+//	private FaultSectionPickBehavior pickBehavior;
 	
 	private LockableUI panelLock;
 	private Thread currentCalcThread;
 	
 	
-	public EventManager(		BranchGroup masterBG,
+	public EventManager(		vtkPanel rendererPanel,
 								FaultTreeTable table,
 								ColorerPanel colorerPanel,
 								GeometryTypeSelectorPanel geomPanel,
@@ -90,19 +96,12 @@ AnimationListener {
 								FaultSectionPickBehavior pickBehavior,
 								LockableUI panelLock,
 								FaultSectionPickBehavior pick) {
-		this.masterBG = masterBG;
+		this.rendererPanel = rendererPanel;
+		this.renderer = rendererPanel.GetRenderer();
 		this.defaultFaultColor = defaultFaultColor;
-		this.pickBehavior = pickBehavior;
-		this.defaultPickHandler = pickBehavior.getPickHandler();
+//		this.pickBehavior = pickBehavior;
+//		this.defaultPickHandler = pickBehavior.getPickHandler();
 		this.panelLock = panelLock;
-		
-		// this one is just for the faults themselves
-		faultBG = new BranchGroup();
-		faultBG.setCapability(BranchGroup.ALLOW_DETACH);
-		faultBG.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-		faultBG.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-		faultBG.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-		masterBG.addChild(faultBG);
 		
 		this.colorerPanel = colorerPanel;
 		if (colorerPanel != null){
@@ -168,10 +167,10 @@ AnimationListener {
 	 * @param fault
 	 * @return
 	 */
-	private BranchGroup getBuildBG(AbstractFaultSection fault) {
-		BranchGroup bg = branches.get(fault);
-		if (bg == null) {
-			if (D) System.out.println("Building BG for fault: '"+fault.getName()+"'");
+	private FaultSectionActorList getBuildActors(AbstractFaultSection fault) {
+		FaultSectionActorList actors = actorsMap.get(fault);
+		if (actors == null) {
+			if (D) System.out.println("Building actors for fault: '"+fault.getName()+"'");
 			FaultSectionNode node = nodes.get(fault);
 			RuptureSurface surface = getBuildSurface(fault);
 			if (surface == null)
@@ -180,72 +179,74 @@ AnimationListener {
 			if (color == null)
 				color = defaultFaultColor;
 			GeometryGenerator geomGen = getGeomGen(fault);
-			bg = geomGen.createFaultActor(surface, color, fault);
-			branches.put(fault, bg);
+			actors = geomGen.createFaultActors(surface, color, fault);
+			actorsMap.put(fault, actors);
 		}
-		return bg;
+		return actors;
 	}
 	
 	private void unCacheBranch(AbstractFaultSection fault) {
 		if (D) System.out.println("UnCaching BG for fault: '"+fault.getName()+"'");
-		BranchGroup bg = branches.remove(fault);
-		if (bg != null && bg.isLive())
-			bg.detach();
+		FaultSectionActorList actors = actorsMap.remove(fault);
+		for (vtkActor actor : actors) {
+			if (isActorDisplayed(actor))
+				renderer.RemoveActor(actor);
+		}
+		updateViewer();
 	}
 	
 	private void rebuildAllVisibleFaults() {
 		if (D) System.out.println("Rebuilding all visible faults");
 		for (FaultSectionNode node : nodes.values()) {
 			AbstractFaultSection fault = node.getFault();
-			BranchGroup bg = branches.get(fault);
-			if (bg != null) {
+			FaultSectionActorList actors = actorsMap.get(fault);
+			if (actors != null) {
 				unCacheBranch(fault);
 				if (node.isVisible()) {
 					displayFault(fault);
 				}
 			} else if (node.isVisible()) {
 				// it is visible, but not built yet
-				getBuildBG(fault);
+				getBuildActors(fault);
 				displayFault(fault);
 			}
 		}
 		System.gc();
 	}
 	
+	private boolean isActorDisplayed(vtkActor actor) {
+		return renderer.GetActors().IsItemPresent(actor) == 1;
+	}
+	
 	private void displayFault(AbstractFaultSection fault) {
-		BranchGroup bg = getBuildBG(fault);
-		
-		
-		bg.detach();
+		FaultSectionActorList actors = getBuildActors(fault);
 		if (D) System.out.println("Displaying fault: '"+fault.getName()+"'");
-		if (bg != null && !bg.isLive()){
-//			Preconditions.checkState(masterBG.getParent() != null, "Master BG is detached!");
-//			Preconditions.checkState(faultBG.getParent() != null, "Fault BG is detached!");
-			
-//			//These getParent() calls were a quick fix to a problem we were having with the branchgroups
-//			//For some reason they would not be added even though we added it in the load() function and elsewhere
-//			//Can be buggy, sometimes it says it throws an exception saying it can only add a branch group as a child
-//			if(pickBehavior.getParent() == null){
-//				masterBG.addChild(pickBehavior); //this is necessary to get the click and shift click functionality of the inversion plugin
-//				Geo3d.getMainWindow().getPluginBranchGroup().addChild(masterBG);
-//			}
-//			
-//			if(masterBG.getParent() == null){
-//				Geo3d.getMainWindow().getPluginBranchGroup().addChild(masterBG);
-//			}
-//			
-//			if(faultBG.getParent() == null){
-//				masterBG.addChild(faultBG);
-//			}
-			
-			faultBG.addChild(bg);
+		for (vtkActor actor : actors) {
+			actor.SetVisibility(1);
+			if (isActorDisplayed(actor)) {
+				// it's already in there, update it
+				actor.Modified();
+			} else {
+				// add it
+				renderer.AddActor(actor);
+			}
 		}
+		updateViewer();
+	}
+		
+	
+	private void updateViewer() {
+		rendererPanel.Render();
+		rendererPanel.repaint();
 	}
 	
 	private void hideFault(AbstractFaultSection fault) {
-		BranchGroup bg = branches.get(fault);
-		if (bg != null && bg.isLive())
-			bg.detach();
+		FaultSectionActorList actors = actorsMap.get(fault);
+		for (vtkActor actor : actors) {
+			actor.SetVisibility(0);
+			actor.Modified(); // TODO needed?
+		}
+		updateViewer();
 	}
 
 	@Override
@@ -275,12 +276,12 @@ AnimationListener {
 		}
 		
 		if (D) System.out.println("Color changed for fault: '"+fault.getName()+"'");
-		BranchGroup bg = branches.get(fault);
-		if (bg != null) {
+		FaultSectionActorList actors = actorsMap.get(fault);
+		if (actors != null) {
 			if (D) System.out.println("Trying to update color for fault: '"+fault.getName()+"'");
 			boolean success;
 			try {
-				success = getGeomGen(fault).updateColor(bg, newColor);
+				success = getGeomGen(fault).updateColor(actors, newColor);
 			} catch (Exception e) {
 				System.out.println("Warning: excpetion updating color: "+e);
 				success = false;
@@ -318,13 +319,14 @@ AnimationListener {
 	@Override
 	public void colorerChanged(final FaultColorer newColorer) {
 		// this is called when the fault colorer is changed
-		if (pickBehavior != null)
-			pickBehavior.setColorer(null);
+		// TODO
+//		if (pickBehavior != null)
+//			pickBehavior.setColorer(null);
 		
 		// if it's null, then they switched to custom and we don't have to do anything
 		if (newColorer == null) {
-			if (pickBehavior != null)
-				pickBehavior.setPickHandler(defaultPickHandler);
+//			if (pickBehavior != null)
+//				pickBehavior.setPickHandler(defaultPickHandler);
 		} else {
 			// this can take a while, depending, so lets do it threaded and lock the UI
 			
@@ -343,10 +345,10 @@ AnimationListener {
 				@Override
 				public void run() {
 					try {
-						if (pickBehavior != null
-								&& newColorer instanceof PickHandler)
-							pickBehavior
-									.setPickHandler((PickHandler) newColorer);
+//						if (pickBehavior != null
+//								&& newColorer instanceof PickHandler)
+//							pickBehavior
+//									.setPickHandler((PickHandler) newColorer);
 						if (D)
 							System.out.println("Colorer changed");
 						for (FaultSectionNode node : nodes.values()) {
@@ -356,8 +358,8 @@ AnimationListener {
 						}
 					} finally {
 						unlockGUI();
-						if (pickBehavior != null)
-							pickBehavior.setColorer(newColorer);
+//						if (pickBehavior != null)
+//							pickBehavior.setColorer(newColorer);
 					}
 				}
 				
@@ -401,10 +403,11 @@ AnimationListener {
 		// this is called when the entire tree is rebuilt
 		
 		if (D) System.out.println("Tree changed!");
-		faultBG.removeAllChildren();
+		for (AbstractFaultSection fault : actorsMap.keySet())
+			unCacheBranch(fault);
 		nodes.clear();
 		idSectionsMap.clear();
-		branches.clear();
+		actorsMap.clear();
 		surfaces.clear();
 		System.gc();
 		FaultColorer colorer;
@@ -412,8 +415,8 @@ AnimationListener {
 			colorer = null;
 		else
 			colorer = colorerPanel.getSelectedColorer();
-		if (pickBehavior != null)
-			pickBehavior.setColorer(colorer);
+//		if (pickBehavior != null)
+//			pickBehavior.setColorer(colorer);
 		processAllChildren(newRoot, colorer);
 		
 		rebuildAllVisibleFaults();
@@ -511,10 +514,6 @@ AnimationListener {
 			if (newVisibility != null && newVisibility)
 				node.setVisible(true);
 		}
-	}
-	
-	public BranchGroup getMasterBG() {
-		return masterBG;
 	}
 
 }

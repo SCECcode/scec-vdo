@@ -6,14 +6,14 @@ import javax.media.j3d.Node;
 
 import org.scec.geo3d.library.wgcep.faults.colorers.CPTBasedColorer;
 import org.scec.geo3d.library.wgcep.faults.colorers.FaultColorer;
-import org.scec.geo3d.library.wgcep.surfaces.FaultSectionShape3D;
+import org.scec.geo3d.library.wgcep.surfaces.FaultSectionActorList;
 
 public class NameDispalyPickHandler implements PickHandler {
 	
 	private FaultColorer colorer;
 
 	@Override
-	public void faultPicked(FaultSectionShape3D faultShape, MouseEvent mouseEvent) {
+	public void faultPicked(FaultSectionActorList faultShape, MouseEvent mouseEvent) {
 		String s = faultShape.getInfo();
 		if (this.colorer != null && this.colorer instanceof CPTBasedColorer) {
 			try {
