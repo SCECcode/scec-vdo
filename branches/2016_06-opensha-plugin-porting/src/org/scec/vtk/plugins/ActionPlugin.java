@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Array;
 import java.util.ArrayList;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.jdom.Element;
@@ -12,12 +13,11 @@ import org.scec.vtk.main.MainGUI;
 
 import vtk.vtkActor;
 
-
 public abstract class ActionPlugin implements Plugin, StatefulPlugin, ClickablePlugin {
 	
-	private JPanel gui;
+	private JComponent gui;
 	protected PluginInfo metadata;
-	private ArrayList<vtkActor> actors = new ArrayList<vtkActor>();
+	
 	/**
 	 * Save the plugin metadata, create the gui
 	 */
@@ -64,7 +64,7 @@ public abstract class ActionPlugin implements Plugin, StatefulPlugin, ClickableP
      * Called when the plugin is initialized
      * @throws IOException 
      */
-    protected abstract JPanel createGUI() throws IOException;
+    protected abstract JComponent createGUI() throws IOException;
 	
     /**
      * Create the GUI

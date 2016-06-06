@@ -2,16 +2,7 @@ package org.scec.geo3d.library.wgcep.surfaces;
 
 import java.awt.Color;
 import java.util.ArrayList;
-
-import javax.media.j3d.Appearance;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.ColoringAttributes;
-import javax.media.j3d.LineArray;
-import javax.media.j3d.LineAttributes;
-import javax.media.j3d.Node;
-import javax.media.j3d.Shape3D;
-import javax.vecmath.Color3f;
-import javax.vecmath.Point3f;
+import java.util.List;
 
 import org.opensha.commons.data.Container2DImpl;
 import org.opensha.commons.geo.LocationList;
@@ -24,6 +15,13 @@ import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.geo3d.library.wgcep.faults.AbstractFaultSection;
 import org.scec.geo3d.library.wgcep.surfaces.params.DiscreteSizeParam;
+
+import vtk.vtkActor;
+import vtk.vtkCellArray;
+import vtk.vtkLine;
+import vtk.vtkPoints;
+import vtk.vtkPolyData;
+import vtk.vtkPolyDataMapper;
 
 import com.google.common.base.Preconditions;
 
@@ -65,51 +63,55 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 	}
 
 	@Override
-	public BranchGroup createFaultActor(RuptureSurface surface, Color color, AbstractFaultSection fault) {
+	public FaultSectionActorList createFaultActors(RuptureSurface surface, Color color, AbstractFaultSection fault) {
 		if (surface instanceof CompoundSurface) {
-			BranchGroup mainBG = createBranchGroup();
-			for (RuptureSurface subSurf : ((CompoundSurface)surface).getSurfaceList()) {
-				BranchGroup bg;
-				if (subSurf instanceof EvenlyGriddedSurface)
-					bg = createFaultBranchGroup((EvenlyGriddedSurface)subSurf, color, fault);
-				else
-					bg = createFaultActor(subSurf, color, fault);
-				mainBG.addChild(bg);
-			}
-			return mainBG;
+			// TODO
+//			throw new UnsupportedOperationException("Not yet implemented for compound surfaces");
+//			BranchGroup mainBG = createBranchGroup();
+//			for (RuptureSurface subSurf : ((CompoundSurface)surface).getSurfaceList()) {
+//				BranchGroup bg;
+//				if (subSurf instanceof EvenlyGriddedSurface)
+//					bg = createFaultBranchGroup((EvenlyGriddedSurface)subSurf, color, fault);
+//				else
+//					bg = createFaultActors(subSurf, color, fault);
+//				mainBG.addChild(bg);
+//			}
+//			return mainBG;
 		}
 		if (surface instanceof EvenlyGriddedSurface) {
-			return createFaultBranchGroup((EvenlyGriddedSurface)surface, color, fault);
+			return createFaultActors((EvenlyGriddedSurface)surface, color, fault);
 		}
+		// TODO
+		throw new UnsupportedOperationException("Not yet implemented for non evenly gridded surfaces");
 		
-		// this just draws the outline
-		LocationList outline = surface.getPerimeter();
-		
-		Preconditions.checkState(!outline.isEmpty());
-		
-		Point3f[] pts = new Point3f[outline.size()+1];
-		for (int i=0; i<outline.size(); i++) {
-			pts[i] = getPointForLoc(outline.get(i));
-		}
-		pts[pts.length-1] = pts[0];
-		
-		// +1 to connect it at the end
-		LineArray la = new LineArray(pts.length, LineArray.COORDINATES);
-		for (int i=0; i<pts.length; i++) {
-			la.setCoordinate(i, pts[i]);
-		}
-		
-		BranchGroup bg = createBranchGroup();
-		
-		Appearance lapp = buildApp(color);
-		
-		FaultSectionShape3D shape = new FaultSectionShape3D(la,lapp, fault);
-		bg.addChild(shape);
-		
-		return bg;
+//		// this just draws the outline
+//		LocationList outline = surface.getPerimeter();
+//		
+//		Preconditions.checkState(!outline.isEmpty());
+//		
+//		Point3f[] pts = new Point3f[outline.size()+1];
+//		for (int i=0; i<outline.size(); i++) {
+//			pts[i] = getPointForLoc(outline.get(i));
+//		}
+//		pts[pts.length-1] = pts[0];
+//		
+//		// +1 to connect it at the end
+//		LineArray la = new LineArray(pts.length, LineArray.COORDINATES);
+//		for (int i=0; i<pts.length; i++) {
+//			la.setCoordinate(i, pts[i]);
+//		}
+//		
+//		BranchGroup bg = createBranchGroup();
+//		
+//		Appearance lapp = buildApp(color);
+//		
+//		FaultSectionShape3D shape = new FaultSectionShape3D(la,lapp, fault);
+//		bg.addChild(shape);
+//		
+//		return bg;
 	}
 		
-	public BranchGroup createFaultBranchGroup(EvenlyGriddedSurface surface, Color color, AbstractFaultSection fault) {
+	public FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface, Color color, AbstractFaultSection fault) {
 		// TODO Auto-generated method stub
 
 		int cols = surface.getNumCols();
@@ -119,9 +121,9 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		boolean outlineOnly = surfaceType.equals(SURFACE_TYPE_OUTLINE_ONLY);
 		boolean traceOnly = surfaceType.equals(SURFACE_TYPE_TRACE_ONLY);
 		
-		ArrayList<Point3f> points = new ArrayList<Point3f>();
+		List<double[]> points = new ArrayList<double[]>();
 
-		Container2DImpl<Point3f> pointSurface = cacheSurfacePoints(surface);
+		Container2DImpl<double[]> pointSurface = cacheSurfacePoints(surface);
 		
 		int lastLoopCol = cols-2;
 		int lastLoopRow = rows-2;
@@ -130,8 +132,8 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 			return null;
 		} else if (rows == 1) {
 			for (int col=0; col<lastLoopCol; col++) {
-				Point3f pt0 = pointSurface.get(0,	col);		// top left
-				Point3f pt3 = pointSurface.get(0,	col+1);	// top right
+				double[] pt0 = pointSurface.get(0,	col);		// top left
+				double[] pt3 = pointSurface.get(0,	col+1);	// top right
 				points.add(pt0);
 				points.add(pt3);
 			}
@@ -142,10 +144,10 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 				for (int col=0; col<=lastLoopCol; col++) {
 					if (outlineOnly && !(row == 0 || row == lastLoopRow || col == 0 || col == lastLoopCol))
 						continue;
-					Point3f pt0 = pointSurface.get(row,	col);		// top left
-					Point3f pt1 = pointSurface.get(row+1,	col);		// bottom left
-					Point3f pt2 = pointSurface.get(row+1,	col+1);	// bottom right
-					Point3f pt3 = pointSurface.get(row,	col+1);	// top right
+					double[] pt0 = pointSurface.get(row,	col);		// top left
+					double[] pt1 = pointSurface.get(row+1,	col);		// bottom left
+					double[] pt2 = pointSurface.get(row+1,	col+1);	// bottom right
+					double[] pt3 = pointSurface.get(row,	col+1);	// top right
 
 					// left edge...only if it's not a trace and it's either the left col, or not an outline
 					if (!traceOnly && (!outlineOnly || col == 0)) {
@@ -172,48 +174,48 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		}
 		
 //		System.out.println("rows: " + rows + ", cols:" + cols + ", pnts: " + points.size()); 
-		LineArray la = new LineArray(points.size(), LineArray.COORDINATES);
-		for (int i=0; i<points.size(); i++) {
-			Point3f point = points.get(i);
-			la.setCoordinate(i, point);
+		vtkPolyData linesPolyData = new vtkPolyData();
+		
+		vtkPoints pts = new vtkPoints();
+		for (double[] point : points)
+			pts.InsertNextPoint(point);
+		
+		linesPolyData.SetPoints(pts);
+		
+		Preconditions.checkState(points.size() % 2 == 0, "Must be even number of points");
+		
+		vtkCellArray lines = new vtkCellArray();
+		
+		for (int li=0; li<points.size()/2; li++) {
+			int index1 = li*2;
+			int index2 = index1+1;
+			
+			vtkLine line = new vtkLine();
+			line.GetPointIds().SetId(0, index1);
+			line.GetPointIds().SetId(1, index2);
+			
+			lines.InsertNextCell(line);
 		}
 		
-		BranchGroup bg = createBranchGroup();
+		linesPolyData.SetLines(lines);
 		
-		Appearance lapp = buildApp(color);
+		vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+		mapper.SetInputData(linesPolyData);
+		FaultSectionActorList list = new FaultSectionActorList(fault);
 		
-		FaultSectionShape3D shape = new FaultSectionShape3D(la,lapp, fault);
-		bg.addChild(shape);
+		vtkActor actor = new vtkActor();
+		actor.SetMapper(mapper);
+		actor.GetProperty().SetColor(getColorDoubleArray(color));
+		actor.GetProperty().SetLineWidth(lineSizeParam.getValue());
+		list.add(actor);
 		
-		return bg;
-	}
-	
-	private Appearance buildApp(Color color) {
-		return buildApp(color, lineSizeParam.getValue());
-	}
-	
-	public static Appearance buildApp(Color color, double lineWidth) {
-		ColoringAttributes ca = new ColoringAttributes(new Color3f(color), ColoringAttributes.SHADE_FLAT);
-		ca.setCapability(ColoringAttributes.ALLOW_COLOR_READ);
-		ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
-		
-		Appearance lapp = new Appearance();
-		lapp.setColoringAttributes(ca);
-		LineAttributes latt = new LineAttributes();
-		latt.setLineWidth((float) lineWidth);
-		lapp.setLineAttributes(latt);
-		
-		return lapp;
+		return list;
 	}
 	
 	@Override
-	public boolean updateColor(BranchGroup bg, Color color) {
-		for (int i=0; i<bg.numChildren(); i++) {
-			Node node = bg.getChild(i);
-			if (node instanceof FaultSectionShape3D)
-				if (!updateColorAttributesForNode(node, new Color3f(color)))
-					return false;
-		}
+	public boolean updateColor(FaultSectionActorList actorList, Color color) {
+		for (vtkActor actor : actorList)
+			actor.GetProperty().SetColor(getColorDoubleArray(color));
 		return true;
 	}
 	

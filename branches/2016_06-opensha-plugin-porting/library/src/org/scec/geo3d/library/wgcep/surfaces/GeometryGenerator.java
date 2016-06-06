@@ -2,6 +2,7 @@ package org.scec.geo3d.library.wgcep.surfaces;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.opensha.commons.data.Container2DImpl;
 import org.opensha.commons.data.Named;
@@ -31,7 +32,7 @@ public abstract class GeometryGenerator implements Named {
 		this.name = name;
 	}
 	
-	private ArrayList<GeometrySettingsChangeListener> listeners = new ArrayList<GeometrySettingsChangeListener>();
+	private List<GeometrySettingsChangeListener> listeners = new ArrayList<GeometrySettingsChangeListener>();
 	
 	/**
 	 * Builds a vtkActor containing geometry representing the given surface, and colored with the given colorer.
@@ -41,7 +42,7 @@ public abstract class GeometryGenerator implements Named {
 	 * @param fault
 	 * @return
 	 */
-	public abstract vtkActor createFaultActor(RuptureSurface surface, Color color,
+	public abstract FaultSectionActorList createFaultActors(RuptureSurface surface, Color color,
 			AbstractFaultSection fault);
 	
 	/**
@@ -54,7 +55,11 @@ public abstract class GeometryGenerator implements Named {
 	 * @param color
 	 * @return success
 	 */
-	public abstract boolean updateColor(vtkActor actor, Color color);
+	public abstract boolean updateColor(FaultSectionActorList actorList, Color color);
+	
+	public static double[] getColorDoubleArray(Color color) {
+		return new double[] { (double)color.getRed()/255d, (double)color.getGreen()/255d, (double)color.getBlue()/255d };
+	}
 	
 	/**
 	 * Returns the display parameters for this generator

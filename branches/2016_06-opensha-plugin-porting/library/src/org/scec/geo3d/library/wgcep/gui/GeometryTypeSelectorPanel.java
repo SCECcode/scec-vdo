@@ -88,7 +88,7 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 		frame.setSize(400, 300);
 		
 		ArrayList<GeometryGenerator> geomGens = new ArrayList<GeometryGenerator>();
-		geomGens.add(new PointSurfaceGenerator());
+//		geomGens.add(new PointSurfaceGenerator());
 		geomGens.add(new LineSurfaceGenerator());
 		
 		frame.setContentPane(new GeometryTypeSelectorPanel(geomGens));
