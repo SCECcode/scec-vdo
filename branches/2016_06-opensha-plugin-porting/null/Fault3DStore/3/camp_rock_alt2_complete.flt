@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: object_template.xml 20 2005-05-04 19:44:40Z pmpowers $-->
+<scec_video_object>
+  <object_info>
+    <class>org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D</class>
+    <source_file>C:\Users\Sanskriti\Downloads\cfm\v40\ts\cfm_camp_rock_alt2_complete.ts</source_file>
+    <attribute_file>\Fault3DStore\3\camp_rock_alt2_complete.flt</attribute_file>
+    <data_file>\Fault3DStore\3\data\camp_rock_alt2_complete.dat</data_file>
+    <display_name>Camp Rock Alt2 Complete [3]</display_name>
+    <source_info>
+      <citation />
+      <reference />
+    </source_info>
+    <notes />
+  </object_info>
+  <object_attributes>
+    <display>
+      <mesh_state value="0" />
+      <color r="1.0" g="0.0" b="0.0" />
+    </display>
+  </object_attributes>
+</scec_video_object>
+
