@@ -1,0 +1,1742 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x0000000000000000, pid=6200, tid=139724475823872
+#
+# JRE version: Java(TM) SE Runtime Environment (8.0_60-b27) (build 1.8.0_60-b27)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.60-b23 mixed mode linux-amd64 compressed oops)
+# Problematic frame:
+# C  0x0000000000000000
+#
+# Core dump written. Default location: /home/kevin/workspace/scec_vdo_vtk/core or core.6200
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007f1440224000):  JavaThread "AWT-EventQueue-0" [_thread_in_native, id=6229, stack(0x00007f1423af7000,0x00007f1423bf8000)]
+
+siginfo: si_signo: 11 (SIGSEGV), si_code: 1 (SEGV_MAPERR), si_addr: 0x0000000000000000
+
+Registers:
+RAX=0x0000000000000000, RBX=0x00007f14307259c0, RCX=0x0000000000000303, RDX=0x0000000000000001
+RSP=0x00007f1423bf4218, RBP=0x00007f1423bf4240, RSI=0x0000000000000303, RDI=0x0000000000000302
+R8 =0x00007f13bc4c83c0, R9 =0x0000000000000001, R10=0x00007f1423bf3fb0, R11=0x00007f1411e7ef60
+R12=0x0000000000000000, R13=0x00007f14307259c0, R14=0x00007f1423bf46c0, R15=0x00007f1440224000
+RIP=0x0000000000000000, EFLAGS=0x0000000000010206, CSGSFS=0x0000000000000033, ERR=0x0000000000000014
+  TRAPNO=0x000000000000000e
+
+Top of Stack: (sp=0x00007f1423bf4218)
+0x00007f1423bf4218:   00007f14122fb52e 00007f138e8c6940
+0x00007f1423bf4228:   00007f13bc1e6590 00007f1423bf4260
+0x00007f1423bf4238:   00007f14307259c0 00007f1423bf4260
+0x00007f1423bf4248:   00007f14122fb4ec 0000000000000000
+0x00007f1423bf4258:   00007f13bc1e6590 00007f1423bf4290
+0x00007f1423bf4268:   00007f141238c95f 0000000000000049
+0x00007f1423bf4278:   00007f13bc1e6590 00000000cd8460f0
+0x00007f1423bf4288:   0000000000000000 00007f1423bf42c0
+0x00007f1423bf4298:   00007f141238c9a5 00007f1423bf4460
+0x00007f1423bf42a8:   00007f13bc1e6590 00007f1421012f50
+0x00007f1423bf42b8:   00007f1421013bb8 00007f1423bf42e0
+0x00007f1423bf42c8:   00007f141238cdeb 00007f1421028660
+0x00007f1423bf42d8:   00007f13bc1e6590 00007f1423bf4320
+0x00007f1423bf42e8:   00007f14211c2d99 00007f13bc0dffd0
+0x00007f1423bf42f8:   00007f13bc1e6590 00007f142102d0d0
+0x00007f1423bf4308:   00007f1412145fe8 0000000500000000
+0x00007f1423bf4318:   0000000100000dc7 00007f1423bf43e0
+0x00007f1423bf4328:   00007f14211c2d72 00007f1423bf44a0
+0x00007f1423bf4338:   00007f13bc1e6590 0000000000000000
+0x00007f1423bf4348:   00007f1423bf44c0 00007f13bc10bcd0
+0x00007f1423bf4358:   00007f1448d6a523 0000000000000000
+0x00007f1423bf4368:   0000000000000000 00007f1300000005
+0x00007f1423bf4378:   0000000000000000 0000000000000001
+0x00007f1423bf4388:   00007f13bc10bcd0 00007f1400000005
+0x00007f1423bf4398:   0000000000000000 00007f1400000001
+0x00007f1423bf43a8:   00007f13bc10bcd0 00007f1423bf45c0
+0x00007f1423bf43b8:   00007f1423bf4450 0000000000000000
+0x00007f1423bf43c8:   00007f13bc1a2730 0000000148d892a0
+0x00007f1423bf43d8:   00007f13bc04a050 00007f1423bf44a0
+0x00007f1423bf43e8:   00007f14211c271e 00000001305b5980
+0x00007f1423bf43f8:   00007f13bc1e6590 00000002c00dbc90
+0x00007f1423bf4408:   00007f141216e66a 00007f14305b5970 
+
+Instructions: (pc=0x0000000000000000)
+0xffffffffffffffe0:   
+
+Register to memory mapping:
+
+RAX=0x0000000000000000 is an unknown value
+RBX={method} {0x00007f14307259c0} 'Render_9' '()V' in 'vtk/vtkRenderWindow'
+RCX=0x0000000000000303 is an unknown value
+RDX=0x0000000000000001 is an unknown value
+RSP=0x00007f1423bf4218 is pointing into the stack for thread: 0x00007f1440224000
+RBP=0x00007f1423bf4240 is pointing into the stack for thread: 0x00007f1440224000
+RSI=0x0000000000000303 is an unknown value
+RDI=0x0000000000000302 is an unknown value
+R8 =0x00007f13bc4c83c0 is an unknown value
+R9 =0x0000000000000001 is an unknown value
+R10=0x00007f1423bf3fb0 is pointing into the stack for thread: 0x00007f1440224000
+R11=0x00007f1411e7ef60: glEnable+0 in /usr/lib/nvidia-304/libGL.so.1 at 0x00007f1411b87000
+R12=0x0000000000000000 is an unknown value
+R13={method} {0x00007f14307259c0} 'Render_9' '()V' in 'vtk/vtkRenderWindow'
+R14=0x00007f1423bf46c0 is pointing into the stack for thread: 0x00007f1440224000
+R15=0x00007f1440224000 is a thread
+
+
+Stack: [0x00007f1423af7000,0x00007f1423bf8000],  sp=0x00007f1423bf4218,  free space=1012k
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  vtk.vtkRenderWindow.Render_9()V+0
+j  vtk.vtkRenderWindow.Render()V+1
+j  vtk.vtkPanel.Render()V+164
+j  vtk.vtkPanel.paint(Ljava/awt/Graphics;)V+1
+j  sun.awt.RepaintArea.paintComponent(Ljava/awt/Component;Ljava/awt/Graphics;)V+6
+j  sun.awt.X11.XRepaintArea.paintComponent(Ljava/awt/Component;Ljava/awt/Graphics;)V+24
+j  sun.awt.RepaintArea.paint(Ljava/lang/Object;Z)V+326
+j  sun.awt.X11.XComponentPeer.handleEvent(Ljava/awt/AWTEvent;)V+224
+j  java.awt.Component.dispatchEventImpl(Ljava/awt/AWTEvent;)V+877
+j  java.awt.Component.dispatchEvent(Ljava/awt/AWTEvent;)V+2
+j  java.awt.EventQueue.dispatchEventImpl(Ljava/awt/AWTEvent;Ljava/lang/Object;)V+41
+j  java.awt.EventQueue.access$500(Ljava/awt/EventQueue;Ljava/awt/AWTEvent;Ljava/lang/Object;)V+3
+j  java.awt.EventQueue$3.run()Ljava/lang/Void;+32
+j  java.awt.EventQueue$3.run()Ljava/lang/Object;+1
+v  ~StubRoutines::call_stub
+j  java.security.AccessController.doPrivileged(Ljava/security/PrivilegedAction;Ljava/security/AccessControlContext;)Ljava/lang/Object;+0
+j  java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Ljava/security/PrivilegedAction;Ljava/security/AccessControlContext;Ljava/security/AccessControlContext;)Ljava/lang/Object;+18
+j  java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Ljava/security/PrivilegedAction;Ljava/security/AccessControlContext;)Ljava/lang/Object;+6
+j  java.awt.EventQueue$4.run()Ljava/lang/Void;+11
+j  java.awt.EventQueue$4.run()Ljava/lang/Object;+1
+v  ~StubRoutines::call_stub
+j  java.security.AccessController.doPrivileged(Ljava/security/PrivilegedAction;Ljava/security/AccessControlContext;)Ljava/lang/Object;+0
+j  java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Ljava/security/PrivilegedAction;Ljava/security/AccessControlContext;Ljava/security/AccessControlContext;)Ljava/lang/Object;+18
+j  java.awt.EventQueue.dispatchEvent(Ljava/awt/AWTEvent;)V+73
+j  java.awt.EventDispatchThread.pumpOneEventForFilters(I)V+245
+j  java.awt.EventDispatchThread.pumpEventsForFilter(ILjava/awt/Conditional;Ljava/awt/EventFilter;)V+35
+j  java.awt.EventDispatchThread.pumpEventsForHierarchy(ILjava/awt/Conditional;Ljava/awt/Component;)V+11
+j  java.awt.EventDispatchThread.pumpEvents(ILjava/awt/Conditional;)V+4
+j  java.awt.EventDispatchThread.pumpEvents(Ljava/awt/Conditional;)V+3
+j  java.awt.EventDispatchThread.run()V+9
+v  ~StubRoutines::call_stub
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x00007f138e7c9000 JavaThread "Image Fetcher 0" daemon [_thread_blocked, id=6234, stack(0x00007f139beff000,0x00007f139c000000)]
+  0x00007f138e70a800 JavaThread "TimerQueue" daemon [_thread_blocked, id=6233, stack(0x00007f13a91ba000,0x00007f13a92bb000)]
+  0x00007f13bc20d000 JavaThread "Timer-0" daemon [_thread_blocked, id=6230, stack(0x00007f14200dd000,0x00007f14201de000)]
+  0x00007f144000a000 JavaThread "DestroyJavaVM" [_thread_blocked, id=6201, stack(0x00007f1448e57000,0x00007f1448f58000)]
+=>0x00007f1440224000 JavaThread "AWT-EventQueue-0" [_thread_in_native, id=6229, stack(0x00007f1423af7000,0x00007f1423bf8000)]
+  0x00007f1440222800 JavaThread "AWT-Shutdown" [_thread_blocked, id=6228, stack(0x00007f1423bf8000,0x00007f1423cf9000)]
+  0x00007f1440220800 JavaThread "AWT-XAWT" daemon [_thread_blocked, id=6227, stack(0x00007f1423cf9000,0x00007f1423dfa000)]
+  0x00007f1440201800 JavaThread "Java2D Disposer" daemon [_thread_blocked, id=6226, stack(0x00007f1428242000,0x00007f1428343000)]
+  0x00007f14400cc800 JavaThread "Service Thread" daemon [_thread_blocked, id=6223, stack(0x00007f1429b18000,0x00007f1429c19000)]
+  0x00007f14400c7800 JavaThread "C1 CompilerThread3" daemon [_thread_blocked, id=6222, stack(0x00007f1429c19000,0x00007f1429d1a000)]
+  0x00007f14400c5000 JavaThread "C2 CompilerThread2" daemon [_thread_blocked, id=6221, stack(0x00007f1429d1a000,0x00007f1429e1b000)]
+  0x00007f14400c3800 JavaThread "C2 CompilerThread1" daemon [_thread_blocked, id=6220, stack(0x00007f1429e1b000,0x00007f1429f1c000)]
+  0x00007f14400c0800 JavaThread "C2 CompilerThread0" daemon [_thread_blocked, id=6219, stack(0x00007f1429f1c000,0x00007f142a01d000)]
+  0x00007f14400bf000 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=6218, stack(0x00007f142a01d000,0x00007f142a11e000)]
+  0x00007f1440087000 JavaThread "Finalizer" daemon [_thread_blocked, id=6217, stack(0x00007f142a4de000,0x00007f142a5df000)]
+  0x00007f1440085000 JavaThread "Reference Handler" daemon [_thread_blocked, id=6216, stack(0x00007f142a5df000,0x00007f142a6e0000)]
+
+Other Threads:
+  0x00007f1440080000 VMThread [stack: 0x00007f142a6e0000,0x00007f142a7e1000] [id=6215]
+  0x00007f14400cf800 WatcherThread [stack: 0x00007f1429a17000,0x00007f1429b18000] [id=6224]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap:
+ PSYoungGen      total 261632K, used 124987K [0x000000076ca00000, 0x0000000786600000, 0x00000007c0000000)
+  eden space 257024K, 46% used [0x000000076ca00000,0x0000000773fcf4f0,0x000000077c500000)
+  from space 4608K, 94% used [0x000000077c500000,0x000000077c93f780,0x000000077c980000)
+  to   space 5120K, 0% used [0x0000000786100000,0x0000000786100000,0x0000000786600000)
+ ParOldGen       total 172032K, used 3212K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 1% used [0x00000006c5e00000,0x00000006c61233a8,0x00000006d0600000)
+ Metaspace       used 18575K, capacity 18788K, committed 19072K, reserved 1067008K
+  class space    used 2326K, capacity 2394K, committed 2432K, reserved 1048576K
+
+Card table byte_map: [0x00007f1445469000,0x00007f1445c3b000] byte_map_base: 0x00007f1441e3a000
+
+Marking Bits: (ParMarkBitMap*) 0x00007f144833fde0
+ Begin Bits: [0x00007f13ec2f0000, 0x00007f13f0178000)
+ End Bits:   [0x00007f13f0178000, 0x00007f13f4000000)
+
+Polling page: 0x00007f1448f7f000
+
+CodeCache: size=245760Kb used=5089Kb max_used=5089Kb free=240670Kb
+ bounds [0x00007f1431000000, 0x00007f1431500000, 0x00007f1440000000]
+ total_blobs=1897 nmethods=1311 adapters=499
+ compilation: enabled
+
+Compilation events (10 events):
+Event: 12.262 Thread 0x00007f14400c7800 1321       3       java.util.LinkedList$ListItr::checkForComodification (23 bytes)
+Event: 12.262 Thread 0x00007f14400c7800 nmethod 1321 0x00007f14314fae90 code [0x00007f14314fb000, 0x00007f14314fb228]
+Event: 12.262 Thread 0x00007f14400c7800 1322       3       java.util.LinkedList$ListItr::previous (70 bytes)
+Event: 12.263 Thread 0x00007f14400c7800 nmethod 1322 0x00007f14314fa590 code [0x00007f14314fa740, 0x00007f14314fac98]
+Event: 12.263 Thread 0x00007f14400c7800 1319       1       java.util.LinkedList::size (5 bytes)
+Event: 12.263 Thread 0x00007f14400c7800 nmethod 1319 0x00007f14314fa2d0 code [0x00007f14314fa420, 0x00007f14314fa530]
+Event: 12.264 Thread 0x00007f14400c7800 1323       3       java.awt.KeyboardFocusManager::getCurrentKeyboardFocusManager (7 bytes)
+Event: 12.264 Thread 0x00007f14400c7800 nmethod 1323 0x00007f14314f97d0 code [0x00007f14314f9980, 0x00007f14314fa018]
+Event: 12.264 Thread 0x00007f14400c7800 1324  s    3       java.awt.KeyboardFocusManager::getCurrentKeyboardFocusManager (32 bytes)
+Event: 12.264 Thread 0x00007f14400c7800 nmethod 1324 0x00007f14314fc090 code [0x00007f14314fc240, 0x00007f14314fc828]
+
+GC Heap History (10 events):
+Event: 2.824 GC heap before
+{Heap before GC invocations=5 (full 0):
+ PSYoungGen      total 75264K, used 67757K [0x000000076ca00000, 0x0000000771e00000, 0x00000007c0000000)
+  eden space 64512K, 100% used [0x000000076ca00000,0x0000000770900000,0x0000000770900000)
+  from space 10752K, 30% used [0x0000000771380000,0x00000007716ab7c0,0x0000000771e00000)
+  to   space 10752K, 0% used [0x0000000770900000,0x0000000770900000,0x0000000771380000)
+ ParOldGen       total 172032K, used 40K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 0% used [0x00000006c5e00000,0x00000006c5e0a000,0x00000006d0600000)
+ Metaspace       used 11225K, capacity 11436K, committed 11776K, reserved 1058816K
+  class space    used 1329K, capacity 1416K, committed 1536K, reserved 1048576K
+Event: 2.829 GC heap after
+Heap after GC invocations=5 (full 0):
+ PSYoungGen      total 75264K, used 3239K [0x000000076ca00000, 0x0000000775000000, 0x00000007c0000000)
+  eden space 64512K, 0% used [0x000000076ca00000,0x000000076ca00000,0x0000000770900000)
+  from space 10752K, 30% used [0x0000000770900000,0x0000000770c29c90,0x0000000771380000)
+  to   space 4096K, 0% used [0x0000000774c00000,0x0000000774c00000,0x0000000775000000)
+ ParOldGen       total 172032K, used 48K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 0% used [0x00000006c5e00000,0x00000006c5e0c000,0x00000006d0600000)
+ Metaspace       used 11225K, capacity 11436K, committed 11776K, reserved 1058816K
+  class space    used 1329K, capacity 1416K, committed 1536K, reserved 1048576K
+}
+Event: 2.951 GC heap before
+{Heap before GC invocations=6 (full 0):
+ PSYoungGen      total 75264K, used 67751K [0x000000076ca00000, 0x0000000775000000, 0x00000007c0000000)
+  eden space 64512K, 100% used [0x000000076ca00000,0x0000000770900000,0x0000000770900000)
+  from space 10752K, 30% used [0x0000000770900000,0x0000000770c29c90,0x0000000771380000)
+  to   space 4096K, 0% used [0x0000000774c00000,0x0000000774c00000,0x0000000775000000)
+ ParOldGen       total 172032K, used 48K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 0% used [0x00000006c5e00000,0x00000006c5e0c000,0x00000006d0600000)
+ Metaspace       used 11225K, capacity 11436K, committed 11776K, reserved 1058816K
+  class space    used 1329K, capacity 1416K, committed 1536K, reserved 1048576K
+Event: 2.959 GC heap after
+Heap after GC invocations=6 (full 0):
+ PSYoungGen      total 132608K, used 3767K [0x000000076ca00000, 0x0000000775100000, 0x00000007c0000000)
+  eden space 128512K, 0% used [0x000000076ca00000,0x000000076ca00000,0x0000000774780000)
+  from space 4096K, 91% used [0x0000000774c00000,0x0000000774fadc60,0x0000000775000000)
+  to   space 4608K, 0% used [0x0000000774780000,0x0000000774780000,0x0000000774c00000)
+ ParOldGen       total 172032K, used 48K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 0% used [0x00000006c5e00000,0x00000006c5e0c000,0x00000006d0600000)
+ Metaspace       used 11225K, capacity 11436K, committed 11776K, reserved 1058816K
+  class space    used 1329K, capacity 1416K, committed 1536K, reserved 1048576K
+}
+Event: 5.236 GC heap before
+{Heap before GC invocations=7 (full 0):
+ PSYoungGen      total 132608K, used 132279K [0x000000076ca00000, 0x0000000775100000, 0x00000007c0000000)
+  eden space 128512K, 100% used [0x000000076ca00000,0x0000000774780000,0x0000000774780000)
+  from space 4096K, 91% used [0x0000000774c00000,0x0000000774fadc60,0x0000000775000000)
+  to   space 4608K, 0% used [0x0000000774780000,0x0000000774780000,0x0000000774c00000)
+ ParOldGen       total 172032K, used 48K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 0% used [0x00000006c5e00000,0x00000006c5e0c000,0x00000006d0600000)
+ Metaspace       used 11235K, capacity 11436K, committed 11776K, reserved 1058816K
+  class space    used 1329K, capacity 1416K, committed 1536K, reserved 1048576K
+Event: 5.248 GC heap after
+Heap after GC invocations=7 (full 0):
+ PSYoungGen      total 133120K, used 2916K [0x000000076ca00000, 0x000000077ce00000, 0x00000007c0000000)
+  eden space 128512K, 0% used [0x000000076ca00000,0x000000076ca00000,0x0000000774780000)
+  from space 4608K, 63% used [0x0000000774780000,0x0000000774a59300,0x0000000774c00000)
+  to   space 4608K, 0% used [0x000000077c980000,0x000000077c980000,0x000000077ce00000)
+ ParOldGen       total 172032K, used 1628K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 0% used [0x00000006c5e00000,0x00000006c5f973a8,0x00000006d0600000)
+ Metaspace       used 11235K, capacity 11436K, committed 11776K, reserved 1058816K
+  class space    used 1329K, capacity 1416K, committed 1536K, reserved 1048576K
+}
+Event: 6.543 GC heap before
+{Heap before GC invocations=8 (full 0):
+ PSYoungGen      total 133120K, used 131428K [0x000000076ca00000, 0x000000077ce00000, 0x00000007c0000000)
+  eden space 128512K, 100% used [0x000000076ca00000,0x0000000774780000,0x0000000774780000)
+  from space 4608K, 63% used [0x0000000774780000,0x0000000774a59300,0x0000000774c00000)
+  to   space 4608K, 0% used [0x000000077c980000,0x000000077c980000,0x000000077ce00000)
+ ParOldGen       total 172032K, used 1628K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 0% used [0x00000006c5e00000,0x00000006c5f973a8,0x00000006d0600000)
+ Metaspace       used 11270K, capacity 11500K, committed 11776K, reserved 1058816K
+  class space    used 1329K, capacity 1416K, committed 1536K, reserved 1048576K
+Event: 6.549 GC heap after
+Heap after GC invocations=8 (full 0):
+ PSYoungGen      total 261632K, used 3250K [0x000000076ca00000, 0x000000077ce00000, 0x00000007c0000000)
+  eden space 257024K, 0% used [0x000000076ca00000,0x000000076ca00000,0x000000077c500000)
+  from space 4608K, 70% used [0x000000077c980000,0x000000077ccacb90,0x000000077ce00000)
+  to   space 4608K, 0% used [0x000000077c500000,0x000000077c500000,0x000000077c980000)
+ ParOldGen       total 172032K, used 2476K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 1% used [0x00000006c5e00000,0x00000006c606b3a8,0x00000006d0600000)
+ Metaspace       used 11270K, capacity 11500K, committed 11776K, reserved 1058816K
+  class space    used 1329K, capacity 1416K, committed 1536K, reserved 1048576K
+}
+Event: 10.487 GC heap before
+{Heap before GC invocations=9 (full 0):
+ PSYoungGen      total 261632K, used 260274K [0x000000076ca00000, 0x000000077ce00000, 0x00000007c0000000)
+  eden space 257024K, 100% used [0x000000076ca00000,0x000000077c500000,0x000000077c500000)
+  from space 4608K, 70% used [0x000000077c980000,0x000000077ccacb90,0x000000077ce00000)
+  to   space 4608K, 0% used [0x000000077c500000,0x000000077c500000,0x000000077c980000)
+ ParOldGen       total 172032K, used 2476K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 1% used [0x00000006c5e00000,0x00000006c606b3a8,0x00000006d0600000)
+ Metaspace       used 11307K, capacity 11506K, committed 11776K, reserved 1058816K
+  class space    used 1331K, capacity 1417K, committed 1536K, reserved 1048576K
+Event: 10.495 GC heap after
+Heap after GC invocations=9 (full 0):
+ PSYoungGen      total 261632K, used 4349K [0x000000076ca00000, 0x0000000786600000, 0x00000007c0000000)
+  eden space 257024K, 0% used [0x000000076ca00000,0x000000076ca00000,0x000000077c500000)
+  from space 4608K, 94% used [0x000000077c500000,0x000000077c93f780,0x000000077c980000)
+  to   space 5120K, 0% used [0x0000000786100000,0x0000000786100000,0x0000000786600000)
+ ParOldGen       total 172032K, used 3212K [0x00000006c5e00000, 0x00000006d0600000, 0x000000076ca00000)
+  object space 172032K, 1% used [0x00000006c5e00000,0x00000006c61233a8,0x00000006d0600000)
+ Metaspace       used 11307K, capacity 11506K, committed 11776K, reserved 1058816K
+  class space    used 1331K, capacity 1417K, committed 1536K, reserved 1048576K
+}
+
+Deoptimization events (10 events):
+Event: 11.887 Thread 0x00007f1440224000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x00007f14313825fc method=javax.swing.UIDefaults.getFromHashtable(Ljava/lang/Object;)Ljava/lang/Object; @ 92
+Event: 11.932 Thread 0x00007f138e7c9000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x00007f14313f4fd4 method=java.util.Properties$LineReader.readLine()I @ 62
+Event: 11.932 Thread 0x00007f138e7c9000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007f14313f4c94 method=java.util.Properties$LineReader.readLine()I @ 206
+Event: 12.024 Thread 0x00007f1440224000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007f143121e434 method=java.lang.String.<init>([CII)V @ 18
+Event: 12.065 Thread 0x00007f1440224000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007f14313d33ec method=java.awt.Component.updateGraphicsData(Ljava/awt/GraphicsConfiguration;)Z @ 9
+Event: 12.072 Thread 0x00007f1440224000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007f14312af548 method=java.lang.Long.valueOf(J)Ljava/lang/Long; @ 13
+Event: 12.074 Thread 0x00007f1440224000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x00007f143146bf0c method=java.util.HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object; @ 253
+Event: 12.074 Thread 0x00007f1440224000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x00007f143146bf0c method=java.util.HashMap.putVal(ILjava/lang/Object;Ljava/lang/Object;ZZ)Ljava/lang/Object; @ 253
+Event: 12.154 Thread 0x00007f1440224000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007f14314cdfa4 method=java.awt.Component.isValid()Z @ 11
+Event: 12.179 Thread 0x00007f1440220800 Uncommon trap: reason=unstable_if action=reinterpret pc=0x00007f14313a1d6c method=sun.awt.SunToolkit.getAppContext(Ljava/lang/Object;)Lsun/awt/AppContext; @ 4
+
+Internal exceptions (10 events):
+Event: 0.102 Thread 0x00007f144000a000 Exception <a 'java/security/PrivilegedActionException'> (0x000000076cad1a98) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/jvm.cpp, line 1386]
+Event: 0.102 Thread 0x00007f144000a000 Exception <a 'java/security/PrivilegedActionException'> (0x000000076cad1ca8) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/jvm.cpp, line 1386]
+Event: 0.102 Thread 0x00007f144000a000 Exception <a 'java/security/PrivilegedActionException'> (0x000000076cad4010) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/jvm.cpp, line 1386]
+Event: 0.102 Thread 0x00007f144000a000 Exception <a 'java/security/PrivilegedActionException'> (0x000000076cad4220) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/jvm.cpp, line 1386]
+Event: 0.142 Thread 0x00007f144000a000 Exception <a 'java/lang/NoSuchFieldError': method resolution failed> (0x000000076ce26888) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/methodHandles.cpp, line 1146]
+Event: 0.144 Thread 0x00007f144000a000 Exception <a 'java/lang/NoSuchFieldError': method resolution failed> (0x000000076ce34058) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/methodHandles.cpp, line 1146]
+Event: 0.169 Thread 0x00007f144000a000 Exception <a 'java/io/FileNotFoundException'> (0x000000076ceb2078) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/jni.cpp, line 709]
+Event: 0.169 Thread 0x00007f144000a000 Exception <a 'java/io/FileNotFoundException'> (0x000000076ceb2a20) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/jni.cpp, line 709]
+Event: 11.818 Thread 0x00007f1440224000 Implicit null exception at 0x00007f1431383a00 to 0x00007f1431384535
+Event: 12.274 Thread 0x00007f1440224000 Exception <a 'java/lang/UnsupportedOperationException': > (0x0000000773961f48) thrown at [/HUDSON/workspace/8-2-build-linux-amd64/jdk8u60/4407/hotspot/src/share/vm/prims/jni.cpp, line 735]
+
+Events (10 events):
+Event: 12.274 loading class sun/awt/im/InputMethodWindow
+Event: 12.274 loading class sun/awt/im/InputMethodWindow done
+Event: 12.274 loading class sun/awt/im/CompositionAreaHandler
+Event: 12.274 loading class sun/awt/im/CompositionAreaHandler done
+Event: 12.275 loading class java/text/AttributedString
+Event: 12.275 loading class java/text/AttributedString done
+Event: 12.275 loading class java/text/AttributedString$AttributedStringIterator
+Event: 12.275 loading class java/text/AttributedCharacterIterator
+Event: 12.275 loading class java/text/AttributedCharacterIterator done
+Event: 12.275 loading class java/text/AttributedString$AttributedStringIterator done
+
+
+Dynamic libraries:
+00400000-00401000 r-xp 00000000 08:05 1877864                            /usr/lib/jvm/jdk1.8.0_60/bin/java
+00600000-00601000 rw-p 00000000 08:05 1877864                            /usr/lib/jvm/jdk1.8.0_60/bin/java
+00ecd000-00eee000 rw-p 00000000 00:00 0                                  [heap]
+6c5e00000-6d0600000 rw-p 00000000 00:00 0 
+6d0600000-76ca00000 ---p 00000000 00:00 0 
+76ca00000-786600000 rw-p 00000000 00:00 0 
+786600000-7c0000000 ---p 00000000 00:00 0 
+7c0000000-7c0260000 rw-p 00000000 00:00 0 
+7c0260000-800000000 ---p 00000000 00:00 0 
+7f1380000000-7f1380021000 rw-p 00000000 00:00 0 
+7f1380021000-7f1384000000 ---p 00000000 00:00 0 
+7f1384000000-7f1384040000 rw-p 00000000 00:00 0 
+7f1384040000-7f1388000000 ---p 00000000 00:00 0 
+7f1388000000-7f138bef4000 rw-p 00000000 00:00 0 
+7f138bef4000-7f138c000000 ---p 00000000 00:00 0 
+7f138c000000-7f138ea56000 rw-p 00000000 00:00 0 
+7f138ea56000-7f1390000000 ---p 00000000 00:00 0 
+7f1390000000-7f1394000000 rw-p 00000000 00:00 0 
+7f1394000000-7f1397d17000 rw-p 00000000 00:00 0 
+7f1397d17000-7f1398000000 ---p 00000000 00:00 0 
+7f1399bfe000-7f139b3ff000 rw-p 00000000 00:00 0 
+7f139baff000-7f139bb3f000 rw-p 00000000 00:00 0 
+7f139bb3f000-7f139bcff000 ---p 00000000 00:00 0 
+7f139bcff000-7f139beff000 rw-p 00000000 00:00 0 
+7f139beff000-7f139bf02000 ---p 00000000 00:00 0 
+7f139bf02000-7f139c000000 rw-p 00000000 00:00 0 
+7f139c000000-7f139ffdd000 rw-p 00000000 00:00 0 
+7f139ffdd000-7f13a0000000 ---p 00000000 00:00 0 
+7f13a0000000-7f13a3fef000 rw-p 00000000 00:00 0 
+7f13a3fef000-7f13a4000000 ---p 00000000 00:00 0 
+7f13a4000000-7f13a4021000 rw-p 00000000 00:00 0 
+7f13a4021000-7f13a8000000 ---p 00000000 00:00 0 
+7f13a8097000-7f13a8297000 rw-p 00000000 00:00 0 
+7f13a8297000-7f13a8300000 r-xp 00000000 08:05 1356283                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libt2k.so
+7f13a8300000-7f13a8500000 ---p 00069000 08:05 1356283                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libt2k.so
+7f13a8500000-7f13a8507000 rw-p 00069000 08:05 1356283                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libt2k.so
+7f13a8507000-7f13a8517000 rw-p 00000000 00:00 0 
+7f13a8517000-7f13a8528000 r-xp 00000000 08:05 1356303                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libnio.so
+7f13a8528000-7f13a8727000 ---p 00011000 08:05 1356303                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libnio.so
+7f13a8727000-7f13a8728000 rw-p 00010000 08:05 1356303                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libnio.so
+7f13a8728000-7f13a873e000 r-xp 00000000 08:05 1356280                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libnet.so
+7f13a873e000-7f13a893e000 ---p 00016000 08:05 1356280                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libnet.so
+7f13a893e000-7f13a893f000 rw-p 00016000 08:05 1356280                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libnet.so
+7f13a893f000-7f13a89a5000 r-xp 00000000 08:05 1356284                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libfontmanager.so
+7f13a89a5000-7f13a8ba4000 ---p 00066000 08:05 1356284                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libfontmanager.so
+7f13a8ba4000-7f13a8ba8000 rw-p 00065000 08:05 1356284                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libfontmanager.so
+7f13a8ba8000-7f13a91ba000 rw-p 00000000 00:00 0 
+7f13a91ba000-7f13a91bd000 ---p 00000000 00:00 0 
+7f13a91bd000-7f13a92bb000 rw-p 00000000 00:00 0 
+7f13a92bb000-7f13a94bb000 rw-p 00000000 00:00 0 
+7f13a94bb000-7f13a99bc000 rw-p 00000000 00:00 0 
+7f13a99bc000-7f13a9ad3000 r-xp 00000000 08:06 15863                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsInfovis.so
+7f13a9ad3000-7f13a9cd3000 ---p 00117000 08:06 15863                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsInfovis.so
+7f13a9cd3000-7f13a9cda000 r--p 00117000 08:06 15863                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsInfovis.so
+7f13a9cda000-7f13a9cdd000 rw-p 0011e000 08:06 15863                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsInfovis.so
+7f13a9cdd000-7f13a9d1a000 r-xp 00000000 08:06 16049                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsInfovisJava.so
+7f13a9d1a000-7f13a9f19000 ---p 0003d000 08:06 16049                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsInfovisJava.so
+7f13a9f19000-7f13a9f1a000 r--p 0003c000 08:06 16049                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsInfovisJava.so
+7f13a9f1a000-7f13a9f1b000 rw-p 0003d000 08:06 16049                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsInfovisJava.so
+7f13a9f1b000-7f13a9f29000 r-xp 00000000 08:06 16165                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsContext2D.so
+7f13a9f29000-7f13aa128000 ---p 0000e000 08:06 16165                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsContext2D.so
+7f13aa128000-7f13aa129000 r--p 0000d000 08:06 16165                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsContext2D.so
+7f13aa129000-7f13aa12a000 rw-p 0000e000 08:06 16165                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsContext2D.so
+7f13aa12a000-7f13aa12d000 r-xp 00000000 08:06 15977                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsContext2DJava.so
+7f13aa12d000-7f13aa32c000 ---p 00003000 08:06 15977                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsContext2DJava.so
+7f13aa32c000-7f13aa32d000 r--p 00002000 08:06 15977                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsContext2DJava.so
+7f13aa32d000-7f13aa32e000 rw-p 00003000 08:06 15977                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsContext2DJava.so
+7f13aa32e000-7f13aa39d000 r-xp 00000000 08:06 16146                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeOpenGL2.so
+7f13aa39d000-7f13aa59c000 ---p 0006f000 08:06 16146                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeOpenGL2.so
+7f13aa59c000-7f13aa59e000 r--p 0006e000 08:06 16146                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeOpenGL2.so
+7f13aa59e000-7f13aa5a0000 rw-p 00070000 08:06 16146                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeOpenGL2.so
+7f13aa5a0000-7f13aa5a6000 r-xp 00000000 08:06 12973                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeOpenGL2Java.so
+7f13aa5a6000-7f13aa7a5000 ---p 00006000 08:06 12973                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeOpenGL2Java.so
+7f13aa7a5000-7f13aa7a6000 r--p 00005000 08:06 12973                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeOpenGL2Java.so
+7f13aa7a6000-7f13aa7a7000 rw-p 00006000 08:06 12973                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeOpenGL2Java.so
+7f13aa7a7000-7f13aa7d4000 r-xp 00000000 08:06 16069                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeJava.so
+7f13aa7d4000-7f13aa9d3000 ---p 0002d000 08:06 16069                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeJava.so
+7f13aa9d3000-7f13aa9d4000 r--p 0002c000 08:06 16069                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeJava.so
+7f13aa9d4000-7f13aa9d5000 rw-p 0002d000 08:06 16069                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolumeJava.so
+7f13aa9d5000-7f13aa9e7000 r-xp 00000000 08:06 16142                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLOD.so
+7f13aa9e7000-7f13aabe7000 ---p 00012000 08:06 16142                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLOD.so
+7f13aabe7000-7f13aabe8000 r--p 00012000 08:06 16142                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLOD.so
+7f13aabe8000-7f13aabe9000 rw-p 00013000 08:06 16142                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLOD.so
+7f13aabe9000-7f13aabee000 r-xp 00000000 08:06 12775                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLODJava.so
+7f13aabee000-7f13aaded000 ---p 00005000 08:06 12775                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLODJava.so
+7f13aaded000-7f13aadee000 r--p 00004000 08:06 12775                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLODJava.so
+7f13aadee000-7f13aadef000 rw-p 00005000 08:06 12775                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLODJava.so
+7f13aadef000-7f13aaece000 r-xp 00000000 08:06 15510                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLabel.so
+7f13aaece000-7f13ab0cd000 ---p 000df000 08:06 15510                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLabel.so
+7f13ab0cd000-7f13ab0d1000 r--p 000de000 08:06 15510                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLabel.so
+7f13ab0d1000-7f13ab0d4000 rw-p 000e2000 08:06 15510                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLabel.so
+7f13ab0d4000-7f13ab0e9000 r-xp 00000000 08:06 12955                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLabelJava.so
+7f13ab0e9000-7f13ab2e8000 ---p 00015000 08:06 12955                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLabelJava.so
+7f13ab2e8000-7f13ab2e9000 r--p 00014000 08:06 12955                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLabelJava.so
+7f13ab2e9000-7f13ab2ea000 rw-p 00015000 08:06 12955                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingLabelJava.so
+7f13ab2ea000-7f13ab307000 r-xp 00000000 08:06 16101                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingImage.so
+7f13ab307000-7f13ab507000 ---p 0001d000 08:06 16101                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingImage.so
+7f13ab507000-7f13ab508000 r--p 0001d000 08:06 16101                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingImage.so
+7f13ab508000-7f13ab509000 rw-p 0001e000 08:06 16101                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingImage.so
+7f13ab509000-7f13ab50f000 r-xp 00000000 08:06 16039                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingImageJava.so
+7f13ab50f000-7f13ab70e000 ---p 00006000 08:06 16039                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingImageJava.so
+7f13ab70e000-7f13ab70f000 r--p 00005000 08:06 16039                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingImageJava.so
+7f13ab70f000-7f13ab710000 rw-p 00006000 08:06 16039                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingImageJava.so
+7f13ab710000-7f13ab715000 r-xp 00000000 08:06 16083                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingFreeTypeJava.so
+7f13ab715000-7f13ab914000 ---p 00005000 08:06 16083                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingFreeTypeJava.so
+7f13ab914000-7f13ab915000 r--p 00004000 08:06 16083                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingFreeTypeJava.so
+7f13ab915000-7f13ab916000 rw-p 00005000 08:06 16083                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingFreeTypeJava.so
+7f13ab916000-7f13ab95a000 r-xp 00000000 08:06 16154                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContextOpenGL2.so
+7f13ab95a000-7f13abb5a000 ---p 00044000 08:06 16154                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContextOpenGL2.so
+7f13abb5a000-7f13abb5b000 r--p 00044000 08:06 16154                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContextOpenGL2.so
+7f13abb5b000-7f13abb5d000 rw-p 00045000 08:06 16154                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContextOpenGL2.so
+7f13abb5d000-7f13abb5f000 r-xp 00000000 08:06 15524                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContextOpenGL2Java.so
+7f13abb5f000-7f13abd5e000 ---p 00002000 08:06 15524                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContextOpenGL2Java.so
+7f13abd5e000-7f13abd5f000 r--p 00001000 08:06 15524                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContextOpenGL2Java.so
+7f13abd5f000-7f13abd60000 rw-p 00002000 08:06 15524                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContextOpenGL2Java.so
+7f13abd60000-7f13abdc2000 r-xp 00000000 08:06 16045                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingAnnotationJava.so
+7f13abdc2000-7f13abfc1000 ---p 00062000 08:06 16045                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingAnnotationJava.so
+7f13abfc1000-7f13abfc2000 r--p 00061000 08:06 16045                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingAnnotationJava.so
+7f13abfc2000-7f13abfc3000 rw-p 00062000 08:06 16045                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingAnnotationJava.so
+7f13abfc3000-7f13abfd3000 r-xp 00000000 08:06 15870                      /home/kevin/vtk/vtk_from_scott/lib/libvtkParallelCoreJava.so
+7f13abfd3000-7f13ac1d2000 ---p 00010000 08:06 15870                      /home/kevin/vtk/vtk_from_scott/lib/libvtkParallelCoreJava.so
+7f13ac1d2000-7f13ac1d3000 r--p 0000f000 08:06 15870                      /home/kevin/vtk/vtk_from_scott/lib/libvtkParallelCoreJava.so
+7f13ac1d3000-7f13ac1d4000 rw-p 00010000 08:06 15870                      /home/kevin/vtk/vtk_from_scott/lib/libvtkParallelCoreJava.so
+7f13ac1d4000-7f13ac1e3000 r-xp 00000000 08:06 16133                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOVideo.so
+7f13ac1e3000-7f13ac3e3000 ---p 0000f000 08:06 16133                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOVideo.so
+7f13ac3e3000-7f13ac3e4000 r--p 0000f000 08:06 16133                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOVideo.so
+7f13ac3e4000-7f13ac3e5000 rw-p 00010000 08:06 16133                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOVideo.so
+7f13ac3e5000-7f13ac3ea000 r-xp 00000000 08:06 15929                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOVideoJava.so
+7f13ac3ea000-7f13ac5e9000 ---p 00005000 08:06 15929                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOVideoJava.so
+7f13ac5e9000-7f13ac5ea000 r--p 00004000 08:06 15929                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOVideoJava.so
+7f13ac5ea000-7f13ac5eb000 rw-p 00005000 08:06 15929                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOVideoJava.so
+7f13ac5eb000-7f13ac67e000 r-xp 00000000 08:06 16282                      /home/kevin/vtk/vtk_from_scott/lib/libvtksqlite.so
+7f13ac67e000-7f13ac87e000 ---p 00093000 08:06 16282                      /home/kevin/vtk/vtk_from_scott/lib/libvtksqlite.so
+7f13ac87e000-7f13ac87f000 r--p 00093000 08:06 16282                      /home/kevin/vtk/vtk_from_scott/lib/libvtksqlite.so
+7f13ac87f000-7f13ac881000 rw-p 00094000 08:06 16282                      /home/kevin/vtk/vtk_from_scott/lib/libvtksqlite.so
+7f13ac881000-7f13ac8d4000 r-xp 00000000 08:06 16288                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOSQL.so
+7f13ac8d4000-7f13acad4000 ---p 00053000 08:06 16288                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOSQL.so
+7f13acad4000-7f13acad6000 r--p 00053000 08:06 16288                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOSQL.so
+7f13acad6000-7f13acad7000 rw-p 00055000 08:06 16288                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOSQL.so
+7f13acad7000-7f13acae5000 r-xp 00000000 08:06 16027                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOSQLJava.so
+7f13acae5000-7f13acce4000 ---p 0000e000 08:06 16027                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOSQLJava.so
+7f13acce4000-7f13acce5000 r--p 0000d000 08:06 16027                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOSQLJava.so
+7f13acce5000-7f13acce6000 rw-p 0000e000 08:06 16027                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOSQLJava.so
+7f13acce6000-7f13accff000 r-xp 00000000 08:06 16296                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOPLY.so
+7f13accff000-7f13acefe000 ---p 00019000 08:06 16296                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOPLY.so
+7f13acefe000-7f13aceff000 r--p 00018000 08:06 16296                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOPLY.so
+7f13aceff000-7f13acf00000 rw-p 00019000 08:06 16296                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOPLY.so
+7f13acf00000-7f13acf02000 rw-p 00000000 00:00 0 
+7f13acf02000-7f13acf06000 r-xp 00000000 08:06 15961                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOPLYJava.so
+7f13acf06000-7f13ad106000 ---p 00004000 08:06 15961                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOPLYJava.so
+7f13ad106000-7f13ad107000 r--p 00004000 08:06 15961                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOPLYJava.so
+7f13ad107000-7f13ad108000 rw-p 00005000 08:06 15961                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOPLYJava.so
+7f13ad108000-7f13ad13c000 r-xp 00000000 08:06 16075                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelXML.so
+7f13ad13c000-7f13ad33c000 ---p 00034000 08:06 16075                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelXML.so
+7f13ad33c000-7f13ad340000 r--p 00034000 08:06 16075                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelXML.so
+7f13ad340000-7f13ad341000 rw-p 00038000 08:06 16075                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelXML.so
+7f13ad341000-7f13ad347000 r-xp 00000000 08:06 16216                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelXMLJava.so
+7f13ad347000-7f13ad546000 ---p 00006000 08:06 16216                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelXMLJava.so
+7f13ad546000-7f13ad547000 r--p 00005000 08:06 16216                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelXMLJava.so
+7f13ad547000-7f13ad548000 rw-p 00006000 08:06 16216                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelXMLJava.so
+7f13ad548000-7f13ad5a9000 r-xp 00000000 08:06 16245                      /home/kevin/vtk/vtk_from_scott/lib/libvtkjsoncpp.so
+7f13ad5a9000-7f13ad7a8000 ---p 00061000 08:06 16245                      /home/kevin/vtk/vtk_from_scott/lib/libvtkjsoncpp.so
+7f13ad7a8000-7f13ad7a9000 r--p 00060000 08:06 16245                      /home/kevin/vtk/vtk_from_scott/lib/libvtkjsoncpp.so
+7f13ad7a9000-7f13ad7ac000 rw-p 00061000 08:06 16245                      /home/kevin/vtk/vtk_from_scott/lib/libvtkjsoncpp.so
+7f13ad7ac000-7f13ad856000 r-xp 00000000 08:06 15937                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallel.so
+7f13ad856000-7f13ada55000 ---p 000aa000 08:06 15937                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallel.so
+7f13ada55000-7f13ada58000 r--p 000a9000 08:06 15937                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallel.so
+7f13ada58000-7f13ada5a000 rw-p 000ac000 08:06 15937                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallel.so
+7f13ada5a000-7f13ada5b000 rw-p 00000000 00:00 0 
+7f13ada5b000-7f13ada64000 r-xp 00000000 08:06 16157                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelJava.so
+7f13ada64000-7f13adc64000 ---p 00009000 08:06 16157                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelJava.so
+7f13adc64000-7f13adc65000 r--p 00009000 08:06 16157                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelJava.so
+7f13adc65000-7f13adc66000 rw-p 0000a000 08:06 16157                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOParallelJava.so
+7f13adc66000-7f13adc84000 r-xp 00000000 08:06 12952                      /home/kevin/vtk/vtk_from_scott/lib/libvtkNetCDF_cxx.so
+7f13adc84000-7f13ade83000 ---p 0001e000 08:06 12952                      /home/kevin/vtk/vtk_from_scott/lib/libvtkNetCDF_cxx.so
+7f13ade83000-7f13ade84000 r--p 0001d000 08:06 12952                      /home/kevin/vtk/vtk_from_scott/lib/libvtkNetCDF_cxx.so
+7f13ade84000-7f13ade85000 rw-p 0001e000 08:06 12952                      /home/kevin/vtk/vtk_from_scott/lib/libvtkNetCDF_cxx.so
+7f13ade85000-7f13adf48000 r-xp 00000000 08:06 16234                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIONetCDF.so
+7f13adf48000-7f13ae148000 ---p 000c3000 08:06 16234                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIONetCDF.so
+7f13ae148000-7f13ae14a000 r--p 000c3000 08:06 16234                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIONetCDF.so
+7f13ae14a000-7f13ae14d000 rw-p 000c5000 08:06 16234                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIONetCDF.so
+7f13ae14d000-7f13ae159000 r-xp 00000000 08:06 16014                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIONetCDFJava.so
+7f13ae159000-7f13ae358000 ---p 0000c000 08:06 16014                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIONetCDFJava.so
+7f13ae358000-7f13ae359000 r--p 0000b000 08:06 16014                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIONetCDFJava.so
+7f13ae359000-7f13ae35a000 rw-p 0000c000 08:06 16014                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIONetCDFJava.so
+7f13ae35a000-7f13ae39c000 r-xp 00000000 08:06 15950                      /home/kevin/vtk/vtk_from_scott/lib/libvtkoggtheora.so
+7f13ae39c000-7f13ae59b000 ---p 00042000 08:06 15950                      /home/kevin/vtk/vtk_from_scott/lib/libvtkoggtheora.so
+7f13ae59b000-7f13ae59c000 r--p 00041000 08:06 15950                      /home/kevin/vtk/vtk_from_scott/lib/libvtkoggtheora.so
+7f13ae59c000-7f13ae59d000 rw-p 00042000 08:06 15950                      /home/kevin/vtk/vtk_from_scott/lib/libvtkoggtheora.so
+7f13ae59d000-7f13ae5a9000 r-xp 00000000 08:06 15534                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMovie.so
+7f13ae5a9000-7f13ae7a8000 ---p 0000c000 08:06 15534                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMovie.so
+7f13ae7a8000-7f13ae7a9000 r--p 0000b000 08:06 15534                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMovie.so
+7f13ae7a9000-7f13ae7aa000 rw-p 0000c000 08:06 15534                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMovie.so
+7f13ae7aa000-7f13ae7ad000 r-xp 00000000 08:06 16266                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMovieJava.so
+7f13ae7ad000-7f13ae9ac000 ---p 00003000 08:06 16266                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMovieJava.so
+7f13ae9ac000-7f13ae9ad000 r--p 00002000 08:06 16266                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMovieJava.so
+7f13ae9ad000-7f13ae9ae000 rw-p 00003000 08:06 16266                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMovieJava.so
+7f13ae9ae000-7f13aea23000 r-xp 00000000 08:06 15964                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMINC.so
+7f13aea23000-7f13aec22000 ---p 00075000 08:06 15964                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMINC.so
+7f13aec22000-7f13aec25000 r--p 00074000 08:06 15964                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMINC.so
+7f13aec25000-7f13aec27000 rw-p 00077000 08:06 15964                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMINC.so
+7f13aec27000-7f13aec32000 r-xp 00000000 08:06 12971                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMINCJava.so
+7f13aec32000-7f13aee32000 ---p 0000b000 08:06 12971                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMINCJava.so
+7f13aee32000-7f13aee33000 r--p 0000b000 08:06 12971                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMINCJava.so
+7f13aee33000-7f13aee34000 rw-p 0000c000 08:06 12971                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOMINCJava.so
+7f13aee34000-7f13aeec9000 r-xp 00000000 08:06 15998                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLSDyna.so
+7f13aeec9000-7f13af0c9000 ---p 00095000 08:06 15998                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLSDyna.so
+7f13af0c9000-7f13af0ca000 r--p 00095000 08:06 15998                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLSDyna.so
+7f13af0ca000-7f13af0cd000 rw-p 00096000 08:06 15998                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLSDyna.so
+7f13af0cd000-7f13af0d8000 r-xp 00000000 08:06 16193                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLSDynaJava.so
+7f13af0d8000-7f13af2d7000 ---p 0000b000 08:06 16193                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLSDynaJava.so
+7f13af2d7000-7f13af2d8000 r--p 0000a000 08:06 16193                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLSDynaJava.so
+7f13af2d8000-7f13af2d9000 rw-p 0000b000 08:06 16193                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLSDynaJava.so
+7f13af2d9000-7f13af2dd000 r-xp 00000000 08:06 16124                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLParserJava.so
+7f13af2dd000-7f13af4dc000 ---p 00004000 08:06 16124                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLParserJava.so
+7f13af4dc000-7f13af4dd000 r--p 00003000 08:06 16124                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLParserJava.so
+7f13af4dd000-7f13af4de000 rw-p 00004000 08:06 16124                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLParserJava.so
+7f13af4de000-7f13af67f000 r-xp 00000000 08:06 15972                      /home/kevin/vtk/vtk_from_scott/lib/libvtklibxml2.so
+7f13af67f000-7f13af87f000 ---p 001a1000 08:06 15972                      /home/kevin/vtk/vtk_from_scott/lib/libvtklibxml2.so
+7f13af87f000-7f13af886000 r--p 001a1000 08:06 15972                      /home/kevin/vtk/vtk_from_scott/lib/libvtklibxml2.so
+7f13af886000-7f13af88a000 rw-p 001a8000 08:06 15972                      /home/kevin/vtk/vtk_from_scott/lib/libvtklibxml2.so
+7f13af88a000-7f13af88b000 rw-p 00000000 00:00 0 
+7f13af88b000-7f13af8a2000 r-xp 00000000 08:06 12933                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLJava.so
+7f13af8a2000-7f13afaa1000 ---p 00017000 08:06 12933                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLJava.so
+7f13afaa1000-7f13afaa2000 r--p 00016000 08:06 12933                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLJava.so
+7f13afaa2000-7f13afaa3000 rw-p 00017000 08:06 12933                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLJava.so
+7f13afaa3000-7f13afaba000 r-xp 00000000 08:06 16153                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLegacyJava.so
+7f13afaba000-7f13afcb9000 ---p 00017000 08:06 16153                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLegacyJava.so
+7f13afcb9000-7f13afcba000 r--p 00016000 08:06 16153                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLegacyJava.so
+7f13afcba000-7f13afcbb000 rw-p 00017000 08:06 16153                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLegacyJava.so
+7f13afcbb000-7f13afd46000 r-xp 00000000 08:06 15505                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOInfovis.so
+7f13afd46000-7f13aff46000 ---p 0008b000 08:06 15505                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOInfovis.so
+7f13aff46000-7f13aff4a000 r--p 0008b000 08:06 15505                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOInfovis.so
+7f13aff4a000-7f13aff4c000 rw-p 0008f000 08:06 15505                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOInfovis.so
+7f13aff4c000-7f13aff5a000 r-xp 00000000 08:06 16120                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOInfovisJava.so
+7f13aff5a000-7f13b015a000 ---p 0000e000 08:06 16120                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOInfovisJava.so
+7f13b015a000-7f13b015b000 r--p 0000e000 08:06 16120                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOInfovisJava.so
+7f13b015b000-7f13b015c000 rw-p 0000f000 08:06 16120                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOInfovisJava.so
+7f13b015c000-7f13b01ab000 r-xp 00000000 08:06 16283                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImport.so
+7f13b01ab000-7f13b03ab000 ---p 0004f000 08:06 16283                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImport.so
+7f13b03ab000-7f13b03ac000 r--p 0004f000 08:06 16283                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImport.so
+7f13b03ac000-7f13b03ad000 rw-p 00050000 08:06 16283                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImport.so
+7f13b03ad000-7f13b03b0000 r-xp 00000000 08:06 15905                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImportJava.so
+7f13b03b0000-7f13b05af000 ---p 00003000 08:06 15905                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImportJava.so
+7f13b05af000-7f13b05b0000 r--p 00002000 08:06 15905                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImportJava.so
+7f13b05b0000-7f13b05b1000 rw-p 00003000 08:06 15905                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImportJava.so
+7f13b05b1000-7f13b05dd000 r-xp 00000000 08:06 15825                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImageJava.so
+7f13b05dd000-7f13b07dc000 ---p 0002c000 08:06 15825                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImageJava.so
+7f13b07dc000-7f13b07dd000 r--p 0002b000 08:06 15825                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImageJava.so
+7f13b07dd000-7f13b07de000 rw-p 0002c000 08:06 15825                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImageJava.so
+7f13b07de000-7f13b093a000 r-xp 00000000 08:06 15979                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOGeometry.so
+7f13b093a000-7f13b0b3a000 ---p 0015c000 08:06 15979                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOGeometry.so
+7f13b0b3a000-7f13b0b3f000 r--p 0015c000 08:06 15979                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOGeometry.so
+7f13b0b3f000-7f13b0b44000 rw-p 00161000 08:06 15979                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOGeometry.so
+7f13b0b44000-7f13b0b63000 r-xp 00000000 08:06 15833                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOGeometryJava.so
+7f13b0b63000-7f13b0d62000 ---p 0001f000 08:06 15833                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOGeometryJava.so
+7f13b0d62000-7f13b0d63000 r--p 0001e000 08:06 15833                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOGeometryJava.so
+7f13b0d63000-7f13b0d64000 rw-p 0001f000 08:06 15833                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOGeometryJava.so
+7f13b0d64000-7f13b0dc6000 r-xp 00000000 08:06 16131                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExport.so
+7f13b0dc6000-7f13b0fc6000 ---p 00062000 08:06 16131                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExport.so
+7f13b0fc6000-7f13b0fc8000 r--p 00062000 08:06 16131                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExport.so
+7f13b0fc8000-7f13b0fca000 rw-p 00064000 08:06 16131                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExport.so
+7f13b0fca000-7f13b0fcd000 rw-p 00000000 00:00 0 
+7f13b0fcd000-7f13b0fd6000 r-xp 00000000 08:06 16225                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExportJava.so
+7f13b0fd6000-7f13b11d5000 ---p 00009000 08:06 16225                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExportJava.so
+7f13b11d5000-7f13b11d6000 r--p 00008000 08:06 16225                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExportJava.so
+7f13b11d6000-7f13b11d7000 rw-p 00009000 08:06 16225                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExportJava.so
+7f13b11d7000-7f13b11f8000 r-xp 00000000 08:06 16092                      /home/kevin/vtk/vtk_from_scott/lib/libvtkhdf5_hl.so.1.8.13
+7f13b11f8000-7f13b13f8000 ---p 00021000 08:06 16092                      /home/kevin/vtk/vtk_from_scott/lib/libvtkhdf5_hl.so.1.8.13
+7f13b13f8000-7f13b13f9000 r--p 00021000 08:06 16092                      /home/kevin/vtk/vtk_from_scott/lib/libvtkhdf5_hl.so.1.8.13
+7f13b13f9000-7f13b13fa000 rw-p 00022000 08:06 16092                      /home/kevin/vtk/vtk_from_scott/lib/libvtkhdf5_hl.so.1.8.13
+7f13b13fa000-7f13b140b000 rw-p 00000000 00:00 0 
+7f13b140b000-7f13b14c6000 r-xp 00000000 08:06 15895                      /home/kevin/vtk/vtk_from_scott/lib/libvtkNetCDF.so
+7f13b14c6000-7f13b16c5000 ---p 000bb000 08:06 15895                      /home/kevin/vtk/vtk_from_scott/lib/libvtkNetCDF.so
+7f13b16c5000-7f13b1713000 r--p 000ba000 08:06 15895                      /home/kevin/vtk/vtk_from_scott/lib/libvtkNetCDF.so
+7f13b1713000-7f13b1717000 rw-p 00108000 08:06 15895                      /home/kevin/vtk/vtk_from_scott/lib/libvtkNetCDF.so
+7f13b1717000-7f13b171b000 rw-p 00000000 00:00 0 
+7f13b171b000-7f13b178d000 r-xp 00000000 08:06 16279                      /home/kevin/vtk/vtk_from_scott/lib/libvtkexoIIc.so
+7f13b178d000-7f13b198c000 ---p 00072000 08:06 16279                      /home/kevin/vtk/vtk_from_scott/lib/libvtkexoIIc.so
+7f13b198c000-7f13b198d000 r--p 00071000 08:06 16279                      /home/kevin/vtk/vtk_from_scott/lib/libvtkexoIIc.so
+7f13b198d000-7f13b198e000 rw-p 00072000 08:06 16279                      /home/kevin/vtk/vtk_from_scott/lib/libvtkexoIIc.so
+7f13b198e000-7f13b198f000 rw-p 00000000 00:00 0 
+7f13b198f000-7f13b1ae1000 r-xp 00000000 08:06 15944                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExodus.so
+7f13b1ae1000-7f13b1ce1000 ---p 00152000 08:06 15944                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExodus.so
+7f13b1ce1000-7f13b1ce5000 r--p 00152000 08:06 15944                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExodus.so
+7f13b1ce5000-7f13b1cec000 rw-p 00156000 08:06 15944                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExodus.so
+7f13b1cec000-7f13b1d09000 r-xp 00000000 08:06 16135                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExodusJava.so
+7f13b1d09000-7f13b1f08000 ---p 0001d000 08:06 16135                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExodusJava.so
+7f13b1f08000-7f13b1f09000 r--p 0001c000 08:06 16135                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExodusJava.so
+7f13b1f09000-7f13b1f0a000 rw-p 0001d000 08:06 16135                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOExodusJava.so
+7f13b1f0a000-7f13b1fc6000 r-xp 00000000 08:06 16183                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOEnSight.so
+7f13b1fc6000-7f13b21c5000 ---p 000bc000 08:06 16183                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOEnSight.so
+7f13b21c5000-7f13b21c8000 r--p 000bb000 08:06 16183                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOEnSight.so
+7f13b21c8000-7f13b21ca000 rw-p 000be000 08:06 16183                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOEnSight.so
+7f13b21ca000-7f13b21d1000 r-xp 00000000 08:06 15962                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOEnSightJava.so
+7f13b21d1000-7f13b23d0000 ---p 00007000 08:06 15962                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOEnSightJava.so
+7f13b23d0000-7f13b23d1000 r--p 00006000 08:06 15962                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOEnSightJava.so
+7f13b23d1000-7f13b23d2000 rw-p 00007000 08:06 15962                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOEnSightJava.so
+7f13b23d2000-7f13b23e1000 r-xp 00000000 08:06 16178                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOCoreJava.so
+7f13b23e1000-7f13b25e0000 ---p 0000f000 08:06 16178                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOCoreJava.so
+7f13b25e0000-7f13b25e1000 r--p 0000e000 08:06 16178                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOCoreJava.so
+7f13b25e1000-7f13b25e2000 rw-p 0000f000 08:06 16178                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOCoreJava.so
+7f13b25e2000-7f13b2a2d000 r-xp 00000000 08:06 12970                      /home/kevin/vtk/vtk_from_scott/lib/libvtkhdf5.so.1.8.13
+7f13b2a2d000-7f13b2c2c000 ---p 0044b000 08:06 12970                      /home/kevin/vtk/vtk_from_scott/lib/libvtkhdf5.so.1.8.13
+7f13b2c2c000-7f13b2c31000 r--p 0044a000 08:06 12970                      /home/kevin/vtk/vtk_from_scott/lib/libvtkhdf5.so.1.8.13
+7f13b2c31000-7f13b2c38000 rw-p 0044f000 08:06 12970                      /home/kevin/vtk/vtk_from_scott/lib/libvtkhdf5.so.1.8.13
+7f13b2c38000-7f13b2c3c000 rw-p 00000000 00:00 0 
+7f13b2c3c000-7f13b2c8d000 r-xp 00000000 08:06 15857                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOAMR.so
+7f13b2c8d000-7f13b2e8c000 ---p 00051000 08:06 15857                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOAMR.so
+7f13b2e8c000-7f13b2e8e000 r--p 00050000 08:06 15857                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOAMR.so
+7f13b2e8e000-7f13b2e90000 rw-p 00052000 08:06 15857                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOAMR.so
+7f13b2e90000-7f13b2e97000 r-xp 00000000 08:06 16235                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOAMRJava.so
+7f13b2e97000-7f13b3096000 ---p 00007000 08:06 16235                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOAMRJava.so
+7f13b3096000-7f13b3097000 r--p 00006000 08:06 16235                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOAMRJava.so
+7f13b3097000-7f13b3098000 rw-p 00007000 08:06 16235                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOAMRJava.so
+7f13b3098000-7f13b30ae000 r-xp 00000000 08:06 16160                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionImage.so
+7f13b30ae000-7f13b32ae000 ---p 00016000 08:06 16160                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionImage.so
+7f13b32ae000-7f13b32af000 r--p 00016000 08:06 16160                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionImage.so
+7f13b32af000-7f13b32b0000 rw-p 00017000 08:06 16160                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionImage.so
+7f13b32b0000-7f13b32b8000 r-xp 00000000 08:06 16128                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionImageJava.so
+7f13b32b8000-7f13b34b8000 ---p 00008000 08:06 16128                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionImageJava.so
+7f13b34b8000-7f13b34b9000 r--p 00008000 08:06 16128                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionImageJava.so
+7f13b34b9000-7f13b34ba000 rw-p 00009000 08:06 16128                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionImageJava.so
+7f13b34ba000-7f13b34e0000 r-xp 00000000 08:06 12943                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisLayoutJava.so
+7f13b34e0000-7f13b36df000 ---p 00026000 08:06 12943                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisLayoutJava.so
+7f13b36df000-7f13b36e0000 r--p 00025000 08:06 12943                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisLayoutJava.so
+7f13b36e0000-7f13b36e1000 rw-p 00026000 08:06 12943                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisLayoutJava.so
+7f13b36e1000-7f13b371c000 r-xp 00000000 08:06 15876                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStencil.so
+7f13b371c000-7f13b391c000 ---p 0003b000 08:06 15876                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStencil.so
+7f13b391c000-7f13b391e000 r--p 0003b000 08:06 15876                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStencil.so
+7f13b391e000-7f13b391f000 rw-p 0003d000 08:06 15876                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStencil.so
+7f13b391f000-7f13b3927000 r-xp 00000000 08:06 16240                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStencilJava.so
+7f13b3927000-7f13b3b26000 ---p 00008000 08:06 16240                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStencilJava.so
+7f13b3b26000-7f13b3b27000 r--p 00007000 08:06 16240                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStencilJava.so
+7f13b3b27000-7f13b3b28000 rw-p 00008000 08:06 16240                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStencilJava.so
+7f13b3b28000-7f13b3b4f000 r-xp 00000000 08:06 15869                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStatistics.so
+7f13b3b4f000-7f13b3d4f000 ---p 00027000 08:06 15869                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStatistics.so
+7f13b3d4f000-7f13b3d50000 r--p 00027000 08:06 15869                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStatistics.so
+7f13b3d50000-7f13b3d51000 rw-p 00028000 08:06 15869                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStatistics.so
+7f13b3d51000-7f13b3d58000 r-xp 00000000 08:06 15488                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStatisticsJava.so
+7f13b3d58000-7f13b3f57000 ---p 00007000 08:06 15488                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStatisticsJava.so
+7f13b3f57000-7f13b3f58000 r--p 00006000 08:06 15488                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStatisticsJava.so
+7f13b3f58000-7f13b3f59000 rw-p 00007000 08:06 15488                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingStatisticsJava.so
+7f13b3f59000-7f13b3f67000 r-xp 00000000 08:06 15494                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingSourcesJava.so
+7f13b3f67000-7f13b4166000 ---p 0000e000 08:06 15494                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingSourcesJava.so
+7f13b4166000-7f13b4167000 r--p 0000d000 08:06 15494                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingSourcesJava.so
+7f13b4167000-7f13b4168000 rw-p 0000e000 08:06 15494                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingSourcesJava.so
+7f13b4168000-7f13b41e1000 r-xp 00000000 08:06 15967                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMorphological.so
+7f13b41e1000-7f13b43e0000 ---p 00079000 08:06 15967                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMorphological.so
+7f13b43e0000-7f13b43e3000 r--p 00078000 08:06 15967                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMorphological.so
+7f13b43e3000-7f13b43e4000 rw-p 0007b000 08:06 15967                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMorphological.so
+7f13b43e4000-7f13b43ee000 r-xp 00000000 08:06 12929                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMorphologicalJava.so
+7f13b43ee000-7f13b45ed000 ---p 0000a000 08:06 12929                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMorphologicalJava.so
+7f13b45ed000-7f13b45ee000 r--p 00009000 08:06 12929                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMorphologicalJava.so
+7f13b45ee000-7f13b45ef000 rw-p 0000a000 08:06 12929                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMorphologicalJava.so
+7f13b45ef000-7f13b4631000 r-xp 00000000 08:06 16125                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMath.so
+7f13b4631000-7f13b4831000 ---p 00042000 08:06 16125                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMath.so
+7f13b4831000-7f13b4833000 r--p 00042000 08:06 16125                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMath.so
+7f13b4833000-7f13b4834000 rw-p 00044000 08:06 16125                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMath.so
+7f13b4834000-7f13b483c000 r-xp 00000000 08:06 15507                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMathJava.so
+7f13b483c000-7f13b4a3b000 ---p 00008000 08:06 15507                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMathJava.so
+7f13b4a3b000-7f13b4a3c000 r--p 00007000 08:06 15507                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMathJava.so
+7f13b4a3c000-7f13b4a3d000 rw-p 00008000 08:06 15507                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingMathJava.so
+7f13b4a3d000-7f13b4a54000 r-xp 00000000 08:06 16248                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingHybridJava.so
+7f13b4a54000-7f13b4c53000 ---p 00017000 08:06 16248                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingHybridJava.so
+7f13b4c53000-7f13b4c54000 r--p 00016000 08:06 16248                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingHybridJava.so
+7f13b4c54000-7f13b4c55000 rw-p 00017000 08:06 16248                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingHybridJava.so
+7f13b4c55000-7f13b4c73000 r-xp 00000000 08:06 16247                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingGeneralJava.so
+7f13b4c73000-7f13b4e72000 ---p 0001e000 08:06 16247                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingGeneralJava.so
+7f13b4e72000-7f13b4e73000 r--p 0001d000 08:06 16247                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingGeneralJava.so
+7f13b4e73000-7f13b4e74000 rw-p 0001e000 08:06 16247                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingGeneralJava.so
+7f13b4e74000-7f13b4e7b000 r-xp 00000000 08:06 16292                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingFourierJava.so
+7f13b4e7b000-7f13b507a000 ---p 00007000 08:06 16292                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingFourierJava.so
+7f13b507a000-7f13b507b000 r--p 00006000 08:06 16292                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingFourierJava.so
+7f13b507b000-7f13b507c000 rw-p 00007000 08:06 16292                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingFourierJava.so
+7f13b507c000-7f13b50cc000 r-xp 00000000 08:06 12946                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingColor.so
+7f13b50cc000-7f13b52cb000 ---p 00050000 08:06 12946                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingColor.so
+7f13b52cb000-7f13b52ce000 r--p 0004f000 08:06 12946                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingColor.so
+7f13b52ce000-7f13b52cf000 rw-p 00052000 08:06 12946                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingColor.so
+7f13b52cf000-7f13b52d4000 r-xp 00000000 08:06 16040                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingColorJava.so
+7f13b52d4000-7f13b54d3000 ---p 00005000 08:06 16040                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingColorJava.so
+7f13b54d3000-7f13b54d4000 r--p 00004000 08:06 16040                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingColorJava.so
+7f13b54d4000-7f13b54d5000 rw-p 00005000 08:06 16040                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingColorJava.so
+7f13b54d5000-7f13b5969000 r-xp 00000000 08:06 16190                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolume.so
+7f13b5969000-7f13b5b68000 ---p 00494000 08:06 16190                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolume.so
+7f13b5b68000-7f13b5b6e000 r--p 00493000 08:06 16190                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolume.so
+7f13b5b6e000-7f13b5b70000 rw-p 00499000 08:06 16190                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingVolume.so
+7f13b5b70000-7f13b5d30000 rw-p 00000000 00:00 0 
+7f13b5d30000-7f13b5e81000 r-xp 00000000 08:06 12905                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingAnnotation.so
+7f13b5e81000-7f13b6080000 ---p 00151000 08:06 12905                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingAnnotation.so
+7f13b6080000-7f13b6088000 r--p 00150000 08:06 12905                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingAnnotation.so
+7f13b6088000-7f13b608a000 rw-p 00158000 08:06 12905                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingAnnotation.so
+7f13b608a000-7f13b60df000 r-xp 00000000 08:06 16230                      /home/kevin/vtk/vtk_from_scott/lib/libvtkproj4.so
+7f13b60df000-7f13b62de000 ---p 00055000 08:06 16230                      /home/kevin/vtk/vtk_from_scott/lib/libvtkproj4.so
+7f13b62de000-7f13b62e1000 r--p 00054000 08:06 16230                      /home/kevin/vtk/vtk_from_scott/lib/libvtkproj4.so
+7f13b62e1000-7f13b62e2000 rw-p 00057000 08:06 16230                      /home/kevin/vtk/vtk_from_scott/lib/libvtkproj4.so
+7f13b62e2000-7f13b6315000 r-xp 00000000 08:06 16274                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsCore.so
+7f13b6315000-7f13b6515000 ---p 00033000 08:06 16274                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsCore.so
+7f13b6515000-7f13b6517000 r--p 00033000 08:06 16274                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsCore.so
+7f13b6517000-7f13b6518000 rw-p 00035000 08:06 16274                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsCore.so
+7f13b6518000-7f13b656d000 r-xp 00000000 08:06 12945                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionStyle.so
+7f13b656d000-7f13b676c000 ---p 00055000 08:06 12945                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionStyle.so
+7f13b676c000-7f13b6772000 r--p 00054000 08:06 12945                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionStyle.so
+7f13b6772000-7f13b6773000 rw-p 0005a000 08:06 12945                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionStyle.so
+7f13b6773000-7f13b6829000 r-xp 00000000 08:06 15498                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisLayout.so
+7f13b6829000-7f13b6a28000 ---p 000b6000 08:06 15498                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisLayout.so
+7f13b6a28000-7f13b6a2e000 r--p 000b5000 08:06 15498                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisLayout.so
+7f13b6a2e000-7f13b6a30000 rw-p 000bb000 08:06 15498                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisLayout.so
+7f13b6a30000-7f13b6b3b000 r-xp 00000000 08:06 15897                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXML.so
+7f13b6b3b000-7f13b6d3b000 ---p 0010b000 08:06 15897                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXML.so
+7f13b6d3b000-7f13b6d47000 r--p 0010b000 08:06 15897                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXML.so
+7f13b6d47000-7f13b6d4b000 rw-p 00117000 08:06 15897                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXML.so
+7f13b6d4b000-7f13b7009000 r-xp 00000000 08:06 16033                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionWidgets.so
+7f13b7009000-7f13b7209000 ---p 002be000 08:06 16033                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionWidgets.so
+7f13b7209000-7f13b7226000 r--p 002be000 08:06 16033                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionWidgets.so
+7f13b7226000-7f13b722b000 rw-p 002db000 08:06 16033                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionWidgets.so
+7f13b722b000-7f13b7248000 r-xp 00000000 08:06 16020                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisCoreJava.so
+7f13b7248000-7f13b7447000 ---p 0001d000 08:06 16020                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisCoreJava.so
+7f13b7447000-7f13b7448000 r--p 0001c000 08:06 16020                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisCoreJava.so
+7f13b7448000-7f13b7449000 rw-p 0001d000 08:06 16020                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisCoreJava.so
+7f13b7449000-7f13b7455000 r-xp 00000000 08:06 15965                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsCoreJava.so
+7f13b7455000-7f13b7654000 ---p 0000c000 08:06 15965                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsCoreJava.so
+7f13b7654000-7f13b7655000 r--p 0000b000 08:06 15965                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsCoreJava.so
+7f13b7655000-7f13b7656000 rw-p 0000c000 08:06 15965                      /home/kevin/vtk/vtk_from_scott/lib/libvtkViewsCoreJava.so
+7f13b7656000-7f13b772a000 r-xp 00000000 08:06 12959                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionWidgetsJava.so
+7f13b772a000-7f13b7929000 ---p 000d4000 08:06 12959                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionWidgetsJava.so
+7f13b7929000-7f13b792a000 r--p 000d3000 08:06 12959                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionWidgetsJava.so
+7f13b792a000-7f13b792c000 rw-p 000d4000 08:06 12959                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionWidgetsJava.so
+7f13b792c000-7f13b7941000 r-xp 00000000 08:06 12941                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionStyleJava.so
+7f13b7941000-7f13b7b40000 ---p 00015000 08:06 12941                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionStyleJava.so
+7f13b7b40000-7f13b7b41000 r--p 00014000 08:06 12941                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionStyleJava.so
+7f13b7b41000-7f13b7b42000 rw-p 00015000 08:06 12941                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInteractionStyleJava.so
+7f13b7b42000-7f13b7bdd000 r-xp 00000000 08:06 16151                      /home/kevin/vtk/vtk_from_scott/lib/libvtkGeovisCore.so
+7f13b7bdd000-7f13b7ddc000 ---p 0009b000 08:06 16151                      /home/kevin/vtk/vtk_from_scott/lib/libvtkGeovisCore.so
+7f13b7ddc000-7f13b7de1000 r--p 0009a000 08:06 16151                      /home/kevin/vtk/vtk_from_scott/lib/libvtkGeovisCore.so
+7f13b7de1000-7f13b7de3000 rw-p 0009f000 08:06 16151                      /home/kevin/vtk/vtk_from_scott/lib/libvtkGeovisCore.so
+7f13b7de3000-7f13b7dff000 r-xp 00000000 08:06 15943                      /home/kevin/vtk/vtk_from_scott/lib/libvtkGeovisCoreJava.so
+7f13b7dff000-7f13b7ffe000 ---p 0001c000 08:06 15943                      /home/kevin/vtk/vtk_from_scott/lib/libvtkGeovisCoreJava.so
+7f13b7ffe000-7f13b7fff000 r--p 0001b000 08:06 15943                      /home/kevin/vtk/vtk_from_scott/lib/libvtkGeovisCoreJava.so
+7f13b7fff000-7f13b8000000 rw-p 0001c000 08:06 15943                      /home/kevin/vtk/vtk_from_scott/lib/libvtkGeovisCoreJava.so
+7f13b8000000-7f13b8021000 rw-p 00000000 00:00 0 
+7f13b8021000-7f13bc000000 ---p 00000000 00:00 0 
+7f13bc000000-7f13bfff5000 rw-p 00000000 00:00 0 
+7f13bfff5000-7f13c0000000 ---p 00000000 00:00 0 
+7f13c0000000-7f13c0021000 rw-p 00000000 00:00 0 
+7f13c0021000-7f13c4000000 ---p 00000000 00:00 0 
+7f13c4000000-7f13c4025000 rw-p 00000000 00:00 0 
+7f13c4025000-7f13c8000000 ---p 00000000 00:00 0 
+7f13c8000000-7f13c8021000 rw-p 00000000 00:00 0 
+7f13c8021000-7f13cc000000 ---p 00000000 00:00 0 
+7f13cc000000-7f13cc021000 rw-p 00000000 00:00 0 
+7f13cc021000-7f13d0000000 ---p 00000000 00:00 0 
+7f13d0000000-7f13d0563000 rw-p 00000000 00:00 0 
+7f13d0563000-7f13d4000000 ---p 00000000 00:00 0 
+7f13d4000000-7f13d4317000 rw-p 00000000 00:00 0 
+7f13d4317000-7f13d8000000 ---p 00000000 00:00 0 
+7f13d8000000-7f13d85c2000 rw-p 00000000 00:00 0 
+7f13d85c2000-7f13dc000000 ---p 00000000 00:00 0 
+7f13dc000000-7f13dc5ab000 rw-p 00000000 00:00 0 
+7f13dc5ab000-7f13e0000000 ---p 00000000 00:00 0 
+7f13e0000000-7f13e0021000 rw-p 00000000 00:00 0 
+7f13e0021000-7f13e4000000 ---p 00000000 00:00 0 
+7f13e4000000-7f13e4021000 rw-p 00000000 00:00 0 
+7f13e4021000-7f13e8000000 ---p 00000000 00:00 0 
+7f13e8000000-7f13e8021000 rw-p 00000000 00:00 0 
+7f13e8021000-7f13ec000000 ---p 00000000 00:00 0 
+7f13ec0b0000-7f13ec0eb000 r-xp 00000000 08:06 15855                      /home/kevin/vtk/vtk_from_scott/lib/libvtkverdict.so
+7f13ec0eb000-7f13ec2ea000 ---p 0003b000 08:06 15855                      /home/kevin/vtk/vtk_from_scott/lib/libvtkverdict.so
+7f13ec2ea000-7f13ec2eb000 r--p 0003a000 08:06 15855                      /home/kevin/vtk/vtk_from_scott/lib/libvtkverdict.so
+7f13ec2eb000-7f13ec2ec000 rw-p 0003b000 08:06 15855                      /home/kevin/vtk/vtk_from_scott/lib/libvtkverdict.so
+7f13ec2ec000-7f13f4000000 rw-p 00000000 00:00 0 
+7f13f4000000-7f13f4021000 rw-p 00000000 00:00 0 
+7f13f4021000-7f13f8000000 ---p 00000000 00:00 0 
+7f13f8000000-7f13f8021000 rw-p 00000000 00:00 0 
+7f13f8021000-7f13fc000000 ---p 00000000 00:00 0 
+7f13fc000000-7f13fc021000 rw-p 00000000 00:00 0 
+7f13fc021000-7f1400000000 ---p 00000000 00:00 0 
+7f14000d6000-7f14000f0000 r-xp 00000000 08:06 12942                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersVerdict.so
+7f14000f0000-7f14002f0000 ---p 0001a000 08:06 12942                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersVerdict.so
+7f14002f0000-7f14002f1000 r--p 0001a000 08:06 12942                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersVerdict.so
+7f14002f1000-7f14002f2000 rw-p 0001b000 08:06 12942                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersVerdict.so
+7f14002f2000-7f1400306000 r-xp 00000000 08:06 16137                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersVerdictJava.so
+7f1400306000-7f1400505000 ---p 00014000 08:06 16137                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersVerdictJava.so
+7f1400505000-7f1400506000 r--p 00013000 08:06 16137                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersVerdictJava.so
+7f1400506000-7f1400507000 rw-p 00014000 08:06 16137                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersVerdictJava.so
+7f1400507000-7f1400527000 r-xp 00000000 08:06 15515                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersTexture.so
+7f1400527000-7f1400726000 ---p 00020000 08:06 15515                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersTexture.so
+7f1400726000-7f1400728000 r--p 0001f000 08:06 15515                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersTexture.so
+7f1400728000-7f1400729000 rw-p 00021000 08:06 15515                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersTexture.so
+7f1400729000-7f1400732000 r-xp 00000000 08:06 16102                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersTextureJava.so
+7f1400732000-7f1400931000 ---p 00009000 08:06 16102                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersTextureJava.so
+7f1400931000-7f1400932000 r--p 00008000 08:06 16102                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersTextureJava.so
+7f1400932000-7f1400933000 rw-p 00009000 08:06 16102                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersTextureJava.so
+7f1400933000-7f14009ef000 r-xp 00000000 08:06 15891                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSMP.so
+7f14009ef000-7f1400bee000 ---p 000bc000 08:06 15891                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSMP.so
+7f1400bee000-7f1400bf0000 r--p 000bb000 08:06 15891                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSMP.so
+7f1400bf0000-7f1400bfd000 rw-p 000bd000 08:06 15891                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSMP.so
+7f1400bfd000-7f1400c04000 r-xp 00000000 08:06 15519                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSMPJava.so
+7f1400c04000-7f1400e03000 ---p 00007000 08:06 15519                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSMPJava.so
+7f1400e03000-7f1400e04000 r--p 00006000 08:06 15519                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSMPJava.so
+7f1400e04000-7f1400e05000 rw-p 00007000 08:06 15519                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSMPJava.so
+7f1400e05000-7f1400e25000 r-xp 00000000 08:06 15495                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSelection.so
+7f1400e25000-7f1401025000 ---p 00020000 08:06 15495                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSelection.so
+7f1401025000-7f1401026000 r--p 00020000 08:06 15495                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSelection.so
+7f1401026000-7f1401027000 rw-p 00021000 08:06 15495                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSelection.so
+7f1401027000-7f140102c000 r-xp 00000000 08:06 16298                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSelectionJava.so
+7f140102c000-7f140122b000 ---p 00005000 08:06 16298                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSelectionJava.so
+7f140122b000-7f140122c000 r--p 00004000 08:06 16298                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSelectionJava.so
+7f140122c000-7f140122d000 rw-p 00005000 08:06 16298                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSelectionJava.so
+7f140122d000-7f140123b000 r-xp 00000000 08:06 16236                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersProgrammable.so
+7f140123b000-7f140143b000 ---p 0000e000 08:06 16236                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersProgrammable.so
+7f140143b000-7f140143c000 r--p 0000e000 08:06 16236                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersProgrammable.so
+7f140143c000-7f140143d000 rw-p 0000f000 08:06 16236                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersProgrammable.so
+7f140143d000-7f1401441000 r-xp 00000000 08:06 16148                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersProgrammableJava.so
+7f1401441000-7f1401641000 ---p 00004000 08:06 16148                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersProgrammableJava.so
+7f1401641000-7f1401642000 r--p 00004000 08:06 16148                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersProgrammableJava.so
+7f1401642000-7f1401643000 rw-p 00005000 08:06 16148                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersProgrammableJava.so
+7f1401643000-7f1401676000 r-xp 00000000 08:06 16257                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingCoreJava.so
+7f1401676000-7f1401875000 ---p 00033000 08:06 16257                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingCoreJava.so
+7f1401875000-7f1401876000 r--p 00032000 08:06 16257                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingCoreJava.so
+7f1401876000-7f1401877000 rw-p 00033000 08:06 16257                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingCoreJava.so
+7f1401877000-7f1401894000 r-xp 00000000 08:06 15531                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelImaging.so
+7f1401894000-7f1401a93000 ---p 0001d000 08:06 15531                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelImaging.so
+7f1401a93000-7f1401a95000 r--p 0001c000 08:06 15531                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelImaging.so
+7f1401a95000-7f1401a96000 rw-p 0001e000 08:06 15531                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelImaging.so
+7f1401a96000-7f1401a99000 r-xp 00000000 08:06 16099                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelImagingJava.so
+7f1401a99000-7f1401c98000 ---p 00003000 08:06 16099                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelImagingJava.so
+7f1401c98000-7f1401c99000 r--p 00002000 08:06 16099                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelImagingJava.so
+7f1401c99000-7f1401c9a000 rw-p 00003000 08:06 16099                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelImagingJava.so
+7f1401c9a000-7f1401ccb000 r-xp 00000000 08:06 16130                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSourcesJava.so
+7f1401ccb000-7f1401eca000 ---p 00031000 08:06 16130                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSourcesJava.so
+7f1401eca000-7f1401ecb000 r--p 00030000 08:06 16130                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSourcesJava.so
+7f1401ecb000-7f1401ecc000 rw-p 00031000 08:06 16130                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSourcesJava.so
+7f1401ecc000-7f1401fb1000 r-xp 00000000 08:06 15845                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallel.so
+7f1401fb1000-7f14021b1000 ---p 000e5000 08:06 15845                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallel.so
+7f14021b1000-7f14021bb000 r--p 000e5000 08:06 15845                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallel.so
+7f14021bb000-7f14021be000 rw-p 000ef000 08:06 15845                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallel.so
+7f14021be000-7f14021d6000 r-xp 00000000 08:06 16215                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelJava.so
+7f14021d6000-7f14023d5000 ---p 00018000 08:06 16215                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelJava.so
+7f14023d5000-7f14023d6000 r--p 00017000 08:06 16215                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelJava.so
+7f14023d6000-7f14023d7000 rw-p 00018000 08:06 16215                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersParallelJava.so
+7f14023d7000-7f140245c000 r-xp 00000000 08:06 16205                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersModeling.so
+7f140245c000-7f140265b000 ---p 00085000 08:06 16205                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersModeling.so
+7f140265b000-7f1402660000 r--p 00084000 08:06 16205                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersModeling.so
+7f1402660000-7f1402662000 rw-p 00089000 08:06 16205                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersModeling.so
+7f1402662000-7f140267c000 r-xp 00000000 08:06 15899                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersModelingJava.so
+7f140267c000-7f140287b000 ---p 0001a000 08:06 15899                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersModelingJava.so
+7f140287b000-7f140287c000 r--p 00019000 08:06 15899                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersModelingJava.so
+7f140287c000-7f140287d000 rw-p 0001a000 08:06 15899                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersModelingJava.so
+7f140287d000-7f14029a2000 r-xp 00000000 08:06 15830                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingGeneral.so
+7f14029a2000-7f1402ba1000 ---p 00125000 08:06 15830                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingGeneral.so
+7f1402ba1000-7f1402ba7000 r--p 00124000 08:06 15830                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingGeneral.so
+7f1402ba7000-7f1402bab000 rw-p 0012a000 08:06 15830                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingGeneral.so
+7f1402bab000-7f1402bb9000 r-xp 00000000 08:06 12965                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersStatisticsJava.so
+7f1402bb9000-7f1402db8000 ---p 0000e000 08:06 12965                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersStatisticsJava.so
+7f1402db8000-7f1402db9000 r--p 0000d000 08:06 12965                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersStatisticsJava.so
+7f1402db9000-7f1402dba000 rw-p 0000e000 08:06 12965                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersStatisticsJava.so
+7f1402dba000-7f1402de5000 r-xp 00000000 08:06 16189                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersImaging.so
+7f1402de5000-7f1402fe4000 ---p 0002b000 08:06 16189                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersImaging.so
+7f1402fe4000-7f1402fe5000 r--p 0002a000 08:06 16189                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersImaging.so
+7f1402fe5000-7f1402fe6000 rw-p 0002b000 08:06 16189                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersImaging.so
+7f1402fe6000-7f1402fed000 r-xp 00000000 08:06 16175                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersImagingJava.so
+7f1402fed000-7f14031ec000 ---p 00007000 08:06 16175                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersImagingJava.so
+7f14031ec000-7f14031ed000 r--p 00006000 08:06 16175                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersImagingJava.so
+7f14031ed000-7f14031ee000 rw-p 00007000 08:06 16175                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersImagingJava.so
+7f14031ee000-7f1403232000 r-xp 00000000 08:06 16210                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHyperTree.so
+7f1403232000-7f1403432000 ---p 00044000 08:06 16210                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHyperTree.so
+7f1403432000-7f1403435000 r--p 00044000 08:06 16210                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHyperTree.so
+7f1403435000-7f1403436000 rw-p 00047000 08:06 16210                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHyperTree.so
+7f1403436000-7f1403444000 r-xp 00000000 08:06 16181                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHyperTreeJava.so
+7f1403444000-7f1403643000 ---p 0000e000 08:06 16181                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHyperTreeJava.so
+7f1403643000-7f1403644000 r--p 0000d000 08:06 16181                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHyperTreeJava.so
+7f1403644000-7f1403645000 rw-p 0000e000 08:06 16181                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHyperTreeJava.so
+7f1403645000-7f140368c000 r-xp 00000000 08:06 16156                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingSources.so
+7f140368c000-7f140388c000 ---p 00047000 08:06 16156                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingSources.so
+7f140388c000-7f140388e000 r--p 00047000 08:06 16156                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingSources.so
+7f140388e000-7f140388f000 rw-p 00049000 08:06 16156                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingSources.so
+7f140388f000-7f14039c2000 r-xp 00000000 08:06 16152                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHybrid.so
+7f14039c2000-7f1403bc2000 ---p 00133000 08:06 16152                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHybrid.so
+7f1403bc2000-7f1403bc7000 r--p 00133000 08:06 16152                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHybrid.so
+7f1403bc7000-7f1403bca000 rw-p 00138000 08:06 16152                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHybrid.so
+7f1403bca000-7f1403be9000 r-xp 00000000 08:06 16172                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHybridJava.so
+7f1403be9000-7f1403de8000 ---p 0001f000 08:06 16172                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHybridJava.so
+7f1403de8000-7f1403de9000 r--p 0001e000 08:06 16172                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHybridJava.so
+7f1403de9000-7f1403dea000 rw-p 0001f000 08:06 16172                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersHybridJava.so
+7f1403dea000-7f1403dff000 r-xp 00000000 08:06 16042                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeometryJava.so
+7f1403dff000-7f1403ffe000 ---p 00015000 08:06 16042                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeometryJava.so
+7f1403ffe000-7f1403fff000 r--p 00014000 08:06 16042                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeometryJava.so
+7f1403fff000-7f1404000000 rw-p 00015000 08:06 16042                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeometryJava.so
+7f1404000000-7f1404021000 rw-p 00000000 00:00 0 
+7f1404021000-7f1408000000 ---p 00000000 00:00 0 
+7f1408070000-7f14080ab000 r-xp 00000000 08:06 15535                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneric.so
+7f14080ab000-7f14082ab000 ---p 0003b000 08:06 15535                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneric.so
+7f14082ab000-7f14082ad000 r--p 0003b000 08:06 15535                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneric.so
+7f14082ad000-7f14082ae000 rw-p 0003d000 08:06 15535                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneric.so
+7f14082ae000-7f14082c2000 r-xp 00000000 08:06 16097                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGenericJava.so
+7f14082c2000-7f14084c1000 ---p 00014000 08:06 16097                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGenericJava.so
+7f14084c1000-7f14084c2000 r--p 00013000 08:06 16097                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGenericJava.so
+7f14084c2000-7f14084c3000 rw-p 00014000 08:06 16097                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGenericJava.so
+7f14084c3000-7f1408522000 r-xp 00000000 08:06 15874                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneralJava.so
+7f1408522000-7f1408721000 ---p 0005f000 08:06 15874                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneralJava.so
+7f1408721000-7f1408722000 r--p 0005e000 08:06 15874                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneralJava.so
+7f1408722000-7f1408723000 rw-p 0005f000 08:06 15874                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneralJava.so
+7f1408723000-7f14087c9000 r-xp 00000000 08:06 15973                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersFlowPaths.so
+7f14087c9000-7f14089c8000 ---p 000a6000 08:06 15973                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersFlowPaths.so
+7f14089c8000-7f14089cc000 r--p 000a5000 08:06 15973                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersFlowPaths.so
+7f14089cc000-7f14089ce000 rw-p 000a9000 08:06 15973                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersFlowPaths.so
+7f14089ce000-7f14089e3000 r-xp 00000000 08:06 16214                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersFlowPathsJava.so
+7f14089e3000-7f1408be2000 ---p 00015000 08:06 16214                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersFlowPathsJava.so
+7f1408be2000-7f1408be3000 r--p 00014000 08:06 16214                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersFlowPathsJava.so
+7f1408be3000-7f1408be4000 rw-p 00015000 08:06 16214                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersFlowPathsJava.so
+7f1408be4000-7f1408bfb000 r-xp 00000000 08:06 16228                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersExtractionJava.so
+7f1408bfb000-7f1408dfa000 ---p 00017000 08:06 16228                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersExtractionJava.so
+7f1408dfa000-7f1408dfb000 r--p 00016000 08:06 16228                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersExtractionJava.so
+7f1408dfb000-7f1408dfc000 rw-p 00017000 08:06 16228                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersExtractionJava.so
+7f1408dfc000-7f1408e72000 r-xp 00000000 08:06 16206                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersCoreJava.so
+7f1408e72000-7f1409071000 ---p 00076000 08:06 16206                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersCoreJava.so
+7f1409071000-7f1409072000 r--p 00075000 08:06 16206                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersCoreJava.so
+7f1409072000-7f1409074000 rw-p 00076000 08:06 16206                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersCoreJava.so
+7f1409074000-7f1409121000 r-xp 00000000 08:06 16233                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLegacy.so
+7f1409121000-7f1409321000 ---p 000ad000 08:06 16233                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLegacy.so
+7f1409321000-7f1409328000 r--p 000ad000 08:06 16233                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLegacy.so
+7f1409328000-7f140932a000 rw-p 000b4000 08:06 16233                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOLegacy.so
+7f140932a000-7f14093b3000 r-xp 00000000 08:06 12961                      /home/kevin/vtk/vtk_from_scott/lib/libvtkParallelCore.so
+7f14093b3000-7f14095b3000 ---p 00089000 08:06 12961                      /home/kevin/vtk/vtk_from_scott/lib/libvtkParallelCore.so
+7f14095b3000-7f14095b5000 r--p 00089000 08:06 12961                      /home/kevin/vtk/vtk_from_scott/lib/libvtkParallelCore.so
+7f14095b5000-7f14095b8000 rw-p 0008b000 08:06 12961                      /home/kevin/vtk/vtk_from_scott/lib/libvtkParallelCore.so
+7f14095b8000-7f1409603000 r-xp 00000000 08:06 16267                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersAMR.so
+7f1409603000-7f1409803000 ---p 0004b000 08:06 16267                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersAMR.so
+7f1409803000-7f1409805000 r--p 0004b000 08:06 16267                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersAMR.so
+7f1409805000-7f1409807000 rw-p 0004d000 08:06 16267                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersAMR.so
+7f1409807000-7f1409810000 r-xp 00000000 08:06 16261                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersAMRJava.so
+7f1409810000-7f1409a0f000 ---p 00009000 08:06 16261                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersAMRJava.so
+7f1409a0f000-7f1409a10000 r--p 00008000 08:06 16261                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersAMRJava.so
+7f1409a10000-7f1409a11000 rw-p 00009000 08:06 16261                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersAMRJava.so
+7f1409a11000-7f1409a15000 r-xp 00000000 08:05 1707934                    /lib/x86_64-linux-gnu/libuuid.so.1.3.0
+7f1409a15000-7f1409c14000 ---p 00004000 08:05 1707934                    /lib/x86_64-linux-gnu/libuuid.so.1.3.0
+7f1409c14000-7f1409c15000 r--p 00003000 08:05 1707934                    /lib/x86_64-linux-gnu/libuuid.so.1.3.0
+7f1409c15000-7f1409c16000 rw-p 00004000 08:05 1707934                    /lib/x86_64-linux-gnu/libuuid.so.1.3.0
+7f1409c16000-7f140b5e6000 r-xp 00000000 08:05 1357279                    /usr/lib/nvidia-304/libnvidia-glcore.so.304.131
+7f140b5e6000-7f140b7e5000 ---p 019d0000 08:05 1357279                    /usr/lib/nvidia-304/libnvidia-glcore.so.304.131
+7f140b7e5000-7f140bfe6000 rwxp 019cf000 08:05 1357279                    /usr/lib/nvidia-304/libnvidia-glcore.so.304.131
+7f140bfe6000-7f140c000000 rwxp 00000000 00:00 0 
+7f140c000000-7f140c021000 rw-p 00000000 00:00 0 
+7f140c021000-7f1410000000 ---p 00000000 00:00 0 
+7f1410078000-7f14100bd000 r-xp 00000000 08:06 16187                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDICOMParser.so
+7f14100bd000-7f14102bd000 ---p 00045000 08:06 16187                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDICOMParser.so
+7f14102bd000-7f14102be000 r--p 00045000 08:06 16187                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDICOMParser.so
+7f14102be000-7f14102c0000 rw-p 00046000 08:06 16187                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDICOMParser.so
+7f14102c0000-7f14103cc000 r-xp 00000000 08:06 16067                      /home/kevin/vtk/vtk_from_scott/lib/libvtkmetaio.so
+7f14103cc000-7f14105cb000 ---p 0010c000 08:06 16067                      /home/kevin/vtk/vtk_from_scott/lib/libvtkmetaio.so
+7f14105cb000-7f14105cd000 r--p 0010b000 08:06 16067                      /home/kevin/vtk/vtk_from_scott/lib/libvtkmetaio.so
+7f14105cd000-7f14105d2000 rw-p 0010d000 08:06 16067                      /home/kevin/vtk/vtk_from_scott/lib/libvtkmetaio.so
+7f14105d2000-7f141063b000 r-xp 00000000 08:06 16123                      /home/kevin/vtk/vtk_from_scott/lib/libvtktiff.so
+7f141063b000-7f141083b000 ---p 00069000 08:06 16123                      /home/kevin/vtk/vtk_from_scott/lib/libvtktiff.so
+7f141083b000-7f141083d000 r--p 00069000 08:06 16123                      /home/kevin/vtk/vtk_from_scott/lib/libvtktiff.so
+7f141083d000-7f141083e000 rw-p 0006b000 08:06 16123                      /home/kevin/vtk/vtk_from_scott/lib/libvtktiff.so
+7f141083e000-7f141083f000 rw-p 00000000 00:00 0 
+7f141083f000-7f1410873000 r-xp 00000000 08:06 16217                      /home/kevin/vtk/vtk_from_scott/lib/libvtkpng.so
+7f1410873000-7f1410a72000 ---p 00034000 08:06 16217                      /home/kevin/vtk/vtk_from_scott/lib/libvtkpng.so
+7f1410a72000-7f1410a73000 r--p 00033000 08:06 16217                      /home/kevin/vtk/vtk_from_scott/lib/libvtkpng.so
+7f1410a73000-7f1410a74000 rw-p 00034000 08:06 16217                      /home/kevin/vtk/vtk_from_scott/lib/libvtkpng.so
+7f1410a74000-7f1410aa1000 r-xp 00000000 08:06 16289                      /home/kevin/vtk/vtk_from_scott/lib/libvtkjpeg.so
+7f1410aa1000-7f1410ca1000 ---p 0002d000 08:06 16289                      /home/kevin/vtk/vtk_from_scott/lib/libvtkjpeg.so
+7f1410ca1000-7f1410ca2000 r--p 0002d000 08:06 16289                      /home/kevin/vtk/vtk_from_scott/lib/libvtkjpeg.so
+7f1410ca2000-7f1410ca3000 rw-p 0002e000 08:06 16289                      /home/kevin/vtk/vtk_from_scott/lib/libvtkjpeg.so
+7f1410ca3000-7f1410cb9000 r-xp 00000000 08:05 1182923                    /usr/lib/x86_64-linux-gnu/libICE.so.6.3.0
+7f1410cb9000-7f1410eb8000 ---p 00016000 08:05 1182923                    /usr/lib/x86_64-linux-gnu/libICE.so.6.3.0
+7f1410eb8000-7f1410eb9000 r--p 00015000 08:05 1182923                    /usr/lib/x86_64-linux-gnu/libICE.so.6.3.0
+7f1410eb9000-7f1410eba000 rw-p 00016000 08:05 1182923                    /usr/lib/x86_64-linux-gnu/libICE.so.6.3.0
+7f1410eba000-7f1410ebd000 rw-p 00000000 00:00 0 
+7f1410ebd000-7f1410ec4000 r-xp 00000000 08:05 1190874                    /usr/lib/x86_64-linux-gnu/libSM.so.6.0.1
+7f1410ec4000-7f14110c3000 ---p 00007000 08:05 1190874                    /usr/lib/x86_64-linux-gnu/libSM.so.6.0.1
+7f14110c3000-7f14110c4000 r--p 00006000 08:05 1190874                    /usr/lib/x86_64-linux-gnu/libSM.so.6.0.1
+7f14110c4000-7f14110c5000 rw-p 00007000 08:05 1190874                    /usr/lib/x86_64-linux-gnu/libSM.so.6.0.1
+7f14110c5000-7f14110c8000 r-xp 00000000 08:05 1357280                    /usr/lib/nvidia-304/tls/libnvidia-tls.so.304.131
+7f14110c8000-7f14112c7000 ---p 00003000 08:05 1357280                    /usr/lib/nvidia-304/tls/libnvidia-tls.so.304.131
+7f14112c7000-7f14112c8000 rw-p 00002000 08:05 1357280                    /usr/lib/nvidia-304/tls/libnvidia-tls.so.304.131
+7f14112c8000-7f1411482000 r-xp 00000000 08:06 16051                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImage.so
+7f1411482000-7f1411682000 ---p 001ba000 08:06 16051                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImage.so
+7f1411682000-7f141168b000 r--p 001ba000 08:06 16051                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImage.so
+7f141168b000-7f141168e000 rw-p 001c3000 08:06 16051                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOImage.so
+7f141168e000-7f14116ed000 r-xp 00000000 08:05 1190917                    /usr/lib/x86_64-linux-gnu/libXt.so.6.0.0
+7f14116ed000-7f14118ed000 ---p 0005f000 08:05 1190917                    /usr/lib/x86_64-linux-gnu/libXt.so.6.0.0
+7f14118ed000-7f14118ee000 r--p 0005f000 08:05 1190917                    /usr/lib/x86_64-linux-gnu/libXt.so.6.0.0
+7f14118ee000-7f14118f3000 rw-p 00060000 08:05 1190917                    /usr/lib/x86_64-linux-gnu/libXt.so.6.0.0
+7f14118f3000-7f14118f4000 rw-p 00000000 00:00 0 
+7f14118f4000-7f1411983000 r-xp 00000000 08:06 16139                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingHybrid.so
+7f1411983000-7f1411b83000 ---p 0008f000 08:06 16139                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingHybrid.so
+7f1411b83000-7f1411b86000 r--p 0008f000 08:06 16139                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingHybrid.so
+7f1411b86000-7f1411b87000 rw-p 00092000 08:06 16139                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingHybrid.so
+7f1411b87000-7f1411c51000 r-xp 00000000 08:05 1357288                    /usr/lib/nvidia-304/libGL.so.304.131
+7f1411c51000-7f1411e51000 ---p 000ca000 08:05 1357288                    /usr/lib/nvidia-304/libGL.so.304.131
+7f1411e51000-7f1411e8e000 rwxp 000ca000 08:05 1357288                    /usr/lib/nvidia-304/libGL.so.304.131
+7f1411e8e000-7f1411ea4000 rwxp 00000000 00:00 0 
+7f1411ea4000-7f1411f2e000 r-xp 00000000 08:06 15859                      /home/kevin/vtk/vtk_from_scott/lib/libvtkglew.so
+7f1411f2e000-7f141212d000 ---p 0008a000 08:06 15859                      /home/kevin/vtk/vtk_from_scott/lib/libvtkglew.so
+7f141212d000-7f1412134000 r--p 00089000 08:06 15859                      /home/kevin/vtk/vtk_from_scott/lib/libvtkglew.so
+7f1412134000-7f1412135000 rw-p 00090000 08:06 15859                      /home/kevin/vtk/vtk_from_scott/lib/libvtkglew.so
+7f1412135000-7f141213d000 rw-p 00000000 00:00 0 
+7f141213d000-7f1412401000 r-xp 00000000 08:06 16121                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingOpenGL2.so
+7f1412401000-7f1412600000 ---p 002c4000 08:06 16121                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingOpenGL2.so
+7f1412600000-7f141260b000 r--p 002c3000 08:06 16121                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingOpenGL2.so
+7f141260b000-7f1412611000 rw-p 002ce000 08:06 16121                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingOpenGL2.so
+7f1412611000-7f141263a000 r-xp 00000000 08:06 15886                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingOpenGL2Java.so
+7f141263a000-7f1412839000 ---p 00029000 08:06 15886                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingOpenGL2Java.so
+7f1412839000-7f141283a000 r--p 00028000 08:06 15886                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingOpenGL2Java.so
+7f141283a000-7f141283b000 rw-p 00029000 08:06 15886                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingOpenGL2Java.so
+7f141283b000-7f141286a000 r-xp 00000000 08:06 16196                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryOpenGL2.so
+7f141286a000-7f1412a69000 ---p 0002f000 08:06 16196                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryOpenGL2.so
+7f1412a69000-7f1412a6b000 r--p 0002e000 08:06 16196                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryOpenGL2.so
+7f1412a6b000-7f1412a6c000 rw-p 00030000 08:06 16196                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryOpenGL2.so
+7f1412a6c000-7f1412a6f000 r-xp 00000000 08:06 16173                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryOpenGL2Java.so
+7f1412a6f000-7f1412c6e000 ---p 00003000 08:06 16173                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryOpenGL2Java.so
+7f1412c6e000-7f1412c6f000 r--p 00002000 08:06 16173                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryOpenGL2Java.so
+7f1412c6f000-7f1412c70000 rw-p 00003000 08:06 16173                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryOpenGL2Java.so
+7f1412c70000-7f1412c9d000 r-xp 00000000 08:06 12936                      /home/kevin/vtk/vtk_from_scott/lib/libvtkexpat.so
+7f1412c9d000-7f1412e9d000 ---p 0002d000 08:06 12936                      /home/kevin/vtk/vtk_from_scott/lib/libvtkexpat.so
+7f1412e9d000-7f1412e9f000 r--p 0002d000 08:06 12936                      /home/kevin/vtk/vtk_from_scott/lib/libvtkexpat.so
+7f1412e9f000-7f1412ea0000 rw-p 0002f000 08:06 12936                      /home/kevin/vtk/vtk_from_scott/lib/libvtkexpat.so
+7f1412ea0000-7f1412f3f000 r-xp 00000000 08:06 12939                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOCore.so
+7f1412f3f000-7f141313e000 ---p 0009f000 08:06 12939                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOCore.so
+7f141313e000-7f1413144000 r--p 0009e000 08:06 12939                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOCore.so
+7f1413144000-7f1413147000 rw-p 000a4000 08:06 12939                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOCore.so
+7f1413147000-7f1413169000 r-xp 00000000 08:06 16050                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLParser.so
+7f1413169000-7f1413369000 ---p 00022000 08:06 16050                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLParser.so
+7f1413369000-7f141336a000 r--p 00022000 08:06 16050                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLParser.so
+7f141336a000-7f141336b000 rw-p 00023000 08:06 16050                      /home/kevin/vtk/vtk_from_scott/lib/libvtkIOXMLParser.so
+7f141336b000-7f14133bb000 r-xp 00000000 08:06 16107                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistry.so
+7f14133bb000-7f14135ba000 ---p 00050000 08:06 16107                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistry.so
+7f14135ba000-7f14135bd000 r--p 0004f000 08:06 16107                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistry.so
+7f14135bd000-7f14135be000 rw-p 00052000 08:06 16107                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistry.so
+7f14135be000-7f14135c8000 r-xp 00000000 08:06 15826                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryJava.so
+7f14135c8000-7f14137c7000 ---p 0000a000 08:06 15826                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryJava.so
+7f14137c7000-7f14137c8000 r--p 00009000 08:06 15826                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryJava.so
+7f14137c8000-7f14137c9000 rw-p 0000a000 08:06 15826                      /home/kevin/vtk/vtk_from_scott/lib/libvtkDomainsChemistryJava.so
+7f14137c9000-7f14137cf000 r-xp 00000000 08:06 16290                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonSystemJava.so
+7f14137cf000-7f14139ce000 ---p 00006000 08:06 16290                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonSystemJava.so
+7f14139ce000-7f14139cf000 r--p 00005000 08:06 16290                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonSystemJava.so
+7f14139cf000-7f14139d0000 rw-p 00006000 08:06 16290                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonSystemJava.so
+7f14139d0000-7f14139ec000 r-xp 00000000 08:06 16024                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonComputationalGeometryJava.so
+7f14139ec000-7f1413beb000 ---p 0001c000 08:06 16024                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonComputationalGeometryJava.so
+7f1413beb000-7f1413bec000 r--p 0001b000 08:06 16024                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonComputationalGeometryJava.so
+7f1413bec000-7f1413bed000 rw-p 0001c000 08:06 16024                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonComputationalGeometryJava.so
+7f1413bed000-7f1413df6000 r-xp 00000000 08:06 15923                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingCore.so
+7f1413df6000-7f1413ff5000 ---p 00209000 08:06 15923                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingCore.so
+7f1413ff5000-7f1413ffe000 r--p 00208000 08:06 15923                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingCore.so
+7f1413ffe000-7f1414000000 rw-p 00211000 08:06 15923                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingCore.so
+7f1414000000-7f1414021000 rw-p 00000000 00:00 0 
+7f1414021000-7f1418000000 ---p 00000000 00:00 0 
+7f1418004000-7f1418009000 r-xp 00000000 08:06 15958                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMiscJava.so
+7f1418009000-7f1418209000 ---p 00005000 08:06 15958                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMiscJava.so
+7f1418209000-7f141820a000 r--p 00005000 08:06 15958                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMiscJava.so
+7f141820a000-7f141820b000 rw-p 00006000 08:06 15958                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMiscJava.so
+7f141820b000-7f141820f000 r-xp 00000000 08:06 16162                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonColorJava.so
+7f141820f000-7f141840e000 ---p 00004000 08:06 16162                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonColorJava.so
+7f141840e000-7f141840f000 r--p 00003000 08:06 16162                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonColorJava.so
+7f141840f000-7f1418410000 rw-p 00004000 08:06 16162                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonColorJava.so
+7f1418410000-7f141842d000 r-xp 00000000 08:06 15882                      /home/kevin/vtk/vtk_from_scott/lib/libvtkalglib.so
+7f141842d000-7f141862c000 ---p 0001d000 08:06 15882                      /home/kevin/vtk/vtk_from_scott/lib/libvtkalglib.so
+7f141862c000-7f141862d000 r--p 0001c000 08:06 15882                      /home/kevin/vtk/vtk_from_scott/lib/libvtkalglib.so
+7f141862d000-7f141862e000 rw-p 0001d000 08:06 15882                      /home/kevin/vtk/vtk_from_scott/lib/libvtkalglib.so
+7f141862e000-7f1418656000 r-xp 00000000 08:06 16008                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingFourier.so
+7f1418656000-7f1418856000 ---p 00028000 08:06 16008                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingFourier.so
+7f1418856000-7f1418858000 r--p 00028000 08:06 16008                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingFourier.so
+7f1418858000-7f1418859000 rw-p 0002a000 08:06 16008                      /home/kevin/vtk/vtk_from_scott/lib/libvtkImagingFourier.so
+7f1418859000-7f1418875000 r-xp 00000000 08:06 16038                      /home/kevin/vtk/vtk_from_scott/lib/libvtkzlib.so
+7f1418875000-7f1418a74000 ---p 0001c000 08:06 16038                      /home/kevin/vtk/vtk_from_scott/lib/libvtkzlib.so
+7f1418a74000-7f1418a75000 r--p 0001b000 08:06 16038                      /home/kevin/vtk/vtk_from_scott/lib/libvtkzlib.so
+7f1418a75000-7f1418a76000 rw-p 0001c000 08:06 16038                      /home/kevin/vtk/vtk_from_scott/lib/libvtkzlib.so
+7f1418a76000-7f1418a94000 r-xp 00000000 08:06 16275                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonTransformsJava.so
+7f1418a94000-7f1418c93000 ---p 0001e000 08:06 16275                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonTransformsJava.so
+7f1418c93000-7f1418c94000 r--p 0001d000 08:06 16275                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonTransformsJava.so
+7f1418c94000-7f1418c95000 rw-p 0001e000 08:06 16275                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonTransformsJava.so
+7f1418c95000-7f1418ca7000 r-xp 00000000 08:06 15849                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMathJava.so
+7f1418ca7000-7f1418ea6000 ---p 00012000 08:06 15849                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMathJava.so
+7f1418ea6000-7f1418ea7000 r--p 00011000 08:06 15849                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMathJava.so
+7f1418ea7000-7f1418ea8000 rw-p 00012000 08:06 15849                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMathJava.so
+7f1418ea8000-7f1418fb3000 r-xp 00000000 08:06 16299                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersStatistics.so
+7f1418fb3000-7f14191b3000 ---p 0010b000 08:06 16299                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersStatistics.so
+7f14191b3000-7f14191b7000 r--p 0010b000 08:06 16299                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersStatistics.so
+7f14191b7000-7f14191bc000 rw-p 0010f000 08:06 16299                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersStatistics.so
+7f14191bc000-7f141925d000 r-xp 00000000 08:06 16186                      /home/kevin/vtk/vtk_from_scott/lib/libvtkfreetype.so
+7f141925d000-7f141945d000 ---p 000a1000 08:06 16186                      /home/kevin/vtk/vtk_from_scott/lib/libvtkfreetype.so
+7f141945d000-7f1419462000 r--p 000a1000 08:06 16186                      /home/kevin/vtk/vtk_from_scott/lib/libvtkfreetype.so
+7f1419462000-7f1419463000 rw-p 000a6000 08:06 16186                      /home/kevin/vtk/vtk_from_scott/lib/libvtkfreetype.so
+7f1419463000-7f1419578000 r-xp 00000000 08:06 16103                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonDataModelJava.so
+7f1419578000-7f1419777000 ---p 00115000 08:06 16103                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonDataModelJava.so
+7f1419777000-7f1419778000 r--p 00114000 08:06 16103                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonDataModelJava.so
+7f1419778000-7f141977b000 rw-p 00115000 08:06 16103                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonDataModelJava.so
+7f141977b000-7f141977c000 r-xp 00000000 08:05 1235203                    /usr/lib/jvm/jdk1.8.0_60/lib/amd64/libjawt.so
+7f141977c000-7f141997b000 ---p 00001000 08:05 1235203                    /usr/lib/jvm/jdk1.8.0_60/lib/amd64/libjawt.so
+7f141997b000-7f141997c000 rw-p 00000000 08:05 1235203                    /usr/lib/jvm/jdk1.8.0_60/lib/amd64/libjawt.so
+7f141997c000-7f141999c000 r-xp 00000000 08:06 12974                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMisc.so
+7f141999c000-7f1419b9c000 ---p 00020000 08:06 12974                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMisc.so
+7f1419b9c000-7f1419b9d000 r--p 00020000 08:06 12974                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMisc.so
+7f1419b9d000-7f1419b9e000 rw-p 00021000 08:06 12974                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMisc.so
+7f1419b9e000-7f1419bb0000 r-xp 00000000 08:06 12926                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonSystem.so
+7f1419bb0000-7f1419daf000 ---p 00012000 08:06 12926                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonSystem.so
+7f1419daf000-7f1419db0000 r--p 00011000 08:06 12926                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonSystem.so
+7f1419db0000-7f1419db1000 rw-p 00012000 08:06 12926                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonSystem.so
+7f1419db1000-7f1419db2000 rw-p 00000000 00:00 0 
+7f1419db2000-7f1419dd8000 r-xp 00000000 08:06 15828                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMath.so
+7f1419dd8000-7f1419fd8000 ---p 00026000 08:06 15828                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMath.so
+7f1419fd8000-7f1419fd9000 r--p 00026000 08:06 15828                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMath.so
+7f1419fd9000-7f1419fda000 rw-p 00027000 08:06 15828                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonMath.so
+7f1419fda000-7f141a6bb000 r-xp 00000000 08:06 16239                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersCore.so
+7f141a6bb000-7f141a8ba000 ---p 006e1000 08:06 16239                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersCore.so
+7f141a8ba000-7f141a8c9000 r--p 006e0000 08:06 16239                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersCore.so
+7f141a8c9000-7f141a8df000 rw-p 006ef000 08:06 16239                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersCore.so
+7f141a8df000-7f141a8e0000 rw-p 00000000 00:00 0 
+7f141a8e0000-7f141a923000 r-xp 00000000 08:06 16032                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonComputationalGeometry.so
+7f141a923000-7f141ab23000 ---p 00043000 08:06 16032                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonComputationalGeometry.so
+7f141ab23000-7f141ab28000 r--p 00043000 08:06 16032                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonComputationalGeometry.so
+7f141ab28000-7f141ab29000 rw-p 00048000 08:06 16032                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonComputationalGeometry.so
+7f141ab29000-7f141abfc000 r-xp 00000000 08:06 15956                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeometry.so
+7f141abfc000-7f141adfb000 ---p 000d3000 08:06 15956                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeometry.so
+7f141adfb000-7f141adff000 r--p 000d2000 08:06 15956                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeometry.so
+7f141adff000-7f141ae03000 rw-p 000d6000 08:06 15956                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeometry.so
+7f141ae03000-7f141aede000 r-xp 00000000 08:06 16117                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSources.so
+7f141aede000-7f141b0dd000 ---p 000db000 08:06 16117                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSources.so
+7f141b0dd000-7f141b0e5000 r--p 000da000 08:06 16117                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSources.so
+7f141b0e5000-7f141b0e9000 rw-p 000e2000 08:06 16117                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersSources.so
+7f141b0e9000-7f141b201000 r-xp 00000000 08:06 15983                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersExtraction.so
+7f141b201000-7f141b400000 ---p 00118000 08:06 15983                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersExtraction.so
+7f141b400000-7f141b406000 r--p 00117000 08:06 15983                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersExtraction.so
+7f141b406000-7f141b408000 rw-p 0011d000 08:06 15983                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersExtraction.so
+7f141b408000-7f141b455000 r-xp 00000000 08:06 16237                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingFreeType.so
+7f141b455000-7f141b654000 ---p 0004d000 08:06 16237                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingFreeType.so
+7f141b654000-7f141b657000 r--p 0004c000 08:06 16237                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingFreeType.so
+7f141b657000-7f141b6c4000 rw-p 0004f000 08:06 16237                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingFreeType.so
+7f141b6c4000-7f141b6f9000 r-xp 00000000 08:06 12975                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonExecutionModelJava.so
+7f141b6f9000-7f141b8f8000 ---p 00035000 08:06 12975                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonExecutionModelJava.so
+7f141b8f8000-7f141b8f9000 r--p 00034000 08:06 12975                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonExecutionModelJava.so
+7f141b8f9000-7f141b8fa000 rw-p 00035000 08:06 12975                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonExecutionModelJava.so
+7f141b8fa000-7f141bdd1000 r-xp 00000000 08:06 16280                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonDataModel.so
+7f141bdd1000-7f141bfd1000 ---p 004d7000 08:06 16280                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonDataModel.so
+7f141bfd1000-7f141bfe7000 r--p 004d7000 08:06 16280                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonDataModel.so
+7f141bfe7000-7f141c000000 rw-p 004ed000 08:06 16280                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonDataModel.so
+7f141c000000-7f141c021000 rw-p 00000000 00:00 0 
+7f141c021000-7f1420000000 ---p 00000000 00:00 0 
+7f14200dd000-7f14200e0000 ---p 00000000 00:00 0 
+7f14200e0000-7f14201de000 rw-p 00000000 00:00 0 
+7f14201de000-7f14202a4000 r-xp 00000000 08:06 12953                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingCoreJava.so
+7f14202a4000-7f14204a3000 ---p 000c6000 08:06 12953                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingCoreJava.so
+7f14204a3000-7f14204a4000 r--p 000c5000 08:06 12953                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingCoreJava.so
+7f14204a4000-7f14204a7000 rw-p 000c6000 08:06 12953                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingCoreJava.so
+7f14204a7000-7f14204d9000 r-xp 00000000 08:06 16048                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonTransforms.so
+7f14204d9000-7f14206d9000 ---p 00032000 08:06 16048                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonTransforms.so
+7f14206d9000-7f14206db000 r--p 00032000 08:06 16048                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonTransforms.so
+7f14206db000-7f14206dc000 rw-p 00034000 08:06 16048                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonTransforms.so
+7f14206dc000-7f14207c9000 r-xp 00000000 08:06 16174                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonExecutionModel.so
+7f14207c9000-7f14209c9000 ---p 000ed000 08:06 16174                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonExecutionModel.so
+7f14209c9000-7f14209d2000 r--p 000ed000 08:06 16174                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonExecutionModel.so
+7f14209d2000-7f14209d6000 rw-p 000f6000 08:06 16174                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonExecutionModel.so
+7f14209d6000-7f1420de3000 r-xp 00000000 08:06 15878                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneral.so
+7f1420de3000-7f1420fe2000 ---p 0040d000 08:06 15878                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneral.so
+7f1420fe2000-7f1420ff6000 r--p 0040c000 08:06 15878                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneral.so
+7f1420ff6000-7f142100d000 rw-p 00420000 08:06 15878                      /home/kevin/vtk/vtk_from_scott/lib/libvtkFiltersGeneral.so
+7f142100d000-7f14212a8000 r-xp 00000000 08:06 15493                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingCore.so
+7f14212a8000-7f14214a8000 ---p 0029b000 08:06 15493                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingCore.so
+7f14214a8000-7f14214bb000 r--p 0029b000 08:06 15493                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingCore.so
+7f14214bb000-7f14214c1000 rw-p 002ae000 08:06 15493                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingCore.so
+7f14214c1000-7f142163b000 r-xp 00000000 08:06 16066                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisCore.so
+7f142163b000-7f142183b000 ---p 0017a000 08:06 16066                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisCore.so
+7f142183b000-7f1421844000 r--p 0017a000 08:06 16066                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisCore.so
+7f1421844000-7f142184b000 rw-p 00183000 08:06 16066                      /home/kevin/vtk/vtk_from_scott/lib/libvtkInfovisCore.so
+7f142184b000-7f1421870000 r-xp 00000000 08:06 16271                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonColor.so
+7f1421870000-7f1421a6f000 ---p 00025000 08:06 16271                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonColor.so
+7f1421a6f000-7f1421a70000 r--p 00024000 08:06 16271                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonColor.so
+7f1421a70000-7f1421a72000 rw-p 00025000 08:06 16271                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonColor.so
+7f1421a72000-7f1421aeb000 r-xp 00000000 08:06 16098                      /home/kevin/vtk/vtk_from_scott/lib/libvtksys.so
+7f1421aeb000-7f1421cea000 ---p 00079000 08:06 16098                      /home/kevin/vtk/vtk_from_scott/lib/libvtksys.so
+7f1421cea000-7f1421ceb000 r--p 00078000 08:06 16098                      /home/kevin/vtk/vtk_from_scott/lib/libvtksys.so
+7f1421ceb000-7f1421cee000 rw-p 00079000 08:06 16098                      /home/kevin/vtk/vtk_from_scott/lib/libvtksys.so
+7f1421cee000-7f1421cef000 rw-p 00000000 00:00 0 
+7f1421cef000-7f1421d34000 r-xp 00000000 08:06 15946                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContext2D.so
+7f1421d34000-7f1421f33000 ---p 00045000 08:06 15946                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContext2D.so
+7f1421f33000-7f1421f36000 r--p 00044000 08:06 15946                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContext2D.so
+7f1421f36000-7f1421f37000 rw-p 00047000 08:06 15946                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContext2D.so
+7f1421f37000-7f1421f4c000 r-xp 00000000 08:05 1703948                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f1421f4c000-7f142214b000 ---p 00015000 08:05 1703948                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f142214b000-7f142214c000 r--p 00014000 08:05 1703948                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f142214c000-7f142214d000 rw-p 00015000 08:05 1703948                    /lib/x86_64-linux-gnu/libgcc_s.so.1
+7f142214d000-7f142222f000 r-xp 00000000 08:05 1182898                    /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.16
+7f142222f000-7f142242e000 ---p 000e2000 08:05 1182898                    /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.16
+7f142242e000-7f1422436000 r--p 000e1000 08:05 1182898                    /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.16
+7f1422436000-7f1422438000 rw-p 000e9000 08:05 1182898                    /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.16
+7f1422438000-7f142244d000 rw-p 00000000 00:00 0 
+7f142244d000-7f1422a40000 r-xp 00000000 08:06 16264                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonCore.so
+7f1422a40000-7f1422c3f000 ---p 005f3000 08:06 16264                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonCore.so
+7f1422c3f000-7f1422c63000 r--p 005f2000 08:06 16264                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonCore.so
+7f1422c63000-7f1422c78000 rw-p 00616000 08:06 16264                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonCore.so
+7f1422c78000-7f1422c79000 rw-p 00000000 00:00 0 
+7f1422c79000-7f1422cef000 r-xp 00000000 08:06 15853                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonCoreJava.so
+7f1422cef000-7f1422eef000 ---p 00076000 08:06 15853                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonCoreJava.so
+7f1422eef000-7f1422ef0000 r--p 00076000 08:06 15853                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonCoreJava.so
+7f1422ef0000-7f1422ef2000 rw-p 00077000 08:06 15853                      /home/kevin/vtk/vtk_from_scott/lib/libvtkCommonCoreJava.so
+7f1422ef2000-7f1422f07000 r-xp 00000000 08:06 16001                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContext2DJava.so
+7f1422f07000-7f1423106000 ---p 00015000 08:06 16001                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContext2DJava.so
+7f1423106000-7f1423107000 r--p 00014000 08:06 16001                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContext2DJava.so
+7f1423107000-7f1423108000 rw-p 00015000 08:06 16001                      /home/kevin/vtk/vtk_from_scott/lib/libvtkRenderingContext2DJava.so
+7f1423108000-7f142310d000 r-xp 00000000 08:06 15525                      /home/kevin/vtk/vtk_from_scott/lib/libvtkWrappingJava.so
+7f142310d000-7f142330c000 ---p 00005000 08:06 15525                      /home/kevin/vtk/vtk_from_scott/lib/libvtkWrappingJava.so
+7f142330c000-7f142330d000 r--p 00004000 08:06 15525                      /home/kevin/vtk/vtk_from_scott/lib/libvtkWrappingJava.so
+7f142330d000-7f142330e000 rw-p 00005000 08:06 15525                      /home/kevin/vtk/vtk_from_scott/lib/libvtkWrappingJava.so
+7f142330e000-7f14234ed000 r-xp 00000000 08:06 15996                      /home/kevin/vtk/vtk_from_scott/lib/libvtkChartsCore.so
+7f14234ed000-7f14236ec000 ---p 001df000 08:06 15996                      /home/kevin/vtk/vtk_from_scott/lib/libvtkChartsCore.so
+7f14236ec000-7f14236f6000 r--p 001de000 08:06 15996                      /home/kevin/vtk/vtk_from_scott/lib/libvtkChartsCore.so
+7f14236f6000-7f14236fa000 rw-p 001e8000 08:06 15996                      /home/kevin/vtk/vtk_from_scott/lib/libvtkChartsCore.so
+7f14236fa000-7f1423730000 r-xp 00000000 08:06 16255                      /home/kevin/vtk/vtk_from_scott/lib/libvtkChartsCoreJava.so
+7f1423730000-7f142392f000 ---p 00036000 08:06 16255                      /home/kevin/vtk/vtk_from_scott/lib/libvtkChartsCoreJava.so
+7f142392f000-7f1423930000 r--p 00035000 08:06 16255                      /home/kevin/vtk/vtk_from_scott/lib/libvtkChartsCoreJava.so
+7f1423930000-7f1423931000 rw-p 00036000 08:06 16255                      /home/kevin/vtk/vtk_from_scott/lib/libvtkChartsCoreJava.so
+7f1423931000-7f1423af7000 r--s 03cd6000 08:06 11364                      /home/kevin/workspace/scec_vdo_vtk/lib/opensha.jar
+7f1423af7000-7f1423afa000 ---p 00000000 00:00 0 
+7f1423afa000-7f1423bf8000 rw-p 00000000 00:00 0 
+7f1423bf8000-7f1423bfb000 ---p 00000000 00:00 0 
+7f1423bfb000-7f1423cf9000 rw-p 00000000 00:00 0 
+7f1423cf9000-7f1423cfc000 ---p 00000000 00:00 0 
+7f1423cfc000-7f1423dfa000 rw-p 00000000 00:00 0 
+7f1423dfa000-7f1423dff000 r-xp 00000000 08:05 1183854                    /usr/lib/x86_64-linux-gnu/libXfixes.so.3.1.0
+7f1423dff000-7f1423ffe000 ---p 00005000 08:05 1183854                    /usr/lib/x86_64-linux-gnu/libXfixes.so.3.1.0
+7f1423ffe000-7f1423fff000 r--p 00004000 08:05 1183854                    /usr/lib/x86_64-linux-gnu/libXfixes.so.3.1.0
+7f1423fff000-7f1424000000 rw-p 00005000 08:05 1183854                    /usr/lib/x86_64-linux-gnu/libXfixes.so.3.1.0
+7f1424000000-7f1424021000 rw-p 00000000 00:00 0 
+7f1424021000-7f1428000000 ---p 00000000 00:00 0 
+7f1428038000-7f1428041000 r-xp 00000000 08:05 1187351                    /usr/lib/x86_64-linux-gnu/libXcursor.so.1.0.2
+7f1428041000-7f1428240000 ---p 00009000 08:05 1187351                    /usr/lib/x86_64-linux-gnu/libXcursor.so.1.0.2
+7f1428240000-7f1428241000 r--p 00008000 08:05 1187351                    /usr/lib/x86_64-linux-gnu/libXcursor.so.1.0.2
+7f1428241000-7f1428242000 rw-p 00009000 08:05 1187351                    /usr/lib/x86_64-linux-gnu/libXcursor.so.1.0.2
+7f1428242000-7f1428245000 ---p 00000000 00:00 0 
+7f1428245000-7f1428343000 rw-p 00000000 00:00 0 
+7f1428343000-7f1428348000 r-xp 00000000 08:05 1190694                    /usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0
+7f1428348000-7f1428547000 ---p 00005000 08:05 1190694                    /usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0
+7f1428547000-7f1428548000 r--p 00004000 08:05 1190694                    /usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0
+7f1428548000-7f1428549000 rw-p 00005000 08:05 1190694                    /usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0
+7f1428549000-7f142854b000 r-xp 00000000 08:05 1190692                    /usr/lib/x86_64-linux-gnu/libXau.so.6.0.0
+7f142854b000-7f142874a000 ---p 00002000 08:05 1190692                    /usr/lib/x86_64-linux-gnu/libXau.so.6.0.0
+7f142874a000-7f142874b000 r--p 00001000 08:05 1190692                    /usr/lib/x86_64-linux-gnu/libXau.so.6.0.0
+7f142874b000-7f142874c000 rw-p 00002000 08:05 1190692                    /usr/lib/x86_64-linux-gnu/libXau.so.6.0.0
+7f142874c000-7f1428769000 r-xp 00000000 08:05 1190696                    /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+7f1428769000-7f1428968000 ---p 0001d000 08:05 1190696                    /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+7f1428968000-7f1428969000 r--p 0001c000 08:05 1190696                    /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+7f1428969000-7f142896a000 rw-p 0001d000 08:05 1190696                    /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+7f142896a000-7f1428979000 r-xp 00000000 08:05 1182291                    /usr/lib/x86_64-linux-gnu/libXi.so.6.1.0
+7f1428979000-7f1428b78000 ---p 0000f000 08:05 1182291                    /usr/lib/x86_64-linux-gnu/libXi.so.6.1.0
+7f1428b78000-7f1428b79000 r--p 0000e000 08:05 1182291                    /usr/lib/x86_64-linux-gnu/libXi.so.6.1.0
+7f1428b79000-7f1428b7a000 rw-p 0000f000 08:05 1182291                    /usr/lib/x86_64-linux-gnu/libXi.so.6.1.0
+7f1428b7a000-7f1428b7f000 r-xp 00000000 08:05 1224326                    /usr/lib/x86_64-linux-gnu/libXtst.so.6.1.0
+7f1428b7f000-7f1428d7e000 ---p 00005000 08:05 1224326                    /usr/lib/x86_64-linux-gnu/libXtst.so.6.1.0
+7f1428d7e000-7f1428d7f000 r--p 00004000 08:05 1224326                    /usr/lib/x86_64-linux-gnu/libXtst.so.6.1.0
+7f1428d7f000-7f1428d80000 rw-p 00005000 08:05 1224326                    /usr/lib/x86_64-linux-gnu/libXtst.so.6.1.0
+7f1428d80000-7f1428d89000 r-xp 00000000 08:05 1185736                    /usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0
+7f1428d89000-7f1428f88000 ---p 00009000 08:05 1185736                    /usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0
+7f1428f88000-7f1428f89000 r--p 00008000 08:05 1185736                    /usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0
+7f1428f89000-7f1428f8a000 rw-p 00009000 08:05 1185736                    /usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0
+7f1428f8a000-7f14290ba000 r-xp 00000000 08:05 1181839                    /usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+7f14290ba000-7f14292ba000 ---p 00130000 08:05 1181839                    /usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+7f14292ba000-7f14292bb000 r--p 00130000 08:05 1181839                    /usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+7f14292bb000-7f14292bf000 rw-p 00131000 08:05 1181839                    /usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+7f14292bf000-7f14292cf000 r-xp 00000000 08:05 1184395                    /usr/lib/x86_64-linux-gnu/libXext.so.6.4.0
+7f14292cf000-7f14294ce000 ---p 00010000 08:05 1184395                    /usr/lib/x86_64-linux-gnu/libXext.so.6.4.0
+7f14294ce000-7f14294cf000 r--p 0000f000 08:05 1184395                    /usr/lib/x86_64-linux-gnu/libXext.so.6.4.0
+7f14294cf000-7f14294d0000 rw-p 00010000 08:05 1184395                    /usr/lib/x86_64-linux-gnu/libXext.so.6.4.0
+7f14294d0000-7f1429524000 r-xp 00000000 08:05 1356290                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libawt_xawt.so
+7f1429524000-7f1429724000 ---p 00054000 08:05 1356290                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libawt_xawt.so
+7f1429724000-7f1429728000 rw-p 00054000 08:05 1356290                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libawt_xawt.so
+7f1429728000-7f1429729000 rw-p 00000000 00:00 0 
+7f1429729000-7f14297cb000 r-xp 00000000 08:05 1356297                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libawt.so
+7f14297cb000-7f14299cb000 ---p 000a2000 08:05 1356297                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libawt.so
+7f14299cb000-7f14299d7000 rw-p 000a2000 08:05 1356297                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libawt.so
+7f14299d7000-7f14299fb000 rw-p 00000000 00:00 0 
+7f14299fb000-7f14299fd000 r--s 0004c000 08:05 1743257                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/ext/vecmath.jar
+7f14299fd000-7f1429a09000 r--s 002c7000 08:05 1743255                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/ext/j3dcore.jar
+7f1429a09000-7f1429a17000 r--s 00193000 08:05 1743256                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/ext/j3dutils.jar
+7f1429a17000-7f1429a18000 ---p 00000000 00:00 0 
+7f1429a18000-7f1429b18000 rw-p 00000000 00:00 0 
+7f1429b18000-7f1429b1b000 ---p 00000000 00:00 0 
+7f1429b1b000-7f1429c19000 rw-p 00000000 00:00 0 
+7f1429c19000-7f1429c1c000 ---p 00000000 00:00 0 
+7f1429c1c000-7f1429d1a000 rw-p 00000000 00:00 0 
+7f1429d1a000-7f1429d1d000 ---p 00000000 00:00 0 
+7f1429d1d000-7f1429e1b000 rw-p 00000000 00:00 0 
+7f1429e1b000-7f1429e1e000 ---p 00000000 00:00 0 
+7f1429e1e000-7f1429f1c000 rw-p 00000000 00:00 0 
+7f1429f1c000-7f1429f1f000 ---p 00000000 00:00 0 
+7f1429f1f000-7f142a01d000 rw-p 00000000 00:00 0 
+7f142a01d000-7f142a020000 ---p 00000000 00:00 0 
+7f142a020000-7f142a11e000 rw-p 00000000 00:00 0 
+7f142a11e000-7f142a4de000 r--p 00000000 08:05 1179779                    /usr/lib/locale/locale-archive
+7f142a4de000-7f142a4e1000 ---p 00000000 00:00 0 
+7f142a4e1000-7f142a5df000 rw-p 00000000 00:00 0 
+7f142a5df000-7f142a5e2000 ---p 00000000 00:00 0 
+7f142a5e2000-7f142a6e0000 rw-p 00000000 00:00 0 
+7f142a6e0000-7f142a6e1000 ---p 00000000 00:00 0 
+7f142a6e1000-7f142c000000 rw-p 00000000 00:00 0 
+7f142c000000-7f142c021000 rw-p 00000000 00:00 0 
+7f142c021000-7f1430000000 ---p 00000000 00:00 0 
+7f143001c000-7f143002f000 r--s 00344000 08:05 1356322                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/resources.jar
+7f143002f000-7f1431000000 rw-p 00000000 00:00 0 
+7f1431000000-7f1431500000 rwxp 00000000 00:00 0 
+7f1431500000-7f1440000000 ---p 00000000 00:00 0 
+7f1440000000-7f1440226000 rw-p 00000000 00:00 0 
+7f1440226000-7f1444000000 ---p 00000000 00:00 0 
+7f1444009000-7f1444021000 r--s 001b9000 08:06 11363                      /home/kevin/workspace/scec_vdo_vtk/lib/jmf.jar
+7f1444021000-7f1444069000 r--s 0031e000 08:06 11361                      /home/kevin/workspace/scec_vdo_vtk/lib/vtk.jar
+7f1444069000-7f14444dd000 rw-p 00000000 00:00 0 
+7f14444dd000-7f14446b5000 r--s 03d17000 08:05 1356311                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/rt.jar
+7f14446b5000-7f144472b000 rw-p 00000000 00:00 0 
+7f144472b000-7f144472c000 ---p 00000000 00:00 0 
+7f144472c000-7f144482c000 rw-p 00000000 00:00 0 
+7f144482c000-7f144482d000 ---p 00000000 00:00 0 
+7f144482d000-7f144492d000 rw-p 00000000 00:00 0 
+7f144492d000-7f144492e000 ---p 00000000 00:00 0 
+7f144492e000-7f1444a2e000 rw-p 00000000 00:00 0 
+7f1444a2e000-7f1444a2f000 ---p 00000000 00:00 0 
+7f1444a2f000-7f1444b2f000 rw-p 00000000 00:00 0 
+7f1444b2f000-7f1444b30000 ---p 00000000 00:00 0 
+7f1444b30000-7f1444c30000 rw-p 00000000 00:00 0 
+7f1444c30000-7f1444c31000 ---p 00000000 00:00 0 
+7f1444c31000-7f1444d31000 rw-p 00000000 00:00 0 
+7f1444d31000-7f1444d32000 ---p 00000000 00:00 0 
+7f1444d32000-7f1444e32000 rw-p 00000000 00:00 0 
+7f1444e32000-7f1444e33000 ---p 00000000 00:00 0 
+7f1444e33000-7f1444f87000 rw-p 00000000 00:00 0 
+7f1444f87000-7f1445469000 ---p 00000000 00:00 0 
+7f1445469000-7f14454bd000 rw-p 00000000 00:00 0 
+7f14454bd000-7f144599f000 ---p 00000000 00:00 0 
+7f144599f000-7f1445a6d000 rw-p 00000000 00:00 0 
+7f1445a6d000-7f1445c3a000 ---p 00000000 00:00 0 
+7f1445c3a000-7f1445c4f000 rw-p 00000000 00:00 0 
+7f1445c4f000-7f1445ffb000 ---p 00000000 00:00 0 
+7f1445ffb000-7f1446015000 r-xp 00000000 08:05 1356275                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libzip.so
+7f1446015000-7f1446215000 ---p 0001a000 08:05 1356275                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libzip.so
+7f1446215000-7f1446216000 rw-p 0001a000 08:05 1356275                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libzip.so
+7f1446216000-7f1446222000 r-xp 00000000 08:05 1747994                    /lib/x86_64-linux-gnu/libnss_files-2.15.so
+7f1446222000-7f1446421000 ---p 0000c000 08:05 1747994                    /lib/x86_64-linux-gnu/libnss_files-2.15.so
+7f1446421000-7f1446422000 r--p 0000b000 08:05 1747994                    /lib/x86_64-linux-gnu/libnss_files-2.15.so
+7f1446422000-7f1446423000 rw-p 0000c000 08:05 1747994                    /lib/x86_64-linux-gnu/libnss_files-2.15.so
+7f1446423000-7f144642d000 r-xp 00000000 08:05 1747979                    /lib/x86_64-linux-gnu/libnss_nis-2.15.so
+7f144642d000-7f144662d000 ---p 0000a000 08:05 1747979                    /lib/x86_64-linux-gnu/libnss_nis-2.15.so
+7f144662d000-7f144662e000 r--p 0000a000 08:05 1747979                    /lib/x86_64-linux-gnu/libnss_nis-2.15.so
+7f144662e000-7f144662f000 rw-p 0000b000 08:05 1747979                    /lib/x86_64-linux-gnu/libnss_nis-2.15.so
+7f144662f000-7f1446646000 r-xp 00000000 08:05 1747988                    /lib/x86_64-linux-gnu/libnsl-2.15.so
+7f1446646000-7f1446845000 ---p 00017000 08:05 1747988                    /lib/x86_64-linux-gnu/libnsl-2.15.so
+7f1446845000-7f1446846000 r--p 00016000 08:05 1747988                    /lib/x86_64-linux-gnu/libnsl-2.15.so
+7f1446846000-7f1446847000 rw-p 00017000 08:05 1747988                    /lib/x86_64-linux-gnu/libnsl-2.15.so
+7f1446847000-7f1446849000 rw-p 00000000 00:00 0 
+7f1446849000-7f1446851000 r-xp 00000000 08:05 1747993                    /lib/x86_64-linux-gnu/libnss_compat-2.15.so
+7f1446851000-7f1446a50000 ---p 00008000 08:05 1747993                    /lib/x86_64-linux-gnu/libnss_compat-2.15.so
+7f1446a50000-7f1446a51000 r--p 00007000 08:05 1747993                    /lib/x86_64-linux-gnu/libnss_compat-2.15.so
+7f1446a51000-7f1446a52000 rw-p 00008000 08:05 1747993                    /lib/x86_64-linux-gnu/libnss_compat-2.15.so
+7f1446a52000-7f1446a7c000 r-xp 00000000 08:05 1356255                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libjava.so
+7f1446a7c000-7f1446c7c000 ---p 0002a000 08:05 1356255                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libjava.so
+7f1446c7c000-7f1446c7e000 rw-p 0002a000 08:05 1356255                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libjava.so
+7f1446c7e000-7f1446c8b000 r-xp 00000000 08:05 1356269                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libverify.so
+7f1446c8b000-7f1446e8b000 ---p 0000d000 08:05 1356269                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libverify.so
+7f1446e8b000-7f1446e8d000 rw-p 0000d000 08:05 1356269                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/libverify.so
+7f1446e8d000-7f1446e94000 r-xp 00000000 08:05 1747981                    /lib/x86_64-linux-gnu/librt-2.15.so
+7f1446e94000-7f1447093000 ---p 00007000 08:05 1747981                    /lib/x86_64-linux-gnu/librt-2.15.so
+7f1447093000-7f1447094000 r--p 00006000 08:05 1747981                    /lib/x86_64-linux-gnu/librt-2.15.so
+7f1447094000-7f1447095000 rw-p 00007000 08:05 1747981                    /lib/x86_64-linux-gnu/librt-2.15.so
+7f1447095000-7f1447190000 r-xp 00000000 08:05 1747995                    /lib/x86_64-linux-gnu/libm-2.15.so
+7f1447190000-7f144738f000 ---p 000fb000 08:05 1747995                    /lib/x86_64-linux-gnu/libm-2.15.so
+7f144738f000-7f1447390000 r--p 000fa000 08:05 1747995                    /lib/x86_64-linux-gnu/libm-2.15.so
+7f1447390000-7f1447391000 rw-p 000fb000 08:05 1747995                    /lib/x86_64-linux-gnu/libm-2.15.so
+7f1447391000-7f144804f000 r-xp 00000000 08:05 1499985                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/server/libjvm.so
+7f144804f000-7f144824e000 ---p 00cbe000 08:05 1499985                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/server/libjvm.so
+7f144824e000-7f1448326000 rw-p 00cbd000 08:05 1499985                    /usr/lib/jvm/jdk1.8.0_60/jre/lib/amd64/server/libjvm.so
+7f1448326000-7f144836b000 rw-p 00000000 00:00 0 
+7f144836b000-7f144851f000 r-xp 00000000 08:05 1747986                    /lib/x86_64-linux-gnu/libc-2.15.so
+7f144851f000-7f144871e000 ---p 001b4000 08:05 1747986                    /lib/x86_64-linux-gnu/libc-2.15.so
+7f144871e000-7f1448722000 r--p 001b3000 08:05 1747986                    /lib/x86_64-linux-gnu/libc-2.15.so
+7f1448722000-7f1448724000 rw-p 001b7000 08:05 1747986                    /lib/x86_64-linux-gnu/libc-2.15.so
+7f1448724000-7f1448729000 rw-p 00000000 00:00 0 
+7f1448729000-7f144872b000 r-xp 00000000 08:05 1747978                    /lib/x86_64-linux-gnu/libdl-2.15.so
+7f144872b000-7f144892b000 ---p 00002000 08:05 1747978                    /lib/x86_64-linux-gnu/libdl-2.15.so
+7f144892b000-7f144892c000 r--p 00002000 08:05 1747978                    /lib/x86_64-linux-gnu/libdl-2.15.so
+7f144892c000-7f144892d000 rw-p 00003000 08:05 1747978                    /lib/x86_64-linux-gnu/libdl-2.15.so
+7f144892d000-7f1448942000 r-xp 00000000 08:05 1235202                    /usr/lib/jvm/jdk1.8.0_60/lib/amd64/jli/libjli.so
+7f1448942000-7f1448b42000 ---p 00015000 08:05 1235202                    /usr/lib/jvm/jdk1.8.0_60/lib/amd64/jli/libjli.so
+7f1448b42000-7f1448b43000 rw-p 00015000 08:05 1235202                    /usr/lib/jvm/jdk1.8.0_60/lib/amd64/jli/libjli.so
+7f1448b43000-7f1448b5b000 r-xp 00000000 08:05 1747989                    /lib/x86_64-linux-gnu/libpthread-2.15.so
+7f1448b5b000-7f1448d5a000 ---p 00018000 08:05 1747989                    /lib/x86_64-linux-gnu/libpthread-2.15.so
+7f1448d5a000-7f1448d5b000 r--p 00017000 08:05 1747989                    /lib/x86_64-linux-gnu/libpthread-2.15.so
+7f1448d5b000-7f1448d5c000 rw-p 00018000 08:05 1747989                    /lib/x86_64-linux-gnu/libpthread-2.15.so
+7f1448d5c000-7f1448d60000 rw-p 00000000 00:00 0 
+7f1448d60000-7f1448d82000 r-xp 00000000 08:05 1747992                    /lib/x86_64-linux-gnu/ld-2.15.so
+7f1448d85000-7f1448e57000 rw-p 00000000 00:00 0 
+7f1448e57000-7f1448e5a000 ---p 00000000 00:00 0 
+7f1448e5a000-7f1448f5c000 rw-p 00000000 00:00 0 
+7f1448f66000-7f1448f69000 r--s 00036000 08:06 30780                      /home/kevin/workspace/scec_vdo_vtk/lib/org-netbeans-swing-outline.jar
+7f1448f69000-7f1448f6b000 r--s 0001f000 08:06 11359                      /home/kevin/workspace/scec_vdo_vtk/lib/EventWebService.jar
+7f1448f6b000-7f1448f73000 r--s 0004f000 08:06 11360                      /home/kevin/workspace/scec_vdo_vtk/lib/log4j-1.2.9.jar
+7f1448f73000-7f1448f76000 r--s 00023000 08:06 11362                      /home/kevin/workspace/scec_vdo_vtk/lib/jdom.jar
+7f1448f76000-7f1448f7e000 rw-s 00000000 08:05 948200                     /tmp/hsperfdata_kevin/6200
+7f1448f7e000-7f1448f7f000 rw-p 00000000 00:00 0 
+7f1448f7f000-7f1448f80000 r--p 00000000 00:00 0 
+7f1448f80000-7f1448f82000 rw-p 00000000 00:00 0 
+7f1448f82000-7f1448f83000 r--p 00022000 08:05 1747992                    /lib/x86_64-linux-gnu/ld-2.15.so
+7f1448f83000-7f1448f85000 rw-p 00023000 08:05 1747992                    /lib/x86_64-linux-gnu/ld-2.15.so
+7ffd1c10e000-7ffd1c12f000 rw-p 00000000 00:00 0                          [stack]
+7ffd1c14f000-7ffd1c150000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+
+VM Arguments:
+jvm_args: -Dfile.encoding=UTF-8 
+java_command: org.scec.vtk.main.MainSplashScreen
+java_class_path (initial): /home/kevin/workspace/scec_vdo_vtk/classes:/home/kevin/workspace/scec_vdo_vtk/lib/jdom.jar:/home/kevin/workspace/scec_vdo_vtk/lib/log4j-1.2.9.jar:/home/kevin/workspace/scec_vdo_vtk/lib/vtk.jar:/home/kevin/workspace/scec_vdo_vtk/lib/jmf.jar:/home/kevin/workspace/scec_vdo_vtk/lib/opensha.jar:/home/kevin/workspace/scec_vdo_vtk/lib/EventWebService.jar:/home/kevin/workspace/scec_vdo_vtk/lib/org-netbeans-swing-outline.jar
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=/usr/lib/jvm/jdk1.8.0_25
+PATH=/usr/lib/gmt/bin/:/home/kevin/bin:/home/kevin/sbin:/opt/condor/bin/:/usr/lib/jvm/jdk1.8.0_25/jre/bin:/usr/lib/jvm/jdk1.8.0_25/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games
+LD_LIBRARY_PATH=/home/kevin/vtk/vtk_from_scott/lib
+SHELL=/bin/bash
+DISPLAY=:1144.0
+
+Signal Handlers:
+SIGSEGV: [libjvm.so+0xaba070], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGBUS: [libjvm.so+0xaba070], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGFPE: [libjvm.so+0x917630], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGPIPE: [libjvm.so+0x917630], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGXFSZ: [libjvm.so+0x917630], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGILL: [libjvm.so+0x917630], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGUSR1: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGUSR2: [libjvm.so+0x918c60], sa_mask[0]=00100000000000000000000000000000, sa_flags=SA_RESTART|SA_SIGINFO
+SIGHUP: [libjvm.so+0x91a060], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGINT: [libjvm.so+0x91a060], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGTERM: [libjvm.so+0x91a060], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGQUIT: [libjvm.so+0x91a060], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+
+
+---------------  S Y S T E M  ---------------
+
+OS:DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=12.04
+DISTRIB_CODENAME=precise
+DISTRIB_DESCRIPTION="Ubuntu 12.04.5 LTS"
+
+uname:Linux 3.2.0-101-generic #141-Ubuntu SMP Thu Mar 10 21:43:24 UTC 2016 x86_64
+libc:glibc 2.15 NPTL 2.15 
+rlimit: STACK 8192k, CORE infinity, NPROC 127893, NOFILE 4096, AS infinity
+load average:0.33 0.19 0.15
+
+/proc/meminfo:
+MemTotal:       16387956 kB
+MemFree:         6607704 kB
+Buffers:          614832 kB
+Cached:          5826288 kB
+SwapCached:         5620 kB
+Active:          4696844 kB
+Inactive:        3760444 kB
+Active(anon):    1476252 kB
+Inactive(anon):   562888 kB
+Active(file):    3220592 kB
+Inactive(file):  3197556 kB
+Unevictable:          52 kB
+Mlocked:              52 kB
+SwapTotal:      16776188 kB
+SwapFree:       16761924 kB
+Dirty:              3752 kB
+Writeback:             0 kB
+AnonPages:       2011240 kB
+Mapped:           195956 kB
+Shmem:             22932 kB
+Slab:            1051980 kB
+SReclaimable:     992460 kB
+SUnreclaim:        59520 kB
+KernelStack:        4544 kB
+PageTables:        43080 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    24970164 kB
+Committed_AS:    4346928 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:      146820 kB
+VmallocChunk:   34359568892 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:      458752 kB
+DirectMap2M:    16277504 kB
+
+
+CPU:total 8 (4 cores per cpu, 2 threads per core) family 6 model 42 stepping 7, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, aes, clmul, ht, tsc, tscinvbit
+
+/proc/cpuinfo:
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz
+stepping	: 7
+microcode	: 0x1a
+cpu MHz		: 2301.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4585.03
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz
+stepping	: 7
+microcode	: 0x1a
+cpu MHz		: 800.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4584.94
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz
+stepping	: 7
+microcode	: 0x1a
+cpu MHz		: 800.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 1
+cpu cores	: 4
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4584.94
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz
+stepping	: 7
+microcode	: 0x1a
+cpu MHz		: 800.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 1
+cpu cores	: 4
+apicid		: 3
+initial apicid	: 3
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4584.96
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 4
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz
+stepping	: 7
+microcode	: 0x1a
+cpu MHz		: 2301.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 2
+cpu cores	: 4
+apicid		: 4
+initial apicid	: 4
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4584.96
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 5
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz
+stepping	: 7
+microcode	: 0x1a
+cpu MHz		: 800.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 2
+cpu cores	: 4
+apicid		: 5
+initial apicid	: 5
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4584.95
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 6
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz
+stepping	: 7
+microcode	: 0x1a
+cpu MHz		: 800.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 3
+cpu cores	: 4
+apicid		: 6
+initial apicid	: 6
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4584.96
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 7
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz
+stepping	: 7
+microcode	: 0x1a
+cpu MHz		: 800.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 3
+cpu cores	: 4
+apicid		: 7
+initial apicid	: 7
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4584.96
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+
+
+Memory: 4k page, physical 16387956k(6607704k free), swap 16776188k(16761924k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (25.60-b23) for linux-amd64 JRE (1.8.0_60-b27), built on Aug  4 2015 12:19:40 by "java_re" with gcc 4.3.0 20080428 (Red Hat 4.3.0-8)
+
+time: Wed May 25 09:16:06 2016
+elapsed time: 12 seconds (0d 0h 0m 12s)
+
