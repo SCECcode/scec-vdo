@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<plugins xmlns="http://www.scec.org/vdo/plugin-descriptor" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.scec.org/vdo/plugin-descriptor plugin.xsd"
+	version="1.0">
+	
+	<plugin id="org.scec.vdo.plugins.EarthquakeCatalogPlugin" name="Earthquake Catalog Plugin" short-name="Earthquake Catalog Plugin"
+		version="0.1" creator="P. Powers"
+		plugin-class="org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin">
+		
+		<menu-item menu="Display" submenu="Earthquake"/>
+			
+	</plugin>
+</plugins>
