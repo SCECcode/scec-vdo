@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="plugins/WGCEPFaultPlugins/src"/>
+	<classpathentry kind="src" path="plugins/DummyPlugin/src"/>
 	<classpathentry kind="src" path="plugins/CommunityFaultModelPlugin/src"/>
 	<classpathentry kind="src" path="plugins/ScriptingPlugin/src"/>
 	<classpathentry kind="src" path="plugins/EarthquakeCatalogPlugin/src"/>
 	<classpathentry kind="src" path="plugins/SurfacePlugin/src"/>
 	<classpathentry kind="src" path="library/src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_91"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/vtk.jar"/>

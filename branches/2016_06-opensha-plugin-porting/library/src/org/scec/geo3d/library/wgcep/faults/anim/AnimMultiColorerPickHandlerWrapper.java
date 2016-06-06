@@ -5,7 +5,7 @@ import java.awt.event.MouseEvent;
 import javax.media.j3d.Node;
 
 import org.scec.geo3d.library.wgcep.faults.colorers.FaultColorer;
-import org.scec.geo3d.library.wgcep.surfaces.FaultSectionShape3D;
+import org.scec.geo3d.library.wgcep.surfaces.FaultSectionActorList;
 import org.scec.geo3d.library.wgcep.surfaces.pickBehavior.PickHandler;
 
 public class AnimMultiColorerPickHandlerWrapper extends
@@ -19,7 +19,7 @@ public class AnimMultiColorerPickHandlerWrapper extends
 	}
 
 	@Override
-	public void faultPicked(FaultSectionShape3D faultShape,
+	public void faultPicked(FaultSectionActorList faultShape,
 			MouseEvent mouseEvent) {
 		if (pickHandler != null)
 			pickHandler.faultPicked(faultShape, mouseEvent);

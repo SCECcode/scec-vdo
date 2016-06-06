@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -291,7 +292,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    }
 	    updateRenderWindow();
 	}*/
-	public void updateActors(ArrayList<vtkActor> allTextActors)
+	public void updateActors(List<vtkActor> allTextActors)
 	{
 		vtkActorCollection renderedActors = renderWindow.GetRenderer().GetActors();
 		boolean c = false;
@@ -472,7 +473,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		return this.viewRange;
 	}
 	
-	public void addPluginGUI(String id, String title, JPanel gui) {
+	public void addPluginGUI(String id, String title, JComponent gui) {
 
 		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin"
 				&& id != "org.scec.vdo.drawingToolsPlugin") {

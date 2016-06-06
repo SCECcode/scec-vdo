@@ -4,7 +4,7 @@ import java.awt.event.MouseEvent;
 
 import javax.media.j3d.Node;
 
-import org.scec.geo3d.library.wgcep.surfaces.FaultSectionShape3D;
+import org.scec.geo3d.library.wgcep.surfaces.FaultSectionActorList;
 
 public interface PickHandler {
 	
@@ -14,7 +14,7 @@ public interface PickHandler {
 	 * @param faultShape the fault that was clicked
 	 * @param clickCount number of clicks
 	 */
-	public void faultPicked(FaultSectionShape3D faultShape, MouseEvent mouseEvent);
+	public void faultPicked(FaultSectionActorList faultShape, MouseEvent mouseEvent);
 	
 	/**
 	 * Called when the user clicks on an object that is not a fault section shape
