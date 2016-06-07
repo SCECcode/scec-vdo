@@ -15,14 +15,42 @@ import vtk.vtkVectorText;
 
 public class DrawingTool extends AbstractDataAccessor{
 
-	private static ArrayList<vtkActor> masterDrawingToolBranchGroup = new ArrayList<vtkActor>();
-	private DrawingToolsTableModel drawingTooltablemodel = new DrawingToolsTableModel();
-	private AbstractDataAccessor drawingToolObj; 
-	public DrawingTool(double d, double e, double f, String string, DisplayAttributes displayAttributes) {
+	private static ArrayList<vtkTextActor3D> masterDrawingToolBranchGroup = new ArrayList<vtkTextActor3D>();
+	double latitude, longitude,  altitude;
+	String textString;
+	DisplayAttributes displayAttributes;
+	public DrawingTool(double latitude, double longitude, double altitude, String textString, DisplayAttributes displayAttributes) {
 		// TODO Auto-generated constructor stub
+		this.latitude=latitude;
+		this.longitude=longitude;
+		this.altitude = altitude;
+		this.textString = textString;
+		this.displayAttributes = displayAttributes;
 	}
 	public DrawingTool()
-	{}
+	{
+	}
+	
+	public double getLatitude()
+	{
+		return this.latitude;
+	}
+	public double getLongitude()
+	{
+		return this.longitude;
+	}
+	public double getaltitude()
+	{
+		return this.altitude;
+	}
+	public String getTextString()
+	{
+		return this.textString;
+	}
+	public DisplayAttributes getDisplayAttributes()
+	{
+		return this.displayAttributes;
+	}
 	/*@Override
 	public int compareTo(Object arg0) {
 		// TODO Auto-generated method stub
@@ -142,43 +170,14 @@ public class DrawingTool extends AbstractDataAccessor{
 		// TODO Auto-generated method stub
 		
 	}*/
-	 public void setMasterFaultBranchGroup(ArrayList<vtkActor> masterFaultBranchGroup) 
+	 public void setMasterFaultBranchGroup(ArrayList<vtkTextActor3D> masterFaultBranchGroup) 
 	    {
 	    	this.masterDrawingToolBranchGroup = masterFaultBranchGroup;
 	    }
-	    public static ArrayList<vtkActor> getMasterFaultBranchGroup() 
+	    public static ArrayList<vtkTextActor3D> getMasterFaultBranchGroup() 
 	    {
 	    	return masterDrawingToolBranchGroup;
 	    }
 
-	    public ArrayList addDrawingTool(){
-	    	 //drawingToolObj.newDocument(); 
-	    	 String text = "test text";
-	    	 ArrayList a = drawingTooltablemodel.getAllObjects();
-	    	 setDisplayName(text +" -"+ Integer.toString(a.size()+1));
-	    	 //drawingToolObj.setInMemory(true);
-	    	ArrayList newObjects = new ArrayList<>();
-	    	vtkVectorText newText = new vtkVectorText();
-	    	newText.SetText(text);
-	    	 //newText.GetTextProperty().SetFontSize ( 12 );
-	    	// Create a mapper and actor
-	    	  vtkPolyDataMapper mapper =new vtkPolyDataMapper();
-	    	  mapper.SetInputConnection(newText.GetOutputPort());
-	    	  
-	    	  vtkActor actor = new vtkActor();
-	    	  actor.SetMapper(mapper);
-	    	  actor.GetProperty().SetColor(1.0, 0.0, 0.0);
-	    	  actor.SetScale(30,30,30);
-	    	  actor.RotateY(90);
-	    	  actor.RotateZ(90);
-	    	  actor.RotateX(30);
-	    	 double[] pt= {Transform.calcRadius(37),37,-120};
-	    	 actor.SetPosition( Transform.customTransform(pt));
-	    	 actor.GetProperty().SetColor (1,0,0);
-	    	 newObjects.add(this);
-	    	 getMasterFaultBranchGroup().add(actor);
-	    	 Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
-			return newObjects;
-	    	 
-	    }
+	 
 }
