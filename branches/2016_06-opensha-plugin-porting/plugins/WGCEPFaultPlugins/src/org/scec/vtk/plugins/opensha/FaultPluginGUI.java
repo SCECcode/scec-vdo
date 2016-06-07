@@ -57,13 +57,13 @@ public class FaultPluginGUI extends JSplitPane {
 	private GeometryTypeSelectorPanel geomPanel;
 	private GriddedParameterListEditor faultParamEditor;
 	
-	protected static ArrayList<GeometryGenerator> createDefaultGeomGens() {
+	public static ArrayList<GeometryGenerator> createDefaultGeomGens() {
 		ArrayList<GeometryGenerator> geomGens = new ArrayList<GeometryGenerator>();
 		
 		// TODO
 //		geomGens.add(new PointSurfaceGenerator());
 		geomGens.add(new LineSurfaceGenerator());
-//		geomGens.add(new PolygonSurfaceGenerator());
+		geomGens.add(new PolygonSurfaceGenerator());
 		return geomGens;
 	}
 	

@@ -4,11 +4,21 @@
 	xsi:schemaLocation="http://www.scec.org/vdo/plugin-descriptor plugin.xsd"
 	version="1.0">
 	
-	<plugin id="org.scec.geo3d.plugins.wgcep.FaultModelPlugin"
+	<plugin id="org.scec.vtk.plugins.opensha.faultModels.FaultModelPlugin"
 		name="WGCEP Fault Models Plugin"
 		short-name="WGCEP Fault Models Plugin"
 		version="1.0" creator="Kevin Milner"
-		plugin-class="org.scec.vtk.plugins.opensha.FaultModelPlugin">
+		plugin-class="org.scec.vtk.plugins.opensha.faultModels.FaultModelPlugin">
+		
+		<menu-item menu="Display" submenu="WGCEP Dev"/>
+			
+	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.simulators.EQSimsPlugin"
+		name="Earthquake Simulators"
+		short-name="Earthquake Simulators"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.simulators.EQSimsPlugin">
 		
 		<menu-item menu="Display" submenu="WGCEP Dev"/>
 			

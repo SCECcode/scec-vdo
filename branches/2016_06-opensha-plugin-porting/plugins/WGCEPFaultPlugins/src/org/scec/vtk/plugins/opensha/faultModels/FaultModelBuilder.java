@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.builders;
+package org.scec.vtk.plugins.opensha.faultModels;
 
 import java.util.ArrayList;
 import java.util.Collections;

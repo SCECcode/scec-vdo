@@ -15,59 +15,71 @@ import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.geo3d.library.wgcep.faults.AbstractFaultSection;
 
-//public class PolygonSurfaceGenerator extends GeometryGenerator implements ParameterChangeListener {
-public class PolygonSurfaceGenerator {
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
-//	/**
-//	 * 
-//	 */
-//	private static final long serialVersionUID = 1L;
-//	
-//	private static final String NAME = "Polygons";
-//	
-//	ParameterList faultDisplayParams = new ParameterList();
-//	
-//	public static final String OPACITY_PARAM_NAME = "Surface Opacity";
-//	private static final double OPACITY_DEFAULT = 0.7d;
-//	private static final double OPACITY_MIN = 0d;
-//	private static final double OPACITY_MAX = 1d;
-//	private DoubleParameter opacityParam;
-//	
-//	public PolygonSurfaceGenerator() {
-//		super(NAME);
-//		
-//		opacityParam = new DoubleParameter(OPACITY_PARAM_NAME, OPACITY_MIN, OPACITY_MAX);
-//		opacityParam.setDefaultValue(OPACITY_DEFAULT);
-//		opacityParam.setValue(OPACITY_DEFAULT);
-//		opacityParam.addParameterChangeListener(this);
-//		
-//		faultDisplayParams.addParameter(opacityParam);
-//	}
-//	
-//	public void setOpacity(double opacity) {
-//		opacityParam.setValue(opacity);
-//	}
-//
-//	@Override
-//	public BranchGroup createFaultActors(RuptureSurface surface,
-//			Color color, AbstractFaultSection fault) {
-//		if (surface instanceof CompoundSurface) {
-//			BranchGroup mainBG = createBranchGroup();
-//			for (RuptureSurface subSurf : ((CompoundSurface)surface).getSurfaceList()) {
-//				BranchGroup bg;
-//				if (subSurf instanceof EvenlyGriddedSurface)
-//					bg = createFaultBranchGroup((EvenlyGriddedSurface)subSurf, color, fault);
-//				else
-//					bg = createFaultActors(subSurf, color, fault);
-//				mainBG.addChild(bg);
-//			}
-//			return mainBG;
-//		}
-//		if (surface instanceof EvenlyGriddedSurface) {
-//			return createFaultBranchGroup((EvenlyGriddedSurface)surface, color, fault);
-//		}
-//		
-//		// generic approach. this creates a polygon from the outline
+import vtk.vtkActor;
+import vtk.vtkCellArray;
+import vtk.vtkLine;
+import vtk.vtkPoints;
+import vtk.vtkPolyData;
+import vtk.vtkPolyDataMapper;
+import vtk.vtkPolygon;
+
+public class PolygonSurfaceGenerator extends GeometryGenerator implements ParameterChangeListener {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private static final String NAME = "Polygons";
+	
+	ParameterList faultDisplayParams = new ParameterList();
+	
+	public static final String OPACITY_PARAM_NAME = "Surface Opacity";
+	private static final double OPACITY_DEFAULT = 0.7d;
+	private static final double OPACITY_MIN = 0d;
+	private static final double OPACITY_MAX = 1d;
+	private DoubleParameter opacityParam;
+	
+	public PolygonSurfaceGenerator() {
+		super(NAME);
+		
+		opacityParam = new DoubleParameter(OPACITY_PARAM_NAME, OPACITY_MIN, OPACITY_MAX);
+		opacityParam.setDefaultValue(OPACITY_DEFAULT);
+		opacityParam.setValue(OPACITY_DEFAULT);
+		opacityParam.addParameterChangeListener(this);
+		
+		faultDisplayParams.addParameter(opacityParam);
+	}
+	
+	public void setOpacity(double opacity) {
+		opacityParam.setValue(opacity);
+	}
+
+	@Override
+	public FaultSectionActorList createFaultActors(RuptureSurface surface,
+			Color color, AbstractFaultSection fault) {
+		if (surface instanceof CompoundSurface) {
+			FaultSectionActorList list = new FaultSectionActorList(fault);
+			for (RuptureSurface subSurf : ((CompoundSurface)surface).getSurfaceList()) {
+				FaultSectionActorList sub;
+				if (subSurf instanceof EvenlyGriddedSurface)
+					sub = createFaultActors((EvenlyGriddedSurface)subSurf, color, fault);
+				else
+					sub = createFaultActors(subSurf, color, fault);
+				list.addAll(sub);
+			}
+			return list;
+		}
+		if (surface instanceof EvenlyGriddedSurface) {
+			return createFaultActors((EvenlyGriddedSurface)surface, color, fault);
+		}
+		
+		// generic approach. this creates a polygon from the outline
+		// TODO
+		throw new UnsupportedOperationException("Not yet implemented");
 //		
 //		LocationList outline = surface.getEvenlyDiscritizedPerimeter();
 //		
@@ -108,86 +120,94 @@ public class PolygonSurfaceGenerator {
 //		bg.addChild(shp);
 //		
 //		return bg;
-//	}
-//	
-//	private Appearance buildApp(Color color) {
-//		Appearance papp = new Appearance();
-//	   	double opacity = opacityParam.getValue();
-//	   	if (opacity < 1d)
-//	   		papp.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.FASTEST,
-//	   				1f - (float)opacity));
-//	   	else
-//	   		papp.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NONE, 0.5f));
-//	   	PolygonAttributes pa = new PolygonAttributes(PolygonAttributes.POLYGON_FILL,
-//				PolygonAttributes.CULL_NONE, 0, true);
-//		papp.setPolygonAttributes(pa);
-//		ColoringAttributes ca = new ColoringAttributes(new Color3f(color), ColoringAttributes.SHADE_FLAT);
-//		ca.setCapability(ColoringAttributes.ALLOW_COLOR_READ);
-//		ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
-//		papp.setColoringAttributes(ca);
-//		
-//		return papp;
-//	}
-//	
-//	public BranchGroup createFaultBranchGroup(EvenlyGriddedSurface surface,
-//			Color color, AbstractFaultSection fault) {
-//		
-//		int cols = surface.getNumCols();
-//	   	int rows = surface.getNumRows();
-//	   	
-//	   	Container2DImpl<Point3f> pointSurface = cacheSurfacePoints(surface);
-//	   	
-//	   	Appearance papp = buildApp(color);
-//		
-//		BranchGroup bg = createBranchGroup();
-//		
-//		// TODO: replace with TriangleStripArray?
+	}
+	
+	public FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface,
+			Color color, AbstractFaultSection fault) {
+
+		int cols = surface.getNumCols();
+		int rows = surface.getNumRows();
+
+		Container2DImpl<double[]> pointSurface = cacheSurfacePoints(surface);
+
 //		int numPolys = (rows-1)*(cols-1);
 //		int numVerts = numPolys * 4;
-//		QuadArray quads = new QuadArray(numVerts, QuadArray.COORDINATES);
 //		
 //		int vertCount = 0;
-//	   	
-//		for (int row=0; row<(rows-1); row++) {
-//			for (int col=0; col<(cols-1); col++) {
-//				Point3f pt0 = pointSurface.get(row,	col);		// top left
-//				Point3f pt1 = pointSurface.get(row+1,	col);		// bottom left
-//				Point3f pt2 = pointSurface.get(row+1,	col+1);	// bottom right
-//				Point3f pt3 = pointSurface.get(row,	col+1);	// top right
-//				
-////				QuadArray polygon1 = new QuadArray (4, QuadArray.COORDINATES);
-//				quads.setCoordinate(vertCount++, pt0);
-//				quads.setCoordinate(vertCount++, pt1);
-//				quads.setCoordinate(vertCount++, pt2);
-//				quads.setCoordinate(vertCount++, pt3);
-//			}
-//		}
-//		FaultSectionActor shape = new FaultSectionActor(quads, papp, fault);
-//		bg.addChild(shape);
-//		return bg;
-//	}
-//	
-//	@Override
-//	public boolean updateColor(BranchGroup bg, Color color) {
-//		for (int i=0; i<bg.numChildren(); i++) {
-//			Node node = bg.getChild(i);
-//			if (node instanceof FaultSectionActor)
-//				if (!updateColorAttributesForNode(node, new Color3f(color)))
-//					return false;
-//		}
-//		return true;
-//	}
-//
-//	@Override
-//	public ParameterList getDisplayParams() {
-//		// TODO Auto-generated method stub
-//		return faultDisplayParams;
-//	}
-//
-//	@Override
-//	public void parameterChange(ParameterChangeEvent event) {
-//		if (event.getSource() == opacityParam)
-//			firePlotSettingsChangeEvent();
-//	}
+		
+		vtkPolyData polyData = new vtkPolyData();
+		
+		vtkPoints pts = new vtkPoints();
+	   	
+		for (int row=0; row<(rows-1); row++) {
+			for (int col=0; col<(cols-1); col++) {
+				double[] pt0 = pointSurface.get(row,	col);		// top left
+				double[] pt1 = pointSurface.get(row+1,	col);		// bottom left
+				double[] pt2 = pointSurface.get(row+1,	col+1);	// bottom right
+				double[] pt3 = pointSurface.get(row,	col+1);	// top right
+				
+				pts.InsertNextPoint(pt0);
+				pts.InsertNextPoint(pt1);
+				pts.InsertNextPoint(pt2);
+				pts.InsertNextPoint(pt3);
+			}
+		}
+		
+		polyData.SetPoints(pts);
+		
+		int numPoints = pts.GetNumberOfPoints();
+		Preconditions.checkState(numPoints % 4 == 0, "Must be even number of points");
+		
+		vtkCellArray polys = new vtkCellArray();
+		
+		for (int li=0; li<numPoints/4; li++) {
+			int index1 = li*4;
+			int index2 = index1+1;
+			int index3 = index1+2;
+			int index4 = index1+3;
+			
+			vtkPolygon poly = new vtkPolygon();
+			poly.GetPointIds().SetNumberOfIds(4);
+			poly.GetPointIds().SetId(0, index1);
+			poly.GetPointIds().SetId(1, index2);
+			poly.GetPointIds().SetId(2, index3);
+			poly.GetPointIds().SetId(3, index4);
+			
+			polys.InsertNextCell(poly);
+		}
+		
+		polyData.SetPolys(polys);
+		
+		vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+		mapper.SetInputData(polyData);
+		FaultSectionActorList list = new FaultSectionActorList(fault);
+		
+		vtkActor actor = new vtkActor();
+		actor.SetMapper(mapper);
+		actor.GetProperty().SetColor(getColorDoubleArray(color));
+		actor.GetProperty().SetOpacity(opacityParam.getValue());
+		list.add(actor);
+		
+		return list;
+	}
+	
+	@Override
+	public boolean updateColor(FaultSectionActorList actorList, Color color) {
+		for (vtkActor actor : actorList)
+			actor.GetProperty().SetColor(getColorDoubleArray(color));
+		return true;
+	}
+
+	@Override
+	public ParameterList getDisplayParams() {
+		// TODO Auto-generated method stub
+		return faultDisplayParams;
+	}
+
+	@Override
+	public void parameterChange(ParameterChangeEvent event) {
+		if (event.getSource() == opacityParam)
+			firePlotSettingsChangeEvent();
+	}
 
 }
