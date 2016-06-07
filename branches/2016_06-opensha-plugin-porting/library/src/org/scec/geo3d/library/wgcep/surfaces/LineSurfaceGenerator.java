@@ -65,18 +65,16 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 	@Override
 	public FaultSectionActorList createFaultActors(RuptureSurface surface, Color color, AbstractFaultSection fault) {
 		if (surface instanceof CompoundSurface) {
-			// TODO
-//			throw new UnsupportedOperationException("Not yet implemented for compound surfaces");
-//			BranchGroup mainBG = createBranchGroup();
-//			for (RuptureSurface subSurf : ((CompoundSurface)surface).getSurfaceList()) {
-//				BranchGroup bg;
-//				if (subSurf instanceof EvenlyGriddedSurface)
-//					bg = createFaultBranchGroup((EvenlyGriddedSurface)subSurf, color, fault);
-//				else
-//					bg = createFaultActors(subSurf, color, fault);
-//				mainBG.addChild(bg);
-//			}
-//			return mainBG;
+			FaultSectionActorList list = new FaultSectionActorList(fault);
+			for (RuptureSurface subSurf : ((CompoundSurface)surface).getSurfaceList()) {
+				FaultSectionActorList sub;
+				if (subSurf instanceof EvenlyGriddedSurface)
+					sub = createFaultActors((EvenlyGriddedSurface)subSurf, color, fault);
+				else
+					sub = createFaultActors(subSurf, color, fault);
+				list.addAll(sub);
+			}
+			return list;
 		}
 		if (surface instanceof EvenlyGriddedSurface) {
 			return createFaultActors((EvenlyGriddedSurface)surface, color, fault);
@@ -175,6 +173,7 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		
 //		System.out.println("rows: " + rows + ", cols:" + cols + ", pnts: " + points.size()); 
 		vtkPolyData linesPolyData = new vtkPolyData();
+		linesPolyData.Allocate(points.size(), points.size());
 		
 		vtkPoints pts = new vtkPoints();
 		for (double[] point : points)

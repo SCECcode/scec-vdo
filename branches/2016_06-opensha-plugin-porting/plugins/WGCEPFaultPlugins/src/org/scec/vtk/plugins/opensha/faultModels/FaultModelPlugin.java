@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha;
+package org.scec.vtk.plugins.opensha.faultModels;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -10,16 +10,12 @@ import org.scec.geo3d.library.wgcep.faults.colorers.AseismicityColorer;
 import org.scec.geo3d.library.wgcep.faults.colorers.CouplingCoefficientColorer;
 import org.scec.geo3d.library.wgcep.faults.colorers.FaultColorer;
 import org.scec.geo3d.library.wgcep.surfaces.GeometryGenerator;
-import org.scec.vtk.plugins.opensha.builders.FaultModelBuilder;
+import org.scec.vtk.plugins.opensha.AbstractFaultPlugin;
+import org.scec.vtk.plugins.opensha.FaultPluginGUI;
 
 import vtk.vtkActor;
 
 public class FaultModelPlugin extends AbstractFaultPlugin {
-
-	@Override
-	public ArrayList<vtkActor> getActors() {
-		throw new UnsupportedOperationException("I doubt this is used, this execption will help me find out");
-	}
 
 	@Override
 	protected FaultPluginGUI buildGUI() throws Exception {

@@ -1,6 +1,7 @@
 package org.scec.vtk.plugins.opensha;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -8,6 +9,8 @@ import javax.swing.JPanel;
 import org.opensha.commons.util.ExceptionUtils;
 import org.scec.vtk.plugins.ActionPlugin;
 import org.scec.vtk.plugins.PluginInfo;
+
+import vtk.vtkActor;
 
 public abstract class AbstractFaultPlugin extends ActionPlugin {
 	
@@ -39,6 +42,11 @@ public abstract class AbstractFaultPlugin extends ActionPlugin {
 			}
 		}
 		return gui;
+	}
+	
+	@Override
+	public ArrayList<vtkActor> getActors() {
+		throw new UnsupportedOperationException("I doubt this is used, this execption will help me find out");
 	}
 
 }

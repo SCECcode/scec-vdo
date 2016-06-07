@@ -3,6 +3,7 @@ package org.scec.geo3d.library.wgcep.gui;
 import java.awt.Color;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
@@ -39,6 +40,7 @@ import vtk.vtkPanel;
 import vtk.vtkRenderer;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 
 public class EventManager implements
 GeometrySettingsChangeListener,
@@ -56,6 +58,7 @@ AnimationListener {
 	// everything related to pick behaviour
 	
 	private static final boolean D = false;
+	private static final boolean queue_renders = true;
 	
 	private vtkPanel rendererPanel;
 	
@@ -104,7 +107,7 @@ AnimationListener {
 		this.panelLock = panelLock;
 		
 		this.colorerPanel = colorerPanel;
-		if (colorerPanel != null){
+		if (colorerPanel != null) {
 			colorerPanel.addColorerChangeListener(this);
 			colorerPanel.setFaultTable(table);
 		}
@@ -203,22 +206,28 @@ AnimationListener {
 			if (actors != null) {
 				unCacheBranch(fault);
 				if (node.isVisible()) {
-					displayFault(fault);
+					displayFault(fault, false);
 				}
 			} else if (node.isVisible()) {
 				// it is visible, but not built yet
 				getBuildActors(fault);
-				displayFault(fault);
+				displayFault(fault, false);
 			}
 		}
+		updateViewer();
 		System.gc();
 	}
 	
 	private boolean isActorDisplayed(vtkActor actor) {
-		return renderer.GetActors().IsItemPresent(actor) == 1;
+		Stopwatch watch = null;
+		if (D) watch = Stopwatch.createStarted();
+		boolean present = renderer.GetActors().IsItemPresent(actor) != 0;
+		if (D) watch.stop();
+		if (D) System.out.println("Took "+watch.elapsed(TimeUnit.MILLISECONDS)+" ms detect if present");
+		return present;
 	}
 	
-	private void displayFault(AbstractFaultSection fault) {
+	private void displayFault(AbstractFaultSection fault, boolean updateViewer) {
 		FaultSectionActorList actors = getBuildActors(fault);
 		if (D) System.out.println("Displaying fault: '"+fault.getName()+"'");
 		for (vtkActor actor : actors) {
@@ -231,13 +240,34 @@ AnimationListener {
 				renderer.AddActor(actor);
 			}
 		}
-		updateViewer();
+		if (updateViewer)
+			updateViewer();
 	}
-		
+	
+	private boolean upToDate = true;
 	
 	private void updateViewer() {
-		rendererPanel.Render();
-		rendererPanel.repaint();
+		upToDate = false;
+		// queue the render and avoid duplicates
+		Runnable updateRunnable = new Runnable() {
+			
+			@Override
+			public void run() {
+				if (upToDate)
+					return;
+				Stopwatch watch;
+				if (D) watch = Stopwatch.createStarted();
+				rendererPanel.Render();
+				rendererPanel.repaint();
+				if (D) watch.stop();
+				if (D) System.out.println("Took "+watch.elapsed(TimeUnit.MILLISECONDS)+" ms to render");
+				upToDate = true;
+			}
+		};
+		if (queue_renders)
+			SwingUtilities.invokeLater(updateRunnable);
+		else
+			updateRunnable.run();
 	}
 	
 	private void hideFault(AbstractFaultSection fault) {
@@ -292,7 +322,7 @@ AnimationListener {
 			}
 			FaultSectionNode node = nodes.get(fault);
 			if (node.isVisible()) {
-				displayFault(fault);
+				displayFault(fault, true);
 			}
 		}
 	}
@@ -391,7 +421,7 @@ AnimationListener {
 		if (D) System.out.println("Visibility changed for fault: '"+fault.getName()+"' (visible="+newVisibility+")");
 		if (newVisibility) {
 			// make the fault visible
-			displayFault(fault);
+			displayFault(fault, true);
 		} else {
 			// hide the fault
 			hideFault(fault);
