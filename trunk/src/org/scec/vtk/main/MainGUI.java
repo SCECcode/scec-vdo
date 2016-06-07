@@ -78,10 +78,13 @@ import vtk.vtkCamera;
 import vtk.vtkCellPicker;
 import vtk.vtkGlobeSource;
 import vtk.vtkNativeLibrary;
+import vtk.vtkObject;
 import vtk.vtkPanel;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkProp;
+import vtk.vtkPropCollection;
 import vtk.vtkTextActor;
 import vtk.vtkTextActor3D;
 import vtk.vtkTransform;
@@ -291,9 +294,10 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    }
 	    updateRenderWindow();
 	}*/
-	public void updateActors(ArrayList<vtkActor> allTextActors)
+	public void updateActors(ArrayList allTextActors)
 	{
-		vtkActorCollection renderedActors = renderWindow.GetRenderer().GetActors();
+		vtkPropCollection  renderedActors = renderWindow.GetRenderer().GetViewProps();
+		System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
 		boolean c = false;
 		if(allTextActors.size()>0){
 	    		
@@ -302,7 +306,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    			c=false;
 	    			for(int i =0;i<renderedActors.GetNumberOfItems();i++)
 	    		    {
-	    		    	vtkActor actor = (vtkActor) renderedActors.GetItemAsObject(i);
+	    		    	vtkObject actor = (vtkObject) renderedActors.GetItemAsObject(i);
 	    		    	if(allTextActors.get(j).equals(actor))
 	    		    	{
 	    		    		//actor exists just update it
@@ -313,16 +317,17 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    		    }
 	    				//actor hasn't been added to render window add it to the render window
 	    		    	if (c==false)
-	    		    		renderWindow.GetRenderer().AddActor(allTextActors.get(j));
+	    		    		renderWindow.GetRenderer().AddActor((vtkProp) allTextActors.get(j));
 			    	
 			    }
 		}
 	    updateRenderWindow();
+	    System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
 	    //renderWindow.GetRenderer().ResetCamera(allTextActors.get(allTextActors.size()-1).GetBounds());
 	}
-	public void removeActors(ArrayList<vtkActor> allTextActors)
+	public void removeActors(ArrayList allTextActors)
 	{
-		vtkActorCollection renderedActors = renderWindow.GetRenderer().GetActors();
+		vtkPropCollection renderedActors = renderWindow.GetRenderer().GetViewProps();
 			if(allTextActors.size()>0){
 		    	//loading form previous import
 				for(int j =0;j<allTextActors.size();j++)
@@ -330,11 +335,11 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    			boolean c = false;
 	    			for(int i =0;i<renderedActors.GetNumberOfItems();i++)
 	    		    {
-	    		    	vtkActor actor = (vtkActor) renderedActors.GetItemAsObject(i);
-	    		    	if(allTextActors.get(j).equals(actor))
+	    				vtkObject actor = (vtkObject) renderedActors.GetItemAsObject(i);
+	    		    	if(allTextActors.get(j).equals((vtkObject) actor))
 	    		    	{
 	    		    		//actor exists just update it
-	    		    		 renderWindow.GetRenderer().RemoveActor(actor);
+	    		    		 renderWindow.GetRenderer().GetViewProps().RemoveItem((vtkObject) actor);
 	    		    		c=true;
 	    		    	}
 	 

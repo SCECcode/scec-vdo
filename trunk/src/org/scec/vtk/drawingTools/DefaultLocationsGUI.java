@@ -1,7 +1,6 @@
  package org.scec.vtk.drawingTools;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,15 +14,15 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.scec.vtk.main.Info;
-import org.scec.vtk.tools.Prefs;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.DBFReaderJGeom;
 import oracle.spatial.util.ShapefileReaderJGeom;
+import vtk.vtkTextActor3D;
 
 
 
@@ -40,8 +39,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	
 	private static final String dataPath = Info.getMainGUI().getRootPluginDir()+File.separator+"GISLocationPlugin"+File.separator;
 
-	private DrawingToolsPlugin parent;
-    private DrawingToolsGUI guiparent;
+	private DrawingToolsGUI guiparent;
 // We took out the ability to search for a city within this tab as we have a better search
 // functionality in its own tab. I'll leave this commented out in case at any point in the future
 // we decide it is worthwhile to have a search that doesn't require internet access.
@@ -54,39 +52,28 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private DisplayAttributes displayAttributes;
 	private JPanel centerPanel = new JPanel();
 	private JScrollPane defaultScrollPane = new JScrollPane(centerPanel);
+
+	private DrawingToolsTable drawingToolTable;
+	private DrawingToolsTableModel drawingTooltablemodel;
+	private int defaultLocationsStartIndex = 0;
+	
 	
 	public DefaultLocationsGUI(DrawingToolsPlugin parent, DrawingToolsGUI guiparent) {
-		this.parent = parent;
 		this.guiparent = guiparent;
-		
-		//this.displayAttributes = parent.getDisplayAttributes();
-
+		this.drawingToolTable = guiparent.getTable();
+		this.drawingTooltablemodel = drawingToolTable.getLibraryModel();
+		this.defaultLocationsStartIndex = 0;//this.drawingToolTable.getRowCount();
 		// Set main panel layout manager and dimensions
-		
 		this.setLayout(new BorderLayout(5,5));
 		this.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-		this.setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()));
-		
-		// Search Panel
-//
-//		JPanel searchPanel = new JPanel();
-//		searchPanel.setLayout(new BorderLayout());
-
-//		searchPanel.add(new JLabel("Search for a City:"), BorderLayout.NORTH);
-//		searchPanel.add(searchCity, BorderLayout.CENTER);
-//		searchButton.addActionListener(this);
-//		searchPanel.add(searchButton, BorderLayout.SOUTH);
 
 		// North Panel
 		JPanel northPanel = new JPanel();
 		northPanel.setLayout(new BoxLayout(northPanel,BoxLayout.Y_AXIS));
-//		northPanel.add(searchPanel);
 		
 		// Center Panel
 		centerPanel.setLayout(new GridLayout(0,2));
-		//centerPanel.setPreferredSize(new Dimension(300,300));
 
-		
 		// Build the presets panel automatically
 		
 		// Check to make sure it exists
@@ -131,81 +118,43 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		this.add(defaultScrollPane,BorderLayout.CENTER);
 	}
 
-//	private void searchCities(String citySearchString) {
-//		String latString = new String();
-//		String lonString = new String();
-//		ArrayList<String> queryStringArrayList = new ArrayList<String>();
-//		
-//		StringTokenizer tokenizedQueryString = new StringTokenizer(citySearchString);
-//		while(tokenizedQueryString.hasMoreTokens())
-//			queryStringArrayList.add(tokenizedQueryString.nextToken());
-//
-//		try {
-//			BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream("Master.txt")));
-//			while(input.ready()){
-//				String line = input.readLine();
-//				StringTokenizer tk = new StringTokenizer(line);
-//				latString = tk.nextToken();
-//				lonString = tk.nextToken();
-//				
-//				ArrayList<String> fileStringArrayList = new ArrayList<String>();
-//				while(tk.hasMoreTokens()){
-//					fileStringArrayList.add(tk.nextToken());
-//				}
-//
-//				if (compareStringArrayList(queryStringArrayList, fileStringArrayList)) {
-//					String cityString = "";
-//					for (int i = 0; i < fileStringArrayList.size(); i++) {
-//						// Get and format the next word
-//						String temp = (String)fileStringArrayList.get(i);
-//						temp = temp.toLowerCase();
-//						temp = temp.substring(0, 1).toUpperCase() + temp.substring(1, temp.length());
-//						if (i > 0) cityString += " "; // Add a space between each word
-//						cityString += temp;
-//					}
-//					
-//					parent.displayNewLabel(latString,
-//							lonString,
-//							cityString,
-//							displayAttributes);
-//				}
-//			}
-//		} catch (Exception exp) {
-//			System.out.println("Bad Input File!");
-//		}
-//	}
-	
+
 	private void addBuiltInFiles(Vector<DrawingTool> locations) {
-		//BranchGroup mainBranchGroup = new BranchGroup();
-		//mainBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-		//mainBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
-		
+
 		for (int i = 0; i < locations.size(); i++) {
 			DrawingTool tempLocation = locations.get(i);
-			
-			//BranchGroup tempBranchGroup = tempLocation.createBranchGroup();
-			//tempLocation.setDisplayed(true);
-			//mainBranchGroup.addChild(tempBranchGroup);
-			
-			//parent.locationBranchesArray.add(tempBranchGroup);
-			//parent.locationsArray.add(tempLocation);
-			
-			//Object[] tempRow = tempLocation.createRow();
-			//guiparent.labelModel.addRow(tempRow);
+			this.guiparent.addDrawingTool(tempLocation);
+			ArrayList<DrawingTool> newObjects = new ArrayList<>();
+			newObjects.add(tempLocation);
+			this.drawingToolTable.addDrawingTool(newObjects);
 		}
-		//parent.locationPluginBranchGroup.addChild(mainBranchGroup);
 	}
-	
+
 	private void removeBuiltInFiles(Vector<DrawingTool> locations) {
-		/*for (int i = 0; i < locations.size(); i++) {
-			int index = parent.locationsArray.indexOf((Location)locations.elementAt(i));
-			if (index > -1) {
-				((Location)parent.locationsArray.elementAt(index)).detatch();
-				guiparent.labelModel.removeRow(index);
-				parent.locationBranchesArray.remove(index);
-				parent.locationsArray.remove(index);
-			}
-		}*/
+		//System.out.println(defaultLocationsStartIndex);
+		this.drawingToolTable.setRowSelectionInterval(defaultLocationsStartIndex,locations.size()-1);
+		int[] selectedRows = this.drawingToolTable.getSelectedRows() ;
+			
+			int delete = drawingTooltablemodel.deleteObjects(
+	                this.drawingToolTable,
+	                selectedRows);
+	        if (delete == JOptionPane.NO_OPTION ||
+	                delete == JOptionPane.CLOSED_OPTION) {
+	        }
+	        else
+	        {
+	        	
+	        	//remove actors
+	            ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
+	            ArrayList<vtkTextActor3D> removedActors = new ArrayList<>();
+	            for(int i =0;i<selectedRows.length;i++)
+	            {
+	            	vtkTextActor3D actor = actors.get(selectedRows[i]-i);
+	            	removedActors.add(actor);
+	            	DrawingTool.getMasterFaultBranchGroup().remove(selectedRows[i]-i);
+	            }
+	            Info.getMainGUI().removeActors(removedActors);
+	        }
 	}
 	
 	private Vector<DrawingTool> loadBuiltInFiles() {
@@ -250,13 +199,13 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					byte[] record = dbfFile.getRecord(index);
 					String textStr = dbfFile.getFieldData(nameColumn, record);
 										
-					/*DrawingTool tempLocation = new DrawingTool(
+					DrawingTool tempLocation = new DrawingTool(
 							coordinates[1],
 							coordinates[0],
 							0.0d,
 							textStr,
-							displayAttributes);*/
-					//locations.addElement(tempLocation);
+							displayAttributes);
+					locations.addElement(tempLocation);
 				}
 				return locations;
 			} catch (Exception e) {
