@@ -241,7 +241,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
 	        	vtkTextActor3D actor = actors.get(selectedRows[i]-i);
-	        	double[] pt= {Transform.calcRadius(37)+Double.parseDouble((String) this.displayAttributes.altField.getText()),
+	        	double[] pt= {Transform.calcRadius(Double.parseDouble((String) this.displayAttributes.latField.getText()))+Double.parseDouble((String) this.displayAttributes.altField.getText()),
 	        			Double.parseDouble((String) this.displayAttributes.latField.getText()),
 	        			Double.parseDouble((String) this.displayAttributes.lonField.getText())};
 	        	actor.SetPosition(Transform.customTransform(pt));
