@@ -31,23 +31,16 @@ import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 
-import vtk.vtkActor;
 import vtk.vtkCellArray;
-import vtk.vtkCellData;
 import vtk.vtkDoubleArray;
-import vtk.vtkGeoAssignCoordinates;
-import vtk.vtkGraphToPolyData;
 import vtk.vtkIntArray;
 import vtk.vtkLabelPlacementMapper;
-import vtk.vtkLabeledDataMapper;
 import vtk.vtkLine;
-import vtk.vtkMutableDirectedGraph;
 import vtk.vtkPointSetToLabelHierarchy;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkStringArray;
-import vtk.vtkVertexGlyphFilter;
 
 public class GraticuleGUI extends JPanel implements ActionListener{
 	protected DisplayAttributes displayAttributes; //From location plugin; contains font color, cone color...
@@ -58,12 +51,6 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	private static final long serialVersionUID = 1L;
 
 	private JPanel displayPanel;
-
-	// private JPanel propsNotesPanel;
-	// private JTextArea faultNotes;
-
-	// accessible panels
-	// private JTabbedPane propsTabbedPane;
 
 	/** Adjustable status field. */
 	public static final JLabel status = new JLabel("Status");
@@ -146,7 +133,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		vtkIntArray sizes = new vtkIntArray();
 		sizes.SetName("sizes");
 		vtkPolyData temp = new vtkPolyData();
-		
+
 		//for latitude lines
 
 
@@ -161,7 +148,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		vtkDoubleArray lon = new vtkDoubleArray();
 		lat.SetName("latitude");
 		lon.SetName("longitude");
-		
+
 		//j-- is spacing 
 		//INVERT IMAGE//
 		double leftLon  = 1 * rightLong;
@@ -172,14 +159,12 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		labels.SetNumberOfValues(numOfLat+1);
 		sizes.SetNumberOfValues(numOfLat);
 		int labelLatCt=0;
-		int maxDepth = 10; 	// DO NOT JUST CHANGE THIS NUMBER. if you really need another depth, you must add it as
-							// an option in the graticule plugin, and then LEAVE 10 AS THE DEFAULT.
-							// Graticule anf grid lines match
+		int maxDepth = 0; 	
 		for(double j = upperLat;j>=lowerLat;j-=spacing,labelLatCt++)
 		{
 
 			double[] pt = new double[3];
-			pt[0] = Transform.calcRadius(j) + maxDepth;
+			pt[0] = Transform.calcRadius(j);
 			// Phi= deg2rad(latitude);
 			pt[1] = (j);
 			//Theta= deg2rad(longitude);
@@ -203,14 +188,14 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			pt[2] = (rightLon);
 			labels.SetValue(labelLatCt, new DecimalFormat("#.######").format(j));
 			labelPoints.InsertNextPoint(Transform.customTransform(pt));
-			
+
 		}
 
 		//longitutde lines
 		for(double j = leftLon;j>=rightLon;j-=spacing,labelLatCt++)
 		{
 			double[] pt = new double[3];
-			pt[0] = Transform.calcRadius(upperLat) + maxDepth;
+			pt[0] = Transform.calcRadius(upperLat);
 			// Phi= deg2rad(latitude);
 			pt[1] = (upperLat);
 			//Theta= deg2rad(longitude);
@@ -221,23 +206,22 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 			labelPoints.InsertNextPoint(Transform.customTransform(pt));
 
-			
+
 			for(double k = (upperLat-spacing);k>=lowerLat;k-=spacing)
 			{
 				//Theta= deg2rad(longitude);
-				pt[0] = Transform.calcRadius(k) + maxDepth;
+				pt[0] = Transform.calcRadius(k);
 				// Phi= deg2rad(latitude);
 				pt[1] = (k);
-			allPoints.InsertNextPoint(Transform.customTransform(pt));
-			vtkLine line0 = new vtkLine();
-			line0.GetPointIds().SetId(0, countPts);
-			//countPts++;// the second 0 is the index of the Origin in linesPolyData's points
-			line0.GetPointIds().SetId(1, countPts+1);
-			countPts++;// the second 1 is the index of P0 in linesPolyData's points
-			lines.InsertNextCell(line0);
+				allPoints.InsertNextPoint(Transform.customTransform(pt));
+				vtkLine line0 = new vtkLine();
+				line0.GetPointIds().SetId(0, countPts);
+				//countPts++;// the second 0 is the index of the Origin in linesPolyData's points
+				line0.GetPointIds().SetId(1, countPts+1);
+				countPts++;// the second 1 is the index of P0 in linesPolyData's points
+				lines.InsertNextCell(line0);
 			}
 			countPts++;
-			//graph1.AddGraphEdge(countPts, countPts+1);
 		}
 		linesPolyData.SetPoints(allPoints);
 		linesPolyData.SetLines(lines);
@@ -253,20 +237,8 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 
 
-		vtkGeoAssignCoordinates assign = new vtkGeoAssignCoordinates();
-
-		assign.SetInputData(linesPolyData);
-		//assign.set
-		assign.SetLatitudeArrayName("latitude");
-		assign.SetLongitudeArrayName("longitude");
-		assign.SetGlobeRadius(Transform.re);
-
-		assign.Update();
-
-
 		vtkPolyDataMapper globeMapper = new vtkPolyDataMapper();
-
-		globeMapper.SetInputConnection(assign.GetOutputPort());
+		globeMapper.SetInputData(linesPolyData);
 
 		vtkPolyDataMapper pointMapper = new vtkPolyDataMapper();
 		pointMapper.SetInputData(temp);
@@ -284,19 +256,6 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		gbs.get(0).labelMapperLat= cellMapper;
 		gbs.get(0).ptMapper = pointMapper;  
 
-		//gbs.add(new GlobeBox(tg, gl, tempColor3f, latLonLabelsCheckBox.isSelected()));
-		/*GlobeLayout g2 = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing * 2);
-	  			gbs.add(new GlobeBox(g2, tempColor3f, true));
-	  			gbs.get(1).drawGlobe();
-	  			//gbs.add(new GlobeBox(tg, g2, tempColor3f, latLonLabelsCheckBox.isSelected()));
-	  			GlobeLayout g3 = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing * 4);
-	  			gbs.add(new GlobeBox(g3, tempColor3f, true));
-	  			gbs.get(2).drawGlobe();
-	  			//gbs.add(new GlobeBox(tg, g3, tempColor3f, latLonLabelsCheckBox.isSelected()));
-	  			GlobeLayout g4 = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing * 6);
-	  			gbs.add(new GlobeBox(g4, tempColor3f, true));
-	  			gbs.get(3).drawGlobe();*/
-		//gbs.add(new GlobeBox(tg, g4, tempColor3f, latLonLabelsCheckBox.isSelected()));
 		return gbs;
 	}
 

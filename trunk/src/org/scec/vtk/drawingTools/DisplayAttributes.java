@@ -77,21 +77,21 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 				lat.setMinimumIntegerDigits(1);
 				lat.setMaximumIntegerDigits(10);
 				latField = new JFormattedTextField(lat);
-				latField.setText("90");
+				latField.setText("37");
 
 				DecimalFormat lon = new DecimalFormat();
 				lon.setGroupingUsed(false);
 				lon.setMinimumIntegerDigits(1);
 				lon.setMaximumIntegerDigits(10);
 				lonField = new JFormattedTextField(lon);
-				lonField.setText("90");
+				lonField.setText("-120");
 				
 				DecimalFormat alt = new DecimalFormat();
 				alt.setGroupingUsed(false);
 				alt.setMinimumIntegerDigits(1);
 				alt.setMaximumIntegerDigits(10);
 				altField = new JFormattedTextField(alt);
-				altField.setText("90");
+				altField.setText("0");
 		
 		//Strike Angle Field
 		DecimalFormat decimalFormat = new DecimalFormat();
