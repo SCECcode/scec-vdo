@@ -148,7 +148,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		vtkDoubleArray lon = new vtkDoubleArray();
 		lat.SetName("latitude");
 		lon.SetName("longitude");
-
+		vtkLine line0 = new vtkLine();
 		//j-- is spacing 
 		//INVERT IMAGE//
 		double leftLon  = 1 * rightLong;
@@ -177,7 +177,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			{
 				pt[2] = k;//(rightLon);
 				allPoints.InsertNextPoint(Transform.customTransform(pt));
-				vtkLine line0 = new vtkLine();
+				
 				line0.GetPointIds().SetId(0, countPts); // the second 0 is the index of the Origin in linesPolyData's points
 				//countPts++;
 				line0.GetPointIds().SetId(1, countPts+1); // the second 1 is the index of P0 in linesPolyData's points
@@ -214,7 +214,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 				// Phi= deg2rad(latitude);
 				pt[1] = (k);
 				allPoints.InsertNextPoint(Transform.customTransform(pt));
-				vtkLine line0 = new vtkLine();
+				
 				line0.GetPointIds().SetId(0, countPts);
 				//countPts++;// the second 0 is the index of the Origin in linesPolyData's points
 				line0.GetPointIds().SetId(1, countPts+1);
