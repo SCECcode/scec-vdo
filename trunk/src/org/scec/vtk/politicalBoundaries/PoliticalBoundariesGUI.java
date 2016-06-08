@@ -152,12 +152,12 @@ public class PoliticalBoundariesGUI {
 		ArrayList<ArrayList> us_boundaries = (ArrayList<ArrayList>) newBoundaries.buildBoundaries(usBoundariesPath);
 		//vtkPolyData us_boundaries = (vtkPolyData) newBoundaries.buildBoundaries(this.getClass().getResource("resources/sourcefiles/us.vtk").getPath());
 		ArrayList<String> usStateNames = newBoundaries.getUSStateNames();
-
+		vtkLine line0 = new vtkLine();
 		//System.out.println(usStateNames.size());
 		int countpts = 0;
 		for(int j=0;j<us_boundaries.size();j++)
 		{
-			new vtkPoints();
+			
 			ArrayList<?> us_boundariesState = (ArrayList<?>) us_boundaries.get(j);
 
 			if(isSelected && j==4)
@@ -165,8 +165,7 @@ public class PoliticalBoundariesGUI {
 			else
 				createCheckBoxes(usStateNames.get(j), jCheckBoxList,panel,itemListener,false);
 
-			new vtkMutableDirectedGraph();
-			new vtkGeoAssignCoordinates();
+			
 			vtkDoubleArray latitude = new vtkDoubleArray();
 			latitude.SetName("latitude");
 			vtkDoubleArray	longitude = new vtkDoubleArray();
@@ -188,7 +187,6 @@ public class PoliticalBoundariesGUI {
 				for(int i = 0; i <  segmentpoints.GetNumberOfPoints()-1; i++)
 				{
 					//connect all edges
-					vtkLine line0 = new vtkLine();
 					line0.GetPointIds().SetId(0, countpts);
 					line0.GetPointIds().SetId(1, countpts+1);
 					lines.InsertNextCell(line0);
