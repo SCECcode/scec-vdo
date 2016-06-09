@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.media.MediaLocator;
@@ -25,23 +26,29 @@ import vtk.vtkRenderWindowInteractor;
 import vtk.vtkRenderer;
 import vtk.vtkUnsignedCharArray;
 
-public class CueAnimator {
+public class CueAnimator  {
 
-		
-		
+				
+		private long endTime;
+		private long startTime;
+		public boolean included;
 		void StartCue()
 		{
-			System.out.println("*** IN StartCue " );
+			System.out.println("*** IN StartCue " + cue.GetStartTime() );
 			this.TimerCount = 0;
 			//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+			startTime = System.nanoTime();
+			camnew = new vtkCamera();
+			if(included)
+				StartCueEarthquakeCatalogAniamtion();
 		}
 
 		void TickCameraAniamtion()
 		{
-			camnew = new vtkCamera();
-			++this.TimerCount;
-
-			if(this.TimerCount<pointsPosition.GetNumberOfPoints())
+			//speed interpolation
+			double t = cue.GetAnimationTime()/cue.GetEndTime();
+			this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
+			if(this.TimerCount<ptSize)
 			{
 
 				camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
@@ -52,13 +59,18 @@ public class CueAnimator {
 				Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(camnew);
 				Info.getMainGUI().getRenderWindow().GetRenderer().ResetCameraClippingRange();
 			}
+			if(included)
+				TickEarthquakeCatalogAniamtion();
+			//tickSec = TimeUnit.MILLISECONDS.convert((System.nanoTime()-currentTime),TimeUnit.NANOSECONDS);
+			//System.out.println(this.TimerCount);//cue.GetAnimationTime());
 		}
 		
 		void TickCameraAniamtionRender()
 		{
+			
 			camnew = new vtkCamera();
 			++this.TimerCount;
-
+			
 			if(this.TimerCount<pointsPosition.GetNumberOfPoints())
 			{
 				camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
@@ -77,12 +89,14 @@ public class CueAnimator {
 						1, vtkPixelData);
 				imagePixelData.add(vtkPixelData);
 			}
+		
 		}
 		
 		void StartCueEarthquakeCatalogAniamtion()
 		{
 			System.out.println("*** IN StartCue " );
 			this.TimerCount = 0;
+			
 			//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 			for(int i =0;i<earthquakeList.size();i++)
 			{
@@ -93,18 +107,23 @@ public class CueAnimator {
 		
 		void TickEarthquakeCatalogAniamtion()
 		{
+			double t = cue.GetAnimationTime()/cue.GetEndTime();
+			this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+			System.out.println(this.TimerCount);
 			if(this.TimerCount<earthquakeList.size())
 			{
 				eq = earthquakeList.get(this.TimerCount);
 				eq.getEarthquakeCatalogActor().VisibilityOn();
 				Info.getMainGUI().updateRenderWindow();
 			}
-			++this.TimerCount;
+			
 		}
 
 		void EndCue()
 		{
-			System.out.println("*** IN EndCue " );
+			endTime = System.nanoTime() - startTime;
+			long seconds = TimeUnit.SECONDS.convert((long) endTime, TimeUnit.NANOSECONDS);
+			System.out.println("*** IN EndCue "+cue.GetEndTime());
 		}
 
 		void EndCueCameraAniamtionRender()
@@ -180,4 +199,6 @@ public class CueAnimator {
 		public MediaLocator m;
 		public ArrayList<Earthquake> earthquakeList;
 		private Earthquake eq;
+		protected vtkAnimationCue cue;
+		public int ptSize=0;
 }

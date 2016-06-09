@@ -59,6 +59,8 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import org.apache.log4j.Logger;
 import org.scec.vtk.plugins.ClickablePlugin;
 import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
+import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.drawingTools.DrawingToolsGUI;
 import org.scec.vtk.drawingTools.DrawingToolsPlugin;
 import org.scec.vtk.grid.GlobeBox;
@@ -142,6 +144,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	private DrawingToolsGUI drawingTool;
 	private DrawingToolsPlugin drawingToolPlugin;
 	private double[] pointerPosition;
+	private ScriptingPlugin ScriptingPluginObj;
 	public MainGUI() {
 		
 		/*vtkTransform transform = new  vtkTransform();
@@ -468,6 +471,10 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		this.setVisible(true);
 		
 	}
+	public JPanel getmainFrame()
+	{
+		return mainPanel;
+	}
 	//viewRange
 	private void setViewRange(ViewRange viewRange) {
 		this.viewRange = viewRange;
@@ -503,7 +510,9 @@ public  class MainGUI extends JFrame implements ChangeListener{
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
 		else
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
-		pluginTabPane.setSelectedIndex(pluginTabPane.getTabCount() - 1);		
+		
+		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
+			ScriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
 
 		pluginTabPane.repaint();
 		
@@ -943,6 +952,11 @@ private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 				if (shiftDetector.shiftDown)
 					MenuSelectionManager.defaultManager().setSelectedPath(path);
 			}*/
+		}
+
+		public ScriptingPluginGUI GetScriptingPlugin() {
+			// TODO Auto-generated method stub
+			return ScriptingPluginObj.getScriptingPluginGUI();
 		}
 
 	
