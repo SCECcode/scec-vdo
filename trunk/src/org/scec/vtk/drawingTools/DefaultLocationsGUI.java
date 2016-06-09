@@ -8,7 +8,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import javax.media.j3d.BranchGroup;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -158,10 +157,10 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	}
 	
 	private Vector<DrawingTool> loadBuiltInFiles() {
-		BranchGroup mainBranchGroup = new BranchGroup();
-		mainBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-		mainBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
-		
+//		BranchGroup mainBranchGroup = new BranchGroup();
+//		mainBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
+//		mainBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
+//		
 		/**
 		 * Only reads point data
 		 */
