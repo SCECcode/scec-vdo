@@ -61,6 +61,7 @@ import org.opensha.commons.util.ExceptionUtils;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogAccessor;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogTable;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogTableModel;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.ComcatResourcesDialog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
@@ -419,15 +420,20 @@ MouseListener {
 			//add(this.catsTabbedPane, BorderLayout.CENTER);
 			add(upperPane, BorderLayout.CENTER);
 			add(lowerPane, BorderLayout.PAGE_END);
-
+			// now load any data
+						//this.sourceList = new SourceList(this);
+						//this.sourceList.loadSourceCatalogs();
+						try {
+							this.catalogTable.loadCatalogs();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 			// other initializations
 			//setCursor(new Cursor(Cursor.WAIT_CURSOR));
 			/*EarthquakeCatalogPluginGUI.status.addMouseListener(this);
 
-			// now load any data
-			//this.sourceList = new SourceList(this);
-			//this.sourceList.loadSourceCatalogs();
-			//this.catalogTable.loadCatalogs();
+			
 
 			animationColor1 = new Color(255,0,0);
 			animationColor2 = new Color(0,255,0);
@@ -2046,7 +2052,7 @@ MouseListener {
 					cue1.SetEndTime(13);
 					scene.AddCue(cue1);
 					cb = new CueAnimator();*/
-					Info.getMainGUI().GetScriptingPlugin().animateSceneWithLayers(earthquakeList,true);
+					Info.getMainGUI().GetScriptingPlugin().addEarthquakeListForAniamtion(earthquakeList,true);
 					/*scene.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
 					scene.AddObserver("EndAnimationCueEvent", cb, "EndCue");
 					scene.AddObserver("AnimationCueTickEvent", cb, "TickEarthquakeCatalogAniamtion");
@@ -2187,12 +2193,12 @@ MouseListener {
 				//Info.getMainGUI().updateActors(gradientActor);
 				Info.getMainGUI().updateRenderWindow();
 			}
-			/*CatalogTableModel libModel  = this.catalogTable.getLibraryModel();
+			CatalogTableModel libModel  = this.catalogTable.getLibraryModel();
 			EQCatalog libCat = this.catalogTable.getSelectedValue();
 			
 			//        SourceCatalog srcCat = (SourceCatalog)this.sourceList.getSelectedValue();
 
-			Object src = e.getSource();
+			/*Object src = e.getSource();
 
 			//////////////////
 			// UPPER PANEL  //

@@ -179,7 +179,11 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		    actor.GetTextProperty().SetFontSize(20);
 	    	actor.SetPosition( Transform.customTransform(pt));
 	    	actor.GetTextProperty().SetColor(1,0,0);
-	    	
+	    	//actor.SetOrigin(actor.GetCenter());
+        	actor.RotateX(Double.parseDouble((String) this.displayAttributes.rotateXField.getText()));
+        	actor.RotateY(Double.parseDouble((String) this.displayAttributes.rotateYField.getText()));
+        	actor.RotateZ(Double.parseDouble((String) this.displayAttributes.rotateZField.getText()));
+      
 	    	DrawingTool.getMasterFaultBranchGroup().add(actor);
 	        Info.getMainGUI().updateActors(DrawingTool.getMasterFaultBranchGroup());
 			return drawingTool;
@@ -194,7 +198,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    	ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
             for(int i =0;i<selectedRows.length;i++)
             {
-            	vtkTextActor3D actor = actors.get(selectedRows[i]-i);
+            	vtkTextActor3D actor = actors.get(selectedRows[i]);
             	if(actor.GetVisibility() == 1)
             		actor.SetVisibility(0);
             	else
@@ -240,7 +244,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    	ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
-	        	vtkTextActor3D actor = actors.get(selectedRows[i]-i);
+	        	vtkTextActor3D actor = actors.get(selectedRows[i]);
 	        	double[] pt= {Transform.calcRadius(Double.parseDouble((String) this.displayAttributes.latField.getText()))+Double.parseDouble((String) this.displayAttributes.altField.getText()),
 	        			Double.parseDouble((String) this.displayAttributes.latField.getText()),
 	        			Double.parseDouble((String) this.displayAttributes.lonField.getText())};
@@ -253,8 +257,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    	ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
-	        	vtkTextActor3D actor = actors.get(selectedRows[i]-i);
-	        	actor.SetOrigin(actor.GetCenter());
+	        	vtkTextActor3D actor = actors.get(selectedRows[i]);
+	        	//actor.SetOrigin(actor.GetCenter());
 	        	actor.RotateX(Double.parseDouble((String) this.displayAttributes.rotateXField.getText()));
 	        	actor.RotateY(Double.parseDouble((String) this.displayAttributes.rotateYField.getText()));
 	        	actor.RotateZ(Double.parseDouble((String) this.displayAttributes.rotateZField.getText()));
@@ -266,7 +270,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    	ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
-	        	vtkTextActor3D actor = actors.get(selectedRows[i]-i);
+	        	vtkTextActor3D actor = actors.get(selectedRows[i]);
 	        	actor.GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
 	        }
 	        Info.getMainGUI().updateActors(DrawingTool.getMasterFaultBranchGroup());
