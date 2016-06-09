@@ -41,6 +41,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -144,7 +145,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	private DrawingToolsGUI drawingTool;
 	private DrawingToolsPlugin drawingToolPlugin;
 	private double[] pointerPosition;
-	private ScriptingPlugin ScriptingPluginObj;
+	private ScriptingPlugin scriptingPluginObj;
 	public MainGUI() {
 		
 		/*vtkTransform transform = new  vtkTransform();
@@ -512,7 +513,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
 		
 		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
-			ScriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
+			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
 
 		pluginTabPane.repaint();
 		
@@ -956,7 +957,11 @@ private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 
 		public ScriptingPluginGUI GetScriptingPlugin() {
 			// TODO Auto-generated method stub
-			return ScriptingPluginObj.getScriptingPluginGUI();
+			if(scriptingPluginObj==null)
+			{
+				mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
+			}
+			return scriptingPluginObj.getScriptingPluginGUI();
 		}
 
 	

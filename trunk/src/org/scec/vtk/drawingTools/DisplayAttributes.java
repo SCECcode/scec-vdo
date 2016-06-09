@@ -55,14 +55,14 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 				rotateX.setMinimumIntegerDigits(1);
 				rotateX.setMaximumIntegerDigits(10);
 				rotateXField = new JFormattedTextField(rotateX);
-				rotateXField.setText("90");
+				rotateXField.setText("0");
 				
 				DecimalFormat rotateY = new DecimalFormat();
 				rotateY.setGroupingUsed(false);
 				rotateY.setMinimumIntegerDigits(1);
 				rotateY.setMaximumIntegerDigits(10);
 				rotateYField = new JFormattedTextField(rotateY);
-				rotateYField.setText("90");
+				rotateYField.setText("45");
 				
 				DecimalFormat rotateZ = new DecimalFormat();
 				rotateZ.setGroupingUsed(false);
