@@ -2,6 +2,7 @@ package org.scec.vtk.plugins.ScriptingPlugin;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -38,6 +39,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.ListSelectionEvent;
@@ -48,6 +50,7 @@ import javax.swing.table.DefaultTableModel;
 import org.scec.vtk.drawingTools.DrawingToolsPlugin;
 import org.scec.vtk.drawingTools.DrawingToolsTable;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorButton;
 import org.scec.vtk.plugins.utils.components.EditButton;
@@ -223,13 +226,14 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	CueAnimator cb = new CueAnimator();
 	
 	//end time line frame #
-	JTextField endFrame = new JTextField();
+	JTextField endTime = new JTextField();
 	//frame rate
-	JTextField frameRate = new JTextField();
+	JTextField noOfFrames = new JTextField();
 	//timeline view table
 	DefaultTableModel model = new DefaultTableModel();
 	JTable table = new JTable(model);
 	int selectedRow=0,selectedCol=0;
+	private double tickrate;
 	@SuppressWarnings("deprecation")
 	public ScriptingPluginGUI(ScriptingPlugin plugin){
 
@@ -241,7 +245,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 
 		this.scriptingPluginSubPanelUpper=new JPanel();
 		//this.scriptingPluginSubPanelUpper.setBorder(BorderFactory.createEmptyBorder(3,0,0,0));
-		this.scriptingPluginSubPanelUpper.setLayout(new GridLayout(3, 2, 15, 30));//new BoxLayout(this.scriptingPluginSubPanelUpper,BoxLayout.LINE_AXIS));
+		this.scriptingPluginSubPanelUpper.setLayout(new  BoxLayout(scriptingPluginSubPanelUpper, BoxLayout.PAGE_AXIS));//GridLayout(3, 2, 15, 30));//new BoxLayout(this.scriptingPluginSubPanelUpper,BoxLayout.LINE_AXIS));
 		this.scriptingPluginSubPanelUpper.setOpaque(true);
 		int buttonSpace = 3;
 		
@@ -257,44 +261,69 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		this.renderButton.addActionListener(this);
 		
 		
-		endFrame = new JTextField(5);
-		endFrame.setPreferredSize( new Dimension( 50, 5) );
-		endFrame.setText("20");
+		endTime = new JTextField(5);
+		endTime.setPreferredSize( new Dimension( 150, 20) );
+		endTime.setText("15");
     	//frame rate
-    	frameRate = new JTextField(5);
-    	frameRate.setPreferredSize( new Dimension( 50, 5 ) );
-    	frameRate.setText("30");
-        endFrame.addActionListener(this);
-        frameRate.addActionListener(this);
-        this.scriptingPluginSubPanelUpper.add(new JLabel("End Frame"));
-        this.scriptingPluginSubPanelUpper.add(endFrame);
-        this.scriptingPluginSubPanelUpper.add(new JLabel("1/frame-rate seconds"));
-        this.scriptingPluginSubPanelUpper.add(frameRate);
-        this.scriptingPluginSubPanelUpper.add(Box.createHorizontalStrut(buttonSpace));
-        this.scriptingPluginSubPanelUpper.add(this.playScriptingPluginButton);
+    	noOfFrames = new JTextField(5);
+    	noOfFrames.setPreferredSize( new Dimension( 150, 20 ) );
+    	noOfFrames.setText("140");
+        endTime.addActionListener(this);
+        noOfFrames.addActionListener(this);
+        JPanel upperHalfPanel = new JPanel();
+        upperHalfPanel.setLayout(new  FlowLayout(FlowLayout.CENTER,5,Prefs.getPluginHeight()-450));
+        JPanel timelinePropPanel = new JPanel(); 
+        timelinePropPanel.setLayout(new  FlowLayout(FlowLayout.CENTER,5,5));
+        timelinePropPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        timelinePropPanel.add(new JLabel("End Time(sec)"));
+        timelinePropPanel.add(endTime);
+       
+        timelinePropPanel.add(new JLabel("Number of Frames"));
+        timelinePropPanel.add(noOfFrames);
+        
+        JPanel timelineButtonPanel = new JPanel(); 
+        timelineButtonPanel.setLayout(new  FlowLayout(FlowLayout.CENTER,5,5));
+        timelineButtonPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        //timelinePropPanel.add(Box.createVerticalStrut(buttonSpace));
+        timelineButtonPanel.add(new JLabel("Timeline buttons"));
+        timelineButtonPanel.add(this.playScriptingPluginButton);
 		//this.scriptingPluginSubPanelUpper.add(this.stopScriptingPluginButton);
-		this.scriptingPluginSubPanelUpper.add(this.renderButton);
-        this.scriptingPluginSubPanelUpper.add(Box.createHorizontalStrut(buttonSpace));
-        this.scriptingPluginSubPanelUpper.add(this.addScriptingPluginButton);
+        timelineButtonPanel.add(this.renderButton);
+        JPanel timelineKeyFramePanel = new JPanel(); 
+        timelineKeyFramePanel.setLayout(new  FlowLayout(FlowLayout.CENTER,5,5));
+        timelineKeyFramePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        timelineKeyFramePanel.add(new JLabel("Add or remove key frames"));
+        timelineKeyFramePanel.add(this.addScriptingPluginButton);
 		
         this.removeScriptingPluginButton = new RemoveButton(this, "Remove selected key frame");
 		this.removeScriptingPluginButton.setEnabled(true);
-		this.scriptingPluginSubPanelUpper.add(this.removeScriptingPluginButton);
+		timelineKeyFramePanel.add(this.removeScriptingPluginButton);
+       // timelinePropPanel.setv.setPreferredSize(new Dimension(Prefs.getPluginWidth(),20));
+		//timelinePropPanel.setPreferredSize(new Dimension(Prefs.getPluginWidth(),200));
+		//timelineButtonPanel.setPreferredSize(new Dimension(Prefs.getPluginWidth(),200));
+		//timelineKeyFramePanel.setPreferredSize(new Dimension(Prefs.getPluginWidth(),200));
+		this.scriptingPluginSubPanelUpper.add(upperHalfPanel);
+        this.scriptingPluginSubPanelUpper.add(timelinePropPanel);
+        this.scriptingPluginSubPanelUpper.add(timelineButtonPanel);
+        this.scriptingPluginSubPanelUpper.add(timelineKeyFramePanel);
 		
+
+		scene = new vtkAnimationScene();
 		add(this.scriptingPluginSubPanelUpper);
-		
-		
 		//timeline view panel
 		JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         JScrollPane tableContainer = new JScrollPane(table);
-         
-        panel.add(tableContainer, BorderLayout.CENTER);
-        add(panel);
-    
+        tableContainer.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        tableContainer.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        tableContainer.setPreferredSize(new Dimension(Prefs.getPluginWidth(), 100));
+        //tableContainer.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
+       // panel.add(tableContainer, BorderLayout.WEST);
+        //add(panel);
+        Info.getMainGUI().getmainFrame().add(tableContainer,BorderLayout.SOUTH);
         table.addMouseListener(this); 
         //swap table values drag and drop
         table.setDragEnabled(true);
@@ -399,19 +428,21 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 			     }
 		    		 }*/
 		});
+		//display default number of frames
 		model.addRow(new Object[] {""});
-		  for(int i =0;i<Integer.parseInt(endFrame.getText());i++)
+		  for(int i =0;i<Integer.parseInt(noOfFrames.getText());i++)
 	        {
 	        	model.addColumn(new String(Integer.toString(i+1)));
 	        	table.setValueAt("",0,i);
 	        	framePoints.add(new vtkCamera());
 	        }
+		  
 		playScriptingPluginButton.addMouseListener(new MouseAdapter() {
 	      
 
 			public void mousePressed(MouseEvent e) {
 		
-				stopScriptingPluginButton.setEnabled(true);
+				//stopScriptingPluginButton.setEnabled(true);
 	            mousePressed = true;
 	            	
 			}
@@ -425,99 +456,16 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 
 	                    	else
 	                    	{
-	                    		createSplines("position");
-		        				createSplines("focalPoints");
-		        				createSplines("viewUp");
-		        				ArrayList<vtkActor> nw = new ArrayList<>();
-		        				nw.add(profile);
-		        				nw.add(glyph);
-		        				Info.getMainGUI().updateActors(nw);
-		        				
-	                    		scene = new vtkAnimationScene();
-	        					//scene.RemoveAllCues();
-	        					//the frame rate affects sequence mode
-	        					scene.SetModeToSequence();//SetModeToRealTime();//
 
-	        					scene.SetLoop(0);//loop once 
-	        					scene.SetFrameRate(Double.parseDouble(frameRate.getText()));
-	        					System.out.println(Double.parseDouble(frameRate.getText()));
-	        					scene.SetStartTime(0);
-	        					scene.SetEndTime(Double.parseDouble(endFrame.getText()));
-								
-	        					boolean start,end;
-	        					start=false;
-        						end=false;
-        						int totCues=0;
-        						vtkAnimationCue cue1 = new vtkAnimationCue();
-	        					// Create an Animation Cue.
-	        					for(int i =0;i<framePoints.size();i++)
-	        					{
-	        						vtkCamera cam = framePoints.get(i);
-	        						
-	        						if(cam.GetPosition()[0]!=0 && cam.GetPosition()[1]!=0 && cam.GetPosition()[2]!=0)
-	        						{
-	        							
-	        							if(!start)
-	        							{
-	        								cue1.SetStartTime(i);
-	        								start= true;
-	        								end=false;
-	        							}
-	        							else if(start&&!end)
-	        							{
-	        							cue1.SetEndTime(i);
-	        							//start = false;
-	        							end = false;
-	        							
-	        							
-	        							vtkPoints pos = new vtkPoints();
-	        							vtkPoints fp = new vtkPoints();
-	        							vtkPoints up = new vtkPoints();
-	        							//System.out.println(pointsToMoveCameraOnPosition.GetNumberOfPoints());
-	        							int ind;
-	        							if(totCues==0)
-	        								ind =0;
-	        							else
-	        								ind = inputPtIndex.get(totCues-1);
-	        							for(int j = totCues * ind;j<=inputPtIndex.get(totCues);j++)
-	        							{
-	        								pos.InsertNextPoint(pointsToMoveCameraOnPosition.GetPoint(j));
-	        								fp.InsertNextPoint(pointsToMoveCameraOnFocalPoint.GetPoint(j));
-	        								up.InsertNextPoint(pointsToMoveCameraOnViewUp.GetPoint(j));
-	        								//System.out.println(j);
-	        							}
-	        							cb = new CueAnimator();
+	                    		animateSceneWithLayers(null,false);
+	        			
 
-	    	        					cb.pointsPosition = pos;
-	    	        					cb.pointsFocalPoint = fp;
-	    	        					cb.pointsViewUp = up;
-	    	        					cb.actor = focusActor;
-	    	        					
-	    	        					cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-
-	    	        					cue1.AddObserver("StartAnimationCueEvent", cb, "StartCue");
-	    	        					cue1.AddObserver("EndAnimationCueEvent", cb, "EndCue");
-	    	        					cue1.AddObserver("AnimationCueTickEvent", cb, "TickCameraAniamtion");
-	    	        					System.out.println("s: "+cue1.GetStartTime());
-	    	        					System.out.println("e: "+cue1.GetEndTime());
-	        							scene.AddCue(cue1);
-	        							totCues++;
-	        							cue1 = new vtkAnimationCue();
-	        							cue1.SetStartTime(i);
-	        							
-	        							}
-	        							
-	        						}
-	        					}
-	        				
-	        				scene.Play();
-	        				scene.Stop();
-	        				Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cb.camold);
 
 	                    	}
 	        			}	
 	            	}
 	    });
+		
 		
 		/*stopScriptingPluginButton.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -529,7 +477,110 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		});*/
 			
 	}
-	
+
+	public void animateSceneWithLayers(Object list, Boolean included)
+	{
+		//create splines
+		createSplines("position");
+		createSplines("focalPoints");
+		createSplines("viewUp");
+		ArrayList<vtkActor> nw = new ArrayList<>();
+		nw.add(profile);
+		nw.add(glyph);
+		Info.getMainGUI().updateActors(nw);
+		
+		scene = new vtkAnimationScene();
+		scene.RemoveAllCues();
+		//sequence of frames evenly spaced in the specified Start Time and End Time for the animation
+		scene.SetModeToSequence();//SetModeToRealTime();//
+		
+		scene.SetLoop(0);//loop once 
+		//framerate is 1/tickrate
+		//starttime by default is 0. tickrate = (end time-start time)/(no. of frames)
+		tickrate = 1/(Double.parseDouble(endTime.getText())/Double.parseDouble(noOfFrames.getText()));
+		scene.SetFrameRate(tickrate);
+		System.out.println("tick:"+tickrate);
+		scene.SetStartTime(0);
+		scene.SetEndTime(Double.parseDouble(endTime.getText()));
+		
+		boolean start,end;
+		start=false;
+		end=false;
+		int totCues=0;
+		vtkAnimationCue cue1 = new vtkAnimationCue();
+		// Create an Animation Cue.
+		for(int i =0;i<framePoints.size();i++)
+		{
+			vtkCamera cam = framePoints.get(i);
+			
+			if(cam.GetPosition()[0]!=0 && cam.GetPosition()[1]!=0 && cam.GetPosition()[2]!=0)
+			{
+				
+				if(!start)
+				{
+					cue1.SetStartTime(i*(1/tickrate));
+					System.out.println("cue start time: "+ i*(1/tickrate));
+					start= true;
+					end=false;
+				}
+				else if(start&&!end)
+				{
+				cue1.SetEndTime(i*(1/tickrate));
+				//scene.SetEndTime(i);
+				System.out.println("cue end time: "+ i*(1/tickrate));
+				//start = false;
+				end = false;
+				
+				
+				/*vtkPoints pos = new vtkPoints();
+				vtkPoints fp = new vtkPoints();
+				vtkPoints up = new vtkPoints();
+				//System.out.println(pointsToMoveCameraOnPosition.GetNumberOfPoints());
+				int ind;
+				if(totCues==0)
+					ind =0;
+				else
+					ind = inputPtIndex.get(totCues-1);
+				for(int j = totCues * ind;j<=inputPtIndex.get(totCues);j++)
+				{
+					pos.InsertNextPoint(pointsToMoveCameraOnPosition.GetPoint(j));
+					fp.InsertNextPoint(pointsToMoveCameraOnFocalPoint.GetPoint(j));
+					up.InsertNextPoint(pointsToMoveCameraOnViewUp.GetPoint(j));
+					//System.out.println(j);
+				}*/
+				cb = new CueAnimator();
+				cb.pointsPosition = pointsToMoveCameraOnPosition;//pos;
+				cb.pointsFocalPoint = pointsToMoveCameraOnFocalPoint;//fp;
+				cb.pointsViewUp = pointsToMoveCameraOnViewUp;//up
+				cb.actor = focusActor;
+				cb.cue = cue1;
+				double t = cue1.GetEndTime()/scene.GetEndTime();
+				cb.ptSize = (int) ((1-t)*(1)+ t*(pointsToMoveCameraOnPosition.GetNumberOfPoints()-1));
+				System.out.println(cb.ptSize);
+				cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+				cb.included = included;
+				if(included)
+					cb.earthquakeList = (ArrayList<Earthquake>) list;
+				
+				cue1.AddObserver("StartAnimationCueEvent", cb, "StartCue");
+				cue1.AddObserver("EndAnimationCueEvent", cb, "EndCue");
+				cue1.AddObserver("AnimationCueTickEvent", cb, "TickCameraAniamtion");
+				System.out.println("s: "+cue1.GetStartTime());
+				System.out.println("e: "+cue1.GetEndTime());
+				scene.AddCue(cue1);
+				totCues++;
+				cue1 = new vtkAnimationCue();
+				cue1.SetStartTime((i+1)*(1/tickrate));
+				
+				}
+				
+			}
+		}
+		scene.Play();
+		scene.Stop();
+		System.out.println(scene.GetAnimationTime());
+		Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cb.camold);
+	}
 	public void createSplines(String interpolateValue)
 	{
 		int numberOfInputPoints = framePoints.size();//8;
@@ -685,12 +736,12 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object src = e.getSource();
-		if (src== endFrame) {
-			scene.SetEndTime(Double.parseDouble(endFrame.getText()));
+		/*if (src== endTime) {
+			scene.SetEndTime(Double.parseDouble(endTime.getText()));
 		}
-		if (src== frameRate) {
-			scene.SetFrameRate(Double.parseDouble(frameRate.getText()));
-		}
+		if (src== noOfFrames) {
+			scene.SetFrameRate(Double.parseDouble(noOfFrames.getText()));
+		}*/
 		
 		if(src == this.addScriptingPluginButton)
 		{
@@ -771,11 +822,12 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 					//the frame rate affects sequence mode
 					scene.SetModeToSequence();//SetModeToRealTime();//
 
-					scene.SetLoop(0);//loop once 
-					scene.SetFrameRate(Double.parseDouble(frameRate.getText()));
-					System.out.println(Double.parseDouble(frameRate.getText()));
+					scene.SetLoop(0);//loop once
+					tickrate = Double.parseDouble(endTime.getText())/Double.parseDouble(noOfFrames.getText());
+					scene.SetFrameRate(tickrate);
+					System.out.println("tick:"+tickrate);
 					scene.SetStartTime(0);
-					scene.SetEndTime(Double.parseDouble(endFrame.getText()));
+					scene.SetEndTime(Double.parseDouble(endTime.getText()));
 					CueAnimator cb1 = new CueAnimator();
 					boolean start,end;
 					start=false;
