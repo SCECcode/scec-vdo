@@ -22,7 +22,7 @@ public class ScriptingPlugin  extends ActionPlugin {
 		return this.gratPanel;
 	}
 
-	public ScriptingPluginGUI getGraticuleGUI() {
+	public ScriptingPluginGUI getScriptingPluginGUI() {
 		return gratPanel;
 	}
 

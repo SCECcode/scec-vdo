@@ -70,6 +70,7 @@ import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.SourceCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity.RelativeIntensity;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity.RelativeIntensityGUI;
 import org.scec.vtk.plugins.ScriptingPlugin.CueAnimator;
+import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.DataFileChooser;
@@ -2030,7 +2031,7 @@ MouseListener {
 				//ascending order as per the time
 				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
 				//ArrayList<vtkActor> earthquakeActors = this.netSourceDialog.getAllEarthquakesActors();
-					scene.RemoveAllCues();
+				/*	scene.RemoveAllCues();
 					//the frame rate affects sequence mode
 					scene.SetModeToSequence();//SetModeToRealTime();//
 
@@ -2044,8 +2045,9 @@ MouseListener {
 					cue1.SetStartTime(5);
 					cue1.SetEndTime(13);
 					scene.AddCue(cue1);
-					cb = new CueAnimator();
-					scene.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
+					cb = new CueAnimator();*/
+					Info.getMainGUI().GetScriptingPlugin().animateSceneWithLayers(earthquakeList,true);
+					/*scene.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
 					scene.AddObserver("EndAnimationCueEvent", cb, "EndCue");
 					scene.AddObserver("AnimationCueTickEvent", cb, "TickEarthquakeCatalogAniamtion");
 					
@@ -2053,7 +2055,7 @@ MouseListener {
 					cb.earthquakeList = earthquakeList;
 					scene.Play();
 					scene.Stop();
-					Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cb.camold);
+					Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cb.camold);*/
 					/*Date date = new Date(eq.getTime);
 					DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
 					String dateFormatted = formatter.format(date);*/
