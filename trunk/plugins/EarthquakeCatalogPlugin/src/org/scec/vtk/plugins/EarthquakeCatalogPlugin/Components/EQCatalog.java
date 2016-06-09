@@ -23,6 +23,9 @@ import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
 import org.scec.vtk.plugins.utils.DataImport;
 import org.scec.vtk.plugins.utils.components.ObjectInfoDialog;
 import org.scec.vtk.tools.Prefs;
+import org.scec.vtk.tools.Transform;
+
+
 public class EQCatalog extends CatalogAccessor {
     
     private Logger log = Logger.getLogger(EQCatalog.class);
@@ -134,6 +137,8 @@ public class EQCatalog extends CatalogAccessor {
 	private long thirdLimit;
 
 	Component parent;
+
+	private double[][] eventCoords;
 	
 	//private ArrayList<Earthquake> earthquakes; 
 	
@@ -300,16 +305,16 @@ public class EQCatalog extends CatalogAccessor {
     
     public void makePoints() {
     	// initialize display locations (if not already initialized)
-        //if (this.eventCoords == null) {
-           /* this.eventCoords = new Point3f[getNumEvents()];
+        if (this.eventCoords == null) {
+            this.eventCoords = new double[getNumEvents()][3];
             for (int i = 0; i<getNumEvents(); i++) {
-              this.eventCoords[i] = LatLongToPoint.plotPoint3f(
+              this.eventCoords[i] = Transform.transformLatLonHeight(
                     eq_latitude[i],
                     eq_longitude[i],
                     -eq_depth[i]);  
               // TODO convert depth to negative on import
-           // }
-        }*/
+            }
+        }
     }
     
     private void load() {
@@ -322,7 +327,7 @@ public class EQCatalog extends CatalogAccessor {
         // (re)initialize branch group
         this.catBranchGroup = new BranchGroup();
         this.catBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
-        
+        */
         makePoints();
         
         
@@ -339,8 +344,9 @@ public class EQCatalog extends CatalogAccessor {
 
         		addPointsToBranchGroup();
         	}
+        }
         	// COWS:
-        	else if (getGeometry() == GEOMETRY_COW){
+        	/*else if (getGeometry() == GEOMETRY_COW){
         	
         		// init cow transform groups if not already
         		int numevents = getNumEvents();
@@ -458,6 +464,7 @@ public class EQCatalog extends CatalogAccessor {
 
 	private void addPointsToBranchGroup()
 	{
+		
 		/*setupSizedEventPoint();
 		ArrayList<Earthquake> eqList = EarthquakeCatalogPluginGUI.getEarthquakes();
 		if (recentEQcoloring == 1) 

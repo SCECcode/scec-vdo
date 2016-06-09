@@ -234,7 +234,8 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	JTable table = new JTable(model);
 	int selectedRow=0,selectedCol=0;
 	private double tickrate;
-	@SuppressWarnings("deprecation")
+	Object list;
+	Boolean included=false;
 	public ScriptingPluginGUI(ScriptingPlugin plugin){
 
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -456,11 +457,10 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 
 	                    	else
 	                    	{
-
-	                    		animateSceneWithLayers(null,false);
-	        			
-
-
+	                    		if(included)
+	                    			animateSceneWithLayers(list,included);
+	                    		else
+	                    			animateSceneWithLayers(null,false);
 	                    	}
 	        			}	
 	            	}
@@ -477,7 +477,72 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		});*/
 			
 	}
+	
+	void addLayerToTimeLine()
+	{
+		int oldColumnCount = model.getColumnCount();
+		model.addRow(new Object[] {""});
+		  for(int i =0;i<Integer.parseInt(noOfFrames.getText());i++)
+	        {
+			  if(i>=oldColumnCount)
+	        	{
+				  model.addColumn(new String(Integer.toString(i+1)));
+				  table.setValueAt("1",model.getRowCount()-1,i);
+				  framePoints.add(new vtkCamera());
+	        	}
+			  else{
+	        	table.setValueAt("1",model.getRowCount()-1,i);
+	          }
+	        }
+	}
+	void updateFramesInTimeLine()
+	{
+		int oldColumnCount = model.getColumnCount();
+		
+		for(int i =0;i<model.getRowCount();i++)
+        {
+			int j =0;
+		  for(j =0;j<Integer.parseInt(noOfFrames.getText());j++)
+	        {
+			  if(j>=oldColumnCount)
+	        	{
+				  model.addColumn(new String(Integer.toString(j+1)));
+				  table.setValueAt("",i,j);
+				  framePoints.add(new vtkCamera());
+	        	}
+			  else
+	        	{
+				  table.setValueAt(model.getValueAt(i, j),i,j);
+	        	}
+	        }
+		  //if frames size has reduced
+		  if(j==Integer.parseInt(noOfFrames.getText()) && j<oldColumnCount)
+			  {
+			  	for(int k =j,remCt=0;k<(oldColumnCount);k++,remCt++)
+			     {
+			  		table.removeColumn(table.getColumnModel().getColumn(k-remCt));
+			  		framePoints.remove(k-remCt);
+			     }
+			  	model.setColumnCount(Integer.parseInt(noOfFrames.getText()));
+			  }
+		 }
+	
+	}
+	
+	public void addEarthquakeListForAniamtion(Object list, Boolean included)
+	{
+		this.list = list;
+		this.included=included;
+		ArrayList earthquakeList = (ArrayList) list;
+		if(Double.parseDouble(noOfFrames.getText())<earthquakeList.size())
+		{
+			noOfFrames.setText(Integer.toString(earthquakeList.size()));
+			addLayerToTimeLine();
+		}
+	}
 
+
+	
 	public void animateSceneWithLayers(Object list, Boolean included)
 	{
 		//create splines
@@ -503,7 +568,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		scene.SetStartTime(0);
 		scene.SetEndTime(Double.parseDouble(endTime.getText()));
 		
-		boolean start,end;
+		boolean start,end,onlyEQ=true;
 		start=false;
 		end=false;
 		int totCues=0;
@@ -513,9 +578,9 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		{
 			vtkCamera cam = framePoints.get(i);
 			
-			if(cam.GetPosition()[0]!=0 && cam.GetPosition()[1]!=0 && cam.GetPosition()[2]!=0)
+			if((cam.GetPosition()[0]!=0 && cam.GetPosition()[1]!=0 && cam.GetPosition()[2]!=0))
 			{
-				
+				onlyEQ=false;
 				if(!start)
 				{
 					cue1.SetStartTime(i*(1/tickrate));
@@ -576,6 +641,23 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 				
 			}
 		}
+		 if(included && onlyEQ)
+			{
+				cue1.SetStartTime(0);
+				cue1.SetEndTime(scene.GetEndTime());
+				cb = new CueAnimator();
+				cue1.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
+				cue1.AddObserver("EndAnimationCueEvent", cb, "EndCue");
+				cue1.AddObserver("AnimationCueTickEvent", cb, "TickEarthquakeCatalogAniamtion");
+				cb.cue =cue1;
+				cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+				if(included)
+					cb.earthquakeList = (ArrayList<Earthquake>) list;
+				
+				System.out.println("s: "+cue1.GetStartTime());
+				System.out.println("e: "+cue1.GetEndTime());
+				scene.AddCue(cue1);
+			}
 		scene.Play();
 		scene.Stop();
 		System.out.println(scene.GetAnimationTime());
@@ -738,10 +820,11 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		Object src = e.getSource();
 		/*if (src== endTime) {
 			scene.SetEndTime(Double.parseDouble(endTime.getText()));
-		}
-		if (src== noOfFrames) {
-			scene.SetFrameRate(Double.parseDouble(noOfFrames.getText()));
 		}*/
+		if (src== noOfFrames) {
+			//scene.SetFrameRate(Double.parseDouble(noOfFrames.getText()));
+			updateFramesInTimeLine();
+		}
 		
 		if(src == this.addScriptingPluginButton)
 		{
@@ -758,7 +841,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 			c2.SetPosition(c.GetPosition()[0], c.GetPosition()[1], c.GetPosition()[2]);
 			c2.SetFocalPoint(c.GetFocalPoint()[0], c.GetFocalPoint()[1], c.GetFocalPoint()[2]);
 			c2.SetViewUp(c.GetViewUp()[0], c.GetViewUp()[1], c.GetViewUp()[2]);
-			framePoints.add(selectedCol,c2);
+			framePoints.set(selectedCol,c2);
 			int s= framePoints.size();
 			System.out.println(framePoints.get(s-1).GetPosition()[0]);
 			System.out.println(framePoints.get(s-1).GetPosition()[1]);
