@@ -5,12 +5,14 @@ import java.awt.Container;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.media.MediaLocator;
+import javax.swing.SwingUtilities;
 
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
@@ -28,177 +30,234 @@ import vtk.vtkUnsignedCharArray;
 
 public class CueAnimator  {
 
-				
-		private long endTime;
-		private long startTime;
-		public boolean included;
-		void StartCue()
-		{
-			System.out.println("*** IN StartCue " + cue.GetStartTime() );
-			this.TimerCount = 0;
-			//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-			startTime = System.nanoTime();
-			camnew = new vtkCamera();
-			if(included)
-				StartCueEarthquakeCatalogAniamtion();
-		}
 
-		void TickCameraAniamtion()
-		{
-			//speed interpolation
-			double t = cue.GetAnimationTime()/cue.GetEndTime();
-			this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
-			if(this.TimerCount<ptSize)
-			{
+	private long endTime;
+	private long startTime;
+	public boolean included;
+	void StartCue()
+	{
+		System.out.println("*** IN StartCue " + cue.GetStartTime() );
+		this.TimerCount = 0;
+		//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+		startTime = System.nanoTime();
+		camnew = new vtkCamera();
+		if(included)
+			StartCueEarthquakeCatalogAniamtion();
+	}
 
-				camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
-				camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
-				camnew.SetViewUp(pointsViewUp.GetPoint(TimerCount)[0],pointsViewUp.GetPoint(TimerCount)[1],pointsViewUp.GetPoint(TimerCount)[2]);
-				camnew.OrthogonalizeViewUp();
-				Info.getMainGUI().updateRenderWindow();
-				Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(camnew);
-				Info.getMainGUI().getRenderWindow().GetRenderer().ResetCameraClippingRange();
-			}
-			if(included)
-				TickEarthquakeCatalogAniamtion();
-			//tickSec = TimeUnit.MILLISECONDS.convert((System.nanoTime()-currentTime),TimeUnit.NANOSECONDS);
-			//System.out.println(this.TimerCount);//cue.GetAnimationTime());
-		}
-		
-		void TickCameraAniamtionRender()
+	void TickCameraAniamtion()
+	{
+		//speed interpolation
+		double t = cue.GetAnimationTime()/cue.GetEndTime();
+		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
+		if(this.TimerCount<ptSize)
 		{
-			
-			camnew = new vtkCamera();
-			++this.TimerCount;
-			
-			if(this.TimerCount<pointsPosition.GetNumberOfPoints())
-			{
-				camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
-				camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
-				camnew.SetViewUp(pointsViewUp.GetPoint(TimerCount)[0],pointsViewUp.GetPoint(TimerCount)[1],pointsViewUp.GetPoint(TimerCount)[2]);
-				camnew.OrthogonalizeViewUp();
-				Info.getMainGUI().updateRenderWindow();
-				Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(camnew);
-				Info.getMainGUI().getRenderWindow().GetRenderer().ResetCameraClippingRange();
-				//capture screenshot
-				int[] renderSize = Info.getMainGUI().getRenderWindow().GetRenderWindow().GetSize();
-				int width = renderSize[0];
-				int height = renderSize[1];
-				vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();
-				Info.getMainGUI().getRenderWindow().GetRenderWindow().GetPixelData(0, 0, width, height,
-						1, vtkPixelData);
-				imagePixelData.add(vtkPixelData);
-			}
-		
-		}
-		
-		void StartCueEarthquakeCatalogAniamtion()
-		{
-			System.out.println("*** IN StartCue " );
-			this.TimerCount = 0;
-			
-			//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-			for(int i =0;i<earthquakeList.size();i++)
-			{
-				eq = earthquakeList.get(i);
-				eq.getEarthquakeCatalogActor().VisibilityOff();
-			}
-		}
-		
-		void TickEarthquakeCatalogAniamtion()
-		{
-			double t = cue.GetAnimationTime()/cue.GetEndTime();
-			this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
-			System.out.println(this.TimerCount);
-			if(this.TimerCount<earthquakeList.size())
-			{
-				eq = earthquakeList.get(this.TimerCount);
-				eq.getEarthquakeCatalogActor().VisibilityOn();
-				Info.getMainGUI().updateRenderWindow();
-			}
-			
-		}
 
-		void EndCue()
-		{
-			endTime = System.nanoTime() - startTime;
-			long seconds = TimeUnit.SECONDS.convert((long) endTime, TimeUnit.NANOSECONDS);
-			System.out.println("*** IN EndCue "+cue.GetEndTime());
-		}
+			camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
+			camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
+			camnew.SetViewUp(pointsViewUp.GetPoint(TimerCount)[0],pointsViewUp.GetPoint(TimerCount)[1],pointsViewUp.GetPoint(TimerCount)[2]);
+			camnew.OrthogonalizeViewUp();
 
-		void EndCueCameraAniamtionRender()
-		{
-			System.out.println("*** IN EndCue " );
-			//Rendering movie
-			new Thread(new Runnable() 
-			{ 
-				public void run() 
-				{ 
 
-					for(int i =0;i<imagePixelData.size();i++){
-						String fileName;
-						fileName = Prefs.getLibLoc() + "/tmp/Capture" + i + ".jpg";
-						File file = new File(fileName);
-
-						vtkPixelData = imagePixelData.get(i);
-						BufferedImage bufImage = new BufferedImage(width, height,
-								BufferedImage.TYPE_INT_RGB);
-						int[] rgbArray = new int[(width) * (height)];
-						int index, r, g, b;
-						double[] rgbFloat;
-						// bad performance because one has to get the values out of the vtk find a workaround jpeg writer
-						// data structure tuple by tuple (instead of one "copyToArray") ...
-						for (int y = 0; y < height; y++) {
-							for (int x = 0; x < width; x++) {
-								index = ((y * (width + 1)) + x);
-								rgbFloat = vtkPixelData.GetTuple3(index);
-								r = (int) rgbFloat[0];
-								g = (int) rgbFloat[1];
-								b = (int) rgbFloat[2];
-								// vtk window origin: bottom left, Java image origin: top left
-								rgbArray[((height -1 - y) * (width)) + x] =
-										((r << 16) + (g << 8) + b);
-							}
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {	
+						Info.getMainGUI().updateRenderWindow();//.GetRenderWindow().Render();
+						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
+						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
 						}
-						bufImage.setRGB(0, 0, width, height, rgbArray, 0, width);
-						try {
-							ImageIO.write(bufImage, "jpg", file);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						imagesToConvert.add(file.getAbsolutePath());
+				});
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if(included)
+			TickEarthquakeCatalogAniamtion();
+	}
+
+	void TickCameraAniamtionRender()
+	{
+
+		//speed interpolation
+		double t = cue.GetAnimationTime()/cue.GetEndTime();
+		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
+		if(this.TimerCount<ptSize)
+		{
+
+			camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
+			camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
+			camnew.SetViewUp(pointsViewUp.GetPoint(TimerCount)[0],pointsViewUp.GetPoint(TimerCount)[1],pointsViewUp.GetPoint(TimerCount)[2]);
+			camnew.OrthogonalizeViewUp();
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {	
+						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
+						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
+						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
 					}
-					jpegToImages.doIt(Info.getMainGUI().getRenderWindow().getWidth(),Info.getMainGUI().getRenderWindow().getHeight(),FPS,imagesToConvert ,m);
+				});
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if(included)
+			TickEarthquakeCatalogAniamtion();
+		
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {
+					int[] renderSize = Info.getMainGUI().getRenderWindow().GetRenderWindow().GetSize();
+					int width =  renderSize[0];
+					int height = renderSize[1];
+					vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();
+					Info.getMainGUI().getRenderWindow().GetRenderWindow().GetPixelData(0, 0, width, height,
+							1, vtkPixelData);
+					ScriptingPluginGUI.imagePixelData.add(vtkPixelData);
 				}
-			}).start();
-			System.out.println("*** Finished Generating jpgs " );
+			});
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	void StartCueEarthquakeCatalogAniamtion()
+	{
+		System.out.println("*** IN StartCue " );
+		this.TimerCount = 0;
+
+		//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+		for(int i =0;i<earthquakeList.size();i++)
+		{
+			eq = earthquakeList.get(i);
+			eq.getEarthquakeCatalogActor().VisibilityOff();
+		}
+	}
+
+	void TickEarthquakeCatalogAniamtion()
+	{
+		double t = cue.GetAnimationTime()/cue.GetEndTime();
+		this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+		if(this.TimerCount<earthquakeList.size())
+		{
+			eq = earthquakeList.get(this.TimerCount);
+			eq.getEarthquakeCatalogActor().VisibilityOn();
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {	
+						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
+					}
+				});
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
+	}
+
+	void EndCue()
+	{
+		endTime = System.nanoTime() - startTime;
+		long seconds = TimeUnit.SECONDS.convert((long) endTime, TimeUnit.NANOSECONDS);
+		System.out.println("*** IN EndCue "+cue.GetEndTime());
+	}
+
+	void EndCueCameraAniamtionRender()
+	{
+		//width = 1920;//Info.getMainGUI().getRenderWindow().getWidth();
+		//height = 1020;//Info.getMainGUI().getRenderWindow().getHeight();
+		System.out.println(width);
+		System.out.println(height);
 		
-		public vtkRenderWindowInteractor iren;
-		public vtkRenderer ren;
-		public vtkCamera cam;
-		public vtkCamera camnew;
-		public vtkCamera camold;
-		vtkPoints pointsPosition = new vtkPoints();
-		vtkPoints pointsFocalPoint = new vtkPoints();
-		vtkPoints pointsViewUp = new vtkPoints();
-		public vtkActor actor;
-		int TimerCount = 0;
-		vtkAnimationCue info = new vtkAnimationCue();
-		vtkCameraInterpolator incam = new vtkCameraInterpolator();
-		ArrayList<vtkUnsignedCharArray> imagePixelData = new ArrayList<vtkUnsignedCharArray>(); 
-		int[] renderSize = Info.getMainGUI().getRenderWindow().GetRenderWindow().GetSize();
-		int width = renderSize[0];
-		int height = renderSize[1];
-		vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();
-		int FPS = 15;
-		private JpegImagesToMovie jpegToImages = new JpegImagesToMovie();
-		private Vector imagesToConvert = new Vector<>();
-		public MediaLocator m;
-		public ArrayList<Earthquake> earthquakeList;
-		private Earthquake eq;
-		protected vtkAnimationCue cue;
-		public int ptSize=0;
+		//Info.getMainGUI().getRenderWindow().GetRenderWindow().SetSize(renderSizeold[0],renderSizeold[1]);
+		
+		System.out.println("*** IN EndCue writing images and processing" );
+		//Rendering movie
+		new Thread(new Runnable() 
+		{ 
+			public void run() 
+			{ 
+
+				for(int i =0;i<ScriptingPluginGUI.imagePixelData.size();i++){
+					String fileName;
+					fileName = Prefs.getLibLoc() + "/tmp/Capture" + i + ".jpg";
+					File file = new File(fileName);
+
+					vtkPixelData = ScriptingPluginGUI.imagePixelData.get(i);
+					BufferedImage bufImage = new BufferedImage(width, height,
+							BufferedImage.TYPE_INT_RGB);
+					int[] rgbArray = new int[(width) * (height)];
+					int index, r, g, b;
+					double[] rgbFloat;
+					// bad performance because one has to get the values out of the vtk find a workaround jpeg writer
+					// data structure tuple by tuple (instead of one "copyToArray") ...
+					for (int y = 0; y < height; y++) {
+						for (int x = 0; x < width; x++) {
+							index = ((y * (width + 1)) + x);
+							rgbFloat = vtkPixelData.GetTuple3(index);
+							r = (int) rgbFloat[0];
+							g = (int) rgbFloat[1];
+							b = (int) rgbFloat[2];
+							// vtk window origin: bottom left, Java image origin: top left
+							rgbArray[((height -1 - y) * (width)) + x] =
+									((r << 16) + (g << 8) + b);
+						}
+					}
+					bufImage.setRGB(0, 0, width, height, rgbArray, 0, width);
+					try {
+						ImageIO.write(bufImage, "jpg", file);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					imagesToConvert.add(file.getAbsolutePath());
+				}
+				jpegToImages.doIt(width,height,FPS,imagesToConvert ,m);
+				System.out.println("*** Finished Generating jpgs " );
+			}
+		}).start();
+		
+	}
+
+	int[] renderSizeold ;
+	public vtkRenderWindowInteractor iren;
+	public vtkRenderer ren;
+	public vtkCamera cam;
+	public vtkCamera camnew;
+	public vtkCamera camold;
+	vtkPoints pointsPosition = new vtkPoints();
+	vtkPoints pointsFocalPoint = new vtkPoints();
+	vtkPoints pointsViewUp = new vtkPoints();
+	public vtkActor actor;
+	int TimerCount = 0;
+	vtkAnimationCue info = new vtkAnimationCue();
+	vtkCameraInterpolator incam = new vtkCameraInterpolator();
+	//ArrayList<vtkUnsignedCharArray> imagePixelData = new ArrayList<vtkUnsignedCharArray>(); 
+	int[] renderSize = Info.getMainGUI().getRenderWindow().GetRenderWindow().GetSize();
+	int width = renderSize[0];
+	int height = renderSize[1];
+	vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();
+	int FPS = 30;
+	private JpegImagesToMovie jpegToImages = new JpegImagesToMovie();
+	private Vector imagesToConvert = new Vector<>();
+	public MediaLocator m;
+	public ArrayList<Earthquake> earthquakeList;
+	private Earthquake eq;
+	protected vtkAnimationCue cue;
+	public int ptSize=0;
 }
