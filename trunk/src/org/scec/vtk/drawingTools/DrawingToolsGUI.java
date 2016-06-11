@@ -185,7 +185,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
         	actor.RotateZ(Double.parseDouble((String) this.displayAttributes.rotateZField.getText()));
       
 	    	DrawingTool.getMasterFaultBranchGroup().add(actor);
-	        Info.getMainGUI().updateActors(DrawingTool.getMasterFaultBranchGroup());
+	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 			return drawingTool;
 	    	 
 	    }
@@ -250,7 +250,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        			Double.parseDouble((String) this.displayAttributes.lonField.getText())};
 	        	actor.SetPosition(Transform.customTransform(pt));
 	        }
-	        Info.getMainGUI().updateActors(DrawingTool.getMasterFaultBranchGroup());
+	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	    }
 	    if (src == this.displayAttributes.rotateXField || src == this.displayAttributes.rotateYField || src == this.displayAttributes.rotateZField ) {
 	    	int[] selectedRows =  this.drawingToolTable.getSelectedRows();
@@ -263,7 +263,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        	actor.RotateY(Double.parseDouble((String) this.displayAttributes.rotateYField.getText()));
 	        	actor.RotateZ(Double.parseDouble((String) this.displayAttributes.rotateZField.getText()));
 	        }
-	        Info.getMainGUI().updateActors(DrawingTool.getMasterFaultBranchGroup());
+	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	    }
 	    if (src == this.displayAttributes.fontSizeField ) {
 	    	int[] selectedRows =  this.drawingToolTable.getSelectedRows();
@@ -273,7 +273,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        	vtkTextActor3D actor = actors.get(selectedRows[i]);
 	        	actor.GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
 	        }
-	        Info.getMainGUI().updateActors(DrawingTool.getMasterFaultBranchGroup());
+	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	    }
 	    if (src == this.colorDrawingToolsButton) {
 	        if (this.colorChooser == null) {
@@ -290,7 +290,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	            	//only between 0 and 1;
 	            	actor.GetTextProperty().SetColor(color);
 	    	    }
-	            Info.getMainGUI().updateActors(DrawingTool.getMasterFaultBranchGroup());
+	            Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	        }
 	    }
 	    
@@ -311,7 +311,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        	{
 	    	    	vtkTextActor3D actor = actors.get(objects[i]);
 	    	    	actor.SetInput(displayTextInput);
-	        		Info.getMainGUI().updateActors(DrawingTool.getMasterFaultBranchGroup());
+	        		Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	        	}
 	        }
 		}

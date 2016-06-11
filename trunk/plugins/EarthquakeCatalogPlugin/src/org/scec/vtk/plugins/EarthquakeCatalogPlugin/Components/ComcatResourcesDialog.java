@@ -791,7 +791,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			}
 			
 			
-			Info.getMainGUI().updateActors(masterEarthquakeCatalogBranchGroup);
+			Info.getMainGUI().addActors(masterEarthquakeCatalogBranchGroup);
 			Info.getMainGUI().updateRenderWindow();
 		}
 

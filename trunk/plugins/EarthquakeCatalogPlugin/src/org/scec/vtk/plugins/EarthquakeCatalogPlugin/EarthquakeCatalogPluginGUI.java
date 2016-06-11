@@ -2096,7 +2096,7 @@ MouseListener {
 				  actor.SetMapper(mapper);
 				  actor.GetProperty().SetPointSize(1);
 				  earthquakePointActorList.add(actor);
-				Info.getMainGUI().updateActors(earthquakePointActorList);
+				Info.getMainGUI().addActors(earthquakePointActorList);
 				//make points circular instead of square
 				Info.getMainGUI().getRenderWindow().GetRenderWindow().PointSmoothingOn();
 			}
