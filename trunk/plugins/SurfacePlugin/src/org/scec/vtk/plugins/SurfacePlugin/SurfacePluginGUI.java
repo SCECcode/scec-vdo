@@ -205,11 +205,11 @@ public class SurfacePluginGUI {
 		vtkActor actor = new vtkActor();
 		actor.SetMapper(mapper);
 		actor.SetTexture(texture);
-		//actor.GetProperty().SetOpacity(0.5);
+		actor.GetProperty().SetOpacity(0.5);
 		// actor.GeneralTextureTransform();
 		//actor.GetProperty().SetRepresentationToWireframe();
 		surfaceActors.add(actor);
-		Info.getMainGUI().updateActors(surfaceActors);
+		Info.getMainGUI().addActors(surfaceActors);
 		Info.getMainGUI().updateRenderWindow(actor);
 	}
 
