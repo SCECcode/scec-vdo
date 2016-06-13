@@ -1,6 +1,7 @@
 package org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import vtk.vtkActor;
 
@@ -20,7 +21,7 @@ public class Earthquake {
 	private vtkActor earthquakeActor;
 	
 	public Earthquake(double depth,double mag,double lat,double lon,String startTime,
-			String endTime,int limit,vtkActor earthquakeActor)
+			String endTime,int limit)
 	{
 		 /* this.latMinField = minLat;
 		  this.latMaxField = maxLat;
@@ -37,15 +38,43 @@ public class Earthquake {
 		  this.dateStartField = startTime;
 		  this.dateEndField = endTime;
 		  this.maxEventsField = limit;
-		  this.earthquakeActor = earthquakeActor;
 	}
 	
+	public Earthquake(double eq_depth, double eq_magnitude, double eq_latitude, double eq_longitude, Date eq_time) {
+		this.depMinField = eq_depth;
+		  this.magMinField = eq_magnitude;
+		this.latMinField = eq_latitude;
+		this.lonMinField = eq_longitude;
+		  this.dateStartField = eq_time.toString();
+		  this.earthquakeActor = earthquakeActor;
+	}
+
 	public vtkActor getEarthquakeCatalogActor()
 	{
 		return this.earthquakeActor;
 	}
 
 	public double getMag() {
+		// TODO Auto-generated method stub
+		return magMinField;
+	}
+
+	public double getEq_latitude(int i) {
+		// TODO Auto-generated method stub
+		return latMinField;
+	}
+
+	public double getEq_longitude(int i) {
+		// TODO Auto-generated method stub
+		return lonMinField;
+	}
+
+	public double getEq_depth(int i) {
+		// TODO Auto-generated method stub
+		return depMinField;
+	}
+
+	public double getEq_magnitude(int i) {
 		// TODO Auto-generated method stub
 		return magMinField;
 	}
