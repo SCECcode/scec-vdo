@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: object_template.xml,v 1.2 2005/05/04 19:44:40 pmpowers Exp $-->
+<scec_video_object>
+  <object_info>
+    <class>org.scec.geo3d.plugins.EQCatalogPlugin.components.EQCatalog</class>
+    <source_file>\EQCatalogStore\source\90s.cat</source_file>
+    <attribute_file>\EQCatalogStore\display\filteredCat_482015.cat</attribute_file>
+    <data_file>\EQCatalogStore\display\data\filteredCat_482015.dat</data_file>
+    <display_name>Landers</display_name>
+    <source_info>
+      <citation />
+      <reference />
+    </source_info>
+    <notes />
+  </object_info>
+  <object_attributes>
+    <data num_events="2290" scope="16">
+      <latitude min="33.81017" max="35.29033" />
+      <longitude min="-117.96283" max="-116.00783" />
+      <depth min="0.54" max="22.48" />
+      <magnitude min="2.5" max="7.31" />
+      <date min="January 04, 1992  (14:25:08)" max="October 01, 1992  (20:47:36)" />
+    </data>
+    <display>
+      <geometry value="1" />
+      <scaling value="1" />
+      <focal_mech value="0" />
+      <colors apply_gradient="0">
+        <color_1 r="0.4" g="0.0" b="0.0" />
+        <color_2 r="1.0" g="1.0" b="0.0" />
+      </colors>
+      <recentEQcoloring value="0" />
+    </display>
+  </object_attributes>
+</scec_video_object>
+

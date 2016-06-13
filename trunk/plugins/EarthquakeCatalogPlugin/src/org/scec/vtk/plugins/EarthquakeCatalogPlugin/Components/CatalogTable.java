@@ -70,7 +70,7 @@ public class CatalogTable extends JTable {
             //.dat files to be copied
             
             
-              /*Copyfiles.copy(Info.getMainGUI().getCWD()+File.separator+"conf"+File.separator +"ScecVideoDefaults"+File.separator + "EQCatalogStore"+File.separator +"display"+File.separator +"data"+ File.separator +"filteredCat_000000.dat", destinationData);
+              Copyfiles.copy(Info.getMainGUI().getCWD()+File.separator+"conf"+File.separator +"ScecVideoDefaults"+File.separator + "EQCatalogStore"+File.separator +"display"+File.separator +"data"+ File.separator +"filteredCat_000000.dat", destinationData);
               Copyfiles.copy(Info.getMainGUI().getCWD()+File.separator+"conf"+File.separator +"ScecVideoDefaults"+File.separator + "EQCatalogStore"+File.separator +"display"+File.separator +"data"+ File.separator +"filteredCat_314784.dat", destinationData);
               Copyfiles.copy(Info.getMainGUI().getCWD()+File.separator+"conf"+File.separator +"ScecVideoDefaults"+File.separator + "EQCatalogStore"+File.separator +"display"+File.separator +"data"+ File.separator +"filteredCat_321964.dat", destinationData);
               Copyfiles.copy(Info.getMainGUI().getCWD()+File.separator+"conf"+File.separator +"ScecVideoDefaults"+File.separator + "EQCatalogStore"+File.separator +"display"+File.separator +"data"+ File.separator +"filteredCat_343741.dat", destinationData);
@@ -88,7 +88,7 @@ public class CatalogTable extends JTable {
               Copyfiles.copy(Info.getMainGUI().getCWD()+File.separator+"conf"+File.separator +"ScecVideoDefaults"+File.separator + "EQCatalogStore"+File.separator +"display"+ File.separator +"filteredCat_482015.cat", destinationDisplay);
               Copyfiles.copy(Info.getMainGUI().getCWD()+File.separator+"conf"+File.separator +"ScecVideoDefaults"+File.separator + "EQCatalogStore"+File.separator +"display"+ File.separator +"filteredCat_501171.cat", destinationDisplay);
               Copyfiles.copy(Info.getMainGUI().getCWD()+File.separator+"conf"+File.separator +"ScecVideoDefaults"+File.separator + "EQCatalogStore"+File.separator +"display"+ File.separator +"filteredCat_266570.cat", destinationDisplay);
-              */
+              
         // read source directory filtering for catalogs
         File file = new File(
                 Prefs.getLibLoc() + 

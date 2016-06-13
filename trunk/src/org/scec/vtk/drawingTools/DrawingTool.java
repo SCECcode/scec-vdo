@@ -9,13 +9,14 @@ import org.scec.vtk.plugins.utils.DataAccessor;
 import org.scec.vtk.tools.Transform;
 
 import vtk.vtkActor;
+import vtk.vtkObject;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkTextActor3D;
 import vtk.vtkVectorText;
 
 public class DrawingTool extends AbstractDataAccessor{
 
-	private static ArrayList<vtkTextActor3D> masterDrawingToolBranchGroup = new ArrayList<vtkTextActor3D>();
+	private static ArrayList<vtkObject> masterDrawingToolBranchGroup = new ArrayList<vtkObject>();
 	double latitude, longitude,  altitude;
 	String textString;
 	DisplayAttributes displayAttributes;
@@ -170,11 +171,11 @@ public class DrawingTool extends AbstractDataAccessor{
 		// TODO Auto-generated method stub
 		
 	}*/
-	 public void setMasterFaultBranchGroup(ArrayList<vtkTextActor3D> masterFaultBranchGroup) 
+	 public void setMasterFaultBranchGroup(ArrayList<vtkObject> masterFaultBranchGroup) 
 	    {
 	    	this.masterDrawingToolBranchGroup = masterFaultBranchGroup;
 	    }
-	    public static ArrayList<vtkTextActor3D> getMasterFaultBranchGroup() 
+	    public static ArrayList<vtkObject> getMasterFaultBranchGroup() 
 	    {
 	    	return masterDrawingToolBranchGroup;
 	    }
