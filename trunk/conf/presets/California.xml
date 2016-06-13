@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state-vector>
+  <view-range>
+    <lower-latitude>32</lower-latitude>
+    <upper-latitude>43</upper-latitude>
+    <left-longitude>-125</left-longitude>
+    <right-longitude>-114</right-longitude>
+  </view-range>
+  <transforms>
+    <transform>
+      <dimension-0>0.8746197071393957</dimension-0>
+      <dimension-1>0.291765712832885</dimension-1>
+      <dimension-2>-0.3871861783412676</dimension-2>
+      <dimension-3>-3871.8617834126762</dimension-3>
+      <dimension-4>-2.7755575615628907E-17</dimension-4>
+      <dimension-5>0.7986355100472927</dimension-5>
+      <dimension-6>0.6018150231520482</dimension-6>
+      <dimension-7>6018.150231520482</dimension-7>
+      <dimension-8>0.48480962024633695</dimension-8>
+      <dimension-9>-0.5263592793013331</dimension-9>
+      <dimension-10>0.6985023559086853</dimension-10>
+      <dimension-11>6985.023559086852</dimension-11>
+      <dimension-12>0.0</dimension-12>
+      <dimension-13>0.0</dimension-13>
+      <dimension-14>0.0</dimension-14>
+      <dimension-15>1.0</dimension-15>
+    </transform>
+    <transform>
+      <dimension-0>1.0</dimension-0>
+      <dimension-1>0.0</dimension-1>
+      <dimension-2>0.0</dimension-2>
+      <dimension-3>0.0</dimension-3>
+      <dimension-4>0.0</dimension-4>
+      <dimension-5>1.0</dimension-5>
+      <dimension-6>0.0</dimension-6>
+      <dimension-7>0.0</dimension-7>
+      <dimension-8>0.0</dimension-8>
+      <dimension-9>0.0</dimension-9>
+      <dimension-10>1.0</dimension-10>
+      <dimension-11>0.0</dimension-11>
+      <dimension-12>0.0</dimension-12>
+      <dimension-13>0.0</dimension-13>
+      <dimension-14>0.0</dimension-14>
+      <dimension-15>1.0</dimension-15>
+    </transform>
+  </transforms>
+  <background>
+    <color x="0.0" y="0.0" z="0.0" />
+  </background>
+  <grid>
+    <color x="1.0" y="1.0" z="1.0" />
+  </grid>
+  <plugins>
+    <plugin>
+      <id>org.scec.vdo.plugins.GraticulePlugin</id>
+      <state active="true">
+        <graticulePlugin>
+          <Graticule on="true" upperLat="43" lowerLat="32" upperLon="-114" lowerLon="-125" gridWidth="1.0" />
+        </graticulePlugin>
+      </state>
+    </plugin>
+    <plugin>
+      <id>org.scec.vdo.plugins.PoliticalBoundariesPlugin</id>
+      <state active="true">
+        <politicalPlugin>
+          <boundary_group loaded="true" displayed="false" groupSize="52" row="6" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary on="false" color="-1">Alabama</boundary>
+          <boundary on="false" color="-1">Alaska</boundary>
+          <boundary on="false" color="-1">Arizona</boundary>
+          <boundary on="false" color="-1">Arkansas</boundary>
+          <boundary on="true" color="-1">California</boundary>
+          <boundary on="false" color="-1">Colorado</boundary>
+          <boundary on="false" color="-1">Connecticut</boundary>
+          <boundary on="false" color="-1">Delaware</boundary>
+          <boundary on="false" color="-1">District_of_Columbia</boundary>
+          <boundary on="false" color="-1">Florida</boundary>
+          <boundary on="false" color="-1">Georgia</boundary>
+          <boundary on="false" color="-1">Hawaii</boundary>
+          <boundary on="false" color="-1">Idaho</boundary>
+          <boundary on="false" color="-1">Illinois</boundary>
+          <boundary on="false" color="-1">Indiana</boundary>
+          <boundary on="false" color="-1">Iowa</boundary>
+          <boundary on="false" color="-1">Kansas</boundary>
+          <boundary on="false" color="-1">Kentucky</boundary>
+          <boundary on="false" color="-1">Louisiana</boundary>
+          <boundary on="false" color="-1">Maine</boundary>
+          <boundary on="false" color="-1">Maryland</boundary>
+          <boundary on="false" color="-1">Massachusetts</boundary>
+          <boundary on="false" color="-1">Michigan</boundary>
+          <boundary on="false" color="-1">Minnesota</boundary>
+          <boundary on="false" color="-1">Mississippi</boundary>
+          <boundary on="false" color="-1">Missouri</boundary>
+          <boundary on="false" color="-1">Montana</boundary>
+          <boundary on="false" color="-1">Nebraska</boundary>
+          <boundary on="false" color="-1">Nevada</boundary>
+          <boundary on="false" color="-1">New_Hampshire</boundary>
+          <boundary on="false" color="-1">New_Jersey</boundary>
+          <boundary on="false" color="-1">New_Mexico</boundary>
+          <boundary on="false" color="-1">New_York</boundary>
+          <boundary on="false" color="-1">North_Carolina</boundary>
+          <boundary on="false" color="-1">North_Dakota</boundary>
+          <boundary on="false" color="-1">Ohio</boundary>
+          <boundary on="false" color="-1">Oklahoma</boundary>
+          <boundary on="false" color="-1">Oregon</boundary>
+          <boundary on="false" color="-1">Pennsylvania</boundary>
+          <boundary on="false" color="-1">Puerto_Rico</boundary>
+          <boundary on="false" color="-1">Rhode_Island</boundary>
+          <boundary on="false" color="-1">South_Carolina</boundary>
+          <boundary on="false" color="-1">South_Dakota</boundary>
+          <boundary on="false" color="-1">Tennessee</boundary>
+          <boundary on="false" color="-1">Texas</boundary>
+          <boundary on="false" color="-1">Utah</boundary>
+          <boundary on="false" color="-1">Vermont</boundary>
+          <boundary on="false" color="-1">Virginia</boundary>
+          <boundary on="false" color="-1">Washington</boundary>
+          <boundary on="false" color="-1">West_Virginia</boundary>
+          <boundary on="false" color="-1">Wisconsin</boundary>
+          <boundary on="false" color="-1">Wyoming</boundary>
+
+        </politicalPlugin>
+      </state>
+    </plugin>
+  </plugins>
+</state-vector>
+

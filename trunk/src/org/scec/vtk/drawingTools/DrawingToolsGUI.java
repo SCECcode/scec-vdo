@@ -31,7 +31,27 @@ import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 
+import vtk.vtkActor;
+import vtk.vtkActor2D;
+import vtk.vtkProp;
+import vtk.vtkProp3D;
+import vtk.vtkAppendPolyData;
+import vtk.vtkGlyph2D;
+import vtk.vtkGlyph3D;
+import vtk.vtkLabelPlacementMapper;
+import vtk.vtkObject;
+import vtk.vtkPointSetToLabelHierarchy;
+import vtk.vtkPoints;
+import vtk.vtkPolyData;
+import vtk.vtkPolyDataMapper;
+import vtk.vtkProp;
+import vtk.vtkRegularPolygonSource;
+import vtk.vtkSphereSource;
+import vtk.vtkStringArray;
 import vtk.vtkTextActor3D;
+import vtk.vtkXMLHyperOctreeReader;
+import vtk.vtkXMLHyperOctreeWriter;
+import vtk.vtkActor;
 
 public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelectionListener, TableModelListener{
 
@@ -157,6 +177,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	}
 	
 	   public DrawingTool addDrawingTool(DrawingTool drawingTool){
+		  
 		   String text = "Text";
 		   double[] pt= {Transform.calcRadius(37),37,-120};
 		   ArrayList<DataAccessor> a = this.drawingToolTable.getLibraryModel().getAllObjects();
@@ -173,8 +194,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			   pt[1]= drawingTool.getLatitude();
 			   pt[2]= drawingTool.getLongitude();
 		   }
-	    	 //this text is not facing the camera
-		    vtkTextActor3D actor= new vtkTextActor3D();
+	    	/* //this text is not facing the camera
+		    vtkActor actor= new vtkActor();
+		   
 		    actor.SetInput(text);
 		    actor.GetTextProperty().SetFontSize(20);
 	    	actor.SetPosition( Transform.customTransform(pt));
@@ -183,7 +205,92 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
         	actor.RotateX(Double.parseDouble((String) this.displayAttributes.rotateXField.getText()));
         	actor.RotateY(Double.parseDouble((String) this.displayAttributes.rotateYField.getText()));
         	actor.RotateZ(Double.parseDouble((String) this.displayAttributes.rotateZField.getText()));
-      
+*/
+
+//
+
+        	
+        
+        	//textPolyData.AddInputConnection(actor.g);
+
+//        	vtkPolyDataMapper pinMapper = new vtkPolyDataMapper();
+//        	pinMapper.SetInputConnection(pinSource.GetOutputPort());
+//        	pinMapper.Update();
+//
+//        	vtkActor pinActor = new vtkActor();
+//        	pinActor.SetMapper(pinMapper);
+		   //text as label facing camera
+		   vtkStringArray labels =new vtkStringArray();
+			labels.SetName("labels");
+			labels.SetNumberOfValues(1);
+			labels.SetValue(0, text);
+		   	vtkPoints labelPoints = new vtkPoints();
+		   	labelPoints.InsertNextPoint(Transform.customTransform(pt));
+		   	
+			
+        	//create a pin near the text to mark the location 
+        	vtkRegularPolygonSource pinSource = new vtkRegularPolygonSource();
+
+        	pinSource.SetNumberOfSides(25);
+        	pinSource.SetRadius(20);
+        	//pinSource.SetCenter(0,0,0);
+        	pinSource.Update();
+
+        	vtkPolyData pinPolydata = new  vtkPolyData();
+        	pinPolydata.SetPoints(labelPoints);
+		   	
+        	/*vtkGlyph2D pinGlyph2D = new vtkGlyph2D();
+        	pinGlyph2D.SetSourceConnection(pinSource.GetOutputPort());
+        	pinGlyph2D.SetInputData(pinPolydata);
+        	pinGlyph2D.Update();
+		   	
+        	vtkPolyDataMapper pm = new vtkPolyDataMapper();
+        	pm.SetInputConnection(pinGlyph2D.GetOutputPort());
+        	pm.Update();
+        	*/
+        	// Use sphere as glyph source.
+        				vtkSphereSource balls = new vtkSphereSource();
+        				balls.SetRadius(3);//.01);
+        				balls.SetPhiResolution(10);
+        				balls.SetThetaResolution(10);
+
+        				vtkGlyph3D glyphPoints = new vtkGlyph3D();
+        				glyphPoints.SetInputData(pinPolydata);
+        				glyphPoints.SetSourceConnection(balls.GetOutputPort());
+
+        				vtkPolyDataMapper pm = new vtkPolyDataMapper();
+        				pm.SetInputConnection(glyphPoints.GetOutputPort());
+        	
+		   	vtkPolyData temp = new vtkPolyData();
+		   	temp.SetPoints(labelPoints);
+		   	temp.GetPointData().AddArray(labels);
+//		   	System.out.println(pm.GetInput().GetNumberOfPoints());
+		   	//System.out.println(((vtkPolyData) pinGlyph2D.GetInput()).GetNumberOfPoints());
+//		   	temp.SetLines(pm.GetInput().GetLines());
+//		   	temp.SetPolys(pm.GetInput().GetPolys());
+//		   	vtkAppendPolyData textPolyData = new vtkAppendPolyData();
+//        	textPolyData.AddInputConnection(pinSource.GetOutputPort());
+//        	textPolyData.AddInputData(temp);
+        	
+			vtkPointSetToLabelHierarchy pointSetToLabelHierarchyFilter =new vtkPointSetToLabelHierarchy();
+			pointSetToLabelHierarchyFilter.SetInputData(temp);
+			pointSetToLabelHierarchyFilter.GetTextProperty().SetJustificationToLeft();
+			pointSetToLabelHierarchyFilter.SetLabelArrayName("labels");
+			//pointSetToLabelHierarchyFilter.SetInputConnection(pinSource.GetOutputPort());
+			pointSetToLabelHierarchyFilter.Update();
+			pointSetToLabelHierarchyFilter.GetTextProperty().SetFontSize(Integer.parseInt(displayAttributes.fontSizeField.getText()));
+			
+			
+			vtkLabelPlacementMapper cellMapper = new vtkLabelPlacementMapper();
+			cellMapper.SetInputConnection(pointSetToLabelHierarchyFilter.GetOutputPort());
+			
+		      	
+        	vtkActor2D actor = new vtkActor2D();
+        	actor.SetMapper(cellMapper);
+			
+        	vtkActor actorPin = new vtkActor();
+        	actorPin.SetMapper(pm);
+        	DrawingTool.getMasterFaultBranchGroup().add(actorPin);
 	    	DrawingTool.getMasterFaultBranchGroup().add(actor);
 	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 			return drawingTool;
@@ -195,14 +302,15 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		DrawingToolsTableModel drawingTooltablemodel = this.drawingToolTable.getLibraryModel();
 	    if (src == this.showDrawingToolsButton) {
 	    	int[] selectedRows =  this.drawingToolTable.getSelectedRows();
-	    	ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
+	    	ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
             for(int i =0;i<selectedRows.length;i++)
             {
-            	vtkTextActor3D actor = actors.get(selectedRows[i]);
-            	if(actor.GetVisibility() == 1)
-            		actor.SetVisibility(0);
+            	vtkProp actor = (vtkProp) actors.get(selectedRows[i]+1);
+            	vtkProp actorPin = (vtkProp) actors.get(selectedRows[i]);
+            	if(actor.GetVisibility() == 1 && actorPin.GetVisibility() == 1)
+            		{actor.SetVisibility(0); actorPin.SetVisibility(0);}
             	else
-            		actor.SetVisibility(1);
+            		{actor.SetVisibility(1); actorPin.SetVisibility(1);}
             }
             Info.getMainGUI().updateRenderWindow();
 	    }
@@ -227,51 +335,46 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        }
 	        else
 	        {
-	        	//remove actors
-	            ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
-	            ArrayList<vtkTextActor3D> removedActors = new ArrayList<>();
-	            for(int i =0;i<selectedRows.length;i++)
-	            {
-	            	vtkTextActor3D actor = actors.get(selectedRows[i]-i);
-	            	removedActors.add(actor);
-	            	DrawingTool.getMasterFaultBranchGroup().remove(selectedRows[i]-i);
-	            }
-	            Info.getMainGUI().removeActors(removedActors);
+	        	removeTextActors(selectedRows);
 	        }
 	    }
 	    if (src == this.displayAttributes.latField || src == this.displayAttributes.lonField || src == this.displayAttributes.altField ) {
 	    	int[] selectedRows =  this.drawingToolTable.getSelectedRows();
-	    	ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
+	    	ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
-	        	vtkTextActor3D actor = actors.get(selectedRows[i]);
+	        	vtkProp actorPin = (vtkProp) actors.get(selectedRows[i]);
+	        	vtkProp actor = (vtkProp) actors.get(selectedRows[i]+1);
 	        	double[] pt= {Transform.calcRadius(Double.parseDouble((String) this.displayAttributes.latField.getText()))+Double.parseDouble((String) this.displayAttributes.altField.getText()),
 	        			Double.parseDouble((String) this.displayAttributes.latField.getText()),
 	        			Double.parseDouble((String) this.displayAttributes.lonField.getText())};
-	        	actor.SetPosition(Transform.customTransform(pt));
+	        	((vtkActor2D) actor).SetPosition(Transform.customTransform(pt));
+	        	((vtkProp3D) actorPin).SetPosition(Transform.customTransform(pt));
 	        }
 	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	    }
 	    if (src == this.displayAttributes.rotateXField || src == this.displayAttributes.rotateYField || src == this.displayAttributes.rotateZField ) {
 	    	int[] selectedRows =  this.drawingToolTable.getSelectedRows();
-	    	ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
+	    	ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
-	        	vtkTextActor3D actor = actors.get(selectedRows[i]);
+	        	vtkProp actor = (vtkProp) actors.get(selectedRows[i]);
 	        	//actor.SetOrigin(actor.GetCenter());
-	        	actor.RotateX(Double.parseDouble((String) this.displayAttributes.rotateXField.getText()));
-	        	actor.RotateY(Double.parseDouble((String) this.displayAttributes.rotateYField.getText()));
-	        	actor.RotateZ(Double.parseDouble((String) this.displayAttributes.rotateZField.getText()));
+//	        	actor.RotateX(Double.parseDouble((String) this.displayAttributes.rotateXField.getText()));
+//	        	actor.RotateY(Double.parseDouble((String) this.displayAttributes.rotateYField.getText()));
+//	        	actor.RotateZ(Double.parseDouble((String) this.displayAttributes.rotateZField.getText()));
 	        }
 	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	    }
 	    if (src == this.displayAttributes.fontSizeField ) {
 	    	int[] selectedRows =  this.drawingToolTable.getSelectedRows();
-	    	ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
+	    	ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
-	        	vtkTextActor3D actor = actors.get(selectedRows[i]);
-	        	actor.GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
+	        	//vtkProp actorPin = (vtkProp) actors.get(selectedRows[i]);
+	        	vtkProp actor = (vtkProp) actors.get(selectedRows[i]+1);
+	        	((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
+	        	//actor.GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
 	        }
 	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	    }
@@ -283,12 +386,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        if (newColor != null) {
 	        	double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
 	            int[] selectedRows = this.drawingToolTable.getSelectedRows();
-	            ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
+	            ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
 		        for(int i =0;i<selectedRows.length;i++)
 		        {
-		        	vtkTextActor3D actor =actors.get(selectedRows[i]);
+		        	vtkProp actor =(vtkProp) actors.get(selectedRows[i]);
 	            	//only between 0 and 1;
-	            	actor.GetTextProperty().SetColor(color);
+	            	//actor.GetTextProperty().SetColor(color);
 	    	    }
 	            Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	        }
@@ -297,8 +400,24 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	}
 
 	
+	public void removeTextActors(int[] selectedRows) {
+		//remove actors
+        ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
+        ArrayList<vtkObject> removedActors = new ArrayList<>();
+        for(int i =0;i<selectedRows.length;i++)
+        {
+        	vtkProp actor = (vtkProp) actors.get(selectedRows[i]-i);
+        	vtkProp actorPin = (vtkProp) actors.get((selectedRows[i]-i)+1);
+        	removedActors.add(actorPin);
+        	removedActors.add(actor);
+        	DrawingTool.getMasterFaultBranchGroup().remove(selectedRows[i]-i);
+        	DrawingTool.getMasterFaultBranchGroup().remove(selectedRows[i]-i);
+        }
+        Info.getMainGUI().removeActors(removedActors);
+		
+	}
 	private void runObjectInfoDialog(int[] objects) {
-		ArrayList<vtkTextActor3D> actors = DrawingTool .getMasterFaultBranchGroup();
+		ArrayList<vtkObject> actors = DrawingTool .getMasterFaultBranchGroup();
 	     String displayTextInput = JOptionPane.showInputDialog(
 	    		 this.drawingToolTable,
 	                "Change text:",
@@ -309,8 +428,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        {
 	        	for(int i =0;i<objects.length;i++)
 	        	{
-	    	    	vtkTextActor3D actor = actors.get(objects[i]);
-	    	    	actor.SetInput(displayTextInput);
+	        		vtkProp actor = (vtkProp) actors.get(objects[i]);
+	    	    	//actor.SetInput(displayTextInput);
 	        		Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	        	}
 	        }

@@ -21,7 +21,10 @@ import org.scec.vtk.main.Info;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.DBFReaderJGeom;
 import oracle.spatial.util.ShapefileReaderJGeom;
-import vtk.vtkTextActor3D;
+import vtk.vtkActor;
+import vtk.vtkActor2D;
+import vtk.vtkObject;
+import vtk.vtkProp;
 
 
 
@@ -142,17 +145,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	        }
 	        else
 	        {
-	        	
-	        	//remove actors
-	            ArrayList<vtkTextActor3D> actors = DrawingTool.getMasterFaultBranchGroup();
-	            ArrayList<vtkTextActor3D> removedActors = new ArrayList<>();
-	            for(int i =0;i<selectedRows.length;i++)
-	            {
-	            	vtkTextActor3D actor = actors.get(selectedRows[i]-i);
-	            	removedActors.add(actor);
-	            	DrawingTool.getMasterFaultBranchGroup().remove(selectedRows[i]-i);
-	            }
-	            Info.getMainGUI().removeActors(removedActors);
+	        	guiparent.removeTextActors(selectedRows);
 	        }
 	}
 	
