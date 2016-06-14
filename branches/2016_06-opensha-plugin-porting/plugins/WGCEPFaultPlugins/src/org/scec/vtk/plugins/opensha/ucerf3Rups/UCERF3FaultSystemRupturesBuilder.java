@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipException;
 
-import javax.media.j3d.BranchGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
