@@ -765,26 +765,6 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 //				double[] xForm = new double[3];
 				double depth=0,mag=0,lon=0,lat=0;
 				
-//				vtkSphereSource sphereSource = new vtkSphereSource();
-//                 
-//                 xForm = Transform.transformLatLonHeight(event.getLatitude().doubleValue(), event.getLongitude().doubleValue(), -event.getDepth().doubleValue());
-//                 
-//				sphereSource.SetCenter(xForm[0], xForm[1], xForm[2]);
-//				if(event.getMag()!=null)
-//				sphereSource.SetRadius(event.getMag().doubleValue());
-//				else
-//				{
-//					sphereSource.SetRadius(0.1);
-//				}
-//		    	
-//				vtkPolyDataMapper mapperEQCatalog = new vtkPolyDataMapper();
-//				mapperEQCatalog.SetInputConnection(sphereSource.GetOutputPort());
-//				
-//				vtkActor actorEQCatalog = new vtkActor();
-//				actorEQCatalog.SetMapper(mapperEQCatalog);
-//				actorEQCatalog.GetProperty().SetColor(1,1,0);
-//				masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
-				
 				if(event.getMag()!=null)
 					mag= event.getMag().doubleValue();
 				if(event.getDepth()!=null)
@@ -807,21 +787,14 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			
 			parent.getCatalogTable().addCatalog(cat);
 			
+			//setting minimas and maximas
 			cat.setMaxMagnitude((float)max_mag);
 			cat.setMinMagnitude((float)min_mag);
 			cat.setMinDepth((float)min_dep);
 			cat.setMaxDepth((float)max_dep);
 			cat.setMinDate(startDate);
 			cat.setMaxDate(endDate);
-			//this.catalogTable.addCatalog(cat);
 			cat.addComcatEqList();
-			
-			//cat.setGeometry(EQCatalog.GEOMETRY_POINT);
-			//parent.getCatalogTable().addCatalog(cat);
-//			
-//			
-//			Info.getMainGUI().addActors(masterEarthquakeCatalogBranchGroup);
-//			Info.getMainGUI().updateRenderWindow();
 		}
 
 		public void actionPerformed(ActionEvent e) {

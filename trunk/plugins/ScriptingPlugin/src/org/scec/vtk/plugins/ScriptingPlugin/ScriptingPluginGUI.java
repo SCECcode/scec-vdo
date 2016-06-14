@@ -238,16 +238,19 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	//timeline view table
 	DefaultTableModel model = new DefaultTableModel();
 	JTable table = new JTable(model);
-	int selectedRow=0,selectedCol=0;
+	int selectedRow=0,selectedCol=1;
 	private double tickrate;
-	Object list;
+	
 	Boolean included=false;
 	private boolean rendering;
 	private boolean play=false;
 	private boolean stop=true;
-	private EQCatalog cat;
+	private ArrayList<EQCatalog> catlogs = new ArrayList<>();
+	JScrollPane timelineTableContainer = new JScrollPane(table);
+    
 	public ScriptingPluginGUI(ScriptingPlugin plugin){
 
+		this.framePoints.add(new vtkCamera());
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()));
 		setName("Scripting Plugin");
@@ -335,14 +338,20 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        JScrollPane tableContainer = new JScrollPane(table);
-        tableContainer.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        tableContainer.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        tableContainer.setPreferredSize(new Dimension(Prefs.getPluginWidth(), 100));
+        timelineTableContainer.setName("timeline");
+        timelineTableContainer.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        timelineTableContainer.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        timelineTableContainer.setPreferredSize(new Dimension(Prefs.getPluginWidth(), 100));
         //tableContainer.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
        // panel.add(tableContainer, BorderLayout.WEST);
         //add(panel);
-        Info.getMainGUI().getmainFrame().add(tableContainer,BorderLayout.SOUTH);
+        for(int i =0;i<Info.getMainGUI().getmainFrame().getComponentCount();i++)
+        {
+        	if(!(Info.getMainGUI().getmainFrame().getComponent(i).getName()==timelineTableContainer.getName()))
+        	{
+        	Info.getMainGUI().getmainFrame().add(timelineTableContainer,BorderLayout.SOUTH);
+        	}
+        }
         table.addMouseListener(this); 
         //swap table values drag and drop
         table.setDragEnabled(true);
@@ -449,9 +458,11 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		});
 		//display default number of frames
 		model.addRow(new Object[] {""});
-		  for(int i =0;i<Integer.parseInt(noOfFrames.getText());i++)
+		model.addColumn(new String(""));
+    	table.setValueAt("Camera",0,0);
+		  for(int i =1;i<=Integer.parseInt(noOfFrames.getText());i++)
 	        {
-	        	model.addColumn(new String(Integer.toString(i+1)));
+	        	model.addColumn(new String(Integer.toString(i)));
 	        	table.setValueAt("",0,i);
 	        	framePoints.add(new vtkCamera());
 	        }
@@ -462,7 +473,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	{
 		int oldColumnCount = model.getColumnCount();
 		model.addRow(new Object[] {""});
-		  for(int i =0;i<Integer.parseInt(noOfFrames.getText());i++)
+		 /* for(int i =0;i<Integer.parseInt(noOfFrames.getText());i++)
 	        {
 			  if(i>=oldColumnCount)
 	        	{
@@ -473,7 +484,21 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 			  else{
 	        	table.setValueAt("1",model.getRowCount()-1,i);
 	          }
-	        }
+	        }*/
+		int numberOfFrames = this.catlogs.get(this.catlogs.size()-1).getSelectedEqList().size();
+		table.setValueAt("EQCatalog-"+(this.catlogs.size()-1),model.getRowCount()-1,0);
+		for(int i =1;i<=numberOfFrames;i++)
+        {
+		  if(i>=oldColumnCount)
+        	{
+			  model.addColumn(new String(Integer.toString(i)));
+			  table.setValueAt("1",model.getRowCount()-1,i);
+			  framePoints.add(new vtkCamera());
+        	}
+		  else{
+        	table.setValueAt("1",model.getRowCount()-1,i);
+          }
+        }
 	}
 	void updateFramesInTimeLine()
 	{
@@ -482,7 +507,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		for(int i =0;i<model.getRowCount();i++)
         {
 			int j =0;
-		  for(j =0;j<Integer.parseInt(noOfFrames.getText());j++)
+		  for(j =1;j<=Integer.parseInt(noOfFrames.getText());j++)
 	        {
 			  if(j>=oldColumnCount)
 	        	{
@@ -509,17 +534,21 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	
 	}
 	
-	public void addEarthquakeListForAniamtion(Object list,EQCatalog cat, Boolean included)
+	public void addEarthquakeListForAniamtion(EQCatalog cat, Boolean included)
 	{
-		this.list = list;
+		//this.list = list;
 		this.included=included;
-		ArrayList earthquakeList = (ArrayList) list;
-		this.cat = cat;
-		if(Double.parseDouble(noOfFrames.getText())<earthquakeList.size())
+		//ArrayList earthquakeList = (ArrayList) list;
+		if(!this.catlogs.contains(cat))
 		{
-			noOfFrames.setText(Integer.toString(earthquakeList.size()));	
+			this.catlogs.add(cat);
+
+			if(Double.parseDouble(noOfFrames.getText())<cat.getSelectedEqList().size())
+			{
+				noOfFrames.setText(Integer.toString(cat.getSelectedEqList().size()));	
+			}
+			addLayerToTimeLine();
 		}
-		addLayerToTimeLine();
 	}
 
 
@@ -533,7 +562,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		ArrayList<vtkActor> nw = new ArrayList<>();
 		nw.add(profile);
 		nw.add(glyph);
-		Info.getMainGUI().addActors(nw);
+		//Info.getMainGUI().addActors(nw);
 
 		scene = new vtkAnimationScene();
 		scene.RemoveAllCues();
@@ -555,7 +584,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		int totCues=0;
 		vtkAnimationCue cue1 = new vtkAnimationCue();
 		// Create an Animation Cue.
-		for(int i =0;i<framePoints.size();i++)
+		for(int i =1;i<framePoints.size();i++)
 		{
 			vtkCamera cam = framePoints.get(i);
 
@@ -586,12 +615,16 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 					cb.cue = cue1;
 					double t = cue1.GetEndTime()/scene.GetEndTime();
 					cb.ptSize = (int) ((1-t)*(1)+ t*(pointsToMoveCameraOnPosition.GetNumberOfPoints()-1));
-					System.out.println(cb.ptSize);
+					System.out.println("ptSize:"+cb.ptSize);
 					cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 					cb.included = included;
+					cb.scene = scene;
 					if(included)
-						{cb.earthquakeList = (ArrayList<Earthquake>) list;
-						cb.cat = cat;
+						{	//cb.earthquakeList = (ArrayList<Earthquake>) list;
+							cb.cat = catlogs;
+							t = cue1.GetEndTime()/scene.GetEndTime();
+							cb.EQPtSize = (int) ((1-t)*(1)+ t*(Integer.parseInt(noOfFrames.getText())-1));
+							
 						}
 
 
@@ -632,18 +665,23 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		}
 		if(included && onlyEQ)
 		{
-			cue1.SetStartTime(0);
+			cue1.SetStartTime(startTime + 0);
 			cue1.SetEndTime(scene.GetEndTime());
 			cb = new CueAnimator();
 			cue1.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
 			cue1.AddObserver("EndAnimationCueEvent", cb, "EndCue");
 			cue1.AddObserver("AnimationCueTickEvent", cb, "TickEarthquakeCatalogAniamtion");
 			cb.cue =cue1;
-			cb.cat = cat;
+			cb.scene = scene;
+			cb.included =included;
 			cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 			if(included)
-				cb.earthquakeList = (ArrayList<Earthquake>) list;
-
+				{
+				cb.cat = catlogs;
+				double t = cue1.GetEndTime()/scene.GetEndTime();
+				cb.EQPtSize = (int) ((1-t)*(1)+ t*(Integer.parseInt(noOfFrames.getText())-1));
+				
+				}
 			System.out.println("s: "+cue1.GetStartTime());
 			System.out.println("e: "+cue1.GetEndTime());
 			scene.AddCue(cue1);

@@ -79,7 +79,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	public LabelTableModel labelModel = new LabelTableModel(columnNames);
 	private JPanel drawingToolSubPanelLowest;
 	
-	
+	private int  numText =0;
 	public DrawingToolsGUI(DrawingToolsPlugin plugin){
 		
 		//setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -184,12 +184,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		   if(drawingTool.getTextString()==null)
 		     {
 			   drawingTool = new DrawingTool(pt[1],pt[2],pt[0],text,null);
-		       drawingTool.setDisplayName(text +" -"+ Integer.toString(a.size()+1)); 
+		       drawingTool.setDisplayName(text +" -"+ numText++); 
 		     }
 		   else
 		   {
 			   text = drawingTool.getTextString();
-			   drawingTool.setDisplayName(drawingTool.getTextString() +" -"+ Integer.toString(a.size()+1));
+			   drawingTool.setDisplayName(drawingTool.getTextString() +" -"+ numText++);
 			   pt[0]= pt[0]+drawingTool.getaltitude();
 			   pt[1]= drawingTool.getLatitude();
 			   pt[2]= drawingTool.getLongitude();
@@ -229,13 +229,13 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		   	
 			
         	//create a pin near the text to mark the location 
-        	vtkRegularPolygonSource pinSource = new vtkRegularPolygonSource();
+        	/*vtkRegularPolygonSource pinSource = new vtkRegularPolygonSource();
 
         	pinSource.SetNumberOfSides(25);
         	pinSource.SetRadius(20);
         	//pinSource.SetCenter(0,0,0);
         	pinSource.Update();
-
+*/
         	vtkPolyData pinPolydata = new  vtkPolyData();
         	pinPolydata.SetPoints(labelPoints);
 		   	
@@ -250,7 +250,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
         	*/
         	// Use sphere as glyph source.
         				vtkSphereSource balls = new vtkSphereSource();
-        				balls.SetRadius(3);//.01);
+        				balls.SetRadius(2);//.01);
         				balls.SetPhiResolution(10);
         				balls.SetThetaResolution(10);
 
@@ -305,8 +305,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    	ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
             for(int i =0;i<selectedRows.length;i++)
             {
-            	vtkProp actor = (vtkProp) actors.get(selectedRows[i]+1);
-            	vtkProp actorPin = (vtkProp) actors.get(selectedRows[i]);
+            	vtkProp actor = (vtkProp) actors.get((selectedRows[i]*2)+1);
+            	vtkProp actorPin = (vtkProp) actors.get(selectedRows[i]*2);
             	if(actor.GetVisibility() == 1 && actorPin.GetVisibility() == 1)
             		{actor.SetVisibility(0); actorPin.SetVisibility(0);}
             	else
@@ -343,13 +343,30 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    	ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
-	        	vtkProp actorPin = (vtkProp) actors.get(selectedRows[i]);
-	        	vtkProp actor = (vtkProp) actors.get(selectedRows[i]+1);
-	        	double[] pt= {Transform.calcRadius(Double.parseDouble((String) this.displayAttributes.latField.getText()))+Double.parseDouble((String) this.displayAttributes.altField.getText()),
-	        			Double.parseDouble((String) this.displayAttributes.latField.getText()),
-	        			Double.parseDouble((String) this.displayAttributes.lonField.getText())};
-	        	((vtkActor2D) actor).SetPosition(Transform.customTransform(pt));
-	        	((vtkProp3D) actorPin).SetPosition(Transform.customTransform(pt));
+	        	vtkProp actorPin = (vtkProp) actors.get(selectedRows[i]*2);
+	        	vtkProp actor = (vtkProp) actors.get((2*selectedRows[i])+1);
+	        	vtkPoints labelPoints = new vtkPoints();
+			   	labelPoints.InsertNextPoint(Transform.transformLatLonHeight(Double.parseDouble((String) this.displayAttributes.latField.getText()),
+	        			Double.parseDouble((String) this.displayAttributes.lonField.getText()),
+	        			Double.parseDouble((String) this.displayAttributes.altField.getText())));
+			   	
+			   	vtkPolyData temp = new vtkPolyData();
+		 		temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
+			   	temp.SetPoints(labelPoints);
+			   	
+			   	vtkGlyph3D glyphPoints = new vtkGlyph3D();
+			   	glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
+				glyphPoints.SetInputData(temp);
+			   	
+//	        	double[] pt= {Transform.calcRadius(Double.parseDouble((String) this.displayAttributes.latField.getText()))+Double.parseDouble((String) this.displayAttributes.altField.getText()),
+//	        			Double.parseDouble((String) this.displayAttributes.latField.getText()),
+//	        			Double.parseDouble((String) this.displayAttributes.lonField.getText())};
+//	        	((vtkActor2D) actor).SetPosition(Transform.transformLatLonHeight(Double.parseDouble((String) this.displayAttributes.latField.getText()),
+//	        			Double.parseDouble((String) this.displayAttributes.lonField.getText()),
+//	        			Double.parseDouble((String) this.displayAttributes.altField.getText())));
+//	        	((vtkActor) actorPin).SetPosition(Transform.transformLatLonHeight(Double.parseDouble((String) this.displayAttributes.latField.getText()),
+//	        			Double.parseDouble((String) this.displayAttributes.lonField.getText()),
+//	        			Double.parseDouble((String) this.displayAttributes.altField.getText())));
 	        }
 	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	    }
@@ -371,11 +388,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    	ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
 	        for(int i =0;i<selectedRows.length;i++)
 	        {
-	        	//vtkProp actorPin = (vtkProp) actors.get(selectedRows[i]);
-	        	vtkProp actor = (vtkProp) actors.get(selectedRows[i]+1);
+	        	vtkProp actor = (vtkProp) actors.get((selectedRows[i]*2)+1);
 	        	((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
-	        	//actor.GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
-	        }
+	          }
 	        Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	    }
 	    if (src == this.colorDrawingToolsButton) {
@@ -389,9 +404,11 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	            ArrayList<vtkObject> actors = DrawingTool.getMasterFaultBranchGroup();
 		        for(int i =0;i<selectedRows.length;i++)
 		        {
-		        	vtkProp actor =(vtkProp) actors.get(selectedRows[i]);
-	            	//only between 0 and 1;
-	            	//actor.GetTextProperty().SetColor(color);
+		        	vtkProp actorPin =(vtkProp) actors.get((selectedRows[i]*2));
+	            	((vtkActor) actorPin).GetProperty().SetColor(color);
+	            	vtkProp actor = (vtkProp) actors.get((selectedRows[i]*2)+1);
+		        	((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
+		        	
 	    	    }
 	            Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	        }
@@ -406,12 +423,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
         ArrayList<vtkObject> removedActors = new ArrayList<>();
         for(int i =0;i<selectedRows.length;i++)
         {
-        	vtkProp actor = (vtkProp) actors.get(selectedRows[i]-i);
-        	vtkProp actorPin = (vtkProp) actors.get((selectedRows[i]-i)+1);
+        	vtkProp actor = (vtkProp) actors.get(2*(selectedRows[i]-i));
+        	vtkProp actorPin = (vtkProp) actors.get((selectedRows[i]-i)*2+1);
         	removedActors.add(actorPin);
         	removedActors.add(actor);
-        	DrawingTool.getMasterFaultBranchGroup().remove(selectedRows[i]-i);
-        	DrawingTool.getMasterFaultBranchGroup().remove(selectedRows[i]-i);
+        	DrawingTool.getMasterFaultBranchGroup().remove(2*(selectedRows[i]-i));
+        	DrawingTool.getMasterFaultBranchGroup().remove(2*(selectedRows[i]-i));
         }
         Info.getMainGUI().removeActors(removedActors);
 		
@@ -428,8 +445,18 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	        {
 	        	for(int i =0;i<objects.length;i++)
 	        	{
-	        		vtkProp actor = (vtkProp) actors.get(objects[i]);
-	    	    	//actor.SetInput(displayTextInput);
+	        		//vtkProp actor = (vtkProp) actors.get(objects[i]);
+	        		vtkProp actor = (vtkProp) actors.get(objects[i]*2+1);
+	        		 vtkStringArray labels =new vtkStringArray();
+	        		 labels.SetName("labels");
+			 		 labels.SetNumberOfValues(1);
+			 		 labels.SetValue(0, displayTextInput);
+			 		 labels.Modified();
+			 		vtkPolyData temp = new vtkPolyData();
+			 		temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
+				   	temp.GetPointData().AddArray(labels);
+	        		((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).SetLabelArrayName("labels");
+	        		((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).Update();
 	        		Info.getMainGUI().addActors(DrawingTool.getMasterFaultBranchGroup());
 	        	}
 	        }
