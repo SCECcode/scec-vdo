@@ -25,6 +25,7 @@ import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkPolygon;
+import vtk.vtkUnsignedCharArray;
 
 public class PolygonSurfaceGenerator extends GeometryGenerator implements ParameterChangeListener {
 
@@ -34,6 +35,8 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 	private static final long serialVersionUID = 1L;
 	
 	private static final String NAME = "Polygons";
+	
+	private boolean bundle = true;
 	
 	ParameterList faultDisplayParams = new ParameterList();
 	
@@ -122,6 +125,13 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 //		return bg;
 	}
 	
+	@Override
+	public void clearBundles() {
+		currentBundle = null;
+	}
+
+	private ActorBundle currentBundle;
+	
 	public FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface,
 			Color color, AbstractFaultSection fault) {
 
@@ -134,68 +144,126 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 //		int numVerts = numPolys * 4;
 //		
 //		int vertCount = 0;
+
+		int opacity = (int)(opacityParam.getValue()*255d);
+		double initialOpacity;
+		if (bundle) {
+			// initialized to transparent, will get updated when displayed
+			initialOpacity = 0;
+		} else {
+			initialOpacity = opacity;
+			currentBundle = null;
+		}
 		
-		vtkPolyData polyData = new vtkPolyData();
-		
-		vtkPoints pts = new vtkPoints();
-	   	
-		for (int row=0; row<(rows-1); row++) {
-			for (int col=0; col<(cols-1); col++) {
-				double[] pt0 = pointSurface.get(row,	col);		// top left
-				double[] pt1 = pointSurface.get(row+1,	col);		// bottom left
-				double[] pt2 = pointSurface.get(row+1,	col+1);	// bottom right
-				double[] pt3 = pointSurface.get(row,	col+1);	// top right
+		vtkPolyData polyData;
+		vtkPoints pts;
+		vtkUnsignedCharArray colors;
+		vtkCellArray polys;
+		vtkActor actor;
+		boolean newBundle = currentBundle == null;
+		if (newBundle) {
+			polyData = new vtkPolyData();
+			pts = new vtkPoints();
+			if (bundle) {
+				colors = new vtkUnsignedCharArray();
+				colors.SetNumberOfComponents(4);
+				colors.SetName("Colors");
+			} else {
+				colors = null;
+			}
+			polys = new vtkCellArray();
+			
+			actor = new vtkActor();
+			
+			currentBundle = new ActorBundle(actor, polyData, pts, colors, polys);
+		} else {
+			polyData = currentBundle.getPolyData();
+			pts = currentBundle.getPoints();
+			colors = currentBundle.getColorArray();
+			Preconditions.checkState(colors.GetNumberOfComponents() == 4);
+			polys = currentBundle.getCellArray();
+			
+			actor = currentBundle.getActor();
+		}
+		int firstIndex;
+		int myNumPoints = 0;
+		synchronized (currentBundle) {
+			firstIndex = pts.GetNumberOfPoints();
+			for (int row=0; row<(rows-1); row++) {
+				for (int col=0; col<(cols-1); col++) {
+					double[] pt0 = pointSurface.get(row,	col);		// top left
+					double[] pt1 = pointSurface.get(row+1,	col);		// bottom left
+					double[] pt2 = pointSurface.get(row+1,	col+1);	// bottom right
+					double[] pt3 = pointSurface.get(row,	col+1);	// top right
+					
+					pts.InsertNextPoint(pt0);
+					pts.InsertNextPoint(pt1);
+					pts.InsertNextPoint(pt2);
+					pts.InsertNextPoint(pt3);
+					myNumPoints += 4;
+					if (bundle) {
+						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+					}
+				}
+			}
+			
+			int numPoints = pts.GetNumberOfPoints()-firstIndex;
+			Preconditions.checkState(numPoints % 4 == 0, "Must be even number of points");
+			
+			for (int li=0; li<numPoints/4; li++) {
+				int index1 = firstIndex+li*4;
+				int index2 = index1+1;
+				int index3 = index1+2;
+				int index4 = index1+3;
 				
-				pts.InsertNextPoint(pt0);
-				pts.InsertNextPoint(pt1);
-				pts.InsertNextPoint(pt2);
-				pts.InsertNextPoint(pt3);
+				vtkPolygon poly = new vtkPolygon();
+				poly.GetPointIds().SetNumberOfIds(4);
+				poly.GetPointIds().SetId(0, index1);
+				poly.GetPointIds().SetId(1, index2);
+				poly.GetPointIds().SetId(2, index3);
+				poly.GetPointIds().SetId(3, index4);
+				
+				polys.InsertNextCell(poly);
+			}
+			
+			if (newBundle) {
+				// new bundle
+				polyData.SetPoints(pts);
+				polyData.SetPolys(polys);
+				if (bundle)
+					polyData.GetPointData().AddArray(colors);
+				
+				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+				mapper.SetInputData(polyData);
+				if (bundle) {
+					mapper.ScalarVisibilityOn();
+					mapper.SetScalarModeToUsePointFieldData();
+					mapper.SelectColorArray("Colors");
+				}
+				
+				actor.SetMapper(mapper);
+				
+				if (bundle)
+					actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparancey enabled renderer
+				else
+					actor.GetProperty().SetColor(getColorDoubleArray(color));
+			} else {
+				currentBundle.modified();
 			}
 		}
 		
-		polyData.SetPoints(pts);
-		
-		int numPoints = pts.GetNumberOfPoints();
-		Preconditions.checkState(numPoints % 4 == 0, "Must be even number of points");
-		
-		vtkCellArray polys = new vtkCellArray();
-		
-		for (int li=0; li<numPoints/4; li++) {
-			int index1 = li*4;
-			int index2 = index1+1;
-			int index3 = index1+2;
-			int index4 = index1+3;
-			
-			vtkPolygon poly = new vtkPolygon();
-			poly.GetPointIds().SetNumberOfIds(4);
-			poly.GetPointIds().SetId(0, index1);
-			poly.GetPointIds().SetId(1, index2);
-			poly.GetPointIds().SetId(2, index3);
-			poly.GetPointIds().SetId(3, index4);
-			
-			polys.InsertNextCell(poly);
+		FaultSectionActorList list;
+		if (bundle) {
+			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, myNumPoints, opacity);
+		} else {
+			list = new FaultSectionActorList(fault);
+			list.add(actor);
 		}
 		
-		polyData.SetPolys(polys);
-		
-		vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-		mapper.SetInputData(polyData);
-		FaultSectionActorList list = new FaultSectionActorList(fault);
-		
-		vtkActor actor = new vtkActor();
-		actor.SetMapper(mapper);
-		actor.GetProperty().SetColor(getColorDoubleArray(color));
-		actor.GetProperty().SetOpacity(opacityParam.getValue());
-		list.add(actor);
-		
 		return list;
-	}
-	
-	@Override
-	public boolean updateColor(FaultSectionActorList actorList, Color color) {
-		for (vtkActor actor : actorList)
-			actor.GetProperty().SetColor(getColorDoubleArray(color));
-		return true;
 	}
 
 	@Override

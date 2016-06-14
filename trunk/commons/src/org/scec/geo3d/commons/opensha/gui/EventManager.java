@@ -322,13 +322,15 @@ AnimationListener {
 	private void setBundledOpacity(FaultSectionBundledActorList bundleList, boolean visible) {
 		vtkUnsignedCharArray colors = bundleList.getBundle().getColorArray();
 		int firstIndex = bundleList.getMyFirstPointIndex();
-		int lastIndex = firstIndex + bundleList.getMyNumPoints();
+		int lastIndex = firstIndex + bundleList.getMyNumPoints() - 1;
 		double opacity;
 		if (visible)
 			opacity = bundleList.getMyOpacity();
 		else
 			opacity = 0;
+		int totNumTuples = colors.GetNumberOfTuples();
 		for (int index=firstIndex; index<=lastIndex; index++) {
+			Preconditions.checkState(index < totNumTuples, "Bad tuple index. index=%s, num tuples=%s", index, totNumTuples);
 			double[] orig = colors.GetTuple4(index);
 			colors.SetTuple4(index, orig[0], orig[1], orig[2], opacity); // keep same color
 		}
@@ -399,7 +401,11 @@ AnimationListener {
 			
 			@Override
 			public void run() {
-				panelLock.setLocked(false);
+				try {
+					panelLock.setLocked(false);
+				} catch (NullPointerException e) {
+					System.out.println("TODO: NPE unlocking panel");
+				}
 				if (D) System.out.println("Called setLocked(false)...still locked? "+panelLock.isLocked()+"");
 			}
 		});
