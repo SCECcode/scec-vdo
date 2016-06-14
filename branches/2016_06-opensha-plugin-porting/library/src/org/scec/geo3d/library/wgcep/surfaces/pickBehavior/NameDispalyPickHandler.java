@@ -2,11 +2,11 @@ package org.scec.geo3d.library.wgcep.surfaces.pickBehavior;
 
 import java.awt.event.MouseEvent;
 
-import javax.media.j3d.Node;
-
 import org.scec.geo3d.library.wgcep.faults.colorers.CPTBasedColorer;
 import org.scec.geo3d.library.wgcep.faults.colorers.FaultColorer;
 import org.scec.geo3d.library.wgcep.surfaces.FaultSectionActorList;
+
+import vtk.vtkActor;
 
 public class NameDispalyPickHandler implements PickHandler {
 	
@@ -31,7 +31,7 @@ public class NameDispalyPickHandler implements PickHandler {
 	}
 
 	@Override
-	public void otherPicked(Node node, MouseEvent mouseEvent) {
+	public void otherPicked(vtkActor node, MouseEvent mouseEvent) {
 		nothingPicked(mouseEvent);
 	}
 	
