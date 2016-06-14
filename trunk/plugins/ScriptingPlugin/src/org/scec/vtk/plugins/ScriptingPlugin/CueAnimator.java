@@ -23,6 +23,7 @@ import org.scec.vtk.tools.Prefs;
 
 import vtk.vtkActor;
 import vtk.vtkAnimationCue;
+import vtk.vtkAnimationScene;
 import vtk.vtkCamera;
 import vtk.vtkCameraInterpolator;
 import vtk.vtkPoints;
@@ -36,10 +37,10 @@ public class CueAnimator  {
 	private long endTime;
 	private long startTime;
 	public boolean included;
-	public EQCatalog cat;
+	public ArrayList<EQCatalog> cat;
 	void StartCue()
 	{
-		System.out.println("*** IN StartCue " + cue.GetStartTime() );
+		System.out.println("*** IN StartCue " + scene.GetStartTime() );
 		this.TimerCount = 0;
 		//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 		startTime = System.nanoTime();
@@ -51,11 +52,11 @@ public class CueAnimator  {
 	void TickCameraAniamtion()
 	{
 		//speed interpolation
-		double t = cue.GetAnimationTime()/cue.GetEndTime();
+		double t = scene.GetAnimationTime()/scene.GetEndTime();
 		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
 		if(this.TimerCount<ptSize)
 		{
-
+			//System.out.println(TimerCount);
 			camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
 			camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
 			camnew.SetViewUp(pointsViewUp.GetPoint(TimerCount)[0],pointsViewUp.GetPoint(TimerCount)[1],pointsViewUp.GetPoint(TimerCount)[2]);
@@ -86,7 +87,7 @@ public class CueAnimator  {
 	{
 
 		//speed interpolation
-		double t = cue.GetAnimationTime()/cue.GetEndTime();
+		double t = scene.GetAnimationTime()/scene.GetEndTime();
 		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
 		if(this.TimerCount<ptSize)
 		{
@@ -137,32 +138,46 @@ public class CueAnimator  {
 
 	void StartCueEarthquakeCatalogAniamtion()
 	{
-		System.out.println("*** IN StartCue " );
-		this.TimerCount = 0;
-		double t = cue.GetAnimationTime()/cue.GetEndTime();
-		this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
-		System.out.println(t);
+		System.out.println("*** IN StartCue " + scene.GetStartTime() );
+		//this.TimerCount = 0;
+		
+		
+		//System.out.println(t);
+		if((int)Math.floor(scene.GetAnimationTime())==(int)scene.GetStartTime())
+		{
+			System.out.println("EQptSize:"+EQPtSize);
+		for(int j=0;j<cat.size();j++)
+		{
+			earthquakeList = cat.get(j).getSelectedEqList();
+			double t = scene.GetStartTime()/scene.GetEndTime();
+			this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+			
 		for(int i=TimerCount;i<earthquakeList.size();i++)
 		{
-			
 			eq = earthquakeList.get(i);
-			ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquake(i,eq,cat,0);
+			ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),0);
+		}
+		}
 		}
 	}
 
 	void TickEarthquakeCatalogAniamtion()
-	{
-		double t = cue.GetAnimationTime()/cue.GetEndTime();
-		this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
-		if(this.TimerCount<earthquakeList.size())
+	{	
+		for( j=0;j<cat.size();j++)
 		{
-			eq = earthquakeList.get(this.TimerCount);
-		
-			//eq.getEarthquakeCatalogActor().VisibilityOn();
+			earthquakeList = cat.get(j).getSelectedEqList();
+			double t = scene.GetAnimationTime()/scene.GetEndTime();
+			this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+			//System.out.println(t);
+		if(this.TimerCount<EQPtSize)//earthquakeList.size())
+		{
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {	
-						ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquake(TimerCount,eq,cat,255);
+						
+						eq = earthquakeList.get(TimerCount);
+						 ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(TimerCount,eq,cat.get(j),255);
+						
 						Info.getMainGUI().addActors(eqActorList);
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
 					}
@@ -175,30 +190,30 @@ public class CueAnimator  {
 				e.printStackTrace();
 			}
 		}
-
+		}
+		System.out.println("***  "+scene.GetAnimationTime());
 	}
 
 	void EndCue()
 	{
 		endTime = System.nanoTime() - startTime;
 		long seconds = TimeUnit.SECONDS.convert((long) endTime, TimeUnit.NANOSECONDS);
-		System.out.println("*** IN EndCue "+cue.GetEndTime());
-		if(included)
+		
+		if(included && (int)Math.ceil(scene.GetAnimationTime())==(int)scene.GetEndTime())
 		{
-			/*ArrayList eqActorList = EarthquakeCatalogPluginGUI.startAniamteEarthquake(cat,255);
-			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					public void run() {	
-						Info.getMainGUI().addActors(eqActorList);
-					}
-				});
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
+			System.out.println("*** IN EndCue "+scene.GetAnimationTime());
+			for(int j=0;j<cat.size();j++)
+			{
+				earthquakeList = cat.get(j).getSelectedEqList();
+				//double t = scene.GetStartTime()/scene.GetEndTime();
+				//this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+				
+			for(int i=0;i<earthquakeList.size();i++)
+			{
+				eq = earthquakeList.get(i);
+				ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),255);
+			}
+			}
 
 		}
 	}
@@ -259,7 +274,7 @@ public class CueAnimator  {
 		}).start();
 
 	}
-
+	int j;
 	int[] renderSizeold ;
 	public vtkRenderWindowInteractor iren;
 	public vtkRenderer ren;
@@ -286,4 +301,6 @@ public class CueAnimator  {
 	private Earthquake eq;
 	protected vtkAnimationCue cue;
 	public int ptSize=0;
+	public int EQPtSize=0;
+	public vtkAnimationScene scene;
 }

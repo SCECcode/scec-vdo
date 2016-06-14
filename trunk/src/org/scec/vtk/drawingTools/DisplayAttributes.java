@@ -113,12 +113,12 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 
 		JPanel enableLabelPanel = new JPanel();
 		enableLabelPanel.setLayout(new BoxLayout(enableLabelPanel, BoxLayout.Y_AXIS));
-		enableLabelPanel.add(flattenTextLabel);
+		//enableLabelPanel.add(flattenTextLabel);
 		
 		
 		JPanel enableCheckboxPanel = new JPanel();
 		enableCheckboxPanel.setLayout(new BoxLayout(enableCheckboxPanel, BoxLayout.Y_AXIS));
-		enableCheckboxPanel.add(flattenTextCheckbox);
+		//enableCheckboxPanel.add(flattenTextCheckbox);
 		
 		
 		JPanel translatePanel = new JPanel();
@@ -135,14 +135,14 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		JPanel rotatePanel = new JPanel();
 		translatePanel.setLayout(new BoxLayout(translatePanel, BoxLayout.X_AXIS));
 		rotatePanel.add(Box.createHorizontalGlue());
-		rotatePanel.add(rotateXText);
-		rotatePanel.add(rotateXField);
+		//rotatePanel.add(rotateXText);
+		//rotatePanel.add(rotateXField);
 		rotatePanel.add(Box.createHorizontalGlue());
-		rotatePanel.add(rotateYText);
-		rotatePanel.add(rotateYField);
+		//rotatePanel.add(rotateYText);
+		//rotatePanel.add(rotateYField);
 		rotatePanel.add(Box.createHorizontalGlue());
-		rotatePanel.add(rotateZText);
-		rotatePanel.add(rotateZField);
+		//rotatePanel.add(rotateZText);
+		//rotatePanel.add(rotateZField);
 		
 		JPanel anglePanel = new JPanel();
 		anglePanel.setLayout(new BoxLayout(anglePanel, BoxLayout.X_AXIS));

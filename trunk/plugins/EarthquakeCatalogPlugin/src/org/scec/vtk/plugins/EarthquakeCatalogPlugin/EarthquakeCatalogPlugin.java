@@ -9,13 +9,14 @@ import javax.swing.JPanel;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.ActionPlugin;
 import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 
 import vtk.vtkActor;
 
 public class EarthquakeCatalogPlugin extends ActionPlugin {
 
 	
-	EarthquakeCatalogPluginGUI f3DGui;
+	EarthquakeCatalogPluginGUI eQGui;
     private boolean guidisplayed = false;
 	private PluginInfo metadata;
 	
@@ -39,19 +40,25 @@ public class EarthquakeCatalogPlugin extends ActionPlugin {
      */
     public JPanel createGUI() {
   
-		f3DGui = new EarthquakeCatalogPluginGUI(this);
+		eQGui = new EarthquakeCatalogPluginGUI(this);
 		
     	guidisplayed = true;
     	setActors();
-        return f3DGui;
+        return eQGui;
     }
     public void unload()
 	{
 
-       /* Info.getMainGUI().removeActors(f3DGui.getMasterFaultBranchGroup());
-        f3DGui.getMasterFaultBranchGroup().clear();
-		super.unload();
-		f3DGui=null;*/
+    	
+    	for(int i =0;i<eQGui.getCatalogs().size();i++)
+    	{    
+    		EQCatalog eqc= eQGui.getCatalogs().get(i);
+    		Info.getMainGUI().removeActors(eqc.masterEarthquakeCatalogBranchGroup);
+    		//eqc.getMasterFaultBranchGroup().clear();
+ 
+    	}
+   		super.unload();
+		eQGui=null;
 	}
     
     public void setActors()

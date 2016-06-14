@@ -163,6 +163,8 @@ public class EQCatalog extends CatalogAccessor {
 	public int gradientDivisions;
 
 	public Color[] gradientColors;
+
+	private boolean catalogTypeIsComcat = false;
 	
 	//private ArrayList<Earthquake> earthquakes; 
 	
@@ -509,19 +511,25 @@ public class EQCatalog extends CatalogAccessor {
 	
 	public void addEqList()
 	{
-		
-		eqList = EarthquakeCatalogPluginGUI.getEarthquakes();
-		addPointsToBranchGroup(false,eqList);
-		addPointsToBranchGroup(true,eqList);
+		if(catalogTypeIsComcat != true)
+		{
+			catalogTypeIsComcat = false;
+			eqList = EarthquakeCatalogPluginGUI.getEarthquakes();
+			addPointsToBranchGroup(false,eqList);
+			addPointsToBranchGroup(true,eqList);
+			EarthquakeCatalogPluginGUI.eqCatalogs.add(this);
+		}
 	}
 	public void addComcatEqList()
 	{
-		if(((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog()!=null)
-		{
+		//if(((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog()!=null)
+		//{
 			eqList = ((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog().getAllEarthquakes();
-		}
+		//}
+		catalogTypeIsComcat = true;
 		addPointsToBranchGroup(false,eqList);
 		addPointsToBranchGroup(true,eqList);
+		EarthquakeCatalogPluginGUI.eqCatalogs.add(this);
 	}
 	
 	public void addPointsToBranchGroup(boolean sphere,ArrayList<Earthquake> eqList)
@@ -602,6 +610,7 @@ public class EQCatalog extends CatalogAccessor {
 //			  scalarBar.SetNumberOfLabels(4);
 //			  Info.getMainGUI().getRenderWindow().GetRenderer().AddActor2D(scalarBar);
 		masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
+		
 		Info.getMainGUI().addActors(masterEarthquakeCatalogBranchGroup);
 	}
 	
@@ -1092,7 +1101,7 @@ public class EQCatalog extends CatalogAccessor {
             if (this.eq_id == null) {
                 readDataFile();
             }
-            initDisplay();
+            //initDisplay();
             load();
             EarthquakeCatalogPluginGUI.status.setText("Status");
         } else {
