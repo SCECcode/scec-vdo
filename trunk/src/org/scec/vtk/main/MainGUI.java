@@ -306,7 +306,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	public void addActors(ArrayList allActors)
 	{
 		vtkPropCollection  renderedActors = renderWindow.GetRenderer().GetViewProps();
-		System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
+		//System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
 		if(allActors.size()>0){
 	    		
 	    		for(int j =0;j<allActors.size();j++)
@@ -315,7 +315,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 			    }
 		}
 	    updateRenderWindow();
-	    System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
+	    //System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
 	   
 	}
 	public void removeActors(ArrayList allActors)
@@ -906,36 +906,19 @@ private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String, Icon)
 			 */
 			public StayOpenCheckBoxMenuItem(String text, Icon icon) {
-				//super(text, icon);
-				//		    super.addKeyListener(this);
-				//super.addMenuKeyListener(shiftDetector);
 			}
 
 			/**
 			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String, Icon, boolean)
 			 */
 			public StayOpenCheckBoxMenuItem(String text, Icon icon, boolean selected) {
-				//super(text, icon, selected);
-				//		    super.addKeyListener(this);
-				//super.addMenuKeyListener(shiftDetector);
 			}
 
-			/**
-			 * Overridden to reopen the menu.
-			 *
-			 * @param pressTime the time to "hold down" the button, in milliseconds
-			 */
-			
-			/*public void doClick(int pressTime) {
-				super.doClick(pressTime);
-				if (shiftDetector.shiftDown)
-					MenuSelectionManager.defaultManager().setSelectedPath(path);
-			}*/
 		}
 
 		public ScriptingPluginGUI GetScriptingPlugin() {
 			// TODO Auto-generated method stub
-			if(scriptingPluginObj==null)
+			if(scriptingPluginObj==null || scriptingPluginObj.getGratPanel()==null)
 			{
 				mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
 			}

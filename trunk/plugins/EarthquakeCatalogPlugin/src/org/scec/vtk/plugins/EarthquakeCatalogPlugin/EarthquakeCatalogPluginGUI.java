@@ -348,7 +348,7 @@ MouseListener {
 		ArrayList<vtkActor> earthquakePointActorList = new ArrayList<>();
 
 		public CatalogAccessor catalogAcc;
-
+		public static ArrayList<EQCatalog> eqCatalogs = new ArrayList<>();
 
 
 		//private CueAnimator cb;
@@ -1650,218 +1650,7 @@ MouseListener {
 			catalog.writeAttributeFile();
 		}
 
-		/*public void generateNewCatalog(CatalogAccessor catalog) {
-			generateNewCatalog(catalog, true);
-		}
-
-		public void generateNewCatalog(CatalogAccessor catalog, boolean showFilter) {
-			// TODO SJD consider moving this method to a controller with no GUI dependencies.
-
-			// Make sure catalog is loaded into memory
-			if (catalog instanceof SourceCatalog) {
-				catalog.setInMemory(true);
-			} else {
-				if(!catalog.isInMemory()){
-					this.catalogTable.getLibraryModel().setLoadedStateForRow(
-							true, this.catalogTable.getLibraryModel().indexOf(catalog));
-				}
-			}
-
-			// create new catalog
-			EQCatalog newCat = new EQCatalog(this, catalog);
-			EQStats.setCatalog(newCat);
-			
-			if (!newCat.isInitialized()) return;
-
-			// init filters if necessary
-			if (this.catalogFilterDialog == null) {
-				this.catalogFilterDialog = new FilterDialog(this);
-			}
-			// get indices
-			int[] indices = new int[catalog.getNumEvents()];
-
-			if (showFilter) {
-				indices = this.catalogFilterDialog.show(catalog);
-			} else {
-				for (int i = 0; i < catalog.getNumEvents(); i ++) {
-					indices[i] = i;
-				}
-			}
-
-			if (indices == null) return;
-
-			// copy events
-			status.setText("Cloning events");
-			newCat.cloneEvents(catalog, indices);
-			newCat.setInMemory(true);
-
-			// unload if SourceCatalog
-			if (catalog instanceof SourceCatalog) {
-				catalog.setInMemory(false);
-			}
-
-			// set data attribute values
-			newCat.runMinMax();
-
-			// save files
-
-			//It was writing the files before you enter in the data
-			newCat.writeAttributeFile();
-			newCat.writeDataFile();
-
-			// update status
-			status.setText("");
-			this.catalogTable.getLibraryModel().addObject(newCat);
-			//        this.catsTabbedPane.setSelectedComponent(this.catsLibraryPanel);
-			this.catalogTable.setSelected(newCat);
-		}
-
-		private void applyDisplayChanges() {
-			int row = this.catalogTable.getSelectedRow();
-			EQCatalog cat = this.catalogTable.getSelectedValue();
-			EQStats.setCatalog(cat);
-
-
-			//        if ((this.propsChange & EQCatalog.CHANGE_SIZE_SLIDER) == EQCatalog.CHANGE_SIZE_SLIDER) {
-			cat.setMasterEventScale(dispProp_slider.getValue() * 0.01f);
-
-			if ((this.propsChange & EQCatalog.CHANGE_GEOMETRY) == EQCatalog.CHANGE_GEOMETRY) {
-				// cat.setGeometry((cat.getGeometry()+1)%3);
-				int newGeometry = EQCatalog.GEOMETRY_POINT;
-				if (this.dispProp_geomSphere.isSelected()==true) {
-					newGeometry = EQCatalog.GEOMETRY_SPHERE;
-				} else if (this.dispProp_geomCow.isSelected()==true) {
-					newGeometry = EQCatalog.GEOMETRY_COW;
-				}
-				cat.setGeometry(newGeometry);
-			}
-			if ((this.propsChange & EQCatalog.CHANGE_SCALING) == EQCatalog.CHANGE_SCALING) {
-				cat.setScaling(this.dispProp_scaleMenu.getSelectedIndex());
-				cat.setPointSize((Integer)this.dispProp_pscaleMenu.getSelectedItem());
-			}
-			if ((this.propsChange & EQCatalog.CHANGE_FOCAL) == EQCatalog.CHANGE_FOCAL) {
-				cat.setFocalMech(this.dispProp_focalBallDropDownBox.getSelectedIndex());
-			}
-			if ((this.propsChange & EQCatalog.CHANGE_COLOR) == EQCatalog.CHANGE_COLOR) {
-				cat.setColor1(this.dispProp_colButton.getColor1());
-				cat.setColor2(this.dispProp_colButton.getColor2());
-			}
-			if ((this.propsChange & EQCatalog.CHANGE_GRADIENT) == EQCatalog.CHANGE_GRADIENT) {
-				cat.setApplyGradientTo((cat.getApplyGradientTo()+1)%2);
-				//this.propsDisplayPanel.add(this.lowerMagGradient,       new GridBagConstraints(1, 8, 1, 1, 0.0, 0.0, a_l, f, new Insets(0,0,0,0), 0, 0));
-			}
-			if ((this.propsChange & EQCatalog.CHANGE_FOCAL_DISPLAY) == EQCatalog.CHANGE_FOCAL_DISPLAY) {
-				applyFocalDiscChanges(cat);
-			}
-			if ((this.propsChange & EQCatalog.CHANGE_FOCAL_DISC_COMP_COLOR) == EQCatalog.CHANGE_FOCAL_DISC_COMP_COLOR) {
-				applyFocalDiscChanges(cat);
-			}
-			if ((this.propsChange & EQCatalog.CHANGE_FOCAL_DISC_EXT_COLOR) == EQCatalog.CHANGE_FOCAL_DISC_EXT_COLOR) {
-				applyFocalDiscChanges(cat);
-			}
-			if ((this.propsChange & EQCatalog.CHANGE_RECENT_EQ_COLOR) == EQCatalog.CHANGE_RECENT_EQ_COLOR) {
-				cat.setRecentEQColoring(this.dispProp_recentCheckBox.isSelected()?1:0);
-				// TODO: tlrobins - figure out why the value isn't saved in the XML cat file
-			/*if ((this.propsChange & EQCatalog.CHANGE_DISCRETE_EQ_COLOR) == EQCatalog.CHANGE_DISCRETE_EQ_COLOR) {
-				cat.setRecentEQColoring(this.dispProp_discreteCheckBox.isSelected()?1:0);
-				// TODO: tlrobins - figure out why the value isn't saved in the XML cat file
-			}*/
-			/*}
-			if ((this.propsChange & EQCatalog.CHANGE_TRANSPARENCY_SLIDER) == EQCatalog.CHANGE_TRANSPARENCY_SLIDER) {
-
-				cat.setTransparency(this.transparencySlider.getValue());
-			}
-
-			setAnimationColor(this.dispProp_colButton.getColor1(),this.dispProp_colButton.getColor2());
-			setAnimationScaling(this.dispProp_scaleMenu.getSelectedIndex());
-			setAnimationStyle(cat.getFocalDisplay());
-			this.catalogTable.getLibraryModel().fireTableRowsUpdated(row, row);
-			this.propsChange = EQCatalog.CHANGE_NONE;
-			this.dispProp_apply.setEnabled(false);
-			cat.updateDisplay();
-			CatalogAccessor catalog = null;
-			//        if (this.catsTabbedPane.getSelectedComponent() == this.catsSourcePanel) {
-			//            catalog = (CatalogAccessor)this.sourceList.getSelectedValue();
-			//        } else if (this.catsTabbedPane.getSelectedComponent() == this.catsLibraryPanel) {
-			catalog = this.catalogTable.getSelectedValue();
-			//        }
-			getEarthquakes(catalog);
-		}
-
-		private void applyFocalDiscChanges(EQCatalog cat) {
-			if (this.dispProp_focalBall.isSelected()) {
-				cat.setFocalDisplay(EQCatalog.FOCAL_BALL);
-				setFocalDiscGUIEnabled(false);
-			} else if (this.dispProp_focalDisc.isSelected()){
-				cat.setFocalDisplay(EQCatalog.FOCAL_DISC);
-				cat.setFocalDiscCompColor(dispProp_focalCompColButton.getColor1());
-				cat.setFocalDiscExtColor(dispProp_focalExtColButton.getColor1());
-				setFocalDiscGUIEnabled(true);
-			} else if (this.dispProp_focalNone.isSelected()) {
-				cat.setFocalDisplay(EQCatalog.FOCAL_NONE);
-			}
-		}
-
-		//following functions are used by ROIfilter to display only earthquakes encompassed by user regions, Ryan Berti 2008
-		//function called when ROIfilter button is pushed
-		public boolean setROIFilter(){
-			if(!ROIFilter){
-				ROIFilter = true;
-				System.out.println("ROI filter is on");
-			}else{
-				ROIFilter = false;
-				System.out.println("ROI filter is off");
-			}
-			EQCatalog catalog = this.catalogTable.getSelectedValue();
-			EQStats.setCatalog(catalog);
-			getEarthquakes(catalog);//filters selected catalog, updates display
-			catalog.updateDisplay();
-			return ROIFilter;
-		}
-
-		//sets polygon list to reflect polygon list in Geo3dInfo
-		public void setPolygons(ArrayList<RegionWrapper> polys){
-			plist = polys;
-		}
-
-		//checks if earthquake is in any polygons
-		private boolean isContained(float lat, float lon){
-			Location loc = new Location(lat, lon);
-			for(int i = 0; i < plist.size(); i++){
-				RegionWrapper pol = plist.get(i);
-				if(pol.getRegion().contains(loc)){//look at Geo3dInfo comments for why lat and long are multiplied by 1000
-					return true;
-				}
-			}
-			return false;
-		}
-
-
-		private void setPropertyChange(boolean nochange, int prop) {
-			if (nochange) {
-				this.propsChange &= ~prop;
-			} else {
-				this.propsChange |= prop;
-			}
-			// set apply button
-			this.dispProp_apply.setEnabled(this.propsChange != EQCatalog.CHANGE_NONE);
-		}
-
-		// only called by renderer
-		boolean isFocalMenuEnabled() {
-			return this.dispProp_focalBallDropDownBox.isEnabled();
-		}
-
-		public int getLibraryRowCount() {
-			int rows = this.catalogTable.getRowCount();
-			return rows;
-		}
-
-		public boolean isLibraryRowEnabled(int x) {
-			int[] row = {x};
-			return this.catalogTable.getLibraryModel().allAreLoaded(row);
-		}
-
+		
 		//****************************************
 		//     EVENT HANDLERS
 		//****************************************
@@ -1923,6 +1712,7 @@ MouseListener {
 			//setAttributePanels();
 			//        }
 			if(src == dispProp_slider){
+				//earthquake magnitude scaling
 				//setPropertyChange(true, EQCatalog.CHANGE_SIZE_SLIDER);
 				int scale = dispProp_slider.getValue();
 				double[] scaleMenuItems = {0.05,0.1,0.2,0.5,1.0,2.0,3.0,4.0,5.0,6.0};
@@ -1941,27 +1731,66 @@ MouseListener {
 				case 9:scaleSet =scaleMenuItems[8];break;
 				case 10:scaleSet =scaleMenuItems[9];break;
 				}
-				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
-				if(!earthquakePointActorList.isEmpty() && earthquakePointActorList.get(0).GetVisibility() == 1)
-				{
-					earthquakePointActorList.get(0).GetProperty().SetPointSize(scaleSet);//SetScale(scaleSet,scaleSet,scaleSet);
-				}
-				else if(!earthquakeList.isEmpty() )
-				for(int i = 0;i<earthquakeList.size();i++)
-				{
-					Earthquake eq = earthquakeList.get(i);
-					eq.getEarthquakeCatalogActor().VisibilityOn();
-					vtkSphereSource srcReference = (vtkSphereSource) eq.getEarthquakeCatalogActor().GetMapper().GetInputConnection(0, 0).GetProducer();//(scaleSet);//,scaleSet,scaleSet);
-					srcReference.SetRadius(eq.getMag()*scaleSet);
-					eq.getEarthquakeCatalogActor().Modified();
-				}
+				EQCatalog cat = this.catalogTable.getSelectedValue();
+
+				ArrayList<Earthquake> eqList = cat.getSelectedEqList();
+				vtkActor actorPointsOld = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(0);
+				vtkActor actorSpheresOld = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(1);
 				
-				Info.getMainGUI().updateRenderWindow();
+				vtkDoubleArray radi = new vtkDoubleArray();
+				radi.SetName("radi");
+				
+				vtkMapper mapperPoints = actorPointsOld.GetMapper();
+				vtkMapper mapperSphere = actorSpheresOld.GetMapper();
+				
+				vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
+				vertexGlyphFilter=(vtkVertexGlyphFilter) actorPointsOld.GetMapper().GetInputAlgorithm();//.GetOutputDataObject(0);
+				
+				vtkGlyph3D glyphPoints = new vtkGlyph3D();
+				glyphPoints = (vtkGlyph3D) actorSpheresOld.GetMapper().GetInputAlgorithm();
+				
+				vtkPolyData inputData = new vtkPolyData();
+				inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
+				//int lastIndex = eqList.indexOf(eq);
+				
+				vtkPoints pts = new vtkPoints();
+				radi = (vtkDoubleArray) inputData.GetPointData().GetArray("radi");
+				double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
+				for(int i =0;i<eqList.size();i++)
+				{
+					Earthquake eq = eqList.get(i);
+					radi.SetTuple1(i,eq.getEq_magnitude(i)*scaleSet);
+				}
+				radi.Modified();
+				inputData.GetPointData().AddArray(radi);
+				vertexGlyphFilter.SetInputData(inputData);
+				vertexGlyphFilter.Update();
+				mapperPoints.SetInputConnection(vertexGlyphFilter.GetOutputPort());
+
+				
+				glyphPoints.SetInputData(inputData);
+				mapperSphere.SetInputConnection(glyphPoints.GetOutputPort());
+				
+				actorPointsOld.SetMapper(mapperPoints);
+				actorSpheresOld.SetMapper(mapperSphere);
+				cat.masterEarthquakeCatalogBranchGroup.set(0,actorPointsOld);
+				cat.masterEarthquakeCatalogBranchGroup.set(1,actorSpheresOld);
+				Info.getMainGUI().addActors(cat.masterEarthquakeCatalogBranchGroup);
+				
 			}
 			if(src == transparencySlider)
 			{
-				double transparency = transparencySlider.getValue();
-				System.out.println(transparency);
+				double transparency = (transparencySlider.getValue()*255/100);
+				//System.out.println(transparency);
+				EQCatalog cat = this.catalogTable.getSelectedValue();
+
+				ArrayList<Earthquake> eqList = cat.getSelectedEqList();
+				for(int i =0;i<eqList.size();i++)
+				{
+					Earthquake eq = eqList.get(i);
+					aniamteEarthquakeOpacity(i, eq, cat, (int)transparency);
+				}
+				Info.getMainGUI().updateRenderWindow();
 			}
 			if (src == depthSlider) {
 				depthSliderValue = depthSlider.getValue();
@@ -2017,48 +1846,8 @@ MouseListener {
 		{
 			return this.netSourceDialog;
 		}
-		public static ArrayList startAniamteEarthquake(EQCatalog cat,int opacity)
-		{
-			//called on every animation tick to add the earthquake point to the actor
-			ArrayList<Earthquake> eqList = cat.getSelectedEqList();
-			vtkActor actorPointsOld = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(0);
-			vtkActor actorSpheresOld = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(1);
-			vtkActor actorPointsNew = new vtkActor(); 
-			vtkActor actorSpheresNew = new vtkActor();
-			vtkPoints pts = new vtkPoints();
-			
-			vtkMapper mapperPoints = actorPointsOld.GetMapper();
-			vtkMapper mapperSphere = actorSpheresOld.GetMapper();
-			
-			vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
-			colors.SetName("colors");
-			colors.SetNumberOfComponents(1);
-			colors.SetNumberOfTuples(eqList.size());
-			
-			vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
-			vertexGlyphFilter=(vtkVertexGlyphFilter) actorPointsOld.GetMapper().GetInputAlgorithm();//.GetOutputDataObject(0);
-			
-			vtkGlyph3D glyphPoints = new vtkGlyph3D();
-			glyphPoints = (vtkGlyph3D) actorSpheresOld.GetMapper().GetInputAlgorithm();
-			
-			vtkPolyData inputData = new vtkPolyData();
-			inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
-		
-			colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
-			
-			
-		    for(int i=0;i<eqList.size();i++)
-		    {
-		    	double[] val = colors.GetTuple4(i);
-		    	colors.InsertTuple4(i, val[0],val[1],val[2],opacity);
-		    }
-		    colors.Modified();
-		    inputData.GetPointData().AddArray(colors);
-			actorPointsNew.SetMapper(mapperPoints);
-			actorSpheresNew.SetMapper(mapperSphere);
-			return cat.masterEarthquakeCatalogBranchGroup;
-		}
-		public static ArrayList aniamteEarthquake(int lastIndex,Earthquake eq,EQCatalog cat,int opacity)
+
+		public static ArrayList aniamteEarthquakeOpacity(int lastIndex,Earthquake eq,EQCatalog cat,int opacity)
 		{
 			//called on every animation tick to add the earthquake point to the actor
 			ArrayList<Earthquake> eqList = cat.getSelectedEqList();
@@ -2069,7 +1858,7 @@ MouseListener {
 			
 			vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
 			colors.SetName("colors");
-			colors.SetNumberOfComponents(1);
+			colors.SetNumberOfComponents(4);
 			colors.SetNumberOfTuples(eqList.size());
 			
 			vtkMapper mapperPoints = actorPointsOld.GetMapper();
@@ -2091,51 +1880,21 @@ MouseListener {
 			
 			double[] val = colors.GetTuple4(lastIndex);
 			colors.SetTuple4(lastIndex, val[0],val[1],val[2],opacity);
-			//vtkPoints pts = new vtkPoints();
-			/*double[] xForm = new double[3];
-			*/
-			//colors.InsertTuple4(lastIndex, val[0],val[1],val[2],255);
-			/*double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
-			double[] xForm = new double[3];
-			for (int i = 0; i < eqList.size(); i++) 
-			{
-				
-				Earthquake eq1 = eqList.get(i);
-				xForm = Transform.transformLatLonHeight(eq1.getEq_latitude(i), eq1.getEq_longitude(i), -eq1.getEq_depth(i));
-				pts.InsertNextPoint(xForm);
-				// Color based on magnitude
-				int ind= (int) ( Math.floor( Math.floor(eq1.getEq_magnitude(i)) / stepSize)-cat.getMinMagnitude());
-				if(ind<0)
-					ind=0;
-				
-				float[] grad = new float[3];
-				cat.gradientColors[ind].getRGBColorComponents(grad);
-
-		    	colors.InsertTuple4(i,cat.gradientColors[ind].getRed(),cat.gradientColors[ind].getGreen(),cat.gradientColors[ind].getBlue(),255);
-					}*/
 			
 			colors.Modified();
-			//inputData.GetPointData().AddArray(colors);
-			//inputData.SetPoints(pts);
+
 		    inputData.GetPointData().AddArray(colors);
 			vertexGlyphFilter.SetInputData(inputData);
 			vertexGlyphFilter.Update();
 			mapperPoints.SetInputConnection(vertexGlyphFilter.GetOutputPort());
-			//mapperPoints.SetLookupTable(lut);
-			
 
 			
 			glyphPoints.SetInputData(inputData);
 			mapperSphere.SetInputConnection(glyphPoints.GetOutputPort());
-			//mapperSphere.SetLookupTable(lut);
 			
 			actorPointsNew.SetMapper(mapperPoints);
 			actorSpheresNew.SetMapper(mapperSphere);
-			//cat.masterEarthquakeCatalogBranchGroup.set(0,actorPointsNew);
-			//cat.masterEarthquakeCatalogBranchGroup.set(1,actorSpheresNew);
-			return cat.masterEarthquakeCatalogBranchGroup;//.set(0,actorPointsNew);
-		//	cat.masterEarthquakeCatalogBranchGroup.set(1,actorSpheresNew);
-		//	Info.getMainGUI().addActors(cat.masterEarthquakeCatalogBranchGroup);
+			return cat.masterEarthquakeCatalogBranchGroup;
 		}
 		public void actionPerformed(ActionEvent e) {
 		
@@ -2170,9 +1929,9 @@ MouseListener {
 			{
 				//ascending order as per the time
 				EQCatalog cat = this.catalogTable.getSelectedValue();
-				ArrayList<Earthquake> earthquakeList = 	cat.getSelectedEqList();
+				//ArrayList<Earthquake> earthquakeList = 	cat.getSelectedEqList();
 
-				Info.getMainGUI().GetScriptingPlugin().addEarthquakeListForAniamtion(earthquakeList,cat,true);
+				Info.getMainGUI().GetScriptingPlugin().addEarthquakeListForAniamtion(cat,true);
 			}
 			
 			//display panel buttons
@@ -2186,11 +1945,6 @@ MouseListener {
 
 			}
 			else if (src == this.dispProp_geomSphere) {
-//				ArrayList<Earthquake> earthquakeList = 	new ArrayList<>();
-//				if(!netSourceDialog.getAllEarthquakes().isEmpty())
-//					earthquakeList.addAll(netSourceDialog.getAllEarthquakes());
-//				if(!getEarthquakes().isEmpty())
-//					earthquakeList.addAll(getEarthquakes());
 				
 				EQCatalog cat = this.catalogTable.getSelectedValue();
 				cat.setGeometry(1);
@@ -2223,725 +1977,64 @@ MouseListener {
 				}
 					// Create the color map
 				EQCatalog cat = this.catalogTable.getSelectedValue();
-				ArrayList<Earthquake> earthquakeList = cat.getSelectedEqList();
-				vtkActor actorPoints = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(0);
-				vtkActor actorSpheres = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(1);
-				vtkDoubleArray colors = new vtkDoubleArray();
-				colors.SetName("colors");
-				colors.SetNumberOfComponents(1);
-				
+	
 				cat.setGradColor1(newColor[0]);
 				cat.setGradColor2(newColor[1]);
 				cat.initGradientAppearance();
-				//new gradientof 2 colors
-				vtkLookupTable  lut = new  vtkLookupTable(); 
-			    lut.SetNumberOfColors(3);
-			    lut.SetNumberOfTableValues(cat.gradientDivisions);
-			    lut.Build();
-			    for(int i=0;i<cat.gradientDivisions;i++)
-			    {
-			    	float[] grad = new float[3];
-			    	cat.gradientColors[i].getRGBColorComponents(grad);
-			    	lut.SetTableValue(i, grad[0],grad[1],grad[2],1);
-			    }
+				ArrayList<Earthquake> eqList = cat.getSelectedEqList();
+				vtkActor actorPointsOld = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(0);
+				vtkActor actorSpheresOld = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(1);
+				
+				vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
+				colors.SetName("colors");
+				colors.SetNumberOfComponents(4);
+				colors.SetNumberOfTuples(eqList.size());
+				
+				vtkMapper mapperPoints = actorPointsOld.GetMapper();
+				vtkMapper mapperSphere = actorSpheresOld.GetMapper();
+				
 				vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
-				vtkMapper mapperPoints = actorPoints.GetMapper();
-				vtkMapper mapperSphere = actorSpheres.GetMapper();
-				vertexGlyphFilter=(vtkVertexGlyphFilter) actorPoints.GetMapper().GetInputAlgorithm();//.GetOutputDataObject(0);
+				vertexGlyphFilter=(vtkVertexGlyphFilter) actorPointsOld.GetMapper().GetInputAlgorithm();//.GetOutputDataObject(0);
 				
 				vtkGlyph3D glyphPoints = new vtkGlyph3D();
-				glyphPoints = (vtkGlyph3D) actorSpheres.GetMapper().GetInputAlgorithm();
+				glyphPoints = (vtkGlyph3D) actorSpheresOld.GetMapper().GetInputAlgorithm();
+				
 				vtkPolyData inputData = new vtkPolyData();
 				inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
-				colors.SetNumberOfTuples(inputData.GetNumberOfPoints());
-		
+				//int lastIndex = eqList.indexOf(eq);
+				
+				vtkPoints pts = new vtkPoints();
+				
+				colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
+				
 				double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
-				for (int i = 0; i < earthquakeList.size(); i++) 
+				for(int i =0;i<eqList.size();i++)
 				{
-				int ind= (int) ( Math.floor( Math.floor(earthquakeList.get(i).getEq_magnitude(i)) / stepSize)-cat.getMinMagnitude());
-				if(ind<0)
-					ind=0;
-					colors.InsertTuple1(i,ind);
+					Earthquake eq = eqList.get(i);
+					// Color based on magnitude
+					int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude(i)) / stepSize)-cat.getMinMagnitude());
+					if(ind<0)
+						ind=0;
+					
+					colors.SetTuple4(i, cat.gradientColors[ind].getRed(),cat.gradientColors[ind].getGreen(),cat.gradientColors[ind].getBlue(),255);
 				}
-				inputData.GetPointData().AddArray(colors);
-	
+				colors.Modified();
+
+			    inputData.GetPointData().AddArray(colors);
 				vertexGlyphFilter.SetInputData(inputData);
 				vertexGlyphFilter.Update();
 				mapperPoints.SetInputConnection(vertexGlyphFilter.GetOutputPort());
-				mapperPoints.SetLookupTable(lut);
+
 				
 				glyphPoints.SetInputData(inputData);
 				mapperSphere.SetInputConnection(glyphPoints.GetOutputPort());
-				mapperSphere.SetLookupTable(lut);
 				
-				actorPoints.SetMapper(mapperPoints);
-				actorSpheres.SetMapper(mapperSphere);
-				cat.masterEarthquakeCatalogBranchGroup.set(0,actorPoints);
-				cat.masterEarthquakeCatalogBranchGroup.set(1,actorSpheres);
+				actorPointsOld.SetMapper(mapperPoints);
+				actorSpheresOld.SetMapper(mapperSphere);
+				cat.masterEarthquakeCatalogBranchGroup.set(0,actorPointsOld);
+				cat.masterEarthquakeCatalogBranchGroup.set(1,actorSpheresOld);
 				Info.getMainGUI().addActors(cat.masterEarthquakeCatalogBranchGroup);
 			}
-
-			
-			//        SourceCatalog srcCat = (SourceCatalog)this.sourceList.getSelectedValue();
-
-			/*Object src = e.getSource();
-
-			//////////////////
-			// UPPER PANEL  //
-			//////////////////
-
-			if (src == newInternetSourceButton){
-				NetworkSourcesDialog dialog = getNetworkSourceDialog();
-				dialog.setLocationRelativeTo(null);
-				dialog.setVisible(true);
-				riGUI.updateCombo(); //updates relative intensity GUI combo box with newly added source
-			}
-			else if(src == btnStatistics){
-				EQStats.setVisible(true);
-				EQStats.setCatalog(libCat);
-			}
-			else if (src == dispProp_discreteCheckBox){
-				
-				dispProp_apply.setEnabled(true);
-				if(dispProp_discreteCheckBox.isSelected()){
-					if(colorDialog == null)
-						colorDialog = new DiscreteColorDialog(this);
-					else
-						colorDialog.setVisible(true);
-				}
-				else{
-					bIsDiscreteColors=false;
-					setPropertyChange(false,EQCatalog.CHANGE_COLOR);
-				}
-					
-				
-			}
-			else if (src == newDiskSourceButton){
-				/*
-				 * User chooses an earthquake catalog from their harddrive.
-				 * It gets formatted into a SourceCatalog file.
-				 * We don't use SourceCatalogs anymore so, it gets converted to
-				 * a library catalog, and the SourceCatalog is deleted.
-				 * Then the RI combo box is updated.
-				 */
-				/*if(fileChooser == null){
-					fileChooser = new DataFileChooser(this, "Import New Catalog from Disk",false,new File(Geo3dInfo.getRootPluginDir()+File.separator+"Catalogs"));
-				}
-
-				File file = fileChooser.getFile();
-					
-				if (file != null) {
-					ImportConvert fileFormat = new ImportConvert(file);
-					File formattedFile = null;
-					if (src==newDiskSourceButton)
-						formattedFile = fileFormat.getFormattedFile();
-					if(formattedFile == null)
-						formattedFile = fileFormat.generalConverter(file);
-					else if(formattedFile.getPath() == "invalidfile.txt")
-						formattedFile = null;
-
-					SourceCatalog newSource = new SourceCatalog(this);
-					if (newSource.processFile(formattedFile, false)) {
-						ListModel list = this.getSourceList().getModel();
-						SourceCatalog sourceCat = (SourceCatalog)list.getElementAt(list.getSize()-1);
-						generateNewCatalog(sourceCat, false);
-						getSourceList().deleteCatalog(sourceCat, false);
-					}
-				}
-				riGUI.updateCombo();
-			}
-			else if (src == this.newFromLibraryButton) {
-				generateNewCatalog(libCat);
-				riGUI.updateCombo(); //updates relative intensity GUI combo box
-			}
-			else if (src == this.exportLibraryCatButton) {
-				//libModel.saveDisplayProperties(); // old save button code?
-
-
-				CatalogExporter exporter = new CatalogExporter(this);
-				exporter.setCatalog(libCat);
-				exporter.setVisible(true);
-				//        	JFileChooser fc = new JFileChooser();
-				//        	if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-				//        		File outputFile = fc.getSelectedFile();
-				//        		CatalogExporter exporter = new CatalogExporter(this);
-				//        		try {
-				//					exporter.writeSCEDC(outputFile);
-				//				} catch (Exception e1) {
-				//					// TODO Auto-generated catch block
-				//					e1.printStackTrace();
-				//				}
-				//        	}
-			}
-			else if (src == this.editLibraryCatButton) {
-				runObjectInfoDialog(libCat);
-				riGUI.updateCombo(); //updates relative intensity GUI combo box
-			}
-			else if (src == this.remLibraryCatButton) {
-				libModel.deleteObjects(
-						this.catalogTable,
-						new int[] {this.catalogTable.getSelectedRow()});
-				riGUI.updateCombo();
-			}
-			else if(src == referenceButton){
-				JFrame frame = new JFrame("Earthquake Catalog Information");
-
-				JTextArea referenceText = new JTextArea(20, 50);
-				referenceText.setLineWrap(true);
-				referenceText.setWrapStyleWord(true);
-				referenceText.setText(getReferenceText());
-				referenceText.setEditable(false);
-
-				JScrollPane panel = new JScrollPane(referenceText);
-
-				frame.add(panel);
-				frame.pack();
-				frame.setLocation(50, 70);
-				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-				frame.setVisible(true);
-			}
-
-			else if (e.getSource() == btnStatsHelp){
-				JTextArea helpText = new JTextArea("How to find the Magnitude Frequency Distribution of a selected catalog:\n\n" +
-						"  1) Select and filter an Earthquake Catalog.\n" +
-						"  2) In the Display tab, select spheres and select a value for magnitude scaling. Click Apply.\n" +
-						"  3) Wait for the spheres to display on the screen. Now the statistics panel can be opened.\n" +
-						"  4) Enter a threshold magnitude and click Generate. The threshold magnitude should be greater than\n      the minimum magnitude event in the earthquake catalog. The minimum event can be viewed in the Extents tab.\n" +
-						"  5) Now you can view the b value for the two series of earthquakes in the catalog.\n" +
-						"  6) Click Generate Graph to view a plot of the Magnitude Frequency Distribution of the selected catalog.", 1, 1);
-				helpText.setLineWrap(true);
-				helpText.setEditable(false);
-				JDialog helpDialog = new JDialog();
-				helpDialog.add(helpText);
-				helpDialog.setSize(new Dimension(575,200));
-				helpDialog.setLocationRelativeTo(this);
-				helpText.setWrapStyleWord(true);
-				helpDialog.setVisible(true);
-			}
-			
-			else if (src == this.helpButton){
-				JOptionPane.showMessageDialog(this,
-						"Click on any catalog to highlight it. \n" +
-						"Once it is highlighted, click the checkbox \n" +
-						"to display your catalog. \n \n" +
-						"To import an earthquake catalog from file on \n" +
-						"your computer, acquire one from an online \n" +
-						"network, or filter one out of an existing catalog,\n" +
-						"click the appropriate button on the left.\n \n",
-						"Need Help?",
-						JOptionPane.PLAIN_MESSAGE);
-
-
-			}
-			/*else if (src == this.loadCatsButton) {
-		        libModel.setLoadedStateForRow(true, this.catalogTable.getSelectedRow());
-		        processTableSelectionChange();
-		        setAnimationColor(libCat.getColor1(), libCat.getColor2());
-
-		    }
-		    else if (src == this.unloadCatsButton) {
-		        libModel.setLoadedStateForRow(false, this.catalogTable.getSelectedRow());
-		        processTableSelectionChange();
-
-		    }*/
-
-
-			/////////////////////////
-			// CATS SOURCE PANEL   //
-			/////////////////////////
-			// This is not being used anymore
-			/*else if (src == this.addSourceCatButton) {
-	            if (this.fileChooser == null) {
-	                this.fileChooser = new DataFileChooser(this, "Import Catalog Source",false,new File(Geo3dInfo.getCWD().getParent()+File.separator+"scec_vdo"+File.separator+"data"+File.separator+"Catalogs"));
-	            }
-	            // TODO set alternate filter
-	            File file = this.fileChooser.getFile();
-	            if (file != null) {
-
-	            	//converts catalog to readable file format
-	            	ImportConvert fileFormat = new ImportConvert(file);
-	            	File formattedFile = fileFormat.getFormattedFile();
-
-	                SourceCatalog newSource = new SourceCatalog(this);
-	                newSource.processFile(formattedFile);
-	                //newSource.processFile(file);
-	            }
-	        } else if (src == this.remSourceCatButton) {
-	        	// Delete the file if it was a temporary network catalog:
-	        	String srcPath = srcCat.getSourceFile();
-	        	if (srcPath.contains("net_cat_temp")) {
-	        		File srcFile = new File(srcPath);
-	        		srcFile.delete();
-	        	}
-
-	        	// Remove from the source list
-	            this.sourceList.deleteCatalog(srcCat);
-
-	        } else if (src == this.editSourceCatButton) {
-	            runObjectInfoDialog(srcCat);
-
-	        } else if (src == this.newFromSourceButton) {
-	            generateNewCatalog(srcCat);
-//	        } else if (src == this.helpsButton){
-//				JOptionPane.showMessageDialog(this,
-//					    "To upload an earthquake catalog from a file on your computer:\n Click on the grey + button to add your catalog to the static sources viewer window.\n Highlight your catalog in the static sources window and click the yellow + button.\n It should then be added to the library tab.",
-//					    "Need Help?",
-//					    JOptionPane.PLAIN_MESSAGE);
-	        }*/
-
-			/////////////////////////
-			// PROPS DISPLAY PANEL //
-			/////////////////////////
-
-			// geometry
-			/*else if (src == this.dispProp_geomPoint) { // Point radio button
-				setRecentEQColorEnabled(true);
-				dispProp_discreteCheckBox.setEnabled(true);
-				dispProp_discreteeqcolor.setEnabled(true);
-				this.btnStatistics.setEnabled(false);
-
-				
-				if (!this.dispProp_recentCheckBox.isSelected()) {
-					setColorEnabled(true);
-					
-					if (this.dispProp_colButton.getColor1().equals(this.dispProp_colButton.getColor2()))
-						setGradApplyEnabled(false);
-					else
-						setGradApplyEnabled(true);
-				}
-				setMagScaleEnabled(false);
-				setFocalMechEnabled(false);
-				setPointScaleEnabled(true);
-
-				setPropertyChange(
-						libCat.getGeometry() == EQCatalog.GEOMETRY_POINT,
-						EQCatalog.CHANGE_GEOMETRY);
-
-			} else if (src == this.dispProp_geomSphere) { // Sphere radio button
-				setMagScaleEnabled(true);
-				setPointScaleEnabled(false);
-				dispProp_discreteCheckBox.setEnabled(true);
-				dispProp_discreteeqcolor.setEnabled(true);
-				this.btnStatistics.setEnabled(true);
-
-				
-				// if it is a focal mechanism catalog
-				if (libCat.getDataScope() == CatalogAccessor.DATA_SCOPE_FOCAL || libCat.getDataScope() == CatalogAccessor.DATA_SCOPE_UNCERT_FOCAL || libCat.getDataScope() == CatalogAccessor.DATA_SCOPE_FOCAL_PROB){
-					setFocalMechEnabled(true);
-					if (this.dispProp_focalNone.isSelected()) {
-						setFocalBallGUIEnabled(false);
-						setFocalDiscGUIEnabled(false);
-					} else if (this.dispProp_focalBall.isSelected()) {
-						setColorEnabled(false);
-						setRecentEQColorEnabled(false);
-						setGradApplyEnabled(false);
-						setFocalDiscGUIEnabled(false);
-					} else if (this.dispProp_focalDisc.isSelected()) {
-						setColorEnabled(false);
-						setRecentEQColorEnabled(false);
-						setGradApplyEnabled(false);
-						setFocalBallGUIEnabled(false);
-						setMagScaleEnabled(true);
-					}
-					
-				} // if focal mechanisms are not enabled
-				else {
-					setRecentEQColorEnabled(true);
-					if (!this.dispProp_recentCheckBox.isSelected()) {
-						setColorEnabled(true);
-						if (this.dispProp_colButton.getColor1().equals(this.dispProp_colButton.getColor2()))
-							setGradApplyEnabled(false);
-						else
-							setGradApplyEnabled(true);
-					}
-				}
-
-				setPropertyChange(
-						libCat.getGeometry() == EQCatalog.GEOMETRY_SPHERE,
-						EQCatalog.CHANGE_GEOMETRY);
-
-			} else if (src == this.dispProp_geomCow) {
-				setColorEnabled(true);
-				setRecentEQColorEnabled(true);
-				if (this.dispProp_colButton.getColor1().equals(this.dispProp_colButton.getColor2()))
-					setGradApplyEnabled(false);
-				else
-					setGradApplyEnabled(true);
-				setMagScaleEnabled(true);
-				setPointScaleEnabled(false);
-				setFocalMechEnabled(false);
-
-				setPropertyChange(
-						libCat.getGeometry() == EQCatalog.GEOMETRY_COW,
-						EQCatalog.CHANGE_GEOMETRY);
-
-			}
-			// scaling
-			else if (src == this.dispProp_scaleMenu) {
-				setPropertyChange(
-						libCat.getScaling() == this.dispProp_scaleMenu.getSelectedIndex(),
-						EQCatalog.CHANGE_SCALING);
-			}
-			// point scaling
-			else if (src == this.dispProp_pscaleMenu) {
-				setPropertyChange(
-						libCat.getPointSize() == (Integer)this.dispProp_pscaleMenu.getSelectedItem(),
-						EQCatalog.CHANGE_SCALING);
-			}
-			// color
-			else if (src == this.dispProp_colButton) {
-				if (this.colorChooser == null) {
-					this.colorChooser = new GradientColorChooser(this);
-				}
-				Color[] newColor = this.colorChooser.getColors(
-						this.dispProp_colButton.getColor1(),
-						this.dispProp_colButton.getColor2());
-				if (newColor != null) {
-					this.dispProp_colButton.setColor(newColor[0], newColor[1]);
-					if (newColor[0].equals(newColor[1])) {
-						setGradApplyEnabled(false);
-						this.higherGradientLabel.setVisible(false);
-						this.lowerGradientLabel.setVisible(false);
-					} else {
-						setGradApplyEnabled(true);
-						this.higherGradientLabel.setVisible(true);
-						this.lowerGradientLabel.setVisible(true);
-					}
-					setPropertyChange(
-							libCat.getColor1().equals(newColor[0]) && libCat.getColor2().equals(newColor[1]),
-							EQCatalog.CHANGE_COLOR);
-
-				}
-			}
-			// recent eq coloring
-			else if (src == this.dispProp_recentCheckBox) {
-				if (this.dispProp_recentCheckBox.isSelected()) {
-					setColorEnabled(false);
-					setGradApplyEnabled(false);
-					setPropertyChange(libCat.getRecentEQColoring() == EQCatalog.RECENT_EQ_COLOR_ENABLED, EQCatalog.CHANGE_RECENT_EQ_COLOR);
-					System.out.println("Recent coloring enabled.");
-				} else {
-					setColorEnabled(true);
-					if (this.dispProp_colButton.getColor1().equals(this.dispProp_colButton.getColor2()))
-						setGradApplyEnabled(false);
-					else
-						setGradApplyEnabled(true);
-					setPropertyChange(libCat.getRecentEQColoring() == EQCatalog.RECENT_EQ_COLOR_DISABLED, EQCatalog.CHANGE_RECENT_EQ_COLOR);
-				}
-			}
-			// gradient
-			else if (src == this.dispProp_gradMag) {
-				setPropertyChange(
-						libCat.getApplyGradientTo() == EQCatalog.GRADIENT_APPLY_MAGNITUDE,
-						EQCatalog.CHANGE_GRADIENT);
-
-				this.lowerGradientLabel.setText("Smaller");
-				this.higherGradientLabel.setText("Bigger");
-			} else if (src == this.dispProp_gradDepth) {
-				setPropertyChange(
-						libCat.getApplyGradientTo() == EQCatalog.GRADIENT_APPLY_DEPTH,
-						EQCatalog.CHANGE_GRADIENT);
-				this.lowerGradientLabel.setText("Shallow");
-				this.higherGradientLabel.setText("Deep");
-			}
-			// focal
-			else if (src == this.dispProp_focalNone) {
-				setFocalBallGUIEnabled(false);
-				setFocalDiscGUIEnabled(false);
-				setMagScaleEnabled(true);
-				setRecentEQColorEnabled(true);
-				if (!this.dispProp_recentCheckBox.isSelected()) {
-					setColorEnabled(true);
-					if (!this.dispProp_colButton.getColor1().equals(this.dispProp_colButton.getColor2()))
-						setGradApplyEnabled(true);
-				}
-
-				setPropertyChange(
-						libCat.getFocalDisplay() == EQCatalog.FOCAL_NONE,
-						EQCatalog.CHANGE_FOCAL_DISPLAY);
-			} else if (src == this.dispProp_focalBallDropDownBox || src == this.dispProp_focalBall) {
-				setColorEnabled(false);
-				setRecentEQColorEnabled(false);
-				setGradApplyEnabled(false);
-				setMagScaleEnabled(true);
-				setFocalBallGUIEnabled(true);
-				setFocalDiscGUIEnabled(false);
-
-				if (!(libCat.getFocalMech() == this.dispProp_focalBallDropDownBox.getSelectedIndex())) {
-					setPropertyChange(
-							libCat.getFocalMech() == this.dispProp_focalBallDropDownBox.getSelectedIndex(),
-							EQCatalog.CHANGE_FOCAL);
-				} else {
-					setPropertyChange(
-							libCat.getFocalDisplay() == EQCatalog.FOCAL_BALL,
-							EQCatalog.CHANGE_FOCAL_DISPLAY);
-				}
-
-			} else if (src == this.dispProp_focalDisc) {
-				setColorEnabled(false);
-				setRecentEQColorEnabled(false);
-				setGradApplyEnabled(false);
-				setMagScaleEnabled(true);
-				setFocalDiscGUIEnabled(true);
-				setFocalBallGUIEnabled(false);
-
-				setPropertyChange(
-						libCat.getFocalDisplay() == EQCatalog.FOCAL_DISC,
-						EQCatalog.CHANGE_FOCAL_DISPLAY);
-
-
-			} else if (src == this.dispProp_focalCompColButton) {
-				final JColorChooser compColorChooser = new JColorChooser();
-				ActionListener okListener = new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						compColor = compColorChooser.getColor();
-					}
-				};
-				final JDialog dialog = JColorChooser.createDialog(dispProp_focalCompColButton,
-						"Pick a Compression Color",
-						true,
-						compColorChooser,
-						okListener,
-						null);
-				dialog.setVisible(true);
-				dispProp_focalCompColButton.setColor(compColor);
-				Color newDiscCompColor = dispProp_focalCompColButton.getColor1();
-
-				setPropertyChange(
-						libCat.getDiscCompColor().equals(newDiscCompColor),
-						EQCatalog.CHANGE_FOCAL_DISC_COMP_COLOR);
-			}
-			else if (src == this.dispProp_focalExtColButton) {
-				final JColorChooser extColorChooser = new JColorChooser();
-				ActionListener okListener = new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						extColor = extColorChooser.getColor();
-					}
-				};
-				final JDialog dialog = JColorChooser.createDialog(dispProp_focalExtColButton,
-						"Pick an Extension Color",
-						true,
-						extColorChooser,
-						okListener,
-						null);
-				dialog.setVisible(true);
-				dispProp_focalExtColButton.setColor(extColor);
-				Color newDiscExtColor = dispProp_focalExtColButton.getColor1();
-
-				setPropertyChange(
-						libCat.getDiscExtColor().equals(newDiscExtColor),
-						EQCatalog.CHANGE_FOCAL_DISC_EXT_COLOR);
-			}
-			// apply button
-			else if (src == this.dispProp_apply) {
-				applyDisplayChanges();
-			}
-
-
-			/////////////////////////
-			// PROPS ANIMATION PANEL //
-			/////////////////////////
-
-
-			else if (src == catProp_playButton)
-			{
-				this.propsAnimationPanel.remove(controlPanel);
-				this.propsAnimationPanel.repaint();
-				controlPanel = new JPanel(new GridBagLayout());
-				controlPanel.setOpaque(false);
-				if (!renderProtect)
-				{
-					this.catProp_pauseButton.setEnabled(true);
-					this.catProp_stopButton.setEnabled(true);
-					this.catProp_endButton.setEnabled(true);
-				}
-				controlPanel.add(this.catProp_pauseButton,  new GridBagConstraints( 0, 1, 1, 1, 0.0, 0.0, a_r, f, new Insets(4,0,0,0), 0, 0 ));
-				controlPanel.add(this.catProp_stopButton,     new GridBagConstraints( 1, 1, 1, 1, 0.0, 0.0, a_l, f, new Insets(4,3,0,0), 0, 0 ));
-				controlPanel.add(this.catProp_endButton,     new GridBagConstraints( 2, 1, 1, 1, 0.0, 0.0, a_l, f, new Insets(4,3,0,0), 0, 0 ));
-				this.propsAnimationPanel.add(controlPanel,  new GridBagConstraints( 0, 13, 1, 1, 0.0, 0.0, a_r, f, new Insets(8,0,0,0), 0, 0 ));
-
-				if (a != null)
-				{
-					if (a.getPauseFlag())
-					{
-						//if pauseflag is true, we are resuming animation
-						a.pauseAnimation();
-					}
-					else
-					{
-						if (stopflag==true || a.getStopFlag()) 
-						{
-							stopflag = false;
-							EQCatalog cat = this.catalogTable.getSelectedValue();
-							EQStats.setCatalog(cat);
-							//            			System.out.println("ANIM PT SIZE: " + cat.getPointSize() + ", GEOM: " + cat.getGeometry());
-
-							if (catProp_relative.isSelected())
-							{
-								a = new RelativeTimeAnimation(Integer.parseInt(catProp_duration.getText()),cat,this,getAnimationStyle());
-								catProp_static.setEnabled(false);
-								catProp_duration.setEnabled(false);
-							}
-							else
-							{
-								a = new StaticTimeAnimation(Integer.parseInt(catProp_duration.getText()),cat,this,getAnimationStyle());
-								catProp_relative.setEnabled(false);
-								catProp_duration.setEnabled(false);
-							}
-
-							a.playAnimation();
-						}
-					}
-				}
-				else{
-					//Initially called when, no other animation object is instantiated
-					EQCatalog cat = this.catalogTable.getSelectedValue();
-					EQStats.setCatalog(cat);
-					//            	System.out.println("ANIM PT SIZE: " + cat.getPointSize() + ", GEOM: " + cat.getGeometry());
-					if (catProp_relative.isSelected()){
-						a = new RelativeTimeAnimation(Integer.parseInt(catProp_duration.getText()),cat,this,getAnimationStyle());
-						catProp_static.setEnabled(false);
-						catProp_duration.setEnabled(false);
-					}
-					else{
-						a = new StaticTimeAnimation(Integer.parseInt(catProp_duration.getText()),cat,this,getAnimationStyle());
-						catProp_relative.setEnabled(false);
-						catProp_duration.setEnabled(false);
-					}
-					a.playAnimation();
-				}
-
-				if (progbar == null)
-				{
-					progbar = new JProgressBar(JProgressBar.HORIZONTAL);
-				}
-				else
-				{
-					progbar.setIndeterminate(false);
-					progbar.setStringPainted(true);
-				}
-			}
-			else if (src == catProp_pauseButton){
-				//all of the work done in the pause animation is done outside of this GUI,
-				//except changing the layout of the GUI
-				this.propsAnimationPanel.remove(controlPanel);
-				this.propsAnimationPanel.repaint();
-				controlPanel = new JPanel(new GridBagLayout());
-				controlPanel.setOpaque(false);
-				if (!renderProtect) {
-					this.catProp_playButton.setEnabled(true);
-					this.catProp_endButton.setEnabled(true);
-				}
-				controlPanel.add(this.catProp_playButton,  new GridBagConstraints( 0, 1, 1, 1, 0.0, 0.0, a_r, f, new Insets(4,0,0,0), 0, 0 ));
-				controlPanel.add(this.catProp_stopButton,     new GridBagConstraints( 1, 1, 1, 1, 0.0, 0.0, a_l, f, new Insets(4,3,0,0), 0, 0 ));
-				controlPanel.add(this.catProp_endButton,     new GridBagConstraints( 2, 1, 1, 1, 0.0, 0.0, a_l, f, new Insets(4,3,0,0), 0, 0 ));
-				this.propsAnimationPanel.add(controlPanel,  new GridBagConstraints( 0, 13, 1, 1, 0.0, 0.0, a_r, f, new Insets(8,0,0,0), 0, 0 ));
-				//now do the dirty work
-				a.pauseAnimation();
-			}
-			else if (src == catProp_stopButton){
-				stopflag = true;
-				a.stopAnimation();
-				this.propsAnimationPanel.remove(controlPanel);
-				this.propsAnimationPanel.repaint();
-				controlPanel = new JPanel(new GridBagLayout());
-				controlPanel.setOpaque(false);
-				if (!renderProtect) {
-					this.catProp_playButton.setEnabled(true);
-					this.catProp_stopButton.setEnabled(false);
-					this.catProp_endButton.setEnabled(true);
-				}
-				controlPanel.add(this.catProp_playButton,  new GridBagConstraints( 0, 1, 1, 1, 0.0, 0.0, a_r, f, new Insets(4,0,0,0), 0, 0 ));
-				controlPanel.add(this.catProp_stopButton,     new GridBagConstraints( 1, 1, 1, 1, 0.0, 0.0, a_l, f, new Insets(4,3,0,0), 0, 0 ));
-				controlPanel.add(this.catProp_endButton,     new GridBagConstraints( 2, 1, 1, 1, 0.0, 0.0, a_l, f, new Insets(4,3,0,0), 0, 0 ));
-				this.propsAnimationPanel.add(controlPanel,  new GridBagConstraints( 0, 13, 1, 1, 0.0, 0.0, a_r, f, new Insets(8,0,0,0), 0, 0 ));
-				this.catProp_relative.setEnabled(true);
-				this.catProp_static.setEnabled(true);
-				this.catProp_duration.setEnabled(true);
-			}
-			else if (src == catProp_endButton){
-				stopflag = true;
-				a.stopAnimation();
-				a.endAnimation();
-				this.propsAnimationPanel.remove(controlPanel);
-				this.propsAnimationPanel.repaint();
-				controlPanel = new JPanel(new GridBagLayout());
-				controlPanel.setOpaque(false);
-				if (!renderProtect) {
-					this.catProp_playButton.setEnabled(true);
-					this.catProp_stopButton.setEnabled(false);
-					this.catProp_endButton.setEnabled(false);
-				}
-				controlPanel.add(this.catProp_playButton,  new GridBagConstraints( 0, 1, 1, 1, 0.0, 0.0, a_r, f, new Insets(4,0,0,0), 0, 0 ));
-				controlPanel.add(this.catProp_stopButton,     new GridBagConstraints( 1, 1, 1, 1, 0.0, 0.0, a_l, f, new Insets(4,3,0,0), 0, 0 ));
-				controlPanel.add(this.catProp_endButton,     new GridBagConstraints( 2, 1, 1, 1, 0.0, 0.0, a_l, f, new Insets(4,3,0,0), 0, 0 ));
-				this.propsAnimationPanel.add(controlPanel,  new GridBagConstraints( 0, 13, 1, 1, 0.0, 0.0, a_r, f, new Insets(8,0,0,0), 0, 0 ));
-				this.catProp_relative.setEnabled(true);
-				this.catProp_static.setEnabled(true);
-				this.catProp_duration.setEnabled(true);
-			}
-			
-
-			if (src == timeButton) {
-
-				timeButtonSelected = true;
-				depthButtonSelected = false;
-
-				depthModField.setEnabled(true);
-				depthSlider.setEnabled(true);
-				applyDepthSetButton.setEnabled(true);
-
-				updateDisplay();
-
-			}
-
-			if (src == depthButton) {
-
-				timeButtonSelected = false;
-				depthButtonSelected = true;
-
-				depthModField.setEnabled(false);
-				depthSlider.setEnabled(false);
-				applyDepthSetButton.setEnabled(false);
-
-				updateDisplay();
-
-			}
-
-			else if (src == applyDepthSetButton) {
-				if (depthModField.getText() != null) {
-					depthModifier = Integer.parseInt(depthModField.getText());
-
-					EQCatalog cat = this.catalogTable.getSelectedValue();
-					EQStats.setCatalog(cat);
-					cat.updateDisplay();
-					CatalogAccessor catalog = null;
-					catalog = this.catalogTable.getSelectedValue();
-					getEarthquakes(catalog);
-
-					cat.updateDisplay();
-					getEarthquakes(catalog);
-				}
-			}
-			
-			if (src == getInfoButton) {
-				CatalogAccessor cat = this.catalogAcc;
-				//cat.get
-				JOptionPane.showMessageDialog(this,
-						"Number of events:  " + cat.getNumEvents() + "\n\n\n" +
-						"LOCATION PLUGIN Vertical Axis Parameters \n" +
-						"Time Elapsed:  " + timeDifference /  86400000 + " Days\n" +
-						"                           " + (((float)timeDifference /  (float)86400000) / (float)365 ) + " Years\n" +
-						"Average Latitude:       " + cat.getAvgLat() + "\n" +
-						"Average Longitutde:  " + cat.getAvgLon() + "\n" +
-						"Recommended Increments:  " +  ((timeDifference /  86400000) / 10) + "\n" +
-						"Recommended Spacing:  " + depthModifier / 10 + "\n" +
-						"Recommended use days elapsed for maximum." +
-						"\n\n\n",
-						cat.getDisplayName(),
-						JOptionPane.INFORMATION_MESSAGE);
-			}
-		}
 
 		/**
 		 * Custom renderer class draws focal mechanism icons with color labels.
@@ -3129,6 +2222,10 @@ MouseListener {
 			}else{
 				catProp_static.setSelected(true);
 			}
+		}
+		public ArrayList<EQCatalog> getCatalogs() {
+			// TODO Auto-generated method stub
+			return eqCatalogs;
 		}
 
 }
