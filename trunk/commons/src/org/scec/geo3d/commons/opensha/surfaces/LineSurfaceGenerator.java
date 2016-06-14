@@ -209,8 +209,6 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 			}
 			lines = new vtkCellArray();
 			
-			linesPolyData.Allocate(points.size(), points.size());
-			
 			actor = new vtkActor();
 			
 			currentBundle = new ActorBundle(actor, linesPolyData, pts, colors, lines);
@@ -276,6 +274,7 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		
 		FaultSectionActorList list;
 		if (bundle) {
+			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
 			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, points.size(), 255);
 		} else {
 			list = new FaultSectionActorList(fault);

@@ -15,6 +15,8 @@ import org.scec.geo3d.commons.opensha.surfaces.events.GeometrySettingsChangeList
 import org.scec.geo3d.commons.opensha.surfaces.events.GeometrySettingsChangedEvent;
 import org.scec.vtk.tools.Transform;
 
+import com.google.common.base.Preconditions;
+
 import vtk.vtkActor;
 import vtk.vtkUnsignedCharArray;
 
@@ -63,8 +65,11 @@ public abstract class GeometryGenerator implements Named {
 			synchronized (bundle) {
 				vtkUnsignedCharArray colors = bundle.getColorArray();
 				int firstIndex = bundleList.getMyFirstPointIndex();
-				int lastIndex = firstIndex + bundleList.getMyNumPoints();
+				int lastIndex = firstIndex + bundleList.getMyNumPoints() - 1;
+				int totNumTuples = colors.GetNumberOfTuples();
+//				System.out.println("Updating color for points at index "+firstIndex+" through "+lastIndex);
 				for (int index=firstIndex; index<=lastIndex; index++) {
+					Preconditions.checkState(index < totNumTuples, "Bad tuple index. index=%s, num tuples=%s", index, totNumTuples);
 					double[] orig = colors.GetTuple4(index);
 					colors.SetTuple4(index, color.getRed(), color.getGreen(), color.getBlue(), orig[3]); // keep same opacity
 				}
