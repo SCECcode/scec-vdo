@@ -33,10 +33,12 @@ import vtk.vtkCellArray;
 import vtk.vtkDataSetMapper;
 import vtk.vtkDoubleArray;
 import vtk.vtkGlyph3D;
+import vtk.vtkIntArray;
 import vtk.vtkLookupTable;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkScalarBarActor;
 import vtk.vtkSphereSource;
 import vtk.vtkUnsignedCharArray;
 import vtk.vtkUnstructuredGrid;
@@ -152,14 +154,15 @@ public class EQCatalog extends CatalogAccessor {
 	private long firstLimit;
 	private long secondLimit;
 	private long thirdLimit;
+	ArrayList<Earthquake> eqList= new ArrayList<>();
 	public ArrayList masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
 	Component parent;
 
 	private double[][] eventCoords;
 
-	private int gradientDivisions;
+	public int gradientDivisions;
 
-	private Color[] gradientColors;
+	public Color[] gradientColors;
 	
 	//private ArrayList<Earthquake> earthquakes; 
 	
@@ -499,17 +502,20 @@ public class EQCatalog extends CatalogAccessor {
 			this.catBranchGroup.addChild(focalBG);
 		}*/
 	}
-
+	
+	public ArrayList<Earthquake> getSelectedEqList(){
+		return eqList;
+	}
+	
 	public void addEqList()
 	{
-		ArrayList<Earthquake> eqList= new ArrayList<>();
+		
 		eqList = EarthquakeCatalogPluginGUI.getEarthquakes();
 		addPointsToBranchGroup(false,eqList);
 		addPointsToBranchGroup(true,eqList);
 	}
 	public void addComcatEqList()
 	{
-		ArrayList<Earthquake> eqList = new ArrayList<>();
 		if(((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog()!=null)
 		{
 			eqList = ((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog().getAllEarthquakes();
@@ -527,32 +533,31 @@ public class EQCatalog extends CatalogAccessor {
 		vtkPolyDataMapper mapperEQCatalog = new vtkPolyDataMapper();
 		vtkDoubleArray radi = new vtkDoubleArray();
 		radi.SetName("radi");
-		vtkDoubleArray colors = new vtkDoubleArray();
+		vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
 		colors.SetName("colors");
-		colors.SetNumberOfComponents(1);
+		colors.SetNumberOfComponents(4);
 		colors.SetNumberOfTuples(eqList.size());
-		//this.gradientColors
+		
 		double stepSize = (getMaxMagnitude()-getMinMagnitude())/gradientDivisions;
+		double[] xForm = new double[3];
 		for (int i = 0; i < eqList.size(); i++) 
 		{
-			double[] xForm = new double[3];
-			double depth=0,mag=0,lon=0,lat=0;
-			vtkSphereSource sphereSource = new vtkSphereSource();
+			
 			Earthquake eq = eqList.get(i);
 			xForm = Transform.transformLatLonHeight(eq.getEq_latitude(i), eq.getEq_longitude(i), -eq.getEq_depth(i));
 			pts.InsertNextPoint(xForm);
 			radi.InsertNextTuple1(eq.getEq_magnitude(i));
-			// Color
+			// Color based on magnitude
 			int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude(i)) / stepSize)-getMinMagnitude());
 			if(ind<0)
 				ind=0;
-			System.out.println(ind);
-			float[] hsv = new float[3];
-			Color.RGBtoHSB(gradientColors[ind].getRed(),gradientColors[ind].getGreen(),gradientColors[ind].getBlue(),hsv);
-			System.out.println(hsv[0]);
-			colors.InsertTuple1(i,hsv[0]);//red=0;g=0.5,b=1
+			
+			float[] grad = new float[3];
+	    	gradientColors[ind].getRGBColorComponents(grad);
 
-		}
+	    	colors.InsertTuple4(i,gradientColors[ind].getRed(),gradientColors[ind].getGreen(),gradientColors[ind].getBlue(),255);
+				}
+		
 		vtkPolyData inputData = new vtkPolyData();
 		inputData.SetPoints(pts);
 		inputData.GetPointData().AddArray(radi);
@@ -561,15 +566,11 @@ public class EQCatalog extends CatalogAccessor {
 		
 		//spheres
 		if(sphere){
-		
-		//inputData.GetPointData().SetVectors(radi);
-		//inputData.GetPointData().SetScalars(colors);
 		// Use sphere as glyph source.
 		vtkSphereSource balls = new vtkSphereSource();
 		balls.SetRadius(1.0);//.01);
 		balls.SetPhiResolution(10);
 		balls.SetThetaResolution(10);
-		//balls.SetInputArrayToProcess(0,0,0,0,"radi");
 
 		vtkGlyph3D glyphPoints = new vtkGlyph3D();
 		glyphPoints.SetInputData(inputData);
@@ -577,8 +578,6 @@ public class EQCatalog extends CatalogAccessor {
 		
 		mapperEQCatalog.SetInputConnection(glyphPoints.GetOutputPort());
 
-		
-		//actorEQCatalog.SetMapper(mapperEQCatalog);
 		}
 		else
 		{
@@ -589,22 +588,25 @@ public class EQCatalog extends CatalogAccessor {
 			vertexGlyphFilter.Update();
 			
 			mapperEQCatalog.SetInputConnection(vertexGlyphFilter.GetOutputPort());
-	
-			
-		
-			//actorEQCatalog.GetProperty().SetColor(1,1,0);
-			//actorEQCatalog.GetProperty().SetPointSize(3);
 		}
-		
+		//mapperEQCatalog.SetLookupTable(lut);
 		mapperEQCatalog.ScalarVisibilityOn();
 		mapperEQCatalog.SetScalarModeToUsePointFieldData();
+		//mapperEQCatalog.colorve
 		mapperEQCatalog.SelectColorArray("colors");
 		
 		actorEQCatalog.SetMapper(mapperEQCatalog);
-		
+//		vtkScalarBarActor scalarBar = new vtkScalarBarActor();
+//			  scalarBar.SetLookupTable(lut);
+//			  scalarBar.SetTitle("Title");
+//			  scalarBar.SetNumberOfLabels(4);
+//			  Info.getMainGUI().getRenderWindow().GetRenderer().AddActor2D(scalarBar);
 		masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
 		Info.getMainGUI().addActors(masterEarthquakeCatalogBranchGroup);
 	}
+	
+	
+	
 	
 	private void addSpheresToBranchGroup() {
     	/*Earthquake eq;
@@ -884,7 +886,7 @@ public class EQCatalog extends CatalogAccessor {
     }
 
 	// sets the appearance array for gradient representations
-    private void initGradientAppearance() {
+    public void initGradientAppearance() {
         // calc mag divisions
        int magDivs = (int)Math.ceil(getMaxMagnitude()) - (int)Math.floor(getMinMagnitude());
         
@@ -1154,6 +1156,12 @@ public class EQCatalog extends CatalogAccessor {
      *
      * @param color the color to set
      */
+    public void setGradColor1(Color color) {
+        this.color1 = color;
+    }
+    public void setGradColor2(Color color) {
+        this.color2 = color;
+    }
     public void setColor1(Color color) {
         this.color1 = color;
         writeColorElement((this.displayAttributes.getChild("colors").getChild("color_1")), color);

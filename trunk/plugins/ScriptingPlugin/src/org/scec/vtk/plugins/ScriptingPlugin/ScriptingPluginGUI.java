@@ -52,6 +52,7 @@ import javax.swing.table.DefaultTableModel;
 import org.scec.vtk.drawingTools.DrawingToolsPlugin;
 import org.scec.vtk.drawingTools.DrawingToolsTable;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorButton;
@@ -244,6 +245,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	private boolean rendering;
 	private boolean play=false;
 	private boolean stop=true;
+	private EQCatalog cat;
 	public ScriptingPluginGUI(ScriptingPlugin plugin){
 
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -507,16 +509,17 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	
 	}
 	
-	public void addEarthquakeListForAniamtion(Object list, Boolean included)
+	public void addEarthquakeListForAniamtion(Object list,EQCatalog cat, Boolean included)
 	{
 		this.list = list;
 		this.included=included;
 		ArrayList earthquakeList = (ArrayList) list;
+		this.cat = cat;
 		if(Double.parseDouble(noOfFrames.getText())<earthquakeList.size())
 		{
-			noOfFrames.setText(Integer.toString(earthquakeList.size()));
-			addLayerToTimeLine();
+			noOfFrames.setText(Integer.toString(earthquakeList.size()));	
 		}
+		addLayerToTimeLine();
 	}
 
 
@@ -587,7 +590,9 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 					cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 					cb.included = included;
 					if(included)
-						cb.earthquakeList = (ArrayList<Earthquake>) list;
+						{cb.earthquakeList = (ArrayList<Earthquake>) list;
+						cb.cat = cat;
+						}
 
 
 					if(rendering)
@@ -634,6 +639,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 			cue1.AddObserver("EndAnimationCueEvent", cb, "EndCue");
 			cue1.AddObserver("AnimationCueTickEvent", cb, "TickEarthquakeCatalogAniamtion");
 			cb.cue =cue1;
+			cb.cat = cat;
 			cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 			if(included)
 				cb.earthquakeList = (ArrayList<Earthquake>) list;
