@@ -380,7 +380,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 	}
 
 	
-	private void activatePlugin(String id) {
+	void activatePlugin(String id) {
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// If it is not loaded, try to load it

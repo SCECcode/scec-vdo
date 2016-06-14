@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 import org.scec.vtk.main.Info;
+import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.ActionPlugin;
 import org.scec.vtk.tools.Transform;
 
@@ -51,7 +52,9 @@ public class DummyPlugin extends ActionPlugin {
 		}
 		System.out.println("Loading sphere.");
 		actor.SetVisibility(1);
-		Info.getMainGUI().updateActors(getActors());
+		actor.Modified();
+		// will only add if not already present
+		Info.getMainGUI().addActors(getActors());
 		sphereLoaded = true;
 	}
 	
@@ -61,7 +64,7 @@ public class DummyPlugin extends ActionPlugin {
 		}
 		System.out.println("Unloading sphere.");
 		actor.SetVisibility(0);
-		Info.getMainGUI().updateActors(getActors());
+		MainGUI.updateRenderWindow();
 		sphereLoaded = false;
 	}
 	

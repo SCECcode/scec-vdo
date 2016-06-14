@@ -18,11 +18,31 @@ import javax.swing.JProgressBar;
 import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
 import org.scec.vtk.plugins.utils.DataImport;
 import org.scec.vtk.plugins.utils.components.ObjectInfoDialog;
 import org.scec.vtk.tools.Prefs;
+import org.scec.vtk.tools.Transform;
+
+import vtk.vtkActor;
+import vtk.vtkAppendFilter;
+import vtk.vtkAppendPolyData;
+import vtk.vtkCellArray;
+import vtk.vtkDataSetMapper;
+import vtk.vtkDoubleArray;
+import vtk.vtkGlyph3D;
+import vtk.vtkLookupTable;
+import vtk.vtkPoints;
+import vtk.vtkPolyData;
+import vtk.vtkPolyDataMapper;
+import vtk.vtkSphereSource;
+import vtk.vtkUnsignedCharArray;
+import vtk.vtkUnstructuredGrid;
+import vtk.vtkVertexGlyphFilter;
+
+
 public class EQCatalog extends CatalogAccessor {
     
     private Logger log = Logger.getLogger(EQCatalog.class);
@@ -132,8 +152,14 @@ public class EQCatalog extends CatalogAccessor {
 	private long firstLimit;
 	private long secondLimit;
 	private long thirdLimit;
-
+	public ArrayList masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
 	Component parent;
+
+	private double[][] eventCoords;
+
+	private int gradientDivisions;
+
+	private Color[] gradientColors;
 	
 	//private ArrayList<Earthquake> earthquakes; 
 	
@@ -185,9 +211,27 @@ public class EQCatalog extends CatalogAccessor {
         if (readAttributeFile(sourcefile)) {
             this.initialized = true;
         }
-        this.setMasterCatBranchGroup();
+        //this.setMasterCatBranchGroup();
     }
   
+    public EQCatalog(EarthquakeCatalogPluginGUI parent) {
+        super(parent);
+        
+        this.parent = parent;
+        //initializing default values
+        this.geometry      = 0;//this.displayAttributes.getChild("geometry").getAttribute("value").getIntValue();
+        this.scaling       = 1;//this.displayAttributes.getChild("scaling").getAttribute("value").getIntValue();
+        //try { this.recentEQcoloring = this.displayAttributes.getChild("recentEQcoloring").getAttribute("value").getIntValue();} catch (Exception e) {/*System.out.println("Error reading RecentEQColor property");*/}
+        //this.focalMech     = this.displayAttributes.getChild("focal_mech").getAttribute("value").getIntValue();
+        //this.applyGradient = this.displayAttributes.getChild("colors").getAttribute("apply_gradient").getIntValue();
+        this.color1        = Color.BLUE;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_1"));
+        this.color2        = Color.RED;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_2"));
+        this.transparency=100;
+        this.displayName="_New Comcat Catalog-"+ parent.getCatalogTable().getRowCount();
+        
+        //this.setMasterCatBranchGroup();
+    }
+    
     private void setMasterCatBranchGroup() 
     {
         // When EQCatalog plugin loads, GlobeView is already live so one can only add a BranchGroup
@@ -300,16 +344,16 @@ public class EQCatalog extends CatalogAccessor {
     
     public void makePoints() {
     	// initialize display locations (if not already initialized)
-        //if (this.eventCoords == null) {
-           /* this.eventCoords = new Point3f[getNumEvents()];
+        if (this.eventCoords == null) {
+            this.eventCoords = new double[getNumEvents()][3];
             for (int i = 0; i<getNumEvents(); i++) {
-              this.eventCoords[i] = LatLongToPoint.plotPoint3f(
+              this.eventCoords[i] = Transform.transformLatLonHeight(
                     eq_latitude[i],
                     eq_longitude[i],
                     -eq_depth[i]);  
               // TODO convert depth to negative on import
-           // }
-        }*/
+            }
+        }
     }
     
     private void load() {
@@ -322,7 +366,7 @@ public class EQCatalog extends CatalogAccessor {
         // (re)initialize branch group
         this.catBranchGroup = new BranchGroup();
         this.catBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
-        
+        */
         makePoints();
         
         
@@ -335,12 +379,12 @@ public class EQCatalog extends CatalogAccessor {
         
         if(parent instanceof EarthquakeCatalogPluginGUI)
         {
-        	if (getGeometry() == GEOMETRY_POINT) {
 
-        		addPointsToBranchGroup();
-        	}
+        		addEqList();
+       
+        }
         	// COWS:
-        	else if (getGeometry() == GEOMETRY_COW){
+        	/*else if (getGeometry() == GEOMETRY_COW){
         	
         		// init cow transform groups if not already
         		int numevents = getNumEvents();
@@ -456,130 +500,110 @@ public class EQCatalog extends CatalogAccessor {
 		}*/
 	}
 
-	private void addPointsToBranchGroup()
+	public void addEqList()
 	{
-		/*setupSizedEventPoint();
-		ArrayList<Earthquake> eqList = EarthquakeCatalogPluginGUI.getEarthquakes();
-		if (recentEQcoloring == 1) 
+		ArrayList<Earthquake> eqList= new ArrayList<>();
+		eqList = EarthquakeCatalogPluginGUI.getEarthquakes();
+		addPointsToBranchGroup(false,eqList);
+		addPointsToBranchGroup(true,eqList);
+	}
+	public void addComcatEqList()
+	{
+		ArrayList<Earthquake> eqList = new ArrayList<>();
+		if(((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog()!=null)
 		{
-			initRecentEQAppearance();
-			for (int i = 0; i < eqList.size(); i++) 
-			{
-				try
-				{
-					PointColor pc=new PointColor();
-					pc.location=LatLongToPoint.plotPoint3f(eqList.get(i).eq_latitude,
-							eqList.get(i).eq_longitude,	-eqList.get(i).eq_depth);
-					pc.color=recentEQColors[getRecentEQScaleValue(eqList.get(i).getEq_time())];
-					sizedEventPoints.get((int)Math.floor(eqList.get(i).getEq_magnitude())).add(pc);
-					Appearance app = new Appearance();
-		    		app.setTransparencyAttributes(getTransparencyAttributes());
-		    		Material mat=new Material();
-		    		mat.setAmbientColor(pc.color);
-		    		mat.setDiffuseColor(pc.color);
-		    		app.setMaterial(mat);
-		    	    ((Earthquake)eqList.get(i)).setAppearance(app);
-				}
-				catch (IndexOutOfBoundsException e)
-				{
-					
-				}
-			}
-		} 
-		else if (getColor1().equals(getColor2())) 
-		{
-			for (int i = 0; i < getNumEvents(); i++) 
-			{	
-				try
-				{
-					PointColor pc=new PointColor();
-					pc.location=LatLongToPoint.plotPoint3f(eqList.get(i).eq_latitude,
-							eqList.get(i).eq_longitude,	-eqList.get(i).eq_depth);
-					
-					if(EarthquakeCatalogPluginGUI.bIsDiscreteColors && EarthquakeCatalogPluginGUI.discreteRangesList.size() > 0)
-					{		
-						for(Tuple<Float, Float, Color> range : EarthquakeCatalogPluginGUI.discreteRangesList)
-						{
-							Float startMag = (Float) range.a;
-							Float endMag = (Float) range.b;
-							Color eqColor = (Color) range.c;
-							
-							if(eqList.get(i).getEq_magnitude() >= startMag.floatValue() && eqList.get(i).getEq_magnitude() <= endMag.floatValue())
-							{
-								pc.color= new Color3f(eqColor);
-								break;
-							}
-						}
-					}
-					else 
-						pc.color=new Color3f(getColor1());
-					
-					sizedEventPoints.get((int)Math.floor(eqList.get(i).getEq_magnitude())).add(pc);
-					Appearance app = new Appearance();
-		    		app.setTransparencyAttributes(getTransparencyAttributes());
-		    		Material mat=new Material();
-		    		mat.setAmbientColor(pc.color);
-		    		mat.setDiffuseColor(pc.color);
-		    		app.setMaterial(mat);
-		    	    ((Earthquake)eqList.get(i)).setAppearance(app);
-					
-				}
-				catch (IndexOutOfBoundsException e)
-				{
-					
-				}
-			}
-		} 
-		else 
-		{
-			initGradientAppearance();
-			for (int i = 0; i < getNumEvents(); i++)
-			{
-				try
-				{
-					PointColor pc=new PointColor();
-					pc.location=LatLongToPoint.plotPoint3f(eqList.get(i).eq_latitude,
-							eqList.get(i).eq_longitude,	-eqList.get(i).eq_depth);
-					pc.color=gradientColors[getGradientScaleValue(eqList.get(i))];
-					sizedEventPoints.get((int)Math.floor(eqList.get(i).getEq_magnitude())).add(pc);
-					Appearance app = new Appearance();
-		    		app.setTransparencyAttributes(getTransparencyAttributes());
-		    		Material mat=new Material();
-		    		mat.setAmbientColor(pc.color);
-		    		mat.setDiffuseColor(pc.color);
-		    		app.setMaterial(mat);
-		    	    ((Earthquake)eqList.get(i)).setAppearance(app);
-		    	    
-				}
-				catch (IndexOutOfBoundsException e)
-				{
-					
-				}
-			}
+			eqList = ((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog().getAllEarthquakes();
 		}
-		for(int i=0;i<sizedEventPoints.size();i++)
+		addPointsToBranchGroup(false,eqList);
+		addPointsToBranchGroup(true,eqList);
+	}
+	
+	public void addPointsToBranchGroup(boolean sphere,ArrayList<Earthquake> eqList)
+	{
+		initGradientAppearance();
+		vtkActor actorEQCatalog = new vtkActor();
+		vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
+		vtkPoints pts = new vtkPoints();
+		vtkPolyDataMapper mapperEQCatalog = new vtkPolyDataMapper();
+		vtkDoubleArray radi = new vtkDoubleArray();
+		radi.SetName("radi");
+		vtkDoubleArray colors = new vtkDoubleArray();
+		colors.SetName("colors");
+		colors.SetNumberOfComponents(1);
+		colors.SetNumberOfTuples(eqList.size());
+		//this.gradientColors
+		double stepSize = (getMaxMagnitude()-getMinMagnitude())/gradientDivisions;
+		for (int i = 0; i < eqList.size(); i++) 
 		{
-			if(sizedEventPoints.get(i).size()>0)
-			{
-				PointArray points= new PointArray(sizedEventPoints.get(i).size(),
-						GeometryArray.COORDINATES | GeometryArray.COLOR_3);
-				
-				for(int j=0;j<sizedEventPoints.get(i).size();j++)
-				{
-					points.setCoordinate(j,sizedEventPoints.get(i).get(j).location);
-					points.setColor(j,sizedEventPoints.get(i).get(j).color);
-				}
-				
-				Appearance app = new Appearance();
-	    		PointAttributes pa = new PointAttributes((float) ((i+1)*pointSize*.5), true);
-	    		app.setTransparencyAttributes(getTransparencyAttributes());
-	    		app.setPointAttributes(pa);
-	    		
-	                   
-	    		this.catBranchGroup.addChild(new Shape3D(points, app));
-			}
-		}*/
+			double[] xForm = new double[3];
+			double depth=0,mag=0,lon=0,lat=0;
+			vtkSphereSource sphereSource = new vtkSphereSource();
+			Earthquake eq = eqList.get(i);
+			xForm = Transform.transformLatLonHeight(eq.getEq_latitude(i), eq.getEq_longitude(i), -eq.getEq_depth(i));
+			pts.InsertNextPoint(xForm);
+			radi.InsertNextTuple1(eq.getEq_magnitude(i));
+			// Color
+			int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude(i)) / stepSize)-getMinMagnitude());
+			if(ind<0)
+				ind=0;
+			System.out.println(ind);
+			float[] hsv = new float[3];
+			Color.RGBtoHSB(gradientColors[ind].getRed(),gradientColors[ind].getGreen(),gradientColors[ind].getBlue(),hsv);
+			System.out.println(hsv[0]);
+			colors.InsertTuple1(i,hsv[0]);//red=0;g=0.5,b=1
+
+		}
+		vtkPolyData inputData = new vtkPolyData();
+		inputData.SetPoints(pts);
+		inputData.GetPointData().AddArray(radi);
+		inputData.GetPointData().AddArray(colors);
+		inputData.GetPointData().SetActiveScalars("radi");
 		
+		//spheres
+		if(sphere){
+		
+		//inputData.GetPointData().SetVectors(radi);
+		//inputData.GetPointData().SetScalars(colors);
+		// Use sphere as glyph source.
+		vtkSphereSource balls = new vtkSphereSource();
+		balls.SetRadius(1.0);//.01);
+		balls.SetPhiResolution(10);
+		balls.SetThetaResolution(10);
+		//balls.SetInputArrayToProcess(0,0,0,0,"radi");
+
+		vtkGlyph3D glyphPoints = new vtkGlyph3D();
+		glyphPoints.SetInputData(inputData);
+		glyphPoints.SetSourceConnection(balls.GetOutputPort());
+		
+		mapperEQCatalog.SetInputConnection(glyphPoints.GetOutputPort());
+
+		
+		//actorEQCatalog.SetMapper(mapperEQCatalog);
+		}
+		else
+		{
+			//points
+		
+			vertexGlyphFilter.AddInputData(inputData);
+			
+			vertexGlyphFilter.Update();
+			
+			mapperEQCatalog.SetInputConnection(vertexGlyphFilter.GetOutputPort());
+	
+			
+		
+			//actorEQCatalog.GetProperty().SetColor(1,1,0);
+			//actorEQCatalog.GetProperty().SetPointSize(3);
+		}
+		
+		mapperEQCatalog.ScalarVisibilityOn();
+		mapperEQCatalog.SetScalarModeToUsePointFieldData();
+		mapperEQCatalog.SelectColorArray("colors");
+		
+		actorEQCatalog.SetMapper(mapperEQCatalog);
+		
+		masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
+		Info.getMainGUI().addActors(masterEarthquakeCatalogBranchGroup);
 	}
 	
 	private void addSpheresToBranchGroup() {
@@ -862,7 +886,7 @@ public class EQCatalog extends CatalogAccessor {
 	// sets the appearance array for gradient representations
     private void initGradientAppearance() {
         // calc mag divisions
-     /*   int magDivs = (int)Math.ceil(getMaxMagnitude()) - (int)Math.floor(getMinMagnitude());
+       int magDivs = (int)Math.ceil(getMaxMagnitude()) - (int)Math.floor(getMinMagnitude());
         
         // find number of increments/divisions:
         //    -- depth gradient is always 3km intervals from 0-18km
@@ -873,7 +897,7 @@ public class EQCatalog extends CatalogAccessor {
         initGradientColors(this.gradientDivisions);
 
         // init and apply colors to appearance array if sphere or cow geometry
-        if ((getGeometry() == GEOMETRY_COW) || (getGeometry() == GEOMETRY_SPHERE)) {
+        /*if ((getGeometry() == GEOMETRY_COW) || (getGeometry() == GEOMETRY_SPHERE)) {
         	this.sphereGradientAppearance = new Appearance[this.gradientDivisions];
             for (int i = 0; i<this.gradientDivisions; i++) {
                 Appearance app = new Appearance();
@@ -898,7 +922,7 @@ public class EQCatalog extends CatalogAccessor {
     private void initGradientColors(int divisions) {
         
         // init color incrementing values
-       /* float[] colorStart = getColor1().getColorComponents(null);
+        float[] colorStart = getColor1().getColorComponents(null);
         float[] colorEnd = getColor2().getColorComponents(null);
         float[] colorIntervals = new float[3];
         for (int j=0; j<3; j++) {
@@ -906,13 +930,13 @@ public class EQCatalog extends CatalogAccessor {
         }
         
         // init color array
-        this.gradientColors = new Color3f[divisions];
+        this.gradientColors = new Color[divisions];
         for (int i = 0; i<divisions; i++) {
-            this.gradientColors[i] = new Color3f(
+            this.gradientColors[i] = new Color(
                     colorStart[0] + (colorIntervals[0]*i),
                     colorStart[1] + (colorIntervals[1]*i),
                     colorStart[2] + (colorIntervals[2]*i));
-        }   */     
+        }     
     }
     // returns the appropriate index for color or appearance selection for use with gradients
     /*private int getGradientScaleValue(int eventIndex) {
@@ -1223,7 +1247,7 @@ public class EQCatalog extends CatalogAccessor {
      */
     public void setGeometry(int value) {
         this.geometry = value;
-        this.displayAttributes.getChild("geometry").getAttribute("value").setValue(String.valueOf(value));
+       // this.displayAttributes.getChild("geometry").getAttribute("value").setValue(String.valueOf(value));
     }
 
     /**

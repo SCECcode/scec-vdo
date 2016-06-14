@@ -528,7 +528,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
     public void setMaxDate(Date date) {
         this.maxDate = date;
         String s = DATE_FORMAT.format(date);
-        this.dataAttributes.getChild("date").getAttribute("max").setValue(s);
+        //this.dataAttributes.getChild("date").getAttribute("max").setValue(s);
 
     }
     
@@ -548,7 +548,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setMaxDepth(float depth) {
         this.maxDepth = depth;
-        this.dataAttributes.getChild("depth").getAttribute("max").setValue(String.valueOf(depth));
+        //this.dataAttributes.getChild("depth").getAttribute("max").setValue(String.valueOf(depth));
     }
     
     /**
@@ -567,7 +567,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setMaxLatitude(float latitude) {
         this.maxLatitude = latitude;
-        this.dataAttributes.getChild("latitude").getAttribute("max").setValue(String.valueOf(latitude));
+        //this.dataAttributes.getChild("latitude").getAttribute("max").setValue(String.valueOf(latitude));
     }
     
     /**
@@ -586,7 +586,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setMaxLongitude(float longitude) {
         this.maxLongitude = longitude;
-        this.dataAttributes.getChild("longitude").getAttribute("max").setValue(String.valueOf(longitude));
+        //this.dataAttributes.getChild("longitude").getAttribute("max").setValue(String.valueOf(longitude));
     }
     
     /**
@@ -605,7 +605,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setMaxMagnitude(float magnitude) {
         this.maxMagnitude = magnitude;
-        this.dataAttributes.getChild("magnitude").getAttribute("max").setValue(String.valueOf(magnitude));
+        //this.dataAttributes.getChild("magnitude").getAttribute("max").setValue(String.valueOf(magnitude));
     }
     
     /**
@@ -625,7 +625,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
     public void setMinDate(Date date) {
         this.minDate = date;
         String s = DATE_FORMAT.format(date);
-        this.dataAttributes.getChild("date").getAttribute("min").setValue(s);
+        //this.dataAttributes.getChild("date").getAttribute("min").setValue(s);
     }
     
     /**
@@ -644,7 +644,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setMinDepth(float depth) {
         this.minDepth = depth;
-        this.dataAttributes.getChild("depth").getAttribute("min").setValue(String.valueOf(depth));
+        //this.dataAttributes.getChild("depth").getAttribute("min").setValue(String.valueOf(depth));
     }
     
     /**
@@ -663,7 +663,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setMinLatitude(float latitude) {
         this.minLatitude = latitude;
-        this.dataAttributes.getChild("latitude").getAttribute("min").setValue(String.valueOf(latitude));
+        //this.dataAttributes.getChild("latitude").getAttribute("min").setValue(String.valueOf(latitude));
     }
     
     /**
@@ -682,7 +682,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setMinLongitude(float longitude) {
         this.minLongitude = longitude;
-        this.dataAttributes.getChild("longitude").getAttribute("min").setValue(String.valueOf(longitude));
+        //this.dataAttributes.getChild("longitude").getAttribute("min").setValue(String.valueOf(longitude));
     }
     
     /**
@@ -701,7 +701,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setMinMagnitude(float magnitude) {
     	this.minMagnitude = magnitude;
-    	this.dataAttributes.getChild("magnitude").getAttribute("min").setValue(String.valueOf(magnitude));
+    	//this.dataAttributes.getChild("magnitude").getAttribute("min").setValue(String.valueOf(magnitude));
     }
 
     // Get average latitude of earthquakes, approximated by being the average of the maximum and minimum latitudes
