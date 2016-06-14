@@ -1,15 +1,11 @@
 package org.scec.vtk.plugins.ScriptingPlugin;
 
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.concurrent.TimeUnit;
-
 import javax.imageio.ImageIO;
 import javax.media.MediaLocator;
 import javax.swing.SwingUtilities;
@@ -34,16 +30,13 @@ import vtk.vtkUnsignedCharArray;
 public class CueAnimator  {
 
 
-	private long endTime;
-	private long startTime;
 	public boolean included;
 	public ArrayList<EQCatalog> cat;
 	void StartCue()
 	{
-		System.out.println("*** IN StartCue " + scene.GetStartTime() );
+		//System.out.println("*** IN StartCue " + scene.GetStartTime() );
 		this.TimerCount = 0;
-		//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-		startTime = System.nanoTime();
+		System.nanoTime();
 		camnew = new vtkCamera();
 		if(included)
 			StartCueEarthquakeCatalogAniamtion();
@@ -91,7 +84,6 @@ public class CueAnimator  {
 		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
 		if(this.TimerCount<ptSize)
 		{
-
 			camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
 			camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
 			camnew.SetViewUp(pointsViewUp.GetPoint(TimerCount)[0],pointsViewUp.GetPoint(TimerCount)[1],pointsViewUp.GetPoint(TimerCount)[2]);
@@ -99,6 +91,8 @@ public class CueAnimator  {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {	
+
+
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
@@ -138,9 +132,11 @@ public class CueAnimator  {
 
 	void StartCueEarthquakeCatalogAniamtion()
 	{
-		System.out.println("*** IN StartCue " + scene.GetStartTime() );
+		//System.out.println("*** IN StartCue " + scene.GetStartTime() );
 		//this.TimerCount = 0;
-		
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {	
 		
 		//System.out.println(t);
 		if((int)Math.floor(scene.GetAnimationTime())==(int)scene.GetStartTime())
@@ -150,15 +146,27 @@ public class CueAnimator  {
 		{
 			earthquakeList = cat.get(j).getSelectedEqList();
 			double t = scene.GetStartTime()/scene.GetEndTime();
-			this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
-			
+			TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+		
 		for(int i=TimerCount;i<earthquakeList.size();i++)
 		{
 			eq = earthquakeList.get(i);
-			ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),0);
+			EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),0);
 		}
 		}
 		}
+				}
+			});
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		//scene.SetStartTime(scene.GetAnimationTime());
 	}
 
 	void TickEarthquakeCatalogAniamtion()
@@ -168,7 +176,7 @@ public class CueAnimator  {
 			earthquakeList = cat.get(j).getSelectedEqList();
 			double t = scene.GetAnimationTime()/scene.GetEndTime();
 			this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
-			//System.out.println(t);
+			//System.out.println(TimerCount);
 		if(this.TimerCount<EQPtSize)//earthquakeList.size())
 		{
 			try {
@@ -191,27 +199,25 @@ public class CueAnimator  {
 			}
 		}
 		}
-		System.out.println("***  "+scene.GetAnimationTime());
+		//System.out.println("***  "+scene.GetAnimationTime());
 	}
 
 	void EndCue()
 	{
-		endTime = System.nanoTime() - startTime;
-		long seconds = TimeUnit.SECONDS.convert((long) endTime, TimeUnit.NANOSECONDS);
-		
-		if(included && (int)Math.ceil(scene.GetAnimationTime())==(int)scene.GetEndTime())
+		if(included )//&& ((int)Math.ceil(scene.GetAnimationTime())==(int)scene.GetEndTime()||this.TimerCount>=EQPtSize))
 		{
-			System.out.println("*** IN EndCue "+scene.GetAnimationTime());
+			//showing all the earthquakes previously shown
+			//System.out.println("*** IN EndCue "+scene.GetAnimationTime());
 			for(int j=0;j<cat.size();j++)
 			{
 				earthquakeList = cat.get(j).getSelectedEqList();
-				//double t = scene.GetStartTime()/scene.GetEndTime();
-				//this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+				double t = scene.GetStartTime()/scene.GetEndTime();
+				this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
 				
-			for(int i=0;i<earthquakeList.size();i++)
+			for(int i=0;i<TimerCount;i++)
 			{
 				eq = earthquakeList.get(i);
-				ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),255);
+				EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),255);
 			}
 			}
 
@@ -222,8 +228,8 @@ public class CueAnimator  {
 	{
 		//width = 1920;//Info.getMainGUI().getRenderWindow().getWidth();
 		//height = 1020;//Info.getMainGUI().getRenderWindow().getHeight();
-		System.out.println(width);
-		System.out.println(height);
+		//System.out.println(width);
+		//System.out.println(height);
 
 		//Info.getMainGUI().getRenderWindow().GetRenderWindow().SetSize(renderSizeold[0],renderSizeold[1]);
 
@@ -233,12 +239,20 @@ public class CueAnimator  {
 		{ 
 			public void run() 
 			{ 
-
+				//clean temp dir
+				File oldfile = new File(Prefs.getLibLoc() + "/tmp/");
+				File[] files = oldfile.listFiles();
+				for (File f:files) 
+		        {
+					if (f.isFile() && f.exists()) 
+		            { 
+		        	f.delete();
+		        	}
+		        }
 				for(int i =0;i<ScriptingPluginGUI.imagePixelData.size();i++){
 					String fileName;
 					fileName = Prefs.getLibLoc() + "/tmp/Capture" + i + ".jpg";
-					File file = new File(fileName);
-
+					File file = new File(fileName);				
 					vtkPixelData = ScriptingPluginGUI.imagePixelData.get(i);
 					BufferedImage bufImage = new BufferedImage(width, height,
 							BufferedImage.TYPE_INT_RGB);
