@@ -250,7 +250,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
         	*/
         	// Use sphere as glyph source.
         				vtkSphereSource balls = new vtkSphereSource();
-        				balls.SetRadius(2);//.01);
+        				balls.SetRadius(7);//.01);
         				balls.SetPhiResolution(10);
         				balls.SetThetaResolution(10);
 

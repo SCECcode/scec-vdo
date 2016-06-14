@@ -322,8 +322,8 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		//setUpSwitch();
 		//globeView = Geo3dInfo.getMainWindow();
 		//makePresetsPanel();
-		makeCompassPanel();
-		add(compassPanel);
+		//makeCompassPanel();
+		//add(compassPanel);
 		add(makebuttonPanel());
 	}
 
@@ -570,7 +570,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 				customTextBox.requestFocus();
 			}
 		}
-		if(showCompass.isSelected()){
+		//if(showCompass.isSelected()){
 			/*if( compassBG != null){
 				compassBG.detach();
 			}
@@ -580,7 +580,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			if( compassBG != null){
 				compassBG.detach();
 			}*/
-		}
+		//}
 		if (latLonLabelsCheckBox.isSelected()!=labelsOn) {
 			labelsOn = latLonLabelsCheckBox.isSelected();
 			//globeView.getSwitchNode().removeAllChildren();

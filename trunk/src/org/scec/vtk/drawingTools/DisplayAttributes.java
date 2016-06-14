@@ -47,7 +47,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		formatInt.setMaximumFractionDigits(0);
 		formatInt.setGroupingUsed(false);
 		fontSizeField = new JFormattedTextField(formatInt);
-		fontSizeField.setText("11");
+		fontSizeField.setText("21");
 		
 		//Rotate XYZ
 				DecimalFormat rotateX = new DecimalFormat();
