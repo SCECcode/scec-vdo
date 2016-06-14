@@ -120,7 +120,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 		faults = new Menu("Faults");
 		communityFaultModel = new MenuItem("Community Fault Model");
 		
-		displayMenu.addActionListener(this);
+		displayMenu.addActionListener(this); 
 		this.faults.addActionListener(this);
 		this.communityFaultModel.addActionListener(this);
 
