@@ -563,7 +563,7 @@ public void actionPerformed(ActionEvent e) {
             	double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
     	    	actor.GetProperty().SetColor(color);
     	    }
-            Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
+            Info.getMainGUI().addActors(getMasterFaultBranchGroup());
         }
     } else if (src == this.editFaultsButton) {
         runObjectInfoDialog(this.faultTable.getSelected());
@@ -588,7 +588,7 @@ public void actionPerformed(ActionEvent e) {
         			vtkActor actor = (fault.getFaultBranch()); 
         			getMasterFaultBranchGroup().add(actor);
         		}
-                Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
+                Info.getMainGUI().addActors(getMasterFaultBranchGroup());
             }
         }
     } else if (src == this.remFaultsButton) {
@@ -599,7 +599,7 @@ public void actionPerformed(ActionEvent e) {
                 selectedRows);
         if (delete == JOptionPane.NO_OPTION ||
                 delete == JOptionPane.CLOSED_OPTION) {
-        	Info.getMainGUI().updateActors(getMasterFaultBranchGroup());
+        	Info.getMainGUI().addActors(getMasterFaultBranchGroup());
         }
         else
         {

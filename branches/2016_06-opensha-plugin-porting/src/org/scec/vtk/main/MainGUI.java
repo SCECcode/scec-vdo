@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -42,6 +41,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -60,6 +60,8 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import org.apache.log4j.Logger;
 import org.scec.vtk.plugins.ClickablePlugin;
 import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
+import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.drawingTools.DrawingToolsGUI;
 import org.scec.vtk.drawingTools.DrawingToolsPlugin;
 import org.scec.vtk.grid.GlobeBox;
@@ -76,13 +78,17 @@ import vtk.vtkActor2D;
 import vtk.vtkActorCollection;
 import vtk.vtkAxesActor;
 import vtk.vtkCamera;
+import vtk.vtkCanvas;
 import vtk.vtkCellPicker;
 import vtk.vtkGlobeSource;
 import vtk.vtkNativeLibrary;
+import vtk.vtkObject;
 import vtk.vtkPanel;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkProp;
+import vtk.vtkPropCollection;
 import vtk.vtkTextActor;
 import vtk.vtkTextActor3D;
 import vtk.vtkTransform;
@@ -91,10 +97,11 @@ import vtk.vtkVectorText;
 public  class MainGUI extends JFrame implements ChangeListener{
 	private final int BORDER_SIZE = 10;
 //	private static JFrame frame ;
-	private static vtkPanel renderWindow;
+	private static vtkCanvas  renderWindow;
 	private static JTabbedPane pluginTabPane;
 	//Create Main Panel
 	private static JPanel mainPanel;
+	private static JPanel vtkPanel;
 	private JPanel all = null;
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
@@ -140,6 +147,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	private DrawingToolsGUI drawingTool;
 	private DrawingToolsPlugin drawingToolPlugin;
 	private double[] pointerPosition;
+	private ScriptingPlugin scriptingPluginObj;
 	public MainGUI() {
 		
 		/*vtkTransform transform = new  vtkTransform();
@@ -184,13 +192,15 @@ public  class MainGUI extends JFrame implements ChangeListener{
  		 */
 		
 		
-		renderWindow = new vtkPanel();
+		renderWindow = new vtkCanvas ();
 		vtkCamera camera = new vtkCamera();
 		renderWindow.GetRenderer().SetActiveCamera(camera);
 		mainPanel = new JPanel(new BorderLayout());
-		mainPanel.add(renderWindow, BorderLayout.CENTER);
+		vtkPanel = new JPanel(new BorderLayout());
+		vtkPanel.add(renderWindow,BorderLayout.CENTER);
+		mainPanel.add(vtkPanel, BorderLayout.CENTER);
 		
-		renderWindow.setFocusable(true);
+		//renderWindow.setFocusable(true);
 		renderWindow.GetRenderer().SetBackground(0,0,0);
 		
 		mainMenu = new MainMenu();
@@ -209,7 +219,8 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
 		pluginGUIScrollPane.setMinimumSize(d);
 		pluginGUIScrollPane.setPreferredSize(d);
-		mainPanel.setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
+		Dimension minimumSize = new Dimension(100, 50);
+		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		renderWindow.setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 
 		renderWindow.GetRenderer().AddActor(tempGlobeScene);
@@ -292,57 +303,32 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	    }
 	    updateRenderWindow();
 	}*/
-	public void updateActors(List<vtkActor> allTextActors)
+	public void addActors(ArrayList allActors)
 	{
-		vtkActorCollection renderedActors = renderWindow.GetRenderer().GetActors();
-		boolean c = false;
-		if(allTextActors.size()>0){
+		vtkPropCollection  renderedActors = renderWindow.GetRenderer().GetViewProps();
+		System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
+		if(allActors.size()>0){
 	    		
-	    		for(int j =0;j<allTextActors.size();j++)
+	    		for(int j =0;j<allActors.size();j++)
 			    {
-	    			c=false;
-	    			for(int i =0;i<renderedActors.GetNumberOfItems();i++)
-	    		    {
-	    		    	vtkActor actor = (vtkActor) renderedActors.GetItemAsObject(i);
-	    		    	if(allTextActors.get(j).equals(actor))
-	    		    	{
-	    		    		//actor exists just update it
-	    		    		actor.Modified();
-	    		    		c=true;
-	    		    	}
-	 
-	    		    }
-	    				//actor hasn't been added to render window add it to the render window
-	    		    	if (c==false)
-	    		    		renderWindow.GetRenderer().AddActor(allTextActors.get(j));
-			    	
+	    			renderWindow.GetRenderer().AddActor((vtkProp) allActors.get(j));
 			    }
 		}
 	    updateRenderWindow();
-	    //renderWindow.GetRenderer().ResetCamera(allTextActors.get(allTextActors.size()-1).GetBounds());
+	    System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
+	   
 	}
-	public void removeActors(ArrayList<vtkActor> allTextActors)
+	public void removeActors(ArrayList allActors)
 	{
-		vtkActorCollection renderedActors = renderWindow.GetRenderer().GetActors();
-			if(allTextActors.size()>0){
-		    	//loading form previous import
-				for(int j =0;j<allTextActors.size();j++)
+		vtkPropCollection renderedActors = renderWindow.GetRenderer().GetViewProps();
+			if(allActors.size()>0){
+				for(int j =0;j<allActors.size();j++)
 			    {
-	    			boolean c = false;
-	    			for(int i =0;i<renderedActors.GetNumberOfItems();i++)
-	    		    {
-	    		    	vtkActor actor = (vtkActor) renderedActors.GetItemAsObject(i);
-	    		    	if(allTextActors.get(j).equals(actor))
-	    		    	{
-	    		    		//actor exists just update it
-	    		    		 renderWindow.GetRenderer().RemoveActor(actor);
-	    		    		c=true;
-	    		    	}
-	 
-	    		    }
-	    				//actor hasn't been added to render window add it to the render window
-	    		    	if (c==false)
-	    		    		System.out.println("no actor found to remove");
+					if(renderedActors.IsItemPresent((vtkObject) allActors.get(j))!=0)
+					{
+						 renderWindow.GetRenderer().GetViewProps().RemoveItem((vtkObject) allActors.get(j));
+					}
+					else{	System.out.println("no actor found to remove");}
 			    	
 			    }
 		}
@@ -464,6 +450,10 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		this.setVisible(true);
 		
 	}
+	public JPanel getmainFrame()
+	{
+		return mainPanel;
+	}
 	//viewRange
 	private void setViewRange(ViewRange viewRange) {
 		this.viewRange = viewRange;
@@ -499,7 +489,9 @@ public  class MainGUI extends JFrame implements ChangeListener{
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
 		else
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
-		pluginTabPane.setSelectedIndex(pluginTabPane.getTabCount() - 1);		
+		
+		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
+			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
 
 		pluginTabPane.repaint();
 		
@@ -581,17 +573,17 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	{
 		renderWindow.Render();
 		renderWindow.GetRenderer().ResetCamera(actor.GetBounds());
-		renderWindow.repaint(); 
+		//renderWindow.repaint(); 
 	}
 	//just update renderwindow
-	public  void updateRenderWindow()
+	public static void updateRenderWindow()
 	{
 		//updateActors(getActorToAllActors());
 		renderWindow.Render();
-		renderWindow.repaint();
+		//renderWindow.repaint();
 	}
 	 
-	public static vtkPanel getRenderWindow() {
+	public static vtkCanvas  getRenderWindow() {
 		return renderWindow;
 	}
 
@@ -939,6 +931,15 @@ private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 				if (shiftDetector.shiftDown)
 					MenuSelectionManager.defaultManager().setSelectedPath(path);
 			}*/
+		}
+
+		public ScriptingPluginGUI GetScriptingPlugin() {
+			// TODO Auto-generated method stub
+			if(scriptingPluginObj==null)
+			{
+				mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
+			}
+			return scriptingPluginObj.getScriptingPluginGUI();
 		}
 
 	

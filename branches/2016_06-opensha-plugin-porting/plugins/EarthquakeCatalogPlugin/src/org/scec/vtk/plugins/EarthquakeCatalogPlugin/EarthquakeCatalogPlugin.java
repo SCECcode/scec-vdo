@@ -23,7 +23,7 @@ public class EarthquakeCatalogPlugin extends ActionPlugin {
     /**
      * Static field for location of fault data in <i>ScecVideo</i> data library.
      */
-    public static String dataStoreDir = "EarthquakeStore";
+    public static String dataStoreDir = "EQCatalogStore";
        
     /**
      * Constructs a new <code>Fault3DPlugin</code> with appropriate metadata.

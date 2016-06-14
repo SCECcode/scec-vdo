@@ -115,6 +115,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		//private ArrayList<vtkActor> masterEarthquakeCatalogBranchGroup; //to keep actors
 		private ArrayList<Earthquake> masterEarthquakeCatalogsList = new ArrayList<>(); //to keep earthquakeInfo in memory
 		
+		
 		public  ComcatResourcesDialog(JPanel parent) {
 			
 			super();
@@ -723,7 +724,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				
 				query.setOrderBy(OrderBy.TIME_ASC);
 				
-				Date startDate,endDate;
+				Date startDate = null,endDate=null;
 				try {
 					startDate = new  SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH).parse(startTime);
 					query.setStartTime(startDate);
@@ -747,36 +748,43 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				throw ExceptionUtils.asRuntimeException(e);
 			}
 			System.out.println(events);
-			ArrayList<vtkActor> masterEarthquakeCatalogBranchGroup = new ArrayList<>();
+			
+			  float min_dep =    5.0f;
+		        float max_dep = -600.0f;
+		        float min_mag =   10.0f;
+		        float max_mag =    0.0f;
+			EQCatalog cat = new EQCatalog(parent);//,parent.catalogAcc);
+					//cat.setMaxMagnitude((float)maxMagnitude);
+					//cat.setMinMagnitude((float)minMagnitude);
+					//cat.setMinDepth((float)minDepth);
+					//cat.setMaxDepth((float)maxDepth);
+					//
+			//ArrayList<> masterEarthquakeCatalogBranchGroup = new ArrayList<>();
 			for (JsonEvent event : events) {
 				//plot the earthquakes as spheres with radius as magnitude
-				double[] xForm = new double[3];
-				double[] latlon = new double[3];
+//				double[] xForm = new double[3];
 				double depth=0,mag=0,lon=0,lat=0;
-				vtkSphereSource sphereSource = new vtkSphereSource();
-				 latlon[0] = Transform.calcRadius(event.getLatitude().doubleValue()) + (-event.getDepth().doubleValue());
-                 // Phi= deg2rad(latitude);
-                 latlon[1] = (event.getLatitude().doubleValue());
-                 //Theta= deg2rad(longitude);
-                 latlon[2] =  (event.getLongitude().doubleValue());
-                 
-                 xForm = Transform.customTransform(latlon);
-                 
-				sphereSource.SetCenter(xForm[0], xForm[1], xForm[2]);
-				if(event.getMag()!=null)
-				sphereSource.SetRadius(event.getMag().doubleValue());
-				else
-				{
-					sphereSource.SetRadius(0.1);
-				}
-		    	
-				vtkPolyDataMapper mapperEQCatalog = new vtkPolyDataMapper();
-				mapperEQCatalog.SetInputConnection(sphereSource.GetOutputPort());
 				
-				vtkActor actorEQCatalog = new vtkActor();
-				actorEQCatalog.SetMapper(mapperEQCatalog);
-				actorEQCatalog.GetProperty().SetColor(1,1,0);
-				masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
+//				vtkSphereSource sphereSource = new vtkSphereSource();
+//                 
+//                 xForm = Transform.transformLatLonHeight(event.getLatitude().doubleValue(), event.getLongitude().doubleValue(), -event.getDepth().doubleValue());
+//                 
+//				sphereSource.SetCenter(xForm[0], xForm[1], xForm[2]);
+//				if(event.getMag()!=null)
+//				sphereSource.SetRadius(event.getMag().doubleValue());
+//				else
+//				{
+//					sphereSource.SetRadius(0.1);
+//				}
+//		    	
+//				vtkPolyDataMapper mapperEQCatalog = new vtkPolyDataMapper();
+//				mapperEQCatalog.SetInputConnection(sphereSource.GetOutputPort());
+//				
+//				vtkActor actorEQCatalog = new vtkActor();
+//				actorEQCatalog.SetMapper(mapperEQCatalog);
+//				actorEQCatalog.GetProperty().SetColor(1,1,0);
+//				masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
+				
 				if(event.getMag()!=null)
 					mag= event.getMag().doubleValue();
 				if(event.getDepth()!=null)
@@ -785,14 +793,35 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 					lat= event.getLatitude().doubleValue();
 				if(event.getLongitude()!=null)
 					lon= event.getLongitude().doubleValue();
-				Earthquake eq = new Earthquake(depth,mag,lat,lon, startTime, endTime,limit,actorEQCatalog);
+				
+				 if (depth <= min_dep) min_dep = (float) depth;
+		            if (depth >= max_dep) max_dep = (float) depth;
+				
+		            if (mag <= min_mag) min_mag = (float) mag;
+		            if (mag >= max_mag) max_mag = (float) mag;
+		            
+				Earthquake eq = new Earthquake(depth,mag,lat,lon, startTime, endTime,limit);
 				if(!masterEarthquakeCatalogsList.contains(eq))
 					masterEarthquakeCatalogsList.add(eq);
 			}
 			
+			parent.getCatalogTable().addCatalog(cat);
 			
-			Info.getMainGUI().updateActors(masterEarthquakeCatalogBranchGroup);
-			Info.getMainGUI().updateRenderWindow();
+			cat.setMaxMagnitude((float)max_mag);
+			cat.setMinMagnitude((float)min_mag);
+			cat.setMinDepth((float)min_dep);
+			cat.setMaxDepth((float)max_dep);
+			cat.setMinDate(startDate);
+			cat.setMaxDate(endDate);
+			//this.catalogTable.addCatalog(cat);
+			cat.addComcatEqList();
+			
+			//cat.setGeometry(EQCatalog.GEOMETRY_POINT);
+			//parent.getCatalogTable().addCatalog(cat);
+//			
+//			
+//			Info.getMainGUI().addActors(masterEarthquakeCatalogBranchGroup);
+//			Info.getMainGUI().updateRenderWindow();
 		}
 
 		public void actionPerformed(ActionEvent e) {
