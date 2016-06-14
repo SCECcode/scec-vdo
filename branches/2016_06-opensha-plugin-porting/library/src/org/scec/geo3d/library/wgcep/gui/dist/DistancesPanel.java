@@ -19,8 +19,6 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeNode;
-import javax.vecmath.Color3f;
-import javax.vecmath.Point3f;
 
 import org.opensha.commons.geo.Location;
 import org.opensha.commons.param.constraint.impl.StringConstraint;
