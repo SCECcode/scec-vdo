@@ -800,7 +800,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		            if (mag <= min_mag) min_mag = (float) mag;
 		            if (mag >= max_mag) max_mag = (float) mag;
 		            
-				Earthquake eq = new Earthquake(depth,mag,lat,lon, startTime, endTime,limit);
+				Earthquake eq = new Earthquake(-depth,mag,lat,lon, startTime, endTime,limit);
 				if(!masterEarthquakeCatalogsList.contains(eq))
 					masterEarthquakeCatalogsList.add(eq);
 			}

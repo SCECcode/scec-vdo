@@ -15,6 +15,8 @@ import javax.media.MediaLocator;
 import javax.swing.SwingUtilities;
 
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.tools.JpegImagesToMovie;
 import org.scec.vtk.tools.Prefs;
@@ -34,6 +36,7 @@ public class CueAnimator  {
 	private long endTime;
 	private long startTime;
 	public boolean included;
+	public EQCatalog cat;
 	void StartCue()
 	{
 		System.out.println("*** IN StartCue " + cue.GetStartTime() );
@@ -65,7 +68,7 @@ public class CueAnimator  {
 						Info.getMainGUI().updateRenderWindow();//.GetRenderWindow().Render();
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
-						}
+					}
 				});
 			} catch (InvocationTargetException e) {
 				// TODO Auto-generated catch block
@@ -110,7 +113,7 @@ public class CueAnimator  {
 		}
 		if(included)
 			TickEarthquakeCatalogAniamtion();
-		
+
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
@@ -136,12 +139,14 @@ public class CueAnimator  {
 	{
 		System.out.println("*** IN StartCue " );
 		this.TimerCount = 0;
-
-		//camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-		for(int i =0;i<earthquakeList.size();i++)
+		double t = cue.GetAnimationTime()/cue.GetEndTime();
+		this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+		System.out.println(t);
+		for(int i=TimerCount;i<earthquakeList.size();i++)
 		{
+			
 			eq = earthquakeList.get(i);
-			eq.getEarthquakeCatalogActor().VisibilityOff();
+			ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquake(i,eq,cat,0);
 		}
 	}
 
@@ -152,10 +157,14 @@ public class CueAnimator  {
 		if(this.TimerCount<earthquakeList.size())
 		{
 			eq = earthquakeList.get(this.TimerCount);
-			eq.getEarthquakeCatalogActor().VisibilityOn();
+			ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquake(TimerCount,eq,cat,255);
+
+			//eq.getEarthquakeCatalogActor().VisibilityOn();
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {	
+						
+						Info.getMainGUI().addActors(eqActorList);
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
 					}
 				});
@@ -175,6 +184,24 @@ public class CueAnimator  {
 		endTime = System.nanoTime() - startTime;
 		long seconds = TimeUnit.SECONDS.convert((long) endTime, TimeUnit.NANOSECONDS);
 		System.out.println("*** IN EndCue "+cue.GetEndTime());
+		if(included)
+		{
+			/*ArrayList eqActorList = EarthquakeCatalogPluginGUI.startAniamteEarthquake(cat,255);
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {	
+						Info.getMainGUI().addActors(eqActorList);
+					}
+				});
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+
+		}
 	}
 
 	void EndCueCameraAniamtionRender()
@@ -183,9 +210,9 @@ public class CueAnimator  {
 		//height = 1020;//Info.getMainGUI().getRenderWindow().getHeight();
 		System.out.println(width);
 		System.out.println(height);
-		
+
 		//Info.getMainGUI().getRenderWindow().GetRenderWindow().SetSize(renderSizeold[0],renderSizeold[1]);
-		
+
 		System.out.println("*** IN EndCue writing images and processing" );
 		//Rendering movie
 		new Thread(new Runnable() 
@@ -231,7 +258,7 @@ public class CueAnimator  {
 				System.out.println("*** Finished Generating jpgs " );
 			}
 		}).start();
-		
+
 	}
 
 	int[] renderSizeold ;
