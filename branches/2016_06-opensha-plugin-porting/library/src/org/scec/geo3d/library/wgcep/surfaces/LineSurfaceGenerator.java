@@ -22,6 +22,7 @@ import vtk.vtkLine;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkUnsignedCharArray;
 
 import com.google.common.base.Preconditions;
 
@@ -30,6 +31,8 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 	public static final String NAME = "Lines";
 	
 	private ParameterList faultDisplayParams;
+	
+	private boolean bundle = true;
 
 	private static final String LINE_SIZE_PARAM_NAME = "Line Size";
 	private DiscreteSizeParam lineSizeParam = new DiscreteSizeParam(LINE_SIZE_PARAM_NAME, 1d, 10d, 1d);
@@ -108,8 +111,15 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 //		
 //		return bg;
 	}
+	
+	@Override
+	public void clearBundles() {
+		currentBundle = null;
+	}
+
+	private ActorBundle currentBundle;
 		
-	public FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface, Color color, AbstractFaultSection fault) {
+	public synchronized FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface, Color color, AbstractFaultSection fault) {
 		// TODO Auto-generated method stub
 
 		int cols = surface.getNumCols();
@@ -171,51 +181,108 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 			}
 		}
 		
-//		System.out.println("rows: " + rows + ", cols:" + cols + ", pnts: " + points.size()); 
-		vtkPolyData linesPolyData = new vtkPolyData();
-		linesPolyData.Allocate(points.size(), points.size());
-		
-		vtkPoints pts = new vtkPoints();
-		for (double[] point : points)
-			pts.InsertNextPoint(point);
-		
-		linesPolyData.SetPoints(pts);
-		
-		Preconditions.checkState(points.size() % 2 == 0, "Must be even number of points");
-		
-		vtkCellArray lines = new vtkCellArray();
-		
-		for (int li=0; li<points.size()/2; li++) {
-			int index1 = li*2;
-			int index2 = index1+1;
-			
-			vtkLine line = new vtkLine();
-			line.GetPointIds().SetId(0, index1);
-			line.GetPointIds().SetId(1, index2);
-			
-			lines.InsertNextCell(line);
+		double initialOpacity;
+		if (bundle) {
+			// initialized to transparent, will get updated when displayed
+			initialOpacity = 0;
+		} else {
+			initialOpacity = 255;
+			currentBundle = null;
 		}
 		
-		linesPolyData.SetLines(lines);
+//		System.out.println("rows: " + rows + ", cols:" + cols + ", pnts: " + points.size());
+		vtkPolyData linesPolyData;
+		vtkPoints pts;
+		vtkUnsignedCharArray colors;
+		vtkCellArray lines;
+		vtkActor actor;
+		boolean newBundle = currentBundle == null;
+		if (newBundle) {
+			linesPolyData = new vtkPolyData();
+			pts = new vtkPoints();
+			if (bundle) {
+				colors = new vtkUnsignedCharArray();
+				colors.SetNumberOfComponents(4);
+				colors.SetName("Colors");
+			} else {
+				colors = null;
+			}
+			lines = new vtkCellArray();
+			
+			linesPolyData.Allocate(points.size(), points.size());
+			
+			actor = new vtkActor();
+			
+			currentBundle = new ActorBundle(actor, linesPolyData, pts, colors, lines);
+		} else {
+			linesPolyData = currentBundle.getPolyData();
+			pts = currentBundle.getPoints();
+			colors = currentBundle.getColorArray();
+			Preconditions.checkState(colors.GetNumberOfComponents() == 4);
+			lines = currentBundle.getCellArray();
+			
+			actor = currentBundle.getActor();
+		}
+		int firstIndex;
+		synchronized (currentBundle) {
+			firstIndex = pts.GetNumberOfPoints();
+			for (double[] point : points) {
+				pts.InsertNextPoint(point);
+				if (bundle)
+					colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+			}
+			
+			Preconditions.checkState(points.size() % 2 == 0, "Must be even number of points");
+			
+			for (int li=0; li<points.size()/2; li++) {
+				int index1 = firstIndex + li*2;
+				int index2 = index1+1;
+				
+				vtkLine line = new vtkLine();
+				line.GetPointIds().SetId(0, index1);
+				line.GetPointIds().SetId(1, index2);
+				
+				lines.InsertNextCell(line);
+			}
+			
+			if (newBundle) {
+				// new bundle
+				linesPolyData.SetPoints(pts);
+				linesPolyData.SetLines(lines);
+				if (bundle)
+					linesPolyData.GetPointData().AddArray(colors);
+				
+				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+				mapper.SetInputData(linesPolyData);
+				if (bundle) {
+					mapper.ScalarVisibilityOn();
+					mapper.SetScalarModeToUsePointFieldData();
+					mapper.SelectColorArray("Colors");
+				}
+				
+				actor.SetMapper(mapper);
+				actor.GetProperty().SetLineWidth(lineSizeParam.getValue());
+				if (bundle)
+					actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparancey enabled renderer
+				else
+					actor.GetProperty().SetColor(getColorDoubleArray(color));
+				
+//				System.out.println("Created new bundle. Currently has "+pts.GetNumberOfPoints()+" points, "
+//						+lines.GetNumberOfCells()+" lines");
+			} else {
+				currentBundle.modified();
+			}
+		}
 		
-		vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-		mapper.SetInputData(linesPolyData);
-		FaultSectionActorList list = new FaultSectionActorList(fault);
-		
-		vtkActor actor = new vtkActor();
-		actor.SetMapper(mapper);
-		actor.GetProperty().SetColor(getColorDoubleArray(color));
-		actor.GetProperty().SetLineWidth(lineSizeParam.getValue());
-		list.add(actor);
+		FaultSectionActorList list;
+		if (bundle) {
+			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, points.size(), 255);
+		} else {
+			list = new FaultSectionActorList(fault);
+			list.add(actor);
+		}
 		
 		return list;
-	}
-	
-	@Override
-	public boolean updateColor(FaultSectionActorList actorList, Color color) {
-		for (vtkActor actor : actorList)
-			actor.GetProperty().SetColor(getColorDoubleArray(color));
-		return true;
 	}
 	
 	public void setSize(double size) {

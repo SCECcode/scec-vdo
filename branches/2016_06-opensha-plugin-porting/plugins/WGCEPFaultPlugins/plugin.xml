@@ -14,6 +14,16 @@
 			
 	</plugin>
 	
+	<plugin id="org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesPlugin"
+		name="UCERF3 Fault System Ruptures Plugin"
+		short-name="UCERF3 Fault System Ruptures Plugin"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesPlugin">
+		
+		<menu-item menu="Display" submenu="WGCEP Dev"/>
+			
+	</plugin>
+	
 	<plugin id="org.scec.vtk.plugins.opensha.simulators.EQSimsPlugin"
 		name="Earthquake Simulators"
 		short-name="Earthquake Simulators"

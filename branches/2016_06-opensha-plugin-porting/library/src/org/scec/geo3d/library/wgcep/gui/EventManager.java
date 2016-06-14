@@ -20,7 +20,9 @@ import org.scec.geo3d.library.wgcep.faults.colorers.ColorerChangeListener;
 import org.scec.geo3d.library.wgcep.faults.colorers.FaultColorer;
 import org.scec.geo3d.library.wgcep.gui.anim.AnimationListener;
 import org.scec.geo3d.library.wgcep.gui.dist.VisibleFaultSurfacesProvider;
+import org.scec.geo3d.library.wgcep.surfaces.ActorBundle;
 import org.scec.geo3d.library.wgcep.surfaces.FaultSectionActorList;
+import org.scec.geo3d.library.wgcep.surfaces.FaultSectionBundledActorList;
 import org.scec.geo3d.library.wgcep.surfaces.GeometryGenerator;
 import org.scec.geo3d.library.wgcep.surfaces.events.GeometryGeneratorChangeListener;
 import org.scec.geo3d.library.wgcep.surfaces.events.GeometrySettingsChangeListener;
@@ -38,6 +40,7 @@ import org.scec.geo3d.library.wgcep.tree.gui.FaultTreeTable;
 import vtk.vtkActor;
 import vtk.vtkPanel;
 import vtk.vtkRenderer;
+import vtk.vtkUnsignedCharArray;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
@@ -184,6 +187,12 @@ AnimationListener {
 			GeometryGenerator geomGen = getGeomGen(fault);
 			actors = geomGen.createFaultActors(surface, color, fault);
 			actorsMap.put(fault, actors);
+//			if (actors instanceof FaultSectionBundledActorList) {
+//				ActorBundle bundle = ((FaultSectionBundledActorList)actors).getBundle();
+//				synchronized (bundle) {
+//					bundle.modified();
+//				}
+//			}
 		}
 		return actors;
 	}
@@ -192,6 +201,11 @@ AnimationListener {
 		if (D) System.out.println("UnCaching BG for fault: '"+fault.getName()+"'");
 		FaultSectionActorList actors = actorsMap.remove(fault);
 		for (vtkActor actor : actors) {
+			if (isActorDisplayed(actor))
+				renderer.RemoveActor(actor);
+		}
+		if (actors instanceof FaultSectionBundledActorList) {
+			vtkActor actor = ((FaultSectionBundledActorList)actors).getBundle().getActor();
 			if (isActorDisplayed(actor))
 				renderer.RemoveActor(actor);
 		}
@@ -240,6 +254,20 @@ AnimationListener {
 				renderer.AddActor(actor);
 			}
 		}
+		if (actors instanceof FaultSectionBundledActorList) {
+			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actors;
+			ActorBundle bundle = bundleList.getBundle();
+			synchronized (bundle) {
+				vtkActor actor = bundle.getActor();
+				Preconditions.checkNotNull(actor);
+				actor.SetVisibility(1); // always visible in bundled view
+				setBundledOpacity(bundleList, true);
+				if (isActorDisplayed(actor))
+					actor.Modified();
+				else
+					renderer.AddActor(actor);
+			}
+		}
 		if (updateViewer)
 			updateViewer();
 	}
@@ -276,12 +304,43 @@ AnimationListener {
 			actor.SetVisibility(0);
 			actor.Modified(); // TODO needed?
 		}
+		if (actors instanceof FaultSectionBundledActorList) {
+			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actors;
+			ActorBundle bundle = bundleList.getBundle();
+			synchronized (bundle) {
+				vtkActor actor = bundle.getActor();
+				Preconditions.checkNotNull(actor);
+				actor.SetVisibility(1); // always visible in bundled view
+				setBundledOpacity(bundleList, false);
+				actor.Modified();
+			}
+		}
 		updateViewer();
+	}
+	
+	// synchroinzed externally
+	private void setBundledOpacity(FaultSectionBundledActorList bundleList, boolean visible) {
+		vtkUnsignedCharArray colors = bundleList.getBundle().getColorArray();
+		int firstIndex = bundleList.getMyFirstPointIndex();
+		int lastIndex = firstIndex + bundleList.getMyNumPoints();
+		double opacity;
+		if (visible)
+			opacity = bundleList.getMyOpacity();
+		else
+			opacity = 0;
+		for (int index=firstIndex; index<=lastIndex; index++) {
+			double[] orig = colors.GetTuple4(index);
+			colors.SetTuple4(index, orig[0], orig[1], orig[2], opacity); // keep same color
+		}
+		bundleList.getBundle().modified();
 	}
 
 	@Override
 	public void geometryGeneratorChanged(GeometryGenerator geomGen) {
 		// this is called when the geometry generator is changed
+		
+		if (this.geomGen != null)
+			this.geomGen.clearBundles();
 		
 		if (D) System.out.println("Geometry Generator changed");
 		this.geomGen = geomGen;
@@ -435,6 +494,8 @@ AnimationListener {
 		if (D) System.out.println("Tree changed!");
 		for (AbstractFaultSection fault : actorsMap.keySet())
 			unCacheBranch(fault);
+		if (geomGen != null)
+			geomGen.clearBundles();
 		nodes.clear();
 		idSectionsMap.clear();
 		actorsMap.clear();
