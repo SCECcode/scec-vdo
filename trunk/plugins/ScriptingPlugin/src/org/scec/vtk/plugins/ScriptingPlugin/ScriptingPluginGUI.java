@@ -512,7 +512,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 					System.out.println("e: "+scene.GetEndTime());
 					scene.AddCue(cue1);
 					cue1 = new vtkAnimationCue();
-					cue1.SetStartTime((i)*(1/tickrate));
+					cue1.SetStartTime((i+1)*(1/tickrate));
 				}
 
 			}
