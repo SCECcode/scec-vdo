@@ -232,8 +232,9 @@ public class CueAnimator  {
 		//System.out.println(height);
 
 		//Info.getMainGUI().getRenderWindow().GetRenderWindow().SetSize(renderSizeold[0],renderSizeold[1]);
-
-		System.out.println("*** IN EndCue writing images and processing" );
+		//process images only once
+		if((int)Math.ceil(scene.GetAnimationTime()) == (int) scene.GetEndTime()){
+		System.out.println("*** IN EndCue writing images and processing..." );
 		//Rendering movie
 		new Thread(new Runnable() 
 		{ 
@@ -286,7 +287,7 @@ public class CueAnimator  {
 				System.out.println("*** Finished Generating jpgs " );
 			}
 		}).start();
-
+		}
 	}
 	int j;
 	int[] renderSizeold ;
