@@ -16,6 +16,7 @@ import org.scec.geo3d.library.wgcep.surfaces.events.GeometrySettingsChangedEvent
 import org.scec.vtk.tools.Transform;
 
 import vtk.vtkActor;
+import vtk.vtkUnsignedCharArray;
 
 /**
  * This interface generates a Java3D <code>BranchGroup</code> from an OpenSHA <code>EvenlyGriddedSurfaceAPI</code>
@@ -55,11 +56,34 @@ public abstract class GeometryGenerator implements Named {
 	 * @param color
 	 * @return success
 	 */
-	public abstract boolean updateColor(FaultSectionActorList actorList, Color color);
+	public boolean updateColor(FaultSectionActorList actorList, Color color) {
+		if (actorList instanceof FaultSectionBundledActorList) {
+			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actorList;
+			ActorBundle bundle = bundleList.getBundle();
+			synchronized (bundle) {
+				vtkUnsignedCharArray colors = bundle.getColorArray();
+				int firstIndex = bundleList.getMyFirstPointIndex();
+				int lastIndex = firstIndex + bundleList.getMyNumPoints();
+				for (int index=firstIndex; index<=lastIndex; index++) {
+					double[] orig = colors.GetTuple4(index);
+					colors.SetTuple4(index, color.getRed(), color.getGreen(), color.getBlue(), orig[3]); // keep same opacity
+				}
+				colors.Modified();
+				bundle.getActor().Modified();
+			}
+			return true;
+		} else {
+			for (vtkActor actor : actorList)
+				actor.GetProperty().SetColor(getColorDoubleArray(color));
+			return true;
+		}
+	}
 	
 	public static double[] getColorDoubleArray(Color color) {
 		return new double[] { (double)color.getRed()/255d, (double)color.getGreen()/255d, (double)color.getBlue()/255d };
 	}
+	
+	
 	
 	/**
 	 * Returns the display parameters for this generator
@@ -78,6 +102,7 @@ public abstract class GeometryGenerator implements Named {
 	}
 	
 	protected void firePlotSettingsChangeEvent() {
+		clearBundles();
 		GeometrySettingsChangedEvent e = new GeometrySettingsChangedEvent(this);
 		for (GeometrySettingsChangeListener l : listeners) {
 			l.geometrySettingsChanged(e);
@@ -119,6 +144,10 @@ public abstract class GeometryGenerator implements Named {
 	@Override
 	public String toString() {
 		return getName();
+	}
+	
+	public void clearBundles() {
+		// do nothing, implement if using bundles
 	}
 
 }

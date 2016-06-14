@@ -2,9 +2,9 @@ package org.scec.geo3d.library.wgcep.surfaces.pickBehavior;
 
 import java.awt.event.MouseEvent;
 
-import javax.media.j3d.Node;
-
 import org.scec.geo3d.library.wgcep.surfaces.FaultSectionActorList;
+
+import vtk.vtkActor;
 
 public interface PickHandler {
 	
@@ -21,7 +21,7 @@ public interface PickHandler {
 	 * @param node
 	 * @param mouseEvent
 	 */
-	public void otherPicked(Node node, MouseEvent mouseEvent);
+	public void otherPicked(vtkActor node, MouseEvent mouseEvent);
 	
 	/**
 	 * Called when the user clicks, but no fault shapes were clicked on

@@ -2,11 +2,11 @@ package org.scec.geo3d.library.wgcep.faults.anim;
 
 import java.awt.event.MouseEvent;
 
-import javax.media.j3d.Node;
-
 import org.scec.geo3d.library.wgcep.faults.colorers.FaultColorer;
 import org.scec.geo3d.library.wgcep.surfaces.FaultSectionActorList;
 import org.scec.geo3d.library.wgcep.surfaces.pickBehavior.PickHandler;
+
+import vtk.vtkActor;
 
 public class AnimMultiColorerPickHandlerWrapper extends
 		AnimMultiColorerWrapper implements PickHandler {
@@ -32,7 +32,7 @@ public class AnimMultiColorerPickHandlerWrapper extends
 	}
 
 	@Override
-	public void otherPicked(Node node, MouseEvent mouseEvent) {
+	public void otherPicked(vtkActor node, MouseEvent mouseEvent) {
 		nothingPicked(mouseEvent);
 	}
 
