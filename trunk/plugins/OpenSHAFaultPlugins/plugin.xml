@@ -10,7 +10,7 @@
 		version="1.0" creator="Kevin Milner"
 		plugin-class="org.scec.vtk.plugins.opensha.faultModels.FaultModelPlugin">
 		
-		<menu-item menu="Display" submenu="WGCEP Dev"/>
+		<menu-item menu="Display" submenu="OpenSHA"/>
 			
 	</plugin>
 	
@@ -20,7 +20,7 @@
 		version="1.0" creator="Kevin Milner"
 		plugin-class="org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesPlugin">
 		
-		<menu-item menu="Display" submenu="WGCEP Dev"/>
+		<menu-item menu="Display" submenu="OpenSHA"/>
 			
 	</plugin>
 	
@@ -30,7 +30,7 @@
 		version="1.0" creator="Kevin Milner"
 		plugin-class="org.scec.vtk.plugins.opensha.simulators.EQSimsPlugin">
 		
-		<menu-item menu="Display" submenu="WGCEP Dev"/>
+		<menu-item menu="Display" submenu="OpenSHA"/>
 			
 	</plugin>
 </plugins>
