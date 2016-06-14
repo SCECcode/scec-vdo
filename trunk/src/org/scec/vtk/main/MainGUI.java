@@ -463,7 +463,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		return this.viewRange;
 	}
 	
-	public void addPluginGUI(String id, String title, JPanel gui) {
+	public void addPluginGUI(String id, String title, JComponent gui) {
 
 		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin"
 				&& id != "org.scec.vdo.drawingToolsPlugin") {
@@ -576,7 +576,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		//renderWindow.repaint(); 
 	}
 	//just update renderwindow
-	public  void updateRenderWindow()
+	public static void updateRenderWindow()
 	{
 		//updateActors(getActorToAllActors());
 		renderWindow.Render();
