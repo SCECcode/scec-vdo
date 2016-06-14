@@ -157,13 +157,12 @@ public class CueAnimator  {
 		if(this.TimerCount<earthquakeList.size())
 		{
 			eq = earthquakeList.get(this.TimerCount);
-			ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquake(TimerCount,eq,cat,255);
-
+		
 			//eq.getEarthquakeCatalogActor().VisibilityOn();
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {	
-						
+						ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquake(TimerCount,eq,cat,255);
 						Info.getMainGUI().addActors(eqActorList);
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
 					}
