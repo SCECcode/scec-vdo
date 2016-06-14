@@ -8,6 +8,7 @@ public class Info {
 	public static MainGUI getMainGUI() {
 		 
 		return mainGUI;
+		
 	}
 
 	public static void setMainGUI(MainGUI mgui) {

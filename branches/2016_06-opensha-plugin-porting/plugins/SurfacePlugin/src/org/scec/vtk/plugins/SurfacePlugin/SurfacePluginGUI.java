@@ -1,6 +1,5 @@
 package org.scec.vtk.plugins.SurfacePlugin;
 
-import java.awt.Container;
 import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -10,8 +9,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.JPanel;
-
-import org.jfr.examples.JpedalLabel;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.SurfacePlugin.Component.LoadedFilesProperties;
 import org.scec.vtk.tools.Transform;
@@ -20,28 +17,17 @@ import com.google.common.base.Throwables;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
-import vtk.vtkConeSource;
-import vtk.vtkDataSetMapper;
-import vtk.vtkDoubleArray;
 import vtk.vtkFloatArray;
-import vtk.vtkImageReader;
 import vtk.vtkJPEGReader;
-import vtk.vtkLight;
-import vtk.vtkOpenGLTexture;
-import vtk.vtkPNGReader;
-import vtk.vtkPlaneSource;
+import vtk.vtkLine;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
-import vtk.vtkSphereSource;
 import vtk.vtkTexture;
-import vtk.vtkTextureMapToPlane;
-import vtk.vtkTextureMapToSphere;
 import vtk.vtkTriangleStrip;
-import vtk.vtkTriangularTCoords;
 
 public class SurfacePluginGUI {
-	
+
 	private ImagePluginGUI ipg;
 	private JPanel allPanel = new JPanel();
 	private double scaleFactor;
@@ -57,11 +43,11 @@ public class SurfacePluginGUI {
 	private BufferedReader demReader;
 
 	public SurfacePluginGUI(){
-	//ip = new ImagePlugin(this);
-	ipg = new ImagePluginGUI(this);
-	
-	allPanel.setLayout(new GridLayout(2,1,6,6));
-    allPanel.add(ipg.getPanel());	
+		//ip = new ImagePlugin(this);
+		ipg = new ImagePluginGUI(this);
+
+		allPanel.setLayout(new GridLayout(2,1,6,6));
+		allPanel.add(ipg.getPanel());	
 	}
 
 
@@ -109,115 +95,90 @@ public class SurfacePluginGUI {
 		demReader.close();
 	}
 	private vtkPolyData createSurface(GeographicSurfaceInfo si) {
+		//create surface mesh
 		latIncrements = data.size()-1;
 		si.setVertSteps(latIncrements);
 		si.setHorizSteps(longIncrements);
-		
-		int[] strips = new int[latIncrements];
-		for (int i=0; i<latIncrements; i++) {
-			strips[i] = 2*longIncrements + 2; //number in each strip
-		}
-		
+
 		int numVertices = latIncrements*(2*longIncrements+2);
-		
-		vtkTriangleStrip triangleStrip = new vtkTriangleStrip();
-		//numVertices, TriangleStripArray.COORDINATES | TriangleStripArray.TEXTURE_COORDINATE_2, strips);
-		
-		triangleStrip.GetPointIds().SetNumberOfIds(numVertices);
+
 		vtkFloatArray textureCoordinates =new vtkFloatArray();
 		textureCoordinates.SetNumberOfComponents(2);
 		textureCoordinates.SetNumberOfTuples(numVertices);
 		textureCoordinates.SetName("TextureCoordinates");
-		
-		
-		//Point3d[][] pt = new Point3d[latIncrements][2*longIncrements+2]; //all the points will be stored here
+
 		vtkPoints pts = new vtkPoints();
 		double latStep = (n-s)/(double)latIncrements;
 		double longStep = (e-w)/(double)longIncrements;
 		double[] firstLineOfData = new double[horizontalItems];
 		double[] secondLineOfData = new double[horizontalItems];
-		double lon,lat;
+		double lon,lat;int pointIndex=0,stripIndex=0;
+
+		vtkCellArray cells = new vtkCellArray();
 		for (int i=0; i<latIncrements; i++) {
 			//we fill the Triangle strip array by going bottom, top, bottom, top, so we need z values
 			//from two different latitudes.  Each latitude corresponds to one of the double arrays
 			//in the data ArrayList, so we need to pull down 2 of them.  Also, the ArrayList is stored
 			//so that index 0 is the northernmost data, but we step through the TriangleStripArray from
 			//south to north, hence the latIncrements-i.
+			vtkTriangleStrip triangleStrip = new vtkTriangleStrip();
+			//number of vertices are twice 
+			triangleStrip.GetPointIds().SetNumberOfIds(longIncrements*2);
+
+			new vtkLine();
+			stripIndex=0;
 			firstLineOfData = (double[])data.get(latIncrements-i-1);
 			secondLineOfData = (double[])data.get(latIncrements-i);
-			for (int j=0; j<longIncrements+1; j++) {
-				try {
-					//take all the points and put them in a whopping bit 2-D array
-					//pt[i][2*j] = LatLongToPoint.plotPoint(s+i*latStep, w+j*longStep, secondLineOfData[j]/200.0+altitude);
-					double[] xForm = new double[3];
-					double[] latlon = new double[3];
-					int num = i*(2*longIncrements+2)+2*j;
-					
-					latlon[0] = Transform.calcRadius(s+i*latStep) + (secondLineOfData[j]/200.0+altitude);
-	                 //latitude;
-	                latlon[1] = (s+i*latStep);
-	                 //longitude;
-	                latlon[2] =  (w+j*longStep);
-	                 lat =latlon[1];
-	                 lon =latlon[2];
-	                xForm = Transform.customTransform(latlon);
-	                textureCoordinates.InsertTuple2(num,(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)));//, xForm[2]);
-					pts.InsertPoint(num,xForm);
-					//pt[i][2*j+1] = LatLongToPoint.plotPoint(s+(i+1)*latStep, w+j*longStep, firstLineOfData[j]/200.0+altitude);
-					
-					latlon[0] = Transform.calcRadius(s+(i+1)*latStep) + (firstLineOfData[j]/200.0+altitude);
-	                 //latitude;
-	                latlon[1] = (s+(i+1)*latStep);
-	                 //longitude;
-	                latlon[2] =  (w+j*longStep);
-	                lat =latlon[1];
-	                 lon =latlon[2];
-	                xForm = Transform.customTransform(latlon);
-	                 
-					pts.InsertPoint(num+1,xForm);
-					//(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)
-					textureCoordinates.InsertTuple2(num+1,(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)));
-					//textureCoordinates.InsertNextValue(xForm[0]);
-	                //textureCoordinates.InsertNextValue(xForm[1]);
-	                //textureCoordinates.InsertNextValue(xForm[2]);
-					//textureCoordinates.InsertNextValue(num+1);
-					triangleStrip.GetPointIds().SetId(num,num);
-					triangleStrip.GetPointIds().SetId(num+1,num+1);
-					
-					
 
+			for (int j=0; j<longIncrements; j++) {
+				try {
+					double[] xForm = new double[3];
+					//Point 1
+					double height =  (secondLineOfData[j]/200.0+altitude);
+					lat =(s+i*latStep);
+					lon =(w+j*longStep);
+					xForm = Transform.transformLatLonHeight(lat, lon, height);
+					float longRatio=(float)j/(float)longIncrements;
+					float lati=i;
+					if(j>longIncrements)
+						longRatio=1;
+					if(i>lati)
+						lati=latIncrements;
+					textureCoordinates.InsertTuple2(pointIndex,longRatio, lati/(float)latIncrements);
+					//textureCoordinates.InsertTuple2(num,(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)));//, xForm[2]);
+					pts.InsertPoint(pointIndex,xForm);
+
+					//Point 2
+					height = (firstLineOfData[j]/200.0+altitude);
+					lat = (s+(i+1)*latStep);
+					lon =  (w+j*longStep);
+					xForm = Transform.transformLatLonHeight(lat, lon, height);//Transform.customTransform(latlon);
+					pts.InsertPoint(pointIndex+1,xForm);
+					textureCoordinates.InsertTuple2( pointIndex+1, longRatio,(lati+1)/(float)latIncrements);
+
+					triangleStrip.GetPointIds().SetId(stripIndex,pointIndex);	
+					triangleStrip.GetPointIds().SetId(stripIndex+1,pointIndex+1);
+					pointIndex+=2;
+					stripIndex+=2;
 				} catch (Exception ex) {
 					System.out.println("Exception " + ex);
 					System.out.println("i=" + i + " j=" + j);
 				}
+
 			}
+			cells.InsertNextCell(triangleStrip);
 		}
 
-		
-		//copy all the points into the TriangleStripArray
-		//t.setCoordinates(0, pts);
-		//t.setCapability(TriangleStripArray.ALLOW_TEXCOORD_READ);
-		//t.setCapability(TriangleStripArray.ALLOW_TEXCOORD_WRITE);
-
-		
-		vtkCellArray cells = new vtkCellArray();
-		cells.InsertNextCell(triangleStrip);
-			 
-		
-		
-		
 		vtkPolyData triangleStripPolydata =new vtkPolyData();
 		triangleStripPolydata.SetPoints(pts);
 		triangleStripPolydata.SetStrips(cells);
 		triangleStripPolydata.GetPointData().SetTCoords(textureCoordinates);
-		
+
 		return triangleStripPolydata;
 	}
 	public void display(GeographicSurfaceInfo si,ImageInfo ii) { //creates the surface
 		data = new ArrayList<double[]>();
-		
-		//bg = new BranchGroup();
-		//bg.setCapability(BranchGroup.ALLOW_DETACH);
+
 		try {
 			loadData(si);
 		} catch (IOException e) {
@@ -225,114 +186,42 @@ public class SurfacePluginGUI {
 		}
 		//texture file
 		vtkJPEGReader jPEGReader = new vtkJPEGReader();
-		
+
 		jPEGReader.SetFileName(ii.getFilename());
-		
+
 		vtkPolyData polydata = new vtkPolyData(); 
 		polydata = createSurface(si);
-			  // Create an actor and mapper
-		
-		
-		// Read the image which will be the texture
-		 //jPEGReader.SetFileName("C:/Users/Public/Pictures/Sample Pictures/green.png");
-		// Create a plane
-		  /*vtkPlaneSource plane =new vtkPlaneSource();
-		  plane.SetCenter(0.0, 0.0, 0.0);
-		  plane.SetNormal(0.0, 0.0, 1.0);*/
-		  
-		  // Apply the texture
-		  vtkTexture texture = new vtkTexture();
-		 // texture.SetInputData(jPEGReader.GetOutput());
-		  texture.SetInputConnection(jPEGReader.GetOutputPort());
-		 
-		  //vtkTextureMapToPlane texturePlane = new vtkTextureMapToPlane();
-		  //texturePlane.SetInputData(polydata);
-		  //texturePlane.SetInputConnection(plane.GetOutputPort());
-		//Create a cone
-		  //vtkConeSource coneSource = new vtkConeSource();
-		  //coneSource.Update();
-		 
-		  //Create a mapper and actor
-		  vtkPolyDataMapper mapper =new vtkPolyDataMapper();
-		  //mapper.SetInputConnection(texturePlane.GetOutputPort());
-		  mapper.SetInputData(polydata);
-		  //mapper.ScalarVisibilityOff();
-			 vtkActor actor = new vtkActor();
-			  actor.SetMapper(mapper);
-			  actor.SetTexture(texture);
-			  actor.GetProperty().SetOpacity(0.5);
-			 // actor.GeneralTextureTransform();
-			  //actor.GetProperty().SetRepresentationToWireframe();
+		// Create an actor and mapper
+
+		// Apply the texture
+		vtkTexture texture = new vtkTexture();
+		texture.SetInputConnection(jPEGReader.GetOutputPort());
+
+
+		//Create a mapper and actor
+		vtkPolyDataMapper mapper =new vtkPolyDataMapper();
+		mapper.SetInputData(polydata);
+		//mapper.ScalarVisibilityOff();
+		vtkActor actor = new vtkActor();
+		actor.SetMapper(mapper);
+		actor.SetTexture(texture);
+		actor.GetProperty().SetOpacity(0.5);
+		// actor.GeneralTextureTransform();
+		//actor.GetProperty().SetRepresentationToWireframe();
 		surfaceActors.add(actor);
-		Info.getMainGUI().updateActors(surfaceActors);
+		Info.getMainGUI().addActors(surfaceActors);
 		Info.getMainGUI().updateRenderWindow(actor);
-		
-		//Info.getMainGUI().updateRenderWindow();
-		/*TriangleStripArray t = createSurface(si);
-		t.setCapability(TriangleStripArray.ALLOW_TEXCOORD_READ);
-		t.setCapability(TriangleStripArray.ALLOW_TEXCOORD_WRITE);
-		t.setCapability(TriangleStripArray.ALLOW_COUNT_READ);
-		t.setCapability(TriangleStripArray.ALLOW_COORDINATE_READ);
-		si.setData(t);
-		ColoringAttributes ca = new ColoringAttributes(new Color3f(1.0f, 1.0f, 1.0f), ColoringAttributes.SHADE_GOURAUD);
-		Appearance a = new Appearance();
-				a.setColoringAttributes(ca);
-				a.setPolygonAttributes(
-							new PolygonAttributes(
-									PolygonAttributes.POLYGON_LINE, //makes it a mesh
-									PolygonAttributes.CULL_NONE,
-									0));
-		Shape3D sh = new Shape3D(t, a);
-		bg.addChild(sh);
-		parent.registerSurface(si);
-		si.setBranchGroup(bg);
-		Geo3dInfo.getMainWindow().getPluginBranchGroup().addChild(bg);*/
-		//add image to  
 	}
-	
+
 	public void display(ImageInfo ii) {	//This is the method to display an image
-		/*bg = new BranchGroup();
-		bg.setCapability(BranchGroup.ALLOW_DETACH);
-		bg.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-		bg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-		
-		Point3d ul = ii.getUpperLeft();
-		Point3d lr = ii.getLowerRight();
-		
-		n = ul.x;
-		w = ul.y;
-		s = lr.x;
-		e = lr.y;
-		altitude = lr.z;
-		
-		Appearance appearance = createAppearance(ii);
-		appearance.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_READ);
-		appearance.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_WRITE);
-		TriangleStripArray shape;
-		//This sees if any part of a surface overlaps with this image.  If it does, the SurfaceInfo
-		//object is returned;  if not, it's null
-		GeographicSurfaceInfo si = parent.getSurface(new Point3d(n, w, 0), new Point3d(s, e, 0));
-		ii.setAttachedSurface(si); //so it can be detatched later
-		if (si==null) { //no surface
-			shape = createDefaultSurface(); //creates a surface with a point every degree of lat or long
-		} else {
-			si.setImage(ii);
-			shape = setUpCurrentSurface(si); //uses the already existing surface
-		}
-		
-		sh = new Shape3D(shape, appearance);
-		sh.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
-		sh.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-		bg.addChild(sh);
-		ii.setBranchGroup(bg);
-		Geo3dInfo.getPluginBranchGroup().addChild(bg);*/
+
 		System.out.println("Image added");
 	}
 
 
 	public int addSurfaceImage(LoadedFilesProperties lfp, ImagePluginGUI ipg){
 		displayedImageSurfaceVector.addElement(lfp);
-			
+
 		String data = new String();
 		String file = new String();
 		int begin,end;

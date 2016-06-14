@@ -58,9 +58,11 @@ import javax.swing.event.TableModelListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import org.opensha.commons.util.ExceptionUtils;
+import org.opensha.nshmp2.util.FocalMech;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogAccessor;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogTable;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogTableModel;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.ComcatResourcesDialog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
@@ -70,6 +72,7 @@ import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.SourceCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity.RelativeIntensity;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity.RelativeIntensityGUI;
 import org.scec.vtk.plugins.ScriptingPlugin.CueAnimator;
+import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.DataFileChooser;
@@ -98,6 +101,7 @@ import vtk.vtkActor;
 import vtk.vtkAnimationCue;
 import vtk.vtkAnimationScene;
 import vtk.vtkAssignAttribute;
+import vtk.vtkCellArray;
 import vtk.vtkDataSetAttributes;
 import vtk.vtkGlyph3D;
 import vtk.vtkGradientFilter;
@@ -134,7 +138,7 @@ MouseListener {
 	 * @version $Id: EQCatalogGUI.java 4543 2013-07-18 16:30:17Z jeremypc $
 	 */
 
-		//private static ArrayList<Earthquake> earthquakes = new ArrayList<Earthquake>();
+		private static ArrayList<Earthquake> earthquakes = new ArrayList<Earthquake>();
 		private static final long serialVersionUID = 1L;
 
 		private static final String NO_VALUE = " -- ";
@@ -341,6 +345,8 @@ MouseListener {
 
 		ArrayList<vtkActor> earthquakePointActorList = new ArrayList<>();
 
+		public CatalogAccessor catalogAcc;
+
 
 
 		//private CueAnimator cb;
@@ -372,9 +378,9 @@ MouseListener {
 		 * Needed for earthquake animations
 		 * @param eq
 		 */
-		/*public static ArrayList<Earthquake> getEarthquakes() {
+		public static ArrayList<Earthquake> getEarthquakes() {
 			return earthquakes;
-		}*/
+		}
 		/**
 		 * Constructs a new <code>CatalogGUI</code>. This constructor builds a custom
 		 * <code>JPanel</code> to allow user control of earthquake catalog data.
@@ -418,15 +424,20 @@ MouseListener {
 			//add(this.catsTabbedPane, BorderLayout.CENTER);
 			add(upperPane, BorderLayout.CENTER);
 			add(lowerPane, BorderLayout.PAGE_END);
-
+			// now load any data
+						//this.sourceList = new SourceList(this);
+						//this.sourceList.loadSourceCatalogs();
+						try {
+							this.catalogTable.loadCatalogs();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 			// other initializations
 			//setCursor(new Cursor(Cursor.WAIT_CURSOR));
 			/*EarthquakeCatalogPluginGUI.status.addMouseListener(this);
 
-			// now load any data
-			//this.sourceList = new SourceList(this);
-			//this.sourceList.loadSourceCatalogs();
-			//this.catalogTable.loadCatalogs();
+			
 
 			animationColor1 = new Color(255,0,0);
 			animationColor2 = new Color(0,255,0);
@@ -567,7 +578,7 @@ MouseListener {
 			} /*else if (catalog.getGeometry() == EQCatalog.GEOMETRY_COW){
 				this.dispProp_geomCow.doClick();
 			} */else{
-				this.dispProp_geomPoint.doClick();
+				//this.dispProp_geomPoint.doClick();
 			}
 		}
 
@@ -577,7 +588,7 @@ MouseListener {
 		 * is needed outside of event handlers.
 		 */
 		public void processTableSelectionChange() {
-			/*int selectedRow = this.catalogTable.getSelectedRow();
+			int selectedRow = this.catalogTable.getSelectedRow();
 			if (selectedRow != -1) {
 				this.newFromLibraryButton.setEnabled(true);
 				this.exportLibraryCatButton.setEnabled(true);
@@ -591,7 +602,7 @@ MouseListener {
 				//this.loadCatsButton.setEnabled(false);
 				//this.unloadCatsButton.setEnabled(false);
 			}
-			setAttributePanels();*/
+			setAttributePanels();
 		}
 
 		//****************************************
@@ -1505,16 +1516,18 @@ MouseListener {
 
 		//get earthquakes also filters earthquakes through user defined polygons - Ryan Berti 2008
 
-		/*private void getEarthquakes(CatalogAccessor cat){
+		public void getEarthquakes(CatalogAccessor cat){
 			this.catalogAcc = cat;
 			Earthquake eqs;
-			FocalEQ focEqs;
+			//FocalEQ focEqs;
 			ArrayList<Earthquake> eqList = new ArrayList<Earthquake>();
 			cat.readDataFile();
+			vtkCellArray spherePolys = new vtkCellArray();
 			for (int i=0; i<cat.getNumEvents();i++){
-				if(ROIFilter && !isContained(cat.getEq_latitude(i),cat.getEq_longitude(i))){//checks for ROIfilter, then checks if the eq is contained in any stored ROI polygons
-					continue;//skips eq if ROIfilter is on and epicenter is outside of polygons
-				}else{
+//				if(ROIFilter && !isContained(cat.getEq_latitude(i),cat.getEq_longitude(i))){//checks for ROIfilter, then checks if the eq is contained in any stored ROI polygons
+//					continue;//skips eq if ROIfilter is on and epicenter is outside of polygons
+//				}
+				/*else{
 					if (cat.getDataScope() == EQCatalog.DATA_SCOPE_FOCAL_PROB) {
 						focEqs = new FocalEQ(cat.getEq_depth(i),cat.getEq_id(i),cat.getEq_latitude(i),
 								cat.getEq_longitude(i),cat.getEq_magnitude(i),cat.getEq_time(i),
@@ -1547,21 +1560,25 @@ MouseListener {
 						focEqs.setColor1(compColor3f);
 						focEqs.setColor2(extColor3f);
 						eqList.add(focEqs);
-					} else {
-						eqs = new Earthquake(cat.getEq_depth(i),cat.getEq_id(i),cat.getEq_latitude(i),
-								cat.getEq_longitude(i),cat.getEq_magnitude(i),
-								cat.getEq_time(i));
-						if (cat.getDataScope() == EQCatalog.DATA_SCOPE_UNCERT || cat.getDataScope() == EQCatalog.DATA_SCOPE_UNCERT_FOCAL) {
-							eqs.setEq_xy_error(cat.getEq_xy_error(i));
-							eqs.setEq_z_error(cat.getEq_z_error(i));
-						}
+					} else {*/
+						//plot the earthquakes as spheres with radius as magnitude			
+						eqs = new Earthquake(cat.getEq_depth(i),cat.getEq_magnitude(i),cat.getEq_latitude(i),
+								cat.getEq_longitude(i),cat.getEq_time(i));
+//						if (cat.getDataScope() == EQCatalog.DATA_SCOPE_UNCERT || cat.getDataScope() == EQCatalog.DATA_SCOPE_UNCERT_FOCAL) {
+//							eqs.setEq_xy_error(cat.getEq_xy_error(i));
+//							eqs.setEq_z_error(cat.getEq_z_error(i));
+//						}
 						eqList.add(eqs);
-					}
-				}
-				//System.out.println("Size of EQLIST" + eqList.size());
+
 			}
 			this.setEarthquakes(eqList);
-		}*/
+			
+		}
+
+		private static void setEarthquakes(ArrayList<Earthquake> eqList) {
+			// TODO Auto-generated method stub
+			earthquakes = eqList;
+		}
 
 		private void setAttributePanels() {
 			// get the current selection
@@ -1580,7 +1597,7 @@ MouseListener {
 			}
 
 			setExtentsPanel(catalog);
-			//getEarthquakes(catalog);
+			getEarthquakes(catalog);
 			setAnimationPanel(catalog);
 
 			if (cat != null) {
@@ -1994,6 +2011,10 @@ MouseListener {
 			return readme.toString();
 		}
 
+		public ComcatResourcesDialog getComcatResourceDialog()
+		{
+			return this.netSourceDialog;
+		}
 		
 		
 		public void actionPerformed(ActionEvent e) {
@@ -2006,7 +2027,7 @@ MouseListener {
 					this.netSourceDialog = new ComcatResourcesDialog(this);
 				}
 				ComcatResourcesDialog dialog = this.netSourceDialog;
-				
+			
 				dialog.setLocationRelativeTo(null);
 				dialog.setVisible(true);
 				
@@ -2028,9 +2049,13 @@ MouseListener {
 			if (src == catProp_playButton)
 			{
 				//ascending order as per the time
-				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
+				ArrayList<Earthquake> earthquakeList = 	new ArrayList<>();
+				if(!netSourceDialog.getAllEarthquakes().isEmpty())
+					earthquakeList.addAll(netSourceDialog.getAllEarthquakes());
+				if(!getEarthquakes().isEmpty())
+					earthquakeList.addAll(getEarthquakes());
 				//ArrayList<vtkActor> earthquakeActors = this.netSourceDialog.getAllEarthquakesActors();
-					scene.RemoveAllCues();
+				/*	scene.RemoveAllCues();
 					//the frame rate affects sequence mode
 					scene.SetModeToSequence();//SetModeToRealTime();//
 
@@ -2044,8 +2069,9 @@ MouseListener {
 					cue1.SetStartTime(5);
 					cue1.SetEndTime(13);
 					scene.AddCue(cue1);
-					cb = new CueAnimator();
-					scene.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
+					cb = new CueAnimator();*/
+					Info.getMainGUI().GetScriptingPlugin().addEarthquakeListForAniamtion(earthquakeList,true);
+					/*scene.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
 					scene.AddObserver("EndAnimationCueEvent", cb, "EndCue");
 					scene.AddObserver("AnimationCueTickEvent", cb, "TickEarthquakeCatalogAniamtion");
 					
@@ -2053,7 +2079,7 @@ MouseListener {
 					cb.earthquakeList = earthquakeList;
 					scene.Play();
 					scene.Stop();
-					Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cb.camold);
+					Info.getMainGUI().getRenderWindow().GetRenderer().SetActiveCamera(cb.camold);*/
 					/*Date date = new Date(eq.getTime);
 					DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
 					String dateFormatted = formatter.format(date);*/
@@ -2061,51 +2087,37 @@ MouseListener {
 			
 			//display panel buttons
 			if (src == this.dispProp_geomPoint) {
-				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
-				earthquakePointActorList = new ArrayList<>();
-				vtkPoints points = new vtkPoints();
-				if(!earthquakeList.isEmpty())
-				for(int i = 0;i<earthquakeList.size();i++)
-				{
-					Earthquake eq = earthquakeList.get(i);
-					eq.getEarthquakeCatalogActor().VisibilityOff();
-					points.InsertNextPoint(eq.getEarthquakeCatalogActor().GetCenter());
-					
-				}
-				vtkPolyData  eqpoly = new vtkPolyData();
-				eqpoly.SetPoints(points);//(vtkPolyData) eq.getEarthquakeCatalogActor().GetMapper().GetInputAsDataSet();
-				vtkVertexGlyphFilter vertexFilter =new vtkVertexGlyphFilter();
-				vertexFilter.SetInputData(eqpoly);
-				vertexFilter.Update();
-				 
-				vtkPolyData polydata = new vtkPolyData();
-				polydata.ShallowCopy(vertexFilter.GetOutput());
+				//ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
+//				ArrayList<Earthquake> earthquakeList = 	new ArrayList<>();
+//				if(netSourceDialog.getAllEarthquakes()==null)
+//					earthquakeList.addAll(netSourceDialog.getAllEarthquakes());
+//				if(getEarthquakes()==null)
+//					earthquakeList.addAll(getEarthquakes());
+//				
+				EQCatalog cat = this.catalogTable.getSelectedValue();
 				
-				// Visualization
-				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-				  mapper.SetInputData(polydata);
-              vtkActor actor = new vtkActor();
-				  actor.SetMapper(mapper);
-				  actor.GetProperty().SetPointSize(1);
-				  earthquakePointActorList.add(actor);
-				Info.getMainGUI().updateActors(earthquakePointActorList);
-				//make points circular instead of square
-				Info.getMainGUI().getRenderWindow().GetRenderWindow().PointSmoothingOn();
+				cat.setGeometry(0);
+				vtkActor actorPoints = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(0);
+				vtkActor actorSpheres = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(1);
+				actorPoints.VisibilityOn();
+				actorSpheres.VisibilityOff();
+				Info.getMainGUI().addActors(cat.masterEarthquakeCatalogBranchGroup);
+
 			}
 			else if (src == this.dispProp_geomSphere) {
-				ArrayList<Earthquake> earthquakeList = 	this.netSourceDialog.getAllEarthquakes();
-				if(!earthquakePointActorList.isEmpty())
-				{
-					earthquakePointActorList.get(0).VisibilityOff();
-				}
-				if(!earthquakeList.isEmpty() )
-				for(int i = 0;i<earthquakeList.size();i++)
-				{
-					Earthquake eq = earthquakeList.get(i);
-					
-					eq.getEarthquakeCatalogActor().VisibilityOn();
-				}
-				Info.getMainGUI().updateRenderWindow();
+//				ArrayList<Earthquake> earthquakeList = 	new ArrayList<>();
+//				if(!netSourceDialog.getAllEarthquakes().isEmpty())
+//					earthquakeList.addAll(netSourceDialog.getAllEarthquakes());
+//				if(!getEarthquakes().isEmpty())
+//					earthquakeList.addAll(getEarthquakes());
+				
+				EQCatalog cat = this.catalogTable.getSelectedValue();
+				cat.setGeometry(1);
+				vtkActor actorPoints = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(0);
+				vtkActor actorSpheres = (vtkActor) cat.masterEarthquakeCatalogBranchGroup.get(1);
+				actorPoints.VisibilityOff();
+				actorSpheres.VisibilityOn();
+				Info.getMainGUI().addActors(cat.masterEarthquakeCatalogBranchGroup);
 			}
 			else if(src==this.dispProp_colButton)
 			{
@@ -2185,12 +2197,12 @@ MouseListener {
 				//Info.getMainGUI().updateActors(gradientActor);
 				Info.getMainGUI().updateRenderWindow();
 			}
-			/*CatalogTableModel libModel  = this.catalogTable.getLibraryModel();
+			CatalogTableModel libModel  = this.catalogTable.getLibraryModel();
 			EQCatalog libCat = this.catalogTable.getSelectedValue();
 			
 			//        SourceCatalog srcCat = (SourceCatalog)this.sourceList.getSelectedValue();
 
-			Object src = e.getSource();
+			/*Object src = e.getSource();
 
 			//////////////////
 			// UPPER PANEL  //

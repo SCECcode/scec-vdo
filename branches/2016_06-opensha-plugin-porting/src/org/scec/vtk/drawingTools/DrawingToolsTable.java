@@ -1,6 +1,5 @@
 package org.scec.vtk.drawingTools;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -14,9 +13,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 
-import org.scec.vtk.plugins.CommunityfaultModelPlugin.CommunityFaultModelGUI;
-import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTable;
-import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTableModel;
+import org.scec.vtk.plugins.utils.DataAccessor;
 
 public class DrawingToolsTable  extends JTable implements ChangeListener {
     
@@ -100,10 +97,10 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
 		
 	}
 
-	public ArrayList getSelected() {
+	public ArrayList<DataAccessor> getSelected() {
 		// TODO Auto-generated method stub
 	    	DrawingToolsTableModel libModel = DrawingToolsTable.this.getLibraryModel();
-	        ArrayList selectedObjects = new ArrayList();
+	        ArrayList<DataAccessor> selectedObjects = new ArrayList<DataAccessor>();
 	        for (int i=0; i<libModel.getRowCount(); i++) {
 	        	if(libModel.getLoadedStateForRow(i)){
 	        		selectedObjects.add(this.tableModel.getObjectAtRow(i));
