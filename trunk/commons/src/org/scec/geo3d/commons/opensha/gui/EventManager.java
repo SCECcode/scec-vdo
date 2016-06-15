@@ -272,26 +272,37 @@ AnimationListener {
 			updateViewer();
 	}
 	
-	private boolean upToDate = true;
+	private long lastRequestedRender = Long.MIN_VALUE;
+	private long lastCompletedRender = Long.MIN_VALUE;
+//	private boolean upToDate = true;
 	
-	private void updateViewer() {
-		upToDate = false;
-		// queue the render and avoid duplicates
-		Runnable updateRunnable = new Runnable() {
-			
-			@Override
-			public void run() {
-				if (upToDate)
+	private class RenderRunnable implements Runnable {
+		
+		@Override
+		public void run() {
+			synchronized (RenderRunnable.class) {
+				if (lastCompletedRender > lastRequestedRender)
 					return;
 				Stopwatch watch;
 				if (D) watch = Stopwatch.createStarted();
+				long myRenderTime = System.nanoTime();
 				rendererPanel.Render();
 				rendererPanel.repaint();
 				if (D) watch.stop();
 				if (D) System.out.println("Took "+watch.elapsed(TimeUnit.MILLISECONDS)+" ms to render");
-				upToDate = true;
+				if (myRenderTime > lastCompletedRender)
+					lastCompletedRender = myRenderTime;
 			}
-		};
+		}
+	}
+	
+	private synchronized void updateViewer() {
+//		upToDate = false;
+		long curTime = System.nanoTime();
+		if (curTime > lastRequestedRender)
+			lastRequestedRender = curTime;
+		// queue the render and avoid duplicates
+		Runnable updateRunnable = new RenderRunnable();
 		if (queue_renders)
 			SwingUtilities.invokeLater(updateRunnable);
 		else
@@ -412,7 +423,7 @@ AnimationListener {
 	}
 
 	@Override
-	public void colorerChanged(final FaultColorer newColorer) {
+	public synchronized void colorerChanged(final FaultColorer newColorer) {
 		// this is called when the fault colorer is changed
 		// TODO
 //		if (pickBehavior != null)
