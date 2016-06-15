@@ -4,11 +4,13 @@ import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.scec.vtk.main.MainGUI;
 
+import jdk.nashorn.api.scripting.URLReader;
 import vtk.vtkCellArray;
 import vtk.vtkDataReader;
 import vtk.vtkGenericDataObjectReader;
@@ -60,14 +62,14 @@ public class PoliticalBoundariesRegion  {
 				
 			}*/
 			
-		public ArrayList buildBoundaries(String file) {
+		public ArrayList buildBoundaries(URL file) {
 			allBounds = null;
 			allBounds = new ArrayList();
 			indSegments = new ArrayList();
 			usStateNames = new ArrayList<String>();
 			
 //			URL filename = PoliticalBoundary.class.getResource(file);
-			File filename = new File(file);//"PoliticalBoundariesPlugin" + File.separator +file);
+//			File filename = new File(file);//"PoliticalBoundariesPlugin" + File.separator +file);
 			ArrayList<Double> lat= new ArrayList<Double>(), lg= new ArrayList<Double>();
 			String temp[] = new String[2];
 				
@@ -75,7 +77,8 @@ public class PoliticalBoundariesRegion  {
 	        
 			try {
 				BufferedReader inStream =
-					new BufferedReader(new FileReader(filename));
+//					new BufferedReader(new FileReader(filename));
+					new BufferedReader(new URLReader(file));
 				String line = inStream.readLine();
 				line = inStream.readLine();
 				StringTokenizer dataLine = new StringTokenizer(line);
