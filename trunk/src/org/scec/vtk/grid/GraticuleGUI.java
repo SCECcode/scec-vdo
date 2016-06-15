@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -113,7 +114,13 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 	public ArrayList<GlobeBox> getGlobeBox(double spacing){
 		URL calGridURL = GraticuleGUI.class.getResource("resources/California.grat");
-		File calGrid = new File(calGridURL.getPath());
+		File calGrid = null;
+		try {
+			calGrid = new File(calGridURL.toURI());
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		GraticulePreset graticule = new GraticulePreset(calGrid);
 
 		upperLat = (graticule.getUpperLatitude());

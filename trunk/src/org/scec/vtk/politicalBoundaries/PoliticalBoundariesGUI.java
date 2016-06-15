@@ -150,7 +150,7 @@ public class PoliticalBoundariesGUI {
 		PoliticalBoundariesRegion newBoundaries = new PoliticalBoundariesRegion(); 
 		String usBoundariesPath = this.getClass().getResource("resources/sourcefiles/"+filename).getPath();
 		//System.out.println(usBoundariesPath);
-		ArrayList<ArrayList> us_boundaries = (ArrayList<ArrayList>) newBoundaries.buildBoundaries(usBoundariesPath);
+		ArrayList<ArrayList> us_boundaries = (ArrayList<ArrayList>) newBoundaries.buildBoundaries(this.getClass().getResource("resources/sourcefiles/"+filename));
 		//vtkPolyData us_boundaries = (vtkPolyData) newBoundaries.buildBoundaries(this.getClass().getResource("resources/sourcefiles/us.vtk").getPath());
 		ArrayList<String> usStateNames = newBoundaries.getUSStateNames();
 		vtkLine line0 = new vtkLine();
