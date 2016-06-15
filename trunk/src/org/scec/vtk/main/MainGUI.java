@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -41,12 +43,14 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.ScrollPaneConstants;
@@ -94,7 +98,7 @@ import vtk.vtkTextActor3D;
 import vtk.vtkTransform;
 import vtk.vtkVectorText;
 
-public  class MainGUI extends JFrame implements ChangeListener{
+public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 	private final int BORDER_SIZE = 10;
 //	private static JFrame frame ;
 	private static vtkCanvas  renderWindow;
@@ -148,50 +152,19 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	private DrawingToolsPlugin drawingToolPlugin;
 	private double[] pointerPosition;
 	private ScriptingPlugin scriptingPluginObj;
+	
+	//default starting cam coordinates
+	double[] camCord = {7513.266063258975,
+			-4588.568400980608,
+			6246.237592377226,//position
+			4375.8873291015625,
+			-2496.9269409179688,
+			3859.8922119140625,//focalpoint
+			-0.45792813113264974,
+			0.276911132961531,
+			0.8447615350850914};//up
 	public MainGUI() {
-		
-		/*vtkTransform transform = new  vtkTransform();
-		  transform.Translate(-1.0, -1.5, 0.0);
-		vtkAxesActor axes = new vtkAxesActor();
-		  // The axes are positioned with a user transform
-		  axes.SetUserTransform(transform);
 
-		  // the actual text of the axis label can be changed:
-		 axes.SetXAxisLabelText("");
-		  axes.SetYAxisLabelText("");
-		  axes.SetZAxisLabelText("");
-		 axes.SetScale(0.2);
-		 renderWindow.GetRenderer().AddActor(axes);
-		 //renderWindow.GetRenderer().ResetCamera(axes.GetBounds());
-		 */
-		
-	    //add modules like CFM, regions    
-		
-		 
-	    //cfm
-	    
-	    
-	    
-	    
-		//creates main window  
-        
-        
-        //add ui classes 
-        //createMenu();
-        
-		/*
-		 * The GUI hierarchy is:
-		 * 	This class (MainGUI) extends JFrame
-		 * 		pluginSplitPane
-		 * 			mainPanel - separate Panel to hold renderWindow so we can handle it if all the plugin tabs are closed
-		 * 				renderWindow
-		 * 			pluginGUIScrollPane, so the pluginGUI scrolls if needed
-		 * 				pluginGUIPanel, the panel containing all the plugin GUI tabs
-		 * 					pluginTabPane, the pane with all the plugin GUI tabs.  New tabs are added here.
-		 * 				
- 		 */
-		
-		
 		renderWindow = new vtkCanvas ();
 		vtkCamera camera = new vtkCamera();
 		renderWindow.GetRenderer().SetActiveCamera(camera);
@@ -204,6 +177,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		renderWindow.GetRenderer().SetBackground(0,0,0);
 		
 		mainMenu = new MainMenu();
+		
 		pluginGUIPanel = new JPanel();
 		pluginTabPane =  new JTabbedPane();
 		
@@ -228,7 +202,19 @@ public  class MainGUI extends JFrame implements ChangeListener{
 		renderWindow.GetRenderer().AddActor(labelActor);
 		renderWindow.GetRenderWindow().SetPointSmoothing(35);
 		renderWindow.GetRenderWindow().PointSmoothingOn();
+		renderWindow.addKeyListener(this);
+		renderWindow.setFocusable(true);
 		addDefaultActors();
+		
+		vtkCamera tmpCam = new vtkCamera();//.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera();
+
+		tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
+		tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
+		tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
+
+		Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
+		Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(tmpCam);
+		Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
 		
 		//mouse event
 		final vtkCellPicker cellPicker = new vtkCellPicker();
@@ -758,7 +744,7 @@ public  class MainGUI extends JFrame implements ChangeListener{
 	        }
 	 
 	    }
-	 
+	
 	    private final MouseListener buttonMouseListener = new MouseAdapter() {
 	        public void mouseEntered(MouseEvent e) {
 	            Component component = e.getComponent();
@@ -835,6 +821,7 @@ private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 		}
 		
 	}
+	
 	
 	// Used to keep the Display panel up when selecting and deselecting plugins
 		public class StayOpenCheckBoxMenuItem extends CheckboxMenuItem {
@@ -924,6 +911,57 @@ private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 			}
 			return scriptingPluginObj.getScriptingPluginGUI();
 		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			// TODO Auto-generated method stub
+			 if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
+			    {
+			        //code to execute if escape is pressed
+			    
+	
+			    }
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			// TODO Auto-generated method stub
+			 if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
+			    {
+			        //code to execute if escape is pressed
+					if(renderWindow.GetRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0)
+		    		{
+						//renderWindow.GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCamera(PoliticalBoundariesGUI.mainFocusReginActor.GetBounds());
+			    		
+						vtkCamera tmpCam = new vtkCamera();//.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera();
+
+		    			tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
+		    			tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
+		    			tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
+
+			    		Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
+			    		Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(tmpCam);
+			    		Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
+			    		}
+			    }
+			
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+//		@Override
+//		public void actionPerformed(ActionEvent e) {
+//			// TODO Auto-generated method stub
+//			Object src = e.getSource();
+//			if(src==resetView)
+//			{
+//				System.out.println("hey");
+//			}
+//		}
 
 	
 	
