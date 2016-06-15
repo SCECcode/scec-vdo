@@ -425,7 +425,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 	//create frame and tabbed pane in main window
 	private void setMainFrame()
 	{	
-		this.setTitle("Hello Interns");
+		this.setTitle("SCEC VDO VTK");
 		this.setMenuBar(mainMenu.getMenuBar());
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setSize(new Dimension(Prefs.getTotalWidth(), Prefs.getMainHeight()));
