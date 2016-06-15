@@ -51,6 +51,7 @@ public class PoliticalBoundariesGUI {
 	private ArrayList<JCheckBox> lowerCheckBoxButtons;
 	private ArrayList<JCheckBox> upperCheckBoxButtons;
 	Dimension dMainPanel,dSubPanel;
+	public static vtkActor mainFocusReginActor = new vtkActor();
 	public PoliticalBoundariesGUI(){
 		this.politicalBoundaryMainPanel = new JPanel(new GridLayout(0,1));
 
@@ -205,7 +206,9 @@ public class PoliticalBoundariesGUI {
 			plyOutActor.SetMapper(mapper);
 			plyOutActor.GetProperty().SetColor(1,1,1);
 			if(isSelected && j == 4)
-				plyOutActor.VisibilityOn();
+				{plyOutActor.VisibilityOn();
+				mainFocusReginActor  = plyOutActor;
+				}
 			else
 				plyOutActor.VisibilityOff();
 			actorPoliticalBoundariesSegments.add(plyOutActor);
