@@ -312,9 +312,8 @@ public class PoliticalBoundariesGUI {
 					vtkActor actor = actorPoliticalBoundariesSegments.get(i);
 
 					if (source == lowerCheckBoxButtons.get(i)) {
-						Info.getMainGUI().updateRenderWindow();
 						actor.VisibilityOff();
-
+						Info.getMainGUI().updateRenderWindow();
 						break;
 					}
 				}
