@@ -2,6 +2,8 @@ package org.scec.geo3d.commons.opensha.gui.anim;
 
 import javax.swing.JSlider;
 
+import org.scec.geo3d.commons.opensha.gui.EventManager;
+
 public class AnimThread extends Thread {
 	
 	private static final boolean D = false;
@@ -57,9 +59,11 @@ public class AnimThread extends Thread {
 			} else {
 				currentStep = newStep;
 				slider.setValue(currentStep);
+				EventManager.flushRenders();
 			}
 			if (loop && currentStep >= slider.getMaximum()) {
 				slider.setValue(slider.getMinimum());
+				EventManager.flushRenders();
 				currentStep = slider.getValue();
 				start = System.currentTimeMillis();
 				if (currentStep > 1)
