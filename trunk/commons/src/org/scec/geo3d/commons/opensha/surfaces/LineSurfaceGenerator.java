@@ -111,13 +111,6 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 //		
 //		return bg;
 	}
-	
-	@Override
-	public void clearBundles() {
-		currentBundle = null;
-	}
-
-	private ActorBundle currentBundle;
 		
 	public synchronized FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface, Color color, AbstractFaultSection fault) {
 		// TODO Auto-generated method stub
@@ -182,9 +175,11 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		}
 		
 		double initialOpacity;
-		if (bundle) {
+		ActorBundle currentBundle;
+		if (bundle && bundler != null) {
 			// initialized to transparent, will get updated when displayed
 			initialOpacity = 0;
+			currentBundle = bundler.getBundle(fault);
 		} else {
 			initialOpacity = 255;
 			currentBundle = null;
@@ -196,7 +191,7 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		vtkUnsignedCharArray colors;
 		vtkCellArray lines;
 		vtkActor actor;
-		boolean newBundle = currentBundle == null;
+		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
 		if (newBundle) {
 			linesPolyData = new vtkPolyData();
 			pts = new vtkPoints();
@@ -211,7 +206,7 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 			
 			actor = new vtkActor();
 			
-			currentBundle = new ActorBundle(actor, linesPolyData, pts, colors, lines);
+			currentBundle.initialize(actor, linesPolyData, pts, colors, lines);
 		} else {
 			linesPolyData = currentBundle.getPolyData();
 			pts = currentBundle.getPoints();

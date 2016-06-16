@@ -2,11 +2,14 @@ package org.scec.vtk.plugins.opensha;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.opensha.commons.util.ExceptionUtils;
+import org.scec.geo3d.commons.opensha.surfaces.FaultActorBundler;
+import org.scec.geo3d.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.plugins.ActionPlugin;
 import org.scec.vtk.plugins.PluginInfo;
 
@@ -24,6 +27,11 @@ public abstract class AbstractFaultPlugin extends ActionPlugin {
 	 * @return
 	 */
 	protected abstract FaultPluginGUI buildGUI() throws Exception;
+	
+	protected static void setBundlerInGeomGens(List<GeometryGenerator> geomGens, FaultActorBundler bundler) {
+		for (GeometryGenerator geomGen : geomGens)
+			geomGen.setFaultActorBundler(bundler);
+	}
 
 	@Override
 	public void setClickableEnabled(boolean enable) {

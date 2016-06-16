@@ -585,6 +585,7 @@ public void actionPerformed(ActionEvent e) {
         		for(int i = 0; i < loadedRows.size(); i++)
         		{
         			Fault3D  fault =(Fault3D) loadedRows.get(i);
+        			System.out.println("Adding "+fault.getDisplayName());
         			vtkActor actor = (fault.getFaultBranch()); 
         			getMasterFaultBranchGroup().add(actor);
         		}
