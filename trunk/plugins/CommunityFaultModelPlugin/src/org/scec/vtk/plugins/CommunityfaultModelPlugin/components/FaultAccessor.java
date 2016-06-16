@@ -2,13 +2,7 @@ package org.scec.vtk.plugins.CommunityfaultModelPlugin.components;
 
 
 import java.awt.Color;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -17,29 +11,16 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.scec.vtk.main.Info;
-import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.utils.AbstractDataAccessor;
-import org.scec.vtk.plugins.utils.DataImport;
-
 import vtk.vtkActor;
 import vtk.vtkCellArray;
-import vtk.vtkCharArray;
-import vtk.vtkDataArray;
-import vtk.vtkDataObjectTree;
 import vtk.vtkDoubleArray;
-import vtk.vtkGeoAssignCoordinates;
-import vtk.vtkMapper;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
-import vtk.vtkSphericalTransform;
-import vtk.vtkTransformPolyDataFilter;
-import vtk.vtkTriangle;
-import vtk.vtkUnsignedCharArray;
-import vtk.vtkXMLPolyDataReader;
-import vtk.vtkXMLPolyDataWriter;
+import vtk.vtkStringArray;
 
 /**
  * This subclass of <code>AbstractDataAccessor</code> provides the bulk of the framework
@@ -182,15 +163,21 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
     public boolean readDataFile()
     {
     	try{
+    		
     	vtkPolyDataReader objIn = new vtkPolyDataReader();
     	objIn.SetFileName(getDataFile().getAbsolutePath());
     	objIn.Update();
     	
+    	vtkStringArray infoArray = new vtkStringArray();
+		infoArray.SetName("Info");
+		infoArray.InsertNextValue(getDisplayName());
+
     	//create new polygon to overwrite default polygon points color
+    	                      
     	vtkPolyData pd =  new vtkPolyData();
     	pd.SetPoints(objIn.GetOutput().GetPoints());
     	pd.SetPolys(objIn.GetOutput().GetPolys());
-	 
+    	pd.GetPointData().AddArray(infoArray);
 
 		vtkPolyDataMapper mapperassign1 = new vtkPolyDataMapper();
 		mapperassign1.SetInputData(pd);
@@ -206,6 +193,7 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
 			c[1] /= Info.rgbMax;
 			c[2] /= Info.rgbMax;
 			this.faultBranchGroup.GetProperty().SetColor(c);
+			
     }
        catch (Exception e) {
            log.debug("problem reading binary data file");
@@ -267,6 +255,8 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
         try {
             //ObjectOutputStream objOut = new ObjectOutputStream(
              //       new BufferedOutputStream(new FileOutputStream(getDataFile())));
+    		
+    		
             vtkPolyDataWriter objOut = new vtkPolyDataWriter();
             objOut.SetFileName(getDataFile().getAbsolutePath());
             vtkPolyData polydata = new vtkPolyData();

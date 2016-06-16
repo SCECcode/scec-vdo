@@ -2,21 +2,11 @@ package org.scec.vtk.main;
 
 import java.awt.BorderLayout;
 import java.awt.CheckboxMenuItem;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -25,11 +15,7 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
-
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -42,18 +28,10 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.KeyStroke;
-import javax.swing.MenuElement;
-import javax.swing.MenuSelectionManager;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -63,7 +41,6 @@ import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.apache.log4j.Logger;
 import org.scec.vtk.plugins.ClickablePlugin;
-import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
 import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.drawingTools.DrawingToolsGUI;
@@ -79,80 +56,69 @@ import org.scec.vtk.tools.plugins.Plugins;
 
 import vtk.vtkActor;
 import vtk.vtkActor2D;
-import vtk.vtkActorCollection;
-import vtk.vtkAxesActor;
 import vtk.vtkCamera;
 import vtk.vtkCanvas;
 import vtk.vtkCellPicker;
-import vtk.vtkGlobeSource;
 import vtk.vtkNativeLibrary;
 import vtk.vtkObject;
-import vtk.vtkPanel;
-import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
 import vtk.vtkPropCollection;
+import vtk.vtkPropPicker;
+import vtk.vtkSphereSource;
+import vtk.vtkStringArray;
 import vtk.vtkTextActor;
-import vtk.vtkTextActor3D;
-import vtk.vtkTransform;
-import vtk.vtkVectorText;
 
-public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
+public  class MainGUI extends JFrame implements  ChangeListener{
 	private final int BORDER_SIZE = 10;
-//	private static JFrame frame ;
+	//	private static JFrame frame ;
 	private static vtkCanvas  renderWindow;
 	private static JTabbedPane pluginTabPane;
 	//Create Main Panel
 	private static JPanel mainPanel;
-	private static JPanel vtkPanel;
-	private JPanel all = null;
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
 	private int yCenter = BORDER_SIZE / 2;
 	private ViewRange viewRange;
 	private static final Logger log = Logger.getLogger(MainGUI.class);
 	// In the static constructor we load in the native code.
-	  // The libraries must be in your path to work.
+	// The libraries must be in your path to work.
 	static {
-	    if (!vtkNativeLibrary.LoadAllNativeLibraries()) {
-	      for (vtkNativeLibrary lib : vtkNativeLibrary.values()) {
-	        if (!lib.IsLoaded()) {
-	          System.out.println(lib.GetLibraryName() + " not loaded");
-	        }
-	      }
-	    }
-	    vtkNativeLibrary.DisableOutputWindow(null);
-	  }
+		if (!vtkNativeLibrary.LoadAllNativeLibraries()) {
+			for (vtkNativeLibrary lib : vtkNativeLibrary.values()) {
+				if (!lib.IsLoaded()) {
+					System.out.println(lib.GetLibraryName() + " not loaded");
+				}
+			}
+		}
+		vtkNativeLibrary.DisableOutputWindow(null);
+	}
 	private static File getCWD;
 
 	static MainMenu mainMenu;
-	
+
 	public static PoliticalBoundariesGUI pbGUI ;
 
 	private static JPanel pluginGUIPanel;
 	private static JScrollPane pluginGUIScrollPane;
 	private static JSplitPane pluginSplitPane;
-	private static boolean alreadyResized;
-	private static Object id;
-
 	private int xeBorder=0;
 	private int ysBorder=0;
 	private GraticuleGUI gridGUI;
 	GraticulePlugin gridPlugin;
-	private ViewRange viewrange;
 	private static ArrayList<vtkActor> allActors = new ArrayList<vtkActor>();
 	private static ArrayList<vtkActor> allTextActors = new ArrayList<vtkActor>();
-	 vtkActor tempGlobeScene = new vtkActor();
-	 vtkActor2D labelActor =new vtkActor2D();
-	 vtkActor pointActor = new 
-			    vtkActor();
+	vtkActor tempGlobeScene = new vtkActor();
+	vtkActor2D labelActor =new vtkActor2D();
+	vtkActor pointActor = new 
+			vtkActor();
 	private boolean gridDisplay = true;
 	private DrawingToolsGUI drawingTool;
 	private DrawingToolsPlugin drawingToolPlugin;
 	private double[] pointerPosition;
 	private ScriptingPlugin scriptingPluginObj;
-	
+
 	//default starting cam coordinates
 	double[] camCord = {7513.266063258975,
 			-4588.568400980608,
@@ -163,27 +129,32 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 			-0.45792813113264974,
 			0.276911132961531,
 			0.8447615350850914};//up
+
+	vtkActor focalPointActor = new vtkActor();
+	vtkPropPicker  picker =new vtkPropPicker();
+
 	public MainGUI() {
 
 		renderWindow = new vtkCanvas ();
-		vtkCamera camera = new vtkCamera();
-		renderWindow.GetRenderer().SetActiveCamera(camera);
+		renderWindow.GetRenderer().Render();
+		//vtkCamera camera = new vtkCamera();
+		//renderWindow.GetRenderer().SetActiveCamera(camera);
 		mainPanel = new JPanel(new BorderLayout());
-		vtkPanel = new JPanel(new BorderLayout());
-		vtkPanel.add(renderWindow,BorderLayout.CENTER);
-		mainPanel.add(vtkPanel, BorderLayout.CENTER);
-		
+		//vtkPanel = new JPanel(new BorderLayout());
+		//vtkPanel.add(renderWindow,BorderLayout.CENTER);
+
+
 		//renderWindow.setFocusable(true);
 		renderWindow.GetRenderer().SetBackground(0,0,0);
-		
+
 		mainMenu = new MainMenu();
-		
+
 		pluginGUIPanel = new JPanel();
 		pluginTabPane =  new JTabbedPane();
-		
+
 		Info.setMainGUI(this);
 		setUpPluginTabs();
-		
+
 		pluginSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainPanel, pluginGUIScrollPane);
 		pluginSplitPane.setOneTouchExpandable(false);
 		pluginSplitPane.setResizeWeight(1);
@@ -197,34 +168,118 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		renderWindow.setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 
+
 		renderWindow.GetRenderer().AddActor(tempGlobeScene);
 		renderWindow.GetRenderer().AddActor(pointActor);
 		renderWindow.GetRenderer().AddActor(labelActor);
-		renderWindow.GetRenderWindow().SetPointSmoothing(35);
-		renderWindow.GetRenderWindow().PointSmoothingOn();
-		renderWindow.addKeyListener(this);
-		renderWindow.setFocusable(true);
+		//renderWindow.GetRenderWindow().SetPointSmoothing(35);
+		//renderWindow.GetRenderWindow().PointSmoothingOn();
 		addDefaultActors();
-		
+
 		vtkCamera tmpCam = new vtkCamera();//.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera();
 
 		tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
 		tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
 		tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
 
-		Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
-		Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(tmpCam);
-		Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
-		
+		vtkSphereSource focalPoint = new vtkSphereSource();
+		focalPoint.SetRadius(20);
+		vtkPolyDataMapper focalPointMapper = new vtkPolyDataMapper();
+		focalPointMapper.SetInputConnection(focalPoint.GetOutputPort());
+		focalPointActor.SetMapper(focalPointMapper);
+		renderWindow.GetRenderer().AddActor(focalPointActor);
+		focalPointActor.VisibilityOff();
+
+		renderWindow.GetRenderer().SetActiveCamera(tmpCam);
+		renderWindow.GetRenderer().ResetCameraClippingRange();
+		focalPointActor.SetPosition(renderWindow.GetRenderer().GetActiveCamera().GetFocalPoint());
+		focalPointActor.Modified();
+		renderWindow.setFocusable(true);
+
+		renderWindow.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+
+
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				renderWindow.GetRenderer().Render();
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
+				{
+					//TODO: change start cam coordinates to be as per the region assigned by default they are set for California
+					//reset view position to default 
+					if(renderWindow.GetRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0)
+					{
+						vtkCamera tmpCam = new vtkCamera();
+
+						tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
+						tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
+						tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
+						renderWindow.GetRenderer().SetActiveCamera(tmpCam);
+						renderWindow.GetRenderer().ResetCameraClippingRange();
+						//renderWindow.GetRenderer().Render();
+						renderWindow.repaint();				    		
+					}
+				}
+				if(e.getKeyCode() == KeyEvent.VK_SPACE)
+				{
+					if(renderWindow.GetRenderer().GetViewProps().IsItemPresent(focalPointActor)!=0)
+					{
+						if(focalPointActor.GetVisibility()==0)
+						{ 
+							focalPointActor.VisibilityOn();
+							focalPointActor.SetPosition(renderWindow.GetRenderer().GetActiveCamera().GetFocalPoint());
+						}
+						else
+							focalPointActor.VisibilityOff();
+						renderWindow.repaint();	 	
+					}
+				}
+			}
+		});
+
 		//mouse event
 		final vtkCellPicker cellPicker = new vtkCellPicker();
-		 
-	    // Show the point on the sphere the mouse is hovering over in the status bar
+
+		// Show the point on the sphere the mouse is hovering over in the status bar
 		renderWindow.addMouseListener(new MouseAdapter()
 		{
-			//public void mouseClicked(MouseEvent e)
-			//{
+			vtkTextActor textActor = new vtkTextActor();
+			double[] oldColor = new double[3];
 			public void mousePressed(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					int[] clickPos = renderWindow.getRenderWindowInteractor().GetEventPosition();
+
+					// Pick from this location. 
+					picker.Pick(clickPos[0], clickPos[1],0, renderWindow.GetRenderer());
+					vtkActor pickedActor = picker.GetActor();
+					if (pickedActor != null){
+						oldColor = pickedActor.GetProperty().GetColor();
+						vtkPolyData pd = (vtkPolyData) pickedActor.GetMapper().GetInputAsDataSet();
+						vtkStringArray info = (vtkStringArray) (pd).GetPointData().GetAbstractArray("Info");
+						// Highlight the picked actor by changing its properties
+						if(info!=null){
+							textActor.SetInput ((info.GetValue(0)));
+							textActor.SetPosition2 ( 10, 40 );
+							textActor.GetTextProperty().SetFontSize ( 24 );
+							textActor.GetTextProperty().SetColor ( 1.0, 0.0, 0.0 );
+							renderWindow.GetRenderer().AddActor2D ( textActor );
+						}
+						pickedActor.GetProperty().SetColor(1.0, 1.0, 0.0);
+						pickedActor.Modified();
+						renderWindow.repaint();
+					}
+				}
 				if (e.getButton() == MouseEvent.BUTTON3) {
 
 					// The call to Pick needs to be surrounded by lock and unlock to prevent crashes.
@@ -239,18 +294,36 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 						double[] p = cellPicker.GetPickPosition();
 						setPointerPosition(cellPicker.GetPickPosition());
 						System.out.println("Position: " + p[0] + ", " + p[1] + ", " + p[2]);
-						//framePoints.add(p);
+					}
+
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					vtkActor pickedActor = picker.GetActor();
+					if (pickedActor != null){
+						if(textActor!=null){
+							textActor.SetInput ("");
+							textActor.SetPosition2 ( 10, 40 );
+							textActor.GetTextProperty().SetFontSize ( 24 );
+							textActor.GetTextProperty().SetColor ( 1.0, 0.0, 0.0 );
+							textActor.Modified();
+						}
+						pickedActor.GetProperty().SetColor(oldColor);
+						pickedActor.Modified();
+						renderWindow.repaint();
 					}
 				}
 			}
 		});
-        try {
-        	mainMenu.availablePlugins = Plugins.getAvailablePlugins();
-        	mainMenu.setupPluginMenus();
+		mainPanel.add(renderWindow, BorderLayout.CENTER);
+		try {
+			mainMenu.availablePlugins = Plugins.getAvailablePlugins();
+			mainMenu.setupPluginMenus();
 			setMainFrame();
 			//Update the divider location so that the plugin pane doesn't require horizontal scrolling
 			pluginSplitPane.setDividerLocation(this.getWidth() - pluginTabPane.getPreferredSize().width - 60);
-			
+
 		} catch (IOException ioe) {
 			throw new RuntimeException("Unable to get available plugins", ioe);
 		}
@@ -268,7 +341,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 		return  new File( getCWD() + File.separator+ "data");
 	}
 	public static File getCWD(){
-		
+
 		if(getCWD==null)
 		{
 			getCWD=new File(System.getProperty("user.dir"));
@@ -278,122 +351,106 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 	}
 	/*public void updateActors(ArrayList<vtkActor> allCFMActors)
 	{
-		
+
 	    if(allCFMActors.size()>0){
 	    	//loading form previous import
 	    for(int i =0;i<allCFMActors.size();i++)
 	    {
 	    	renderWindow.GetRenderer().AddActor(allCFMActors.get(i));
-	    	
+
 	    }
 	    }
 	    updateRenderWindow();
 	}*/
 	public void addActors(ArrayList allActors)
 	{
-		vtkPropCollection  renderedActors = renderWindow.GetRenderer().GetViewProps();
+		renderWindow.GetRenderer().GetViewProps();
 		//System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
 		if(allActors.size()>0){
-	    		
-	    		for(int j =0;j<allActors.size();j++)
-			    {
-	    			renderWindow.GetRenderer().AddActor((vtkProp) allActors.get(j));
-			    }
+
+			for(int j =0;j<allActors.size();j++)
+			{
+				renderWindow.GetRenderer().AddActor((vtkProp) allActors.get(j));
+			}
 		}
-	    updateRenderWindow();
-	    //System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
-	   
+		updateRenderWindow();
+		//System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
+
 	}
 	public void removeActors(ArrayList allActors)
 	{
 		vtkPropCollection renderedActors = renderWindow.GetRenderer().GetViewProps();
-			if(allActors.size()>0){
-				for(int j =0;j<allActors.size();j++)
-			    {
-					if(renderedActors.IsItemPresent((vtkObject) allActors.get(j))!=0)
-					{
-						 renderWindow.GetRenderer().GetViewProps().RemoveItem((vtkObject) allActors.get(j));
-					}
-					else{	System.out.println("no actor found to remove");}
-			    	
-			    }
+		if(allActors.size()>0){
+			for(int j =0;j<allActors.size();j++)
+			{
+				if(renderedActors.IsItemPresent((vtkObject) allActors.get(j))!=0)
+				{
+					renderWindow.GetRenderer().GetViewProps().RemoveItem((vtkObject) allActors.get(j));
+				}
+				else{	System.out.println("no actor found to remove");}
+
+			}
 		}
-	    updateRenderWindow();
-	    //renderWindow.GetRenderer().ResetCamera(allTextActors.get(allTextActors.size()-1).GetBounds());
+		updateRenderWindow();
 	}
-	/*public static void addActorsToAllActors(ArrayList<vtkActor> ar)
-	{
-		allActors.addAll(ar);
-	}
-	
-	public static void addActorToAllActors(vtkActor ar)
-	{
-		allActors.add(ar);
-	}*/
+
 	public static ArrayList<vtkActor> getActorToAllActors()
 	{
 		return allActors;
 	}
-	
+
 	private void addDefaultActors()
 	{
 		pbGUI = new PoliticalBoundariesGUI();
-		
+
 		addPluginGUI("org.scec.vdo.politicalBoundaries","Political Boundaries",pbGUI.loadAllRegions());
-	
-		
-		//regions - us
-		
-    
-    // ArrayList<ArrayList> actorPoliticalBoundariesMain = new ArrayList<ArrayList>();
-	 ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-	 actorPoliticalBoundariesSegments = pbGUI.getPoliticalBoundaries();
-	 
-	 if(actorPoliticalBoundariesSegments.size()>0){
-	 
-		// actorPoliticalBoundariesSegments = actorPoliticalBoundariesMain.get(i);
-		 for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
-		 {
-			 vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
-			 renderWindow.GetRenderer().AddActor(pbActor);
-			 //if(j==4)
+		ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
+		actorPoliticalBoundariesSegments = pbGUI.getPoliticalBoundaries();
+
+		if(actorPoliticalBoundariesSegments.size()>0){
+
+		for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
+			{
+				vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
+				renderWindow.GetRenderer().AddActor(pbActor);
+				//if(j==4)
 				//updateRenderWindow(pbActor);
-		 }
-	 
-	 }
-	
-	 setViewRange(new ViewRange());
-	 //draw Grid
-	 gridGUI = new GraticuleGUI(gridPlugin);
-	 addPluginGUI("org.scec.vdo.graticulePlugin","Graticule",gridGUI);
-	 makeGrids(gridGUI.getGlobeBox(1.0));
-	
-	 
-	//draw DrawingTools
-	drawingTool = new DrawingToolsGUI(drawingToolPlugin);
-	addPluginGUI("org.scec.vdo.drawingToolsPlugin","Drawing Tools",drawingTool);
-		
+			}
+
+		}
+
+		setViewRange(new ViewRange());
+		//draw Grid
+		gridGUI = new GraticuleGUI(gridPlugin);
+		addPluginGUI("org.scec.vdo.graticulePlugin","Graticule",gridGUI);
+		makeGrids(gridGUI.getGlobeBox(1.0));
+
+
+		//draw DrawingTools
+		drawingTool = new DrawingToolsGUI(drawingToolPlugin);
+		addPluginGUI("org.scec.vdo.drawingToolsPlugin","Drawing Tools",drawingTool);
+
 	}
-	
+
 	public void makeGrids(ArrayList<GlobeBox> gbs)
 	{
 
-		 vtkPolyDataMapper tempMapper = (vtkPolyDataMapper) (gbs.get(0)).globeScene; 
-		 tempGlobeScene.SetMapper(tempMapper);
-		 if(gbs.get(0).getLineColor() != null)
-			 tempGlobeScene.GetProperty().SetColor(Info.convertColor(gbs.get(0).getLineColor()));
-		 else
-			 tempGlobeScene.GetProperty().SetColor(1,1,1);
-		 tempGlobeScene.Modified();
-		 //renderWindow.GetRenderer().Render();
-		 
-		 vtkPolyData  plyGrid = tempMapper.GetInput();
-		 
+		vtkPolyDataMapper tempMapper = (vtkPolyDataMapper) (gbs.get(0)).globeScene; 
+		tempGlobeScene.SetMapper(tempMapper);
+		if(gbs.get(0).getLineColor() != null)
+			tempGlobeScene.GetProperty().SetColor(Info.convertColor(gbs.get(0).getLineColor()));
+		else
+			tempGlobeScene.GetProperty().SetColor(1,1,1);
+		tempGlobeScene.Modified();
+		//renderWindow.GetRenderer().Render();
 
-		 pointActor.SetMapper(gbs.get(0).ptMapper);
-		 pointActor.Modified();
-		 labelActor.SetMapper(gbs.get(0).labelMapperLat);
-		 labelActor.Modified();
+		tempMapper.GetInput();
+
+
+		pointActor.SetMapper(gbs.get(0).ptMapper);
+		pointActor.Modified();
+		labelActor.SetMapper(gbs.get(0).labelMapperLat);
+		labelActor.Modified();
 		renderWindow.GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
 	}
 	public void toggleGridDisplay() {
@@ -413,14 +470,14 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 		// TODO Auto-generated method stub
 		return this.tempGlobeScene;
 	}
-	
-	
+
+
 	private void setUpPluginTabs() {
 		pluginGUIPanel.add(pluginTabPane);
 		pluginTabPane.addChangeListener((ChangeListener) this);
 		pluginTabPane.setBorder(BorderFactory.createEtchedBorder());
 		pluginGUIScrollPane = new JScrollPane(pluginGUIPanel);
-//		pluginSplitPane = null;
+		//		pluginSplitPane = null;
 	}
 	//create frame and tabbed pane in main window
 	private void setMainFrame()
@@ -434,7 +491,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 		pluginSplitPane.setDividerSize(0);
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
-		
+
 	}
 	public JPanel getmainFrame()
 	{
@@ -448,7 +505,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 	public ViewRange getViewRange() {
 		return this.viewRange;
 	}
-	
+
 	public void addPluginGUI(String id, String title, JComponent gui) {
 
 		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin"
@@ -458,7 +515,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 			return;
 		}
 
-		boolean showing = isPluginGuiShowing();
+		isPluginGuiShowing();
 
 		// Create a new plugin tab
 		JPanel allPanel = new JPanel();
@@ -475,12 +532,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
 		else
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
-		
+
 		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
 			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
 
 		pluginTabPane.repaint();
-		
+
 		SwingUtilities.updateComponentTreeUI(this);
 	}
 
@@ -492,7 +549,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 		}
 
 		boolean removed = false;
-		boolean showing = isPluginGuiShowing();
+		isPluginGuiShowing();
 
 		// Find the plugin gui to remove
 		for (int j = 0; j < pluginTabPane.getTabCount(); j++) {
@@ -504,11 +561,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 
 				// If it was the last gui, remove the split pane
 				if (pluginTabPane.getTabCount() == 0) {
-					//remove(pluginSplitPane);
-					alreadyResized = false;
-					//pluginSplitPane = null;
-					//setContentPane(all);
-					
 					updateCanvasSize();
 					SwingUtilities.updateComponentTreeUI(this);
 				}
@@ -528,31 +580,31 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 
 		return removed;
 	}
-	
+
 
 
 	private boolean isPluginGuiShowing() {
 		// TODO Auto-generated method stub
 		return (pluginTabPane.getTabCount() > 0);
 	}
-//update political boundaries
+	//update political boundaries
 	public  void updatePoliticalBoundaries()
 	{
 		ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-		 actorPoliticalBoundariesSegments = pbGUI.getPoliticalBoundaries();
-		 
-		 if(actorPoliticalBoundariesSegments.size()>0){
-		 
+		actorPoliticalBoundariesSegments = pbGUI.getPoliticalBoundaries();
+
+		if(actorPoliticalBoundariesSegments.size()>0){
+
 			// actorPoliticalBoundariesSegments = actorPoliticalBoundariesMain.get(i);
-			 for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
-			 {
-				 vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
-				 renderWindow.GetRenderer().AddActor(pbActor);
-			 }
-		 
-		 }
+			for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
+			{
+				vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
+				renderWindow.GetRenderer().AddActor(pbActor);
+			}
+
+		}
 	}
-	
+
 
 	//update renderwindow and focus on actor
 	public static void updateRenderWindow(vtkActor actor)
@@ -568,27 +620,21 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 		renderWindow.Render();
 		//renderWindow.repaint();
 	}
-	 
+
 	public static vtkCanvas  getRenderWindow() {
 		return renderWindow;
 	}
 
-
-	
-
-	
-
 	public void removeSplitPane() {
 		// TODO Auto-generated method stub
 		remove(pluginSplitPane);
-		alreadyResized = false;
 		pluginSplitPane = null;
 		setContentPane(mainPanel);
 		updateCanvasSize();
 		SwingUtilities.updateComponentTreeUI(this);
 	}
 	public void updateCanvasSize() {
-		
+
 		canvasSize = getSize();
 		xCenter = (int) canvasSize.getWidth() / 2;
 		yCenter = (int) canvasSize.getHeight() / 2;
@@ -596,7 +642,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 		ysBorder = (int) canvasSize.getHeight() - BORDER_SIZE;
 	}
 
-	
+
 	/**
 	 * When tabs are changed, TODO change whether the pickability of objects
 	 * belonging to a tab are turned on or off. If a tab is currently selected
@@ -639,12 +685,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 	}
 	/*public void componentHidden(ComponentEvent arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void componentMoved(ComponentEvent arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void componentResized(ComponentEvent e) {
@@ -652,122 +698,122 @@ public  class MainGUI extends JFrame implements  ChangeListener, KeyListener{
 			viewPlatform.setPlatformGeometry(getHUDGeometry());
 			you.setRedDot(keyBehv.getFocalPoint());
 		}*/
-		/*updateCanvasSize();
+	/*updateCanvasSize();
 	}
 	public void componentShown(ComponentEvent e) {
 	}*/
 
-	
-	
+
+
 	// button component to put inside the tabs to make the close button
 	public class ButtonTabComponent extends JPanel {
-	    /**
+		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 		private final JTabbedPane pane;
-	    private String pluginID;
+		private String pluginID;
 		private Icon icon = new ImageIcon("data/MiscImages/closeTabButton.png");
 		private Icon redIcon = new ImageIcon("data/MiscImages/closeTabButtonRed_1.png");
-	 
-	    public ButtonTabComponent(final JTabbedPane pane, String id) {    	
-	        //unset default FlowLayout' gaps
-	        super(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-	          
-	        if (pane == null) {
-	            throw new NullPointerException("TabbedPane is null");
-	        }
-	        this.pane = pane;
-	        setOpaque(false);
-	        
-	        pluginID = id;
-	         
-	        //make JLabel read titles from JTabbedPane
-	        JLabel label = new JLabel() {
-	            public String getText() {
-	                int i = pane.indexOfTabComponent(ButtonTabComponent.this);
-	                if (i != -1) {
-	                    return pane.getTitleAt(i);
-	                }
-	                return null;
-	            }
-	        };
-	         
-	        add(label);
-	        //add more space between the label and the button
-	        label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-	        //tab button
-	        JButton button = new TabButton();
-	        add(button);
-	        //add more space to the top of the component
-	        setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
-	    }
-	 
-	    private class TabButton extends JButton implements ActionListener {
-	        /**
+
+		public ButtonTabComponent(final JTabbedPane pane, String id) {    	
+			//unset default FlowLayout' gaps
+			super(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+
+			if (pane == null) {
+				throw new NullPointerException("TabbedPane is null");
+			}
+			this.pane = pane;
+			setOpaque(false);
+
+			pluginID = id;
+
+			//make JLabel read titles from JTabbedPane
+			JLabel label = new JLabel() {
+				public String getText() {
+					int i = pane.indexOfTabComponent(ButtonTabComponent.this);
+					if (i != -1) {
+						return pane.getTitleAt(i);
+					}
+					return null;
+				}
+			};
+
+			add(label);
+			//add more space between the label and the button
+			label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+			//tab button
+			JButton button = new TabButton();
+			add(button);
+			//add more space to the top of the component
+			setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
+		}
+
+		private class TabButton extends JButton implements ActionListener {
+			/**
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
 
 			public TabButton() {
-	            int size = 17;
-	            setPreferredSize(new Dimension(size, size));
-	            setToolTipText("close this tab");
-	            //Make the button looks the same for all Laf's
-	            setUI(new BasicButtonUI());
-	            //Make it transparent
-	            setContentAreaFilled(false);
-	            //No need to be focusable
-	            setFocusable(false);
-	            setBorder(BorderFactory.createEtchedBorder());
-	            setBorderPainted(false);
-	            
-	            setIcon(icon);
-	            setRolloverEnabled(true);
-	            
-	            //we use the same listener for all buttons
-	            addMouseListener(buttonMouseListener);
-	            //Close the proper tab by clicking the button
-	            addActionListener(this);
-	        }
-	 
-	        public void actionPerformed(ActionEvent e) {
-	        	Map<String, Plugin> loadedPlugins = mainMenu.getLoadedPluginsAsMap();
-	            int i = pane.indexOfTabComponent(ButtonTabComponent.this);
-	            if (i != -1 && loadedPlugins.containsKey(pluginID)) {
-	            	//System.out.println("*******PluginID to be removed: " + pluginID);
-	            	pane.remove(i);
-	            	mainMenu.updateMenu(pluginID);
-	            }
-	    		//if (loadedPlugins.size() == 0)
-	    			//removeSplitPane();
-	        }
-	 
-	    }
-	
-	    private final MouseListener buttonMouseListener = new MouseAdapter() {
-	        public void mouseEntered(MouseEvent e) {
-	            Component component = e.getComponent();
-	            if (component instanceof AbstractButton) {
-	                AbstractButton button = (AbstractButton) component;
-	                //button.setBorderPainted(true);
-	                button.setIcon(redIcon);
-	            }
-	        }
-	 
-	        public void mouseExited(MouseEvent e) {
-	            Component component = e.getComponent();
-	            if (component instanceof AbstractButton) {
-	                AbstractButton button = (AbstractButton) component;
-	                //button.setBorderPainted(false);
-	                button.setIcon(icon);
-	            }
-	        }
-	    };
+				int size = 17;
+				setPreferredSize(new Dimension(size, size));
+				setToolTipText("close this tab");
+				//Make the button looks the same for all Laf's
+				setUI(new BasicButtonUI());
+				//Make it transparent
+				setContentAreaFilled(false);
+				//No need to be focusable
+				setFocusable(false);
+				setBorder(BorderFactory.createEtchedBorder());
+				setBorderPainted(false);
+
+				setIcon(icon);
+				setRolloverEnabled(true);
+
+				//we use the same listener for all buttons
+				addMouseListener(buttonMouseListener);
+				//Close the proper tab by clicking the button
+				addActionListener(this);
+			}
+
+			public void actionPerformed(ActionEvent e) {
+				Map<String, Plugin> loadedPlugins = mainMenu.getLoadedPluginsAsMap();
+				int i = pane.indexOfTabComponent(ButtonTabComponent.this);
+				if (i != -1 && loadedPlugins.containsKey(pluginID)) {
+					//System.out.println("*******PluginID to be removed: " + pluginID);
+					pane.remove(i);
+					mainMenu.updateMenu(pluginID);
+				}
+				//if (loadedPlugins.size() == 0)
+				//removeSplitPane();
+			}
+
+		}
+
+		private final MouseListener buttonMouseListener = new MouseAdapter() {
+			public void mouseEntered(MouseEvent e) {
+				Component component = e.getComponent();
+				if (component instanceof AbstractButton) {
+					AbstractButton button = (AbstractButton) component;
+					//button.setBorderPainted(true);
+					button.setIcon(redIcon);
+				}
+			}
+
+			public void mouseExited(MouseEvent e) {
+				Component component = e.getComponent();
+				if (component instanceof AbstractButton) {
+					AbstractButton button = (AbstractButton) component;
+					//button.setBorderPainted(false);
+					button.setIcon(icon);
+				}
+			}
+		};
 	}
 
-private MenuShiftDetector shiftDetector = new MenuShiftDetector();
-	
+	private MenuShiftDetector shiftDetector = new MenuShiftDetector();
+
 	/**
 	 * This class is used to detect if shift is held down, used with the StayOpenCheckBoxMenuItem
 	 * to keep the menu displayed if shift is held down
@@ -776,196 +822,126 @@ private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 	 *
 	 */
 	private class MenuShiftDetector implements MenuKeyListener, MouseListener {
-		
+
 		private boolean shiftDown = false;
-		
+
 		public MenuShiftDetector() {
 		}
 
-		
+
 		public void menuKeyTyped(MenuKeyEvent e) {}
 
-		
+
 		public void menuKeyPressed(MenuKeyEvent e) {
 			shiftDown = e.isShiftDown();
 		}
 
-		
+
 		public void menuKeyReleased(MenuKeyEvent e) {
 			shiftDown = e.isShiftDown();
 		}
 
-		
+
 		public void mouseClicked(MouseEvent e) {
 			shiftDown = e.isShiftDown();
 		}
 
-		
+
 		public void mousePressed(MouseEvent e) {
 			shiftDown = e.isShiftDown();
 		}
 
-		
+
 		public void mouseReleased(MouseEvent e) {
 			shiftDown = e.isShiftDown();
 		}
 
-		
+
 		public void mouseEntered(MouseEvent e) {
 			shiftDown = e.isShiftDown();
 		}
 
-		
+
 		public void mouseExited(MouseEvent e) {
 			shiftDown = e.isShiftDown();
 		}
-		
+
 	}
-	
-	
+
+
 	// Used to keep the Display panel up when selecting and deselecting plugins
-		public class StayOpenCheckBoxMenuItem extends CheckboxMenuItem {
+	public class StayOpenCheckBoxMenuItem extends CheckboxMenuItem {
 
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-			private MenuElement[] path;
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 
-			/*{
-				getModel().addChangeListener(new ChangeListener() {
-
-					
-					public void stateChanged(ChangeEvent e) {
-						if (getModel().isArmed() && isShowing()) {
-							path = MenuSelectionManager.defaultManager().getSelectedPath();
-						}
-					}
-				});
-			}*/
-
-			/**
-			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem()
-			 */
-			public StayOpenCheckBoxMenuItem() {
-				super();
-				//		    super.addKeyListener(this);
-				//super.addMenuKeyListener(shiftDetector);
-			}
-
-			/**
-			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(Action)
-			 */
-			public StayOpenCheckBoxMenuItem(Action a) {
-				//super(a);
-				//		    super.addKeyListener(this);
-				//super.addMenuKeyListener(shiftDetector);
-			}
-
-			/**
-			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(Icon)
-			 */
-			public StayOpenCheckBoxMenuItem(Icon icon) {
-				//super(icon);
-				//		    super.addKeyListener(this);
-				//super.addMenuKeyListener(shiftDetector);
-			}
-
-			/**
-			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String)
-			 */
-			public StayOpenCheckBoxMenuItem(String text) {
-				super(text);
-				//		    super.addKeyListener(this);
-				//super.addMenuKeyListener(shiftDetector);
-			}
-
-			/**
-			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String, boolean)
-			 */
-			public StayOpenCheckBoxMenuItem(String text, boolean selected) {
-				super(text, selected);
-				//		    super.addKeyListener(this);
-				//super.addMenuKeyListener(shiftDetector);
-			}
-
-			/**
-			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String, Icon)
-			 */
-			public StayOpenCheckBoxMenuItem(String text, Icon icon) {
-			}
-
-			/**
-			 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String, Icon, boolean)
-			 */
-			public StayOpenCheckBoxMenuItem(String text, Icon icon, boolean selected) {
-			}
-
+		/**
+		 * @see JCheckBoxMenuItem#JCheckBoxMenuItem()
+		 */
+		public StayOpenCheckBoxMenuItem() {
+			super();
+			//		    super.addKeyListener(this);
+			//super.addMenuKeyListener(shiftDetector);
 		}
 
-		public ScriptingPluginGUI GetScriptingPlugin() {
-			// TODO Auto-generated method stub
-			if(scriptingPluginObj==null || scriptingPluginObj.getGratPanel()==null)
-			{
-				mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
-			}
-			return scriptingPluginObj.getScriptingPluginGUI();
+		/**
+		 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(Action)
+		 */
+		public StayOpenCheckBoxMenuItem(Action a) {
+			//super(a);
+			//		    super.addKeyListener(this);
+			//super.addMenuKeyListener(shiftDetector);
 		}
 
-		@Override
-		public void keyPressed(KeyEvent e) {
-			// TODO Auto-generated method stub
-			 if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
-			    {
-			        //code to execute if escape is pressed
-			    
-	
-			    }
+		/**
+		 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(Icon)
+		 */
+		public StayOpenCheckBoxMenuItem(Icon icon) {
+			//super(icon);
+			//		    super.addKeyListener(this);
+			//super.addMenuKeyListener(shiftDetector);
 		}
 
-		@Override
-		public void keyReleased(KeyEvent e) {
-			// TODO Auto-generated method stub
-			 if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
-			    {
-			        //code to execute if escape is pressed
-					if(renderWindow.GetRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0)
-		    		{
-						//renderWindow.GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCamera(PoliticalBoundariesGUI.mainFocusReginActor.GetBounds());
-			    		
-						vtkCamera tmpCam = new vtkCamera();//.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera();
-
-		    			tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
-		    			tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
-		    			tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
-
-			    		Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
-			    		Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(tmpCam);
-			    		Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
-			    		}
-			    }
-			
+		/**
+		 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String)
+		 */
+		public StayOpenCheckBoxMenuItem(String text) {
+			super(text);
+			//		    super.addKeyListener(this);
+			//super.addMenuKeyListener(shiftDetector);
 		}
 
-		@Override
-		public void keyTyped(KeyEvent e) {
-			// TODO Auto-generated method stub
-			
+		/**
+		 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String, boolean)
+		 */
+		public StayOpenCheckBoxMenuItem(String text, boolean selected) {
+			super(text, selected);
+			//		    super.addKeyListener(this);
+			//super.addMenuKeyListener(shiftDetector);
 		}
 
-//		@Override
-//		public void actionPerformed(ActionEvent e) {
-//			// TODO Auto-generated method stub
-//			Object src = e.getSource();
-//			if(src==resetView)
-//			{
-//				System.out.println("hey");
-//			}
-//		}
+		/**
+		 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String, Icon)
+		 */
+		public StayOpenCheckBoxMenuItem(String text, Icon icon) {
+		}
 
-	
-	
-	
-	
+		/**
+		 * @see JCheckBoxMenuItem#JCheckBoxMenuItem(String, Icon, boolean)
+		 */
+		public StayOpenCheckBoxMenuItem(String text, Icon icon, boolean selected) {
+		}
 
+	}
+
+	public ScriptingPluginGUI GetScriptingPlugin() {
+		// TODO Auto-generated method stub
+		if(scriptingPluginObj==null || scriptingPluginObj.getGratPanel()==null)
+		{
+			mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
+		}
+		return scriptingPluginObj.getScriptingPluginGUI();
+	}
 }

@@ -134,6 +134,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 
 	private void removeBuiltInFiles(Vector<DrawingTool> locations) {
 		//System.out.println(defaultLocationsStartIndex);
+		if(locations!=null){
 		this.drawingToolTable.setRowSelectionInterval(defaultLocationsStartIndex,locations.size()-1);
 		int[] selectedRows = this.drawingToolTable.getSelectedRows() ;
 			
@@ -147,6 +148,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	        {
 	        	guiparent.removeTextActors(selectedRows);
 	        }
+		}
 	}
 	
 	private Vector<DrawingTool> loadBuiltInFiles() {
