@@ -34,9 +34,7 @@ import org.scec.vtk.tools.Transform;
 import vtk.vtkActor;
 import vtk.vtkActor2D;
 import vtk.vtkProp;
-import vtk.vtkProp3D;
-import vtk.vtkAppendPolyData;
-import vtk.vtkGlyph2D;
+import vtk.vtkConeSource;
 import vtk.vtkGlyph3D;
 import vtk.vtkLabelPlacementMapper;
 import vtk.vtkObject;
@@ -44,14 +42,7 @@ import vtk.vtkPointSetToLabelHierarchy;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
-import vtk.vtkProp;
-import vtk.vtkRegularPolygonSource;
-import vtk.vtkSphereSource;
 import vtk.vtkStringArray;
-import vtk.vtkTextActor3D;
-import vtk.vtkXMLHyperOctreeReader;
-import vtk.vtkXMLHyperOctreeWriter;
-import vtk.vtkActor;
 
 public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelectionListener, TableModelListener{
 
@@ -176,8 +167,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	    return bar;
 	}
 	
+	
 	   public DrawingTool addDrawingTool(DrawingTool drawingTool){
-		  
+		  //indivisual text as actors
 		   String text = "Text";
 		   double[] pt= {Transform.calcRadius(37),37,-120};
 		   ArrayList<DataAccessor> a = this.drawingToolTable.getLibraryModel().getAllObjects();
@@ -194,31 +186,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			   pt[1]= drawingTool.getLatitude();
 			   pt[2]= drawingTool.getLongitude();
 		   }
-	    	/* //this text is not facing the camera
-		    vtkActor actor= new vtkActor();
-		   
-		    actor.SetInput(text);
-		    actor.GetTextProperty().SetFontSize(20);
-	    	actor.SetPosition( Transform.customTransform(pt));
-	    	actor.GetTextProperty().SetColor(1,0,0);
-	    	//actor.SetOrigin(actor.GetCenter());
-        	actor.RotateX(Double.parseDouble((String) this.displayAttributes.rotateXField.getText()));
-        	actor.RotateY(Double.parseDouble((String) this.displayAttributes.rotateYField.getText()));
-        	actor.RotateZ(Double.parseDouble((String) this.displayAttributes.rotateZField.getText()));
-*/
 
-//
-
-        	
-        
-        	//textPolyData.AddInputConnection(actor.g);
-
-//        	vtkPolyDataMapper pinMapper = new vtkPolyDataMapper();
-//        	pinMapper.SetInputConnection(pinSource.GetOutputPort());
-//        	pinMapper.Update();
-//
-//        	vtkActor pinActor = new vtkActor();
-//        	pinActor.SetMapper(pinMapper);
 		   //text as label facing camera
 		   vtkStringArray labels =new vtkStringArray();
 			labels.SetName("labels");
@@ -229,31 +197,17 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		   	
 			
         	//create a pin near the text to mark the location 
-        	/*vtkRegularPolygonSource pinSource = new vtkRegularPolygonSource();
 
-        	pinSource.SetNumberOfSides(25);
-        	pinSource.SetRadius(20);
-        	//pinSource.SetCenter(0,0,0);
-        	pinSource.Update();
-*/
         	vtkPolyData pinPolydata = new  vtkPolyData();
         	pinPolydata.SetPoints(labelPoints);
-		   	
-        	/*vtkGlyph2D pinGlyph2D = new vtkGlyph2D();
-        	pinGlyph2D.SetSourceConnection(pinSource.GetOutputPort());
-        	pinGlyph2D.SetInputData(pinPolydata);
-        	pinGlyph2D.Update();
-		   	
-        	vtkPolyDataMapper pm = new vtkPolyDataMapper();
-        	pm.SetInputConnection(pinGlyph2D.GetOutputPort());
-        	pm.Update();
-        	*/
-        	// Use sphere as glyph source.
-        				vtkSphereSource balls = new vtkSphereSource();
-        				balls.SetRadius(7);//.01);
-        				balls.SetPhiResolution(10);
-        				balls.SetThetaResolution(10);
 
+        	// Use sphere as glyph source.
+        				vtkConeSource balls = new vtkConeSource();
+        				balls.SetRadius(5);
+        				balls.SetHeight(10);
+        				balls.SetDirection(-Transform.customTransform(pt)[0],-Transform.customTransform(pt)[1],-Transform.customTransform(pt)[2]);
+        				balls.SetResolution(10);
+        				//balls.SetDirection(0,0,-1);
         				vtkGlyph3D glyphPoints = new vtkGlyph3D();
         				glyphPoints.SetInputData(pinPolydata);
         				glyphPoints.SetSourceConnection(balls.GetOutputPort());
@@ -264,13 +218,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		   	vtkPolyData temp = new vtkPolyData();
 		   	temp.SetPoints(labelPoints);
 		   	temp.GetPointData().AddArray(labels);
-//		   	System.out.println(pm.GetInput().GetNumberOfPoints());
-		   	//System.out.println(((vtkPolyData) pinGlyph2D.GetInput()).GetNumberOfPoints());
-//		   	temp.SetLines(pm.GetInput().GetLines());
-//		   	temp.SetPolys(pm.GetInput().GetPolys());
-//		   	vtkAppendPolyData textPolyData = new vtkAppendPolyData();
-//        	textPolyData.AddInputConnection(pinSource.GetOutputPort());
-//        	textPolyData.AddInputData(temp);
         	
 			vtkPointSetToLabelHierarchy pointSetToLabelHierarchyFilter =new vtkPointSetToLabelHierarchy();
 			pointSetToLabelHierarchyFilter.SetInputData(temp);
