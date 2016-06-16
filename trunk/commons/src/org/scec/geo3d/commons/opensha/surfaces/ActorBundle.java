@@ -14,14 +14,21 @@ public class ActorBundle {
 	private vtkUnsignedCharArray colorArray;
 	private vtkCellArray cellArray;
 	
-	public ActorBundle(vtkActor actor, vtkPolyData polyData, vtkPoints points,
-			vtkUnsignedCharArray colorArray, vtkCellArray cellArray) {
+	public ActorBundle() {
 		super();
+	}
+	
+	public void initialize(vtkActor actor, vtkPolyData polyData, vtkPoints points,
+			vtkUnsignedCharArray colorArray, vtkCellArray cellArray) {
 		this.actor = actor;
 		this.polyData = polyData;
 		this.points = points;
 		this.colorArray = colorArray;
 		this.cellArray = cellArray;
+	}
+	
+	public boolean isInitialized() {
+		return colorArray != null;
 	}
 
 	public vtkActor getActor() {

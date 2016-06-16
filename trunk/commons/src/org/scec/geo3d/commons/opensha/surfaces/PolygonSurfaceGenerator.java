@@ -125,13 +125,6 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 //		return bg;
 	}
 	
-	@Override
-	public void clearBundles() {
-		currentBundle = null;
-	}
-
-	private ActorBundle currentBundle;
-	
 	public FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface,
 			Color color, AbstractFaultSection fault) {
 
@@ -147,9 +140,11 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 
 		int opacity = (int)(opacityParam.getValue()*255d);
 		double initialOpacity;
-		if (bundle) {
+		ActorBundle currentBundle;
+		if (bundle && bundler != null) {
 			// initialized to transparent, will get updated when displayed
 			initialOpacity = 0;
+			currentBundle = bundler.getBundle(fault);
 		} else {
 			initialOpacity = opacity;
 			currentBundle = null;
@@ -160,7 +155,7 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 		vtkUnsignedCharArray colors;
 		vtkCellArray polys;
 		vtkActor actor;
-		boolean newBundle = currentBundle == null;
+		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
 		if (newBundle) {
 			polyData = new vtkPolyData();
 			pts = new vtkPoints();
@@ -175,7 +170,7 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 			
 			actor = new vtkActor();
 			
-			currentBundle = new ActorBundle(actor, polyData, pts, colors, polys);
+			currentBundle.initialize(actor, polyData, pts, colors, polys);
 		} else {
 			polyData = currentBundle.getPolyData();
 			pts = currentBundle.getPoints();

@@ -20,6 +20,7 @@ public class UCERF3FaultSystemRupturesPlugin extends AbstractFaultPlugin {
 		ArrayList<FaultColorer> faultColorers = builder.getFaultColorers();
 
 		ArrayList<GeometryGenerator> geomGens = FaultPluginGUI.createDefaultGeomGens();
+		setBundlerInGeomGens(geomGens, new ParentFaultSectionBundler());
 
 		FaultPluginGUI gui = new FaultPluginGUI(builder, faultColorers, geomGens, Color.GRAY, faultAnims);
 //		gui.addDistTab();
