@@ -37,6 +37,8 @@ public abstract class GeometryGenerator implements Named {
 	
 	private List<GeometrySettingsChangeListener> listeners = new ArrayList<GeometrySettingsChangeListener>();
 	
+	protected FaultActorBundler bundler = new GenericFaultActorBundler(0);
+	
 	/**
 	 * Builds a vtkActor containing geometry representing the given surface, and colored with the given colorer.
 	 * 
@@ -151,8 +153,12 @@ public abstract class GeometryGenerator implements Named {
 		return getName();
 	}
 	
+	public void setFaultActorBundler(FaultActorBundler bundler) {
+		this.bundler = bundler;
+	}
+	
 	public void clearBundles() {
-		// do nothing, implement if using bundles
+		bundler.clearBundles();
 	}
 
 }
