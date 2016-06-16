@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -32,6 +33,7 @@ import org.scec.geo3d.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.geo3d.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.geo3d.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 import org.scec.geo3d.commons.opensha.faults.faultSectionImpl.PrefDataSection;
+import org.scec.geo3d.commons.opensha.gui.EventManager;
 import org.scec.geo3d.commons.opensha.tree.FaultSectionNode;
 import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
@@ -328,8 +330,23 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			if (animThread != null) {
 				animThread.pause();
 			}
-			while (animThread.isAlive());
-			enableAnimControls();
+			// wait until anim thread is done to enable animation controls
+			// must do so in a separate thread as anim thread can wait on EDT events to flush renders
+			// and this method is part of an EDT thread. So waiting on it in this thread causes deadlock
+			new Thread() {
+				@Override
+				public void run() {
+					while (animThread.isAlive());
+					SwingUtilities.invokeLater(new Runnable() {
+						
+						@Override
+						public void run() {
+							// must be called in EDT
+							enableAnimControls();
+						}
+					});
+				}
+			}.start();
 		} else if (e.getSource().equals(nextButton)) {
 			slider.setValue(slider.getValue()+1);
 		} else if (e.getSource().equals(prevButton)) {
@@ -480,6 +497,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 //		if (stepToSet > slider.getMaximum())
 //			stepToSet = slider.getMaximum();
 //		slider.setValue(stepToSet);
+//		EventManager.flushRenders();
 //	}
 
 }

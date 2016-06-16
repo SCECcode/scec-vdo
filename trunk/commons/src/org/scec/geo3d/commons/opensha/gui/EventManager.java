@@ -309,6 +309,32 @@ AnimationListener {
 			updateRunnable.run();
 	}
 	
+	/**
+	 * If <code>queue_renders</code> is set then this can be called to ensure that all rendering events have
+	 * been processed. It accomplishes this by calling <code>SwingUtilities.invokeAndWait(Runnable);</code>
+	 * with an empty event, which blocks until all other events have finished. This should NOT be called from
+	 * within the event dispatch thread!
+	 */
+	public static void flushRenders() {
+		if (queue_renders) {
+			if (D) System.out.println("Flushing...");
+			Preconditions.checkState(!SwingUtilities.isEventDispatchThread(),
+					"You just tried to deadlock me! Flush must be called outside of the event dispatch thread.");
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					
+					@Override
+					public void run() {
+						// do nothing
+					}
+				});
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if (D) System.out.println("Done flushing!");
+		}
+	}
+	
 	private void hideFault(AbstractFaultSection fault) {
 		FaultSectionActorList actors = actorsMap.get(fault);
 		for (vtkActor actor : actors) {
