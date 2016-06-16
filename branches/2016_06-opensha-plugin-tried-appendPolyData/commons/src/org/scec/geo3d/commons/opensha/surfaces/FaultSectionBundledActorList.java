@@ -9,34 +9,37 @@ import vtk.vtkPolyData;
 import vtk.vtkUnsignedCharArray;
 
 public class FaultSectionBundledActorList extends FaultSectionActorList {
-	
-	private ActorBundle bundle;
-	private int myFirstPointIndex;
-	private int myNumPoints;
-	private int myOpacity;
 
-	public FaultSectionBundledActorList(AbstractFaultSection fault, ActorBundle bundle,
-			int myFirstPointIndex, int myNumPoints, int myOpacity) {
-		super(fault);
-		this.bundle = bundle;
-		this.myFirstPointIndex = myFirstPointIndex;
-		this.myNumPoints = myNumPoints;
-		this.myOpacity = myOpacity;
-	}
+	private ActorBundle bundle;
+
+	private vtkPolyData polyData;
+	private vtkPoints points;
+	private vtkUnsignedCharArray colorArray;
+	private vtkCellArray cellArray;
+
+	private int myOpacity;
 
 	public ActorBundle getBundle() {
 		return bundle;
 	}
 
-	public int getMyFirstPointIndex() {
-		return myFirstPointIndex;
+	public FaultSectionBundledActorList(AbstractFaultSection fault,
+			ActorBundle bundle, vtkPolyData polyData, vtkPoints points,
+			vtkUnsignedCharArray colorArray, vtkCellArray cellArray, int myOpacity) {
+		super(fault);
+		this.bundle = bundle;
+		this.polyData = polyData;
+		this.points = points;
+		this.colorArray = colorArray;
+		this.cellArray = cellArray;
+		this.myOpacity = myOpacity;
 	}
 
-	public int getMyNumPoints() {
-		return myNumPoints;
-	}
-	
 	public int getMyOpacity() {
 		return myOpacity;
+	}
+
+	public vtkUnsignedCharArray getColorArray() {
+		return colorArray;
 	}
 }

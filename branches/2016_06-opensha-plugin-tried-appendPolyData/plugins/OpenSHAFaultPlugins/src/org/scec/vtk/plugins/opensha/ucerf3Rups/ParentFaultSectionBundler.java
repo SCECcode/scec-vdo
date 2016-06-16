@@ -25,15 +25,15 @@ public class ParentFaultSectionBundler implements FaultActorBundler {
 			bundle = new ActorBundle();
 			bundleMap.put(parentID, bundle);
 		}
-		if (Math.random() < 0.1) {
-			MinMaxAveTracker track = new MinMaxAveTracker();
-			for (ActorBundle oBundle : bundleMap.values())
-				if (oBundle.getColorArray() == null)
-					continue;
-				else
-					track.addValue(oBundle.getColorArray().GetNumberOfTuples());
-			System.out.println("Bundle element size: "+track);
-		}
+//		if (Math.random() < 0.1) {
+//			MinMaxAveTracker track = new MinMaxAveTracker();
+//			for (ActorBundle oBundle : bundleMap.values())
+//				if (oBundle.getColorArray() == null)
+//					continue;
+//				else
+//					track.addValue(oBundle.getColorArray().GetNumberOfTuples());
+//			System.out.println("Bundle element size: "+track);
+//		}
 		return bundle;
 	}
 

@@ -1,6 +1,7 @@
 package org.scec.geo3d.commons.opensha.gui;
 
 import java.awt.Color;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -331,17 +332,14 @@ AnimationListener {
 	
 	// synchroinzed externally
 	private void setBundledOpacity(FaultSectionBundledActorList bundleList, boolean visible) {
-		vtkUnsignedCharArray colors = bundleList.getBundle().getColorArray();
-		int firstIndex = bundleList.getMyFirstPointIndex();
-		int lastIndex = firstIndex + bundleList.getMyNumPoints() - 1;
+		vtkUnsignedCharArray colors = bundleList.getColorArray();
 		double opacity;
 		if (visible)
 			opacity = bundleList.getMyOpacity();
 		else
 			opacity = 0;
 		int totNumTuples = colors.GetNumberOfTuples();
-		for (int index=firstIndex; index<=lastIndex; index++) {
-			Preconditions.checkState(index < totNumTuples, "Bad tuple index. index=%s, num tuples=%s", index, totNumTuples);
+		for (int index=0; index<totNumTuples; index++) {
 			double[] orig = colors.GetTuple4(index);
 			colors.SetTuple4(index, orig[0], orig[1], orig[2], opacity); // keep same color
 		}
