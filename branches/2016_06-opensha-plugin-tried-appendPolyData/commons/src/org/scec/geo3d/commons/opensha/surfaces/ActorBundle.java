@@ -1,62 +1,68 @@
 package org.scec.geo3d.commons.opensha.surfaces;
 
+import com.google.common.base.Preconditions;
+
 import vtk.vtkActor;
-import vtk.vtkCellArray;
-import vtk.vtkPoints;
+import vtk.vtkAppendPolyData;
 import vtk.vtkPolyData;
-import vtk.vtkUnsignedCharArray;
+import vtk.vtkPolyDataMapper;
+import vtk.vtkProperty;
 
 public class ActorBundle {
 	
 	private vtkActor actor;
-	private vtkPolyData polyData;
-	private vtkPoints points;
-	private vtkUnsignedCharArray colorArray;
-	private vtkCellArray cellArray;
+	private vtkAppendPolyData appendPolyData;
+	private vtkPolyDataMapper polyDataMapper;
+	
+	private int numPolyDatas = 0;
 	
 	public ActorBundle() {
 		super();
+		appendPolyData = new vtkAppendPolyData();
+		
+		polyDataMapper = new vtkPolyDataMapper();
+		polyDataMapper.SetInputConnection(appendPolyData.GetOutputPort());
+		
+		polyDataMapper.ScalarVisibilityOn();
+		polyDataMapper.SetScalarModeToUsePointFieldData();
+		polyDataMapper.SelectColorArray("Colors");
+		
+		actor = new vtkActor();
+		actor.SetMapper(polyDataMapper);
 	}
 	
-	public void initialize(vtkActor actor, vtkPolyData polyData, vtkPoints points,
-			vtkUnsignedCharArray colorArray, vtkCellArray cellArray) {
-		this.actor = actor;
-		this.polyData = polyData;
-		this.points = points;
-		this.colorArray = colorArray;
-		this.cellArray = cellArray;
+	public synchronized void addPolyData(vtkPolyData polyData) {
+		appendPolyData.AddInputData(polyData);
+		numPolyDatas++;
+		modified();
 	}
 	
-	public boolean isInitialized() {
-		return colorArray != null;
+	public synchronized void removePolyData(vtkPolyData polyData) {
+		appendPolyData.RemoveInputData(polyData);
+		numPolyDatas--;
+		modified();
 	}
-
+	
 	public vtkActor getActor() {
 		return actor;
 	}
-
-	public vtkPolyData getPolyData() {
-		return polyData;
+	
+	public vtkProperty getActorProperty() {
+		return actor.GetProperty();
 	}
-
-	public vtkPoints getPoints() {
-		return points;
+	
+	public synchronized int getNumPolyDatas() {
+		return numPolyDatas;
 	}
-
-	public vtkUnsignedCharArray getColorArray() {
-		return colorArray;
-	}
-
-	public vtkCellArray getCellArray() {
-		return cellArray;
+	
+	public boolean isEmpty() {
+		return getNumPolyDatas() == 0;
 	}
 	
 	public void modified() {
+		appendPolyData.Modified();
+		polyDataMapper.Modified();
 		actor.Modified();
-		polyData.Modified();
-		points.Modified();
-		colorArray.Modified();
-		cellArray.Modified();
 	}
 
 }
