@@ -127,138 +127,140 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 	
 	public FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface,
 			Color color, AbstractFaultSection fault) {
-
-		int cols = surface.getNumCols();
-		int rows = surface.getNumRows();
-
-		Container2DImpl<double[]> pointSurface = cacheSurfacePoints(surface);
-
-//		int numPolys = (rows-1)*(cols-1);
-//		int numVerts = numPolys * 4;
+//
+//		int cols = surface.getNumCols();
+//		int rows = surface.getNumRows();
+//
+//		Container2DImpl<double[]> pointSurface = cacheSurfacePoints(surface);
+//
+////		int numPolys = (rows-1)*(cols-1);
+////		int numVerts = numPolys * 4;
+////		
+////		int vertCount = 0;
+//
+//		int opacity = (int)(opacityParam.getValue()*255d);
+//		double initialOpacity;
+//		ActorBundle currentBundle;
+//		if (bundle && bundler != null) {
+//			// initialized to transparent, will get updated when displayed
+//			initialOpacity = 0;
+//			currentBundle = bundler.getBundle(fault);
+//		} else {
+//			initialOpacity = opacity;
+//			currentBundle = null;
+//		}
 //		
-//		int vertCount = 0;
-
-		int opacity = (int)(opacityParam.getValue()*255d);
-		double initialOpacity;
-		ActorBundle currentBundle;
-		if (bundle && bundler != null) {
-			// initialized to transparent, will get updated when displayed
-			initialOpacity = 0;
-			currentBundle = bundler.getBundle(fault);
-		} else {
-			initialOpacity = opacity;
-			currentBundle = null;
-		}
+//		vtkPolyData polyData;
+//		vtkPoints pts;
+//		vtkUnsignedCharArray colors;
+//		vtkCellArray polys;
+//		vtkActor actor;
+//		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
+//		if (newBundle) {
+//			polyData = new vtkPolyData();
+//			pts = new vtkPoints();
+//			if (bundle) {
+//				colors = new vtkUnsignedCharArray();
+//				colors.SetNumberOfComponents(4);
+//				colors.SetName("Colors");
+//			} else {
+//				colors = null;
+//			}
+//			polys = new vtkCellArray();
+//			
+//			actor = new vtkActor();
+//			
+//			currentBundle.initialize(actor, polyData, pts, colors, polys);
+//		} else {
+//			polyData = currentBundle.getPolyData();
+//			pts = currentBundle.getPoints();
+//			colors = currentBundle.getColorArray();
+//			Preconditions.checkState(colors.GetNumberOfComponents() == 4);
+//			polys = currentBundle.getCellArray();
+//			
+//			actor = currentBundle.getActor();
+//		}
+//		int firstIndex;
+//		int myNumPoints = 0;
+//		synchronized (currentBundle) {
+//			firstIndex = pts.GetNumberOfPoints();
+//			for (int row=0; row<(rows-1); row++) {
+//				for (int col=0; col<(cols-1); col++) {
+//					double[] pt0 = pointSurface.get(row,	col);		// top left
+//					double[] pt1 = pointSurface.get(row+1,	col);		// bottom left
+//					double[] pt2 = pointSurface.get(row+1,	col+1);	// bottom right
+//					double[] pt3 = pointSurface.get(row,	col+1);	// top right
+//					
+//					pts.InsertNextPoint(pt0);
+//					pts.InsertNextPoint(pt1);
+//					pts.InsertNextPoint(pt2);
+//					pts.InsertNextPoint(pt3);
+//					myNumPoints += 4;
+//					if (bundle) {
+//						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+//						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+//						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+//						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+//					}
+//				}
+//			}
+//			
+//			int numPoints = pts.GetNumberOfPoints()-firstIndex;
+//			Preconditions.checkState(numPoints % 4 == 0, "Must be even number of points");
+//			
+//			for (int li=0; li<numPoints/4; li++) {
+//				int index1 = firstIndex+li*4;
+//				int index2 = index1+1;
+//				int index3 = index1+2;
+//				int index4 = index1+3;
+//				
+//				vtkPolygon poly = new vtkPolygon();
+//				poly.GetPointIds().SetNumberOfIds(4);
+//				poly.GetPointIds().SetId(0, index1);
+//				poly.GetPointIds().SetId(1, index2);
+//				poly.GetPointIds().SetId(2, index3);
+//				poly.GetPointIds().SetId(3, index4);
+//				
+//				polys.InsertNextCell(poly);
+//			}
+//			
+//			if (newBundle) {
+//				// new bundle
+//				polyData.SetPoints(pts);
+//				polyData.SetPolys(polys);
+//				if (bundle)
+//					polyData.GetPointData().AddArray(colors);
+//				
+//				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+//				mapper.SetInputData(polyData);
+//				if (bundle) {
+//					mapper.ScalarVisibilityOn();
+//					mapper.SetScalarModeToUsePointFieldData();
+//					mapper.SelectColorArray("Colors");
+//				}
+//				
+//				actor.SetMapper(mapper);
+//				
+//				if (bundle)
+//					actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparancey enabled renderer
+//				else
+//					actor.GetProperty().SetColor(getColorDoubleArray(color));
+//			} else {
+//				currentBundle.modified();
+//			}
+//		}
+//		
+//		FaultSectionActorList list;
+//		if (bundle) {
+//			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, myNumPoints, opacity);
+//		} else {
+//			list = new FaultSectionActorList(fault);
+//			list.add(actor);
+//		}
+//		
+//		return list;
 		
-		vtkPolyData polyData;
-		vtkPoints pts;
-		vtkUnsignedCharArray colors;
-		vtkCellArray polys;
-		vtkActor actor;
-		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
-		if (newBundle) {
-			polyData = new vtkPolyData();
-			pts = new vtkPoints();
-			if (bundle) {
-				colors = new vtkUnsignedCharArray();
-				colors.SetNumberOfComponents(4);
-				colors.SetName("Colors");
-			} else {
-				colors = null;
-			}
-			polys = new vtkCellArray();
-			
-			actor = new vtkActor();
-			
-			currentBundle.initialize(actor, polyData, pts, colors, polys);
-		} else {
-			polyData = currentBundle.getPolyData();
-			pts = currentBundle.getPoints();
-			colors = currentBundle.getColorArray();
-			Preconditions.checkState(colors.GetNumberOfComponents() == 4);
-			polys = currentBundle.getCellArray();
-			
-			actor = currentBundle.getActor();
-		}
-		int firstIndex;
-		int myNumPoints = 0;
-		synchronized (currentBundle) {
-			firstIndex = pts.GetNumberOfPoints();
-			for (int row=0; row<(rows-1); row++) {
-				for (int col=0; col<(cols-1); col++) {
-					double[] pt0 = pointSurface.get(row,	col);		// top left
-					double[] pt1 = pointSurface.get(row+1,	col);		// bottom left
-					double[] pt2 = pointSurface.get(row+1,	col+1);	// bottom right
-					double[] pt3 = pointSurface.get(row,	col+1);	// top right
-					
-					pts.InsertNextPoint(pt0);
-					pts.InsertNextPoint(pt1);
-					pts.InsertNextPoint(pt2);
-					pts.InsertNextPoint(pt3);
-					myNumPoints += 4;
-					if (bundle) {
-						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
-						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
-						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
-						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
-					}
-				}
-			}
-			
-			int numPoints = pts.GetNumberOfPoints()-firstIndex;
-			Preconditions.checkState(numPoints % 4 == 0, "Must be even number of points");
-			
-			for (int li=0; li<numPoints/4; li++) {
-				int index1 = firstIndex+li*4;
-				int index2 = index1+1;
-				int index3 = index1+2;
-				int index4 = index1+3;
-				
-				vtkPolygon poly = new vtkPolygon();
-				poly.GetPointIds().SetNumberOfIds(4);
-				poly.GetPointIds().SetId(0, index1);
-				poly.GetPointIds().SetId(1, index2);
-				poly.GetPointIds().SetId(2, index3);
-				poly.GetPointIds().SetId(3, index4);
-				
-				polys.InsertNextCell(poly);
-			}
-			
-			if (newBundle) {
-				// new bundle
-				polyData.SetPoints(pts);
-				polyData.SetPolys(polys);
-				if (bundle)
-					polyData.GetPointData().AddArray(colors);
-				
-				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-				mapper.SetInputData(polyData);
-				if (bundle) {
-					mapper.ScalarVisibilityOn();
-					mapper.SetScalarModeToUsePointFieldData();
-					mapper.SelectColorArray("Colors");
-				}
-				
-				actor.SetMapper(mapper);
-				
-				if (bundle)
-					actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparancey enabled renderer
-				else
-					actor.GetProperty().SetColor(getColorDoubleArray(color));
-			} else {
-				currentBundle.modified();
-			}
-		}
-		
-		FaultSectionActorList list;
-		if (bundle) {
-			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, myNumPoints, opacity);
-		} else {
-			list = new FaultSectionActorList(fault);
-			list.add(actor);
-		}
-		
-		return list;
+		return null; // TODO
 	}
 
 	@Override
