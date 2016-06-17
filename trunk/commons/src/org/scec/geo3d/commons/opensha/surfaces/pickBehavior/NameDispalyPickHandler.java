@@ -2,41 +2,37 @@ package org.scec.geo3d.commons.opensha.surfaces.pickBehavior;
 
 import java.awt.event.MouseEvent;
 
+import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
 import org.scec.geo3d.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.geo3d.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.geo3d.commons.opensha.surfaces.FaultSectionActorList;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PickHandler;
 
-import vtk.vtkActor;
+import vtk.vtkCellPicker;
 
-public class NameDispalyPickHandler implements PickHandler {
+public class NameDispalyPickHandler implements PickHandler<AbstractFaultSection> {
 	
 	private FaultColorer colorer;
-
-	@Override
-	public void faultPicked(FaultSectionActorList faultShape, MouseEvent mouseEvent) {
-		String s = faultShape.getInfo();
-		if (this.colorer != null && this.colorer instanceof CPTBasedColorer) {
-			try {
-				double val = ((CPTBasedColorer)colorer).getValue(faultShape.getFault());
-				s = "Val: "+(float)val+"\n"+s;
-			} catch (Exception e) {}
-		}
-		s = s.replaceAll("\n", ", ");
-//		Geo3dInfo.getMainWindow().setMessage(s); // TODO
-	}
-
-	@Override
-	public void nothingPicked(MouseEvent mouseEvent) {
-//		Geo3dInfo.getMainWindow().setMessageDefault(); // TODO
-	}
-
-	@Override
-	public void otherPicked(vtkActor node, MouseEvent mouseEvent) {
-		nothingPicked(mouseEvent);
-	}
 	
 	public void setColorer(FaultColorer colorer) {
 		this.colorer = colorer;
+	}
+
+	@Override
+	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor,
+			AbstractFaultSection fault, vtkCellPicker picker, MouseEvent e) {
+		if (fault == null || e.getButton() != MouseEvent.BUTTON1)
+			return;
+		String s = fault.getInfo();
+		if (this.colorer != null && this.colorer instanceof CPTBasedColorer) {
+			try {
+				double val = ((CPTBasedColorer)colorer).getValue(fault);
+				s = "Val: "+(float)val+"\n"+s;
+			} catch (Exception ex) {}
+		}
+		s = s.replaceAll("\n", ", ");
+		System.out.println(s);
+		// TODO show in GUI
 	}
 
 }

@@ -38,17 +38,18 @@ import org.scec.geo3d.commons.opensha.faults.colorers.RakeColorer;
 import org.scec.geo3d.commons.opensha.faults.colorers.SlipRateColorer;
 import org.scec.geo3d.commons.opensha.faults.colorers.StrikeColorer;
 import org.scec.geo3d.commons.opensha.surfaces.FaultSectionActorList;
-import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.NameDispalyPickHandler;
-import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.PickHandler;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PickHandler;
 
 import scratch.UCERF3.FaultSystemRupSet;
 import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.inversion.InversionFaultSystemRupSet;
 import vtk.vtkActor;
+import vtk.vtkCellPicker;
 
 public class RupturesAnim implements IDBasedFaultAnimation,
-		UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler {
+		UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
 	
 	private static final String SECTION_SELECT_PARAM_NAME = "Ruptures for Section";
 	private static final String SECTION_SELECT_PARAM_INFO = "Filters the rupture list to only include\n" +
@@ -674,26 +675,16 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 	}
 
 	@Override
-	public void faultPicked(FaultSectionActorList faultShape,
-			MouseEvent mouseEvent) {
-		if (mouseEvent.isShiftDown()) {
-			int pickedID = faultShape.getFault().getId();
+	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor,
+			AbstractFaultSection fault, vtkCellPicker picker, MouseEvent e) {
+		if (e.getButton() == MouseEvent.BUTTON1 && e.isShiftDown()) {
+			int pickedID = fault.getId();
 			int nameIndex = pickedID+1;
 			if (nameIndex < sectionNames.size() && nameIndex >= 0) {
 				sectionSelect.setValue(sectionNames.get(nameIndex));
 				sectionSelect.getEditor().refreshParamEditor();
 			}
 		}
-	}
-	
-	@Override
-	public void nothingPicked(MouseEvent mouseEvent) {
-		
-	}
-
-	@Override
-	public void otherPicked(vtkActor node, MouseEvent mouseEvent) {
-		nothingPicked(mouseEvent);
 	}
 
 }

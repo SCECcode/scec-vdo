@@ -2,6 +2,7 @@ package org.scec.geo3d.commons.opensha.surfaces;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.opensha.commons.data.Container2DImpl;
@@ -15,6 +16,8 @@ import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
 import org.scec.geo3d.commons.opensha.surfaces.params.DiscreteSizeParam;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PointPickEnabledActor;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
@@ -25,6 +28,7 @@ import vtk.vtkPolyDataMapper;
 import vtk.vtkUnsignedCharArray;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
 public class LineSurfaceGenerator extends GeometryGenerator implements ParameterChangeListener {
 
@@ -185,12 +189,14 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 			currentBundle = null;
 		}
 		
+		boolean bundle = this.bundle && currentBundle != null;
+		
 //		System.out.println("rows: " + rows + ", cols:" + cols + ", pnts: " + points.size());
 		vtkPolyData linesPolyData;
 		vtkPoints pts;
 		vtkUnsignedCharArray colors;
 		vtkCellArray lines;
-		vtkActor actor;
+		PickEnabledActor<AbstractFaultSection> actor;
 		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
 		if (newBundle) {
 			linesPolyData = new vtkPolyData();
@@ -204,9 +210,14 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 			}
 			lines = new vtkCellArray();
 			
-			actor = new vtkActor();
-			
-			currentBundle.initialize(actor, linesPolyData, pts, colors, lines);
+			if (bundle) {
+				PointPickEnabledActor<AbstractFaultSection> myActor =
+						new PointPickEnabledActor<AbstractFaultSection>(getPickHandler());
+				actor = myActor;
+				currentBundle.initialize(myActor, linesPolyData, pts, colors, lines);
+			} else {
+				actor = new PickEnabledActor<AbstractFaultSection>(getPickHandler(), fault);
+			}
 		} else {
 			linesPolyData = currentBundle.getPolyData();
 			pts = currentBundle.getPoints();

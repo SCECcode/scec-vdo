@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -52,6 +53,7 @@ import org.scec.vtk.grid.ViewRange;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.tools.Prefs;
+import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.plugins.Plugins;
 
 import vtk.vtkActor;
@@ -250,16 +252,24 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 
 		//mouse event
 		final vtkCellPicker cellPicker = new vtkCellPicker();
+		cellPicker.SetTolerance(0.001);
 
 		// Show the point on the sphere the mouse is hovering over in the status bar
-		renderWindow.addMouseListener(new MouseAdapter()
-		{
+		renderWindow.addMouseListener(new MouseAdapter() {
 			vtkTextActor textActor = new vtkTextActor();
 			double[] oldColor = new double[3];
 			public void mousePressed(MouseEvent e) {
+				int[] clickPos = renderWindow.getRenderWindowInteractor().GetEventPosition();
+ 
+				cellPicker.Pick(clickPos[0], clickPos[1],0, renderWindow.GetRenderer());
+				// if we picked a pick enabled actor, fire off a pick event
+				// DON'T REMOVE THIS when playing with the highlighting stuff you're doing below please!
+				if (cellPicker.GetActor() instanceof PickEnabledActor<?>) {
+					PickEnabledActor<?> actor = (PickEnabledActor<?>)cellPicker.GetActor();
+					actor.picked(cellPicker, e);
+				}
+				
 				if (e.getButton() == MouseEvent.BUTTON1) {
-					int[] clickPos = renderWindow.getRenderWindowInteractor().GetEventPosition();
-
 					// Pick from this location. 
 					picker.Pick(clickPos[0], clickPos[1],0, renderWindow.GetRenderer());
 					vtkActor pickedActor = picker.GetActor();
