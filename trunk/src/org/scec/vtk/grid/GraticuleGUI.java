@@ -92,6 +92,9 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	bckgroundColorChooser;
 
 	private boolean firstTime = true;
+	
+	private vtkStringArray labels;
+	private int labelLatCt=0;
 
 	protected int
 	lowerLatitude = 0,
@@ -112,7 +115,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 	public int upperLat, lowerLat, upperLon, lowerLon;
 
-	public ArrayList<GlobeBox> getGlobeBox(double spacing){
+	public static GraticulePreset getGraticlePreset(){
 		URL calGridURL = GraticuleGUI.class.getResource("resources/California.grat");
 		File calGrid = null;
 		try {
@@ -121,8 +124,10 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		GraticulePreset graticule = new GraticulePreset(calGrid);
-
+		return new GraticulePreset(calGrid);
+	}
+	
+	public ArrayList<GlobeBox> getGlobeBox(GraticulePreset graticule, double spacing){
 		upperLat = (graticule.getUpperLatitude());
 		lowerLat = (graticule.getLowerLatitude());
 		upperLon = (graticule.getLeftLongitude());
@@ -135,7 +140,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			int leftLong, int rightLong, double spacing) {
 
 		// Add label array.
-		vtkStringArray labels =new vtkStringArray();
+		labels =new vtkStringArray();
 		labels.SetName("labels");
 		vtkIntArray sizes = new vtkIntArray();
 		sizes.SetName("sizes");
@@ -165,7 +170,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		numOfLat += (int) (Math.ceil((leftLon-rightLon)/spacing)+1);
 		labels.SetNumberOfValues(numOfLat+1);
 		sizes.SetNumberOfValues(numOfLat);
-		int labelLatCt=0;
+		labelLatCt=0;
 		int maxDepth = 0; 	
 		for(double j = upperLat;j>=lowerLat;j-=spacing,labelLatCt++)
 		{
@@ -193,7 +198,10 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			}
 			countPts++;
 			pt[2] = (rightLon);
-			labels.SetValue(labelLatCt, new DecimalFormat("#.######").format(j));
+			if (labelsOn)
+			{
+				labels.SetValue(labelLatCt, new DecimalFormat("#.######").format(j));
+			}
 			labelPoints.InsertNextPoint(Transform.customTransform(pt));
 
 		}
@@ -209,7 +217,10 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			pt[2] = (j);
 
 			allPoints.InsertNextPoint(Transform.customTransform(pt));
-			labels.SetValue(labelLatCt, new DecimalFormat("#.######").format(j));
+			if (labelsOn)
+			{
+				labels.SetValue(labelLatCt, new DecimalFormat("#.######").format(j));
+			}
 
 			labelPoints.InsertNextPoint(Transform.customTransform(pt));
 
@@ -541,6 +552,11 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 
 	public void apply() {
+		
+		if (latLonLabelsCheckBox.isSelected() != labelsOn)
+		{
+			labelsOn = latLonLabelsCheckBox.isSelected();
+		}
 		if (!Info.getMainGUI().getGridDisplayBool())
 			Info.getMainGUI().toggleGridDisplay();
 
@@ -592,6 +608,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 				compassBG.detach();
 			}*/
 		//}
+
 		if (latLonLabelsCheckBox.isSelected()!=labelsOn) {
 			labelsOn = latLonLabelsCheckBox.isSelected();
 			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth), labelsOn);
