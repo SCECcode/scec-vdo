@@ -556,7 +556,7 @@ public class EQCatalog extends CatalogAccessor {
 			pts.InsertNextPoint(xForm);
 			radi.InsertNextTuple1(eq.getEq_magnitude(i));
 			// Color based on magnitude
-			int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude(i)) / stepSize)-getMinMagnitude());
+			int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude(i)) / stepSize)-getMinMagnitude())-1;
 			if(ind<0)
 				ind=0;
 			
