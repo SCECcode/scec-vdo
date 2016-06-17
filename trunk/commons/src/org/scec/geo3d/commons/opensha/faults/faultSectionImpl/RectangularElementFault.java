@@ -52,7 +52,6 @@ public class RectangularElementFault extends AbstractFaultSection {
 
 	@Override
 	public String getInfo() {
-		// TODO Auto-generated method stub
 		return super.getInfo()+"\nParent: "+element.getSectionName()+" ("+element.getSectionID()+")";
 	}
 
