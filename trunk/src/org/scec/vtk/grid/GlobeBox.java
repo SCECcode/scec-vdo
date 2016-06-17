@@ -99,17 +99,18 @@ public class GlobeBox {
 		//return globeScene;		
 	}
 	
-	/*public void setShowLabels(boolean sl) {
-		if (showLabels!=sl) {
-			showLabels = sl;
-			if (showLabels) {
-				globeScene.addChild(labelsGroup);
-			} else {
-				globeScene.removeChild(labelsGroup);
-			}
-		}
-	}
+//	public void setShowLabels(boolean sl) {
+//		if (showLabels!=sl) {
+//			showLabels = sl;
+//			if (showLabels) {
+//				globeScene.addChild(labelsGroup);
+//			} else {
+//				globeScene.removeChild(labelsGroup);
+//			}
+//		}
+//	}
 
+	/*
 	private void drawConnectionData(BranchGroup returnMe, ArrayList<Point3d[]> points, ArrayList<Point3d[]> innerPoints) {
 		LineStripArray[] connections   = drawConnectionsFromPoints(points,innerPoints);
 		for(int i=0;i<connections.length;i++){

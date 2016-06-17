@@ -11,7 +11,7 @@ public class ViewRange {
 	
 	public ViewRange()
 	{
-		this(32, 36, -122, -114);
+		this(32, 43, -125, -114);
 	}
 
 	public ViewRange(int lowerLatitude, int upperLatitude, int leftLongitude, int rightLongitude) 

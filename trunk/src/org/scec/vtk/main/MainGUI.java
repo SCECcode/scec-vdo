@@ -49,6 +49,7 @@ import org.scec.vtk.drawingTools.DrawingToolsPlugin;
 import org.scec.vtk.grid.GlobeBox;
 import org.scec.vtk.grid.GraticuleGUI;
 import org.scec.vtk.grid.GraticulePlugin;
+import org.scec.vtk.grid.GraticulePreset;
 import org.scec.vtk.grid.ViewRange;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
@@ -431,9 +432,11 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 
 		setViewRange(new ViewRange());
 		//draw Grid
+		GraticulePreset preset = GraticuleGUI.getGraticlePreset();
+		setViewRange(new ViewRange(preset.getLowerLatitude(), preset.getUpperLatitude(), preset.getLeftLongitude(), preset.getRightLongitude()));
 		gridGUI = new GraticuleGUI(gridPlugin);
 		addPluginGUI("org.scec.vdo.graticulePlugin","Graticule",gridGUI);
-		makeGrids(gridGUI.getGlobeBox(1.0),true); //Labels default to on
+		makeGrids(gridGUI.getGlobeBox(preset, 1.0),true); //Labels default to on
 
 
 		//draw DrawingTools
