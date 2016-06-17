@@ -20,6 +20,7 @@ public class EQSimsPlugin extends AbstractFaultPlugin {
 		ArrayList<FaultColorer> colorers = builder.getColorers();
 		FaultAnimation faultAnim = builder.getFaultAnimation();
 		ArrayList<GeometryGenerator> geomGens = FaultPluginGUI.createDefaultGeomGens();
+		setBundlerInGeomGens(geomGens, new EQSimsFaultSectionBundler());
 		
 		int lineIndex = ListUtils.getIndexByName(geomGens, LineSurfaceGenerator.NAME);
 		if (lineIndex > 0) {
