@@ -14,6 +14,7 @@ import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
 import org.scec.geo3d.commons.opensha.surfaces.events.GeometrySettingsChangeListener;
 import org.scec.geo3d.commons.opensha.surfaces.events.GeometrySettingsChangedEvent;
 import org.scec.vtk.tools.Transform;
+import org.scec.vtk.tools.picking.PickHandler;
 
 import com.google.common.base.Preconditions;
 
@@ -30,6 +31,8 @@ import vtk.vtkUnsignedCharArray;
 public abstract class GeometryGenerator implements Named {
 	
 	private String name;
+	
+	private PickHandler<AbstractFaultSection> pickHandler;
 	
 	public GeometryGenerator(String name) {
 		this.name = name;
@@ -159,6 +162,14 @@ public abstract class GeometryGenerator implements Named {
 	
 	public void clearBundles() {
 		bundler.clearBundles();
+	}
+	
+	public void setPickHandler(PickHandler<AbstractFaultSection> pickHandler) {
+		this.pickHandler = pickHandler;
+	}
+	
+	public PickHandler<AbstractFaultSection> getPickHandler() {
+		return pickHandler;
 	}
 
 }
