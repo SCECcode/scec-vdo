@@ -47,6 +47,7 @@ import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.AseismicityColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.CouplingCoefficientColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.DipColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.RakeColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
@@ -279,6 +280,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		colorers.add(maxMagColorer);
 		rupSetChangeListeners.add(maxMagColorer);
 		
+		colorers.add(new DipColorer());
 		
 		colorers.add(new RakeColorer());
 		
