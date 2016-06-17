@@ -37,13 +37,13 @@ import org.scec.geo3d.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.geo3d.commons.opensha.surfaces.PointSurfaceGenerator;
 import org.scec.geo3d.commons.opensha.surfaces.PolygonSurfaceGenerator;
 import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.FaultSectionPickBehavior;
-import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.PickHandler;
 import org.scec.geo3d.commons.opensha.tree.builders.FaultSectionInfoViewier;
 import org.scec.geo3d.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.geo3d.commons.opensha.tree.gui.FaultTreeTable;
 import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.Prefs;
+import org.scec.vtk.tools.picking.PickHandler;
 
 public class FaultPluginGUI extends JSplitPane {
 	
@@ -99,7 +99,7 @@ public class FaultPluginGUI extends JSplitPane {
 	
 	private EventManager em;
 	
-	private FaultSectionPickBehavior pickBehavior;
+	private FaultSectionPickBehavior pickhandler;
 	
 	private JXLayer<JComponent> jxLayer;
 	private LockableUI lockUI;
@@ -189,18 +189,13 @@ public class FaultPluginGUI extends JSplitPane {
 		
 		setTopComponent(topPanel);
 		setBottomComponent(settingsPanel);
-//		this.add(settingsPanel);
 		
-//		pickBehavior = new FaultSectionPickBehavior(Geo3dInfo.getRenderEnabledCanvas(), masterBranchGroup);
-//		BoundingSphere appBounds = new BoundingSphere(new Point3d(), 30000.0);
-//		pickBehavior.setSchedulingBounds(appBounds);
-//		masterBranchGroup.addChild(pickBehavior);
-		
-
-		//	pluginBranchGroup.addChild(faultBranchGroup);
+		pickhandler = new FaultSectionPickBehavior();
+		for (GeometryGenerator geomGen : geomGens)
+			geomGen.setPickHandler(pickhandler);
 
 		em = new EventManager( MainGUI.getRenderWindow(), table, colorPanel, geomPanel,
-				builder.getFaultParams(), defaultColor, pickBehavior, lockUI, pickBehavior);
+				builder.getFaultParams(), defaultColor, pickhandler, lockUI, pickhandler);
 
 		if (faultAnims != null && faultAnims.size() > 0) {
 			if (faultAnims.size() == 1) {
@@ -240,15 +235,6 @@ public class FaultPluginGUI extends JSplitPane {
 	
 	public EventManager getEventManager() {
 		return em;
-	}
-	
-	public void setClickableEnabled(boolean enable) {
-		// TODO
-//		pickBehavior.setEnable(enable);
-	}
-	
-	public void setPickHandler(PickHandler pickHandler) {
-//		pickBehavior.setPickHandler(pickHandler);
 	}
 	
 	public JXLayer<JComponent> getJXLayer() {

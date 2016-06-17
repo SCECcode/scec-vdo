@@ -34,13 +34,6 @@ public abstract class AbstractFaultPlugin extends ActionPlugin {
 	}
 
 	@Override
-	public void setClickableEnabled(boolean enable) {
-//		System.out.println(metadata.getShortName()+": setClickableEnabled: " + enable);
-		if (gui != null)
-			gui.setClickableEnabled(enable);
-	}
-
-	@Override
 	protected JComponent createGUI() throws IOException {
 		if (gui == null) {
 			try {

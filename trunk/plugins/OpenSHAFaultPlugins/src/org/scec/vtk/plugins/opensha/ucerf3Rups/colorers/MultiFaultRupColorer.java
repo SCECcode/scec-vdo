@@ -42,8 +42,9 @@ import org.scec.geo3d.commons.opensha.surfaces.FaultSectionActorList;
 import org.scec.geo3d.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.geo3d.commons.opensha.surfaces.params.ColorParameter;
 import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.NameDispalyPickHandler;
-import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.PickHandler;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PickHandler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -51,9 +52,10 @@ import com.google.common.collect.Maps;
 import scratch.UCERF3.FaultSystemRupSet;
 import scratch.UCERF3.FaultSystemSolution;
 import vtk.vtkActor;
+import vtk.vtkCellPicker;
 
-public class MultiFaultRupColorer extends CPTBasedColorer implements PickHandler, UCERF3RupSetChangeListener,
-ParameterChangeListener {
+public class MultiFaultRupColorer extends CPTBasedColorer implements PickHandler<AbstractFaultSection>,
+UCERF3RupSetChangeListener, ParameterChangeListener {
 	
 	private static CPT getDefaultCPT() {
 		CPT cpt;
@@ -513,22 +515,22 @@ ParameterChangeListener {
 //	}
 
 	@Override
-	public void faultPicked(FaultSectionActorList faultShape,
-			MouseEvent mouseEvent) {
+	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor,
+			AbstractFaultSection reference, vtkCellPicker picker, MouseEvent e) {
 		
-		if (faultShape.getFault() instanceof PrefDataSection) {
+		if (reference instanceof PrefDataSection) {
 			
-			PrefDataSection fault = (PrefDataSection)faultShape.getFault();
-			if (mouseEvent.isShiftDown()) {
+			PrefDataSection fault = (PrefDataSection)reference;
+			if (e.getButton() == MouseEvent.BUTTON1 && e.isShiftDown()) {
 				int id;
 				
 				if (parentSectParam.getValue())
 					id = fault.getFaultSection().getParentSectionId();
 				else
-					id = faultShape.getFault().getId();
+					id = fault.getId();
 				
 				if (excludeParam.getValue()) {
-					id = faultShape.getFault().getId();
+					id = fault.getId();
 					// only sub section ids
 					if (excludeIDs.contains(id))
 						excludeIDs.remove(id);
@@ -538,7 +540,7 @@ ParameterChangeListener {
 					if (includeIDs.contains(id)) {
 						includeIDs.remove(id);
 					} else {
-						if (mouseEvent.isControlDown()) {
+						if (e.isControlDown()) {
 							// adding
 							if (!includeIDs.contains(id))
 								includeIDs.add(id);
@@ -552,16 +554,6 @@ ParameterChangeListener {
 				update();
 			}
 		}
-	}
-
-	@Override
-	public void nothingPicked(MouseEvent mouseEvent) {
-		
-	}
-
-	@Override
-	public void otherPicked(vtkActor node, MouseEvent mouseEvent) {
-		nothingPicked(mouseEvent);
 	}
 
 	@Override

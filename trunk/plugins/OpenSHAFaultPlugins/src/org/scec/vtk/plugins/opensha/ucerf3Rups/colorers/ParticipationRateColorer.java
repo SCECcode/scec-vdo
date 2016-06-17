@@ -42,8 +42,9 @@ import org.scec.geo3d.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.geo3d.commons.opensha.surfaces.FaultSectionActorList;
 import org.scec.geo3d.commons.opensha.surfaces.PolygonSurfaceGenerator;
 import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.NameDispalyPickHandler;
-import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.PickHandler;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PickHandler;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -56,9 +57,10 @@ import scratch.UCERF3.analysis.CompoundFSSPlots.MapPlotData;
 import scratch.UCERF3.erf.FaultSystemSolutionERF;
 import scratch.UCERF3.inversion.InversionFaultSystemSolution;
 import vtk.vtkActor;
+import vtk.vtkCellPicker;
 
 public class ParticipationRateColorer extends CPTBasedColorer implements
-		UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler {
+		UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
 	
 	private ParameterList params;
 	
@@ -187,16 +189,16 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 	}
 
 	@Override
-	public void faultPicked(FaultSectionActorList faultShape, MouseEvent mouseEvent) {
-		int clickCount = mouseEvent.getClickCount();
+	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor,
+			AbstractFaultSection fault, vtkCellPicker picker, MouseEvent e) {
+		int clickCount = e.getClickCount();
 		// return if we don't have a solution, or it's not a double click
-		if (sol == null || clickCount < 2)
+		if (sol == null || clickCount < 2 || e.getButton() != MouseEvent.BUTTON1)
 			return;
 		
-		AbstractFaultSection fault = faultShape.getFault();
 		int faultID = fault.getId();
 		
-		boolean parent = mouseEvent.isShiftDown();
+		boolean parent = e.isShiftDown();
 		FaultSectionPrefData sect = sol.getRupSet().getFaultSectionData(faultID);
 
 		IncrementalMagFreqDist mfd;
@@ -226,16 +228,6 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 		
 		graph.setX_AxisLabel("Magnitude");
 		graph.setY_AxisLabel("Participation Rate");
-	}
-
-	@Override
-	public void nothingPicked(MouseEvent mouseEvent) {
-		// nothing to do here
-	}
-
-	@Override
-	public void otherPicked(vtkActor node, MouseEvent mouseEvent) {
-		nothingPicked(mouseEvent);
 	}
 	
 	static GriddedGeoDataSet loadGriddedData(FaultSystemSolution sol, GriddedRegion griddedRegion, double minMag, double maxMag,

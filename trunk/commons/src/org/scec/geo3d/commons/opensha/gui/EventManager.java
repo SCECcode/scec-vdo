@@ -28,7 +28,6 @@ import org.scec.geo3d.commons.opensha.surfaces.events.GeometryGeneratorChangeLis
 import org.scec.geo3d.commons.opensha.surfaces.events.GeometrySettingsChangeListener;
 import org.scec.geo3d.commons.opensha.surfaces.events.GeometrySettingsChangedEvent;
 import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.FaultSectionPickBehavior;
-import org.scec.geo3d.commons.opensha.surfaces.pickBehavior.PickHandler;
 import org.scec.geo3d.commons.opensha.tree.AbstractFaultNode;
 import org.scec.geo3d.commons.opensha.tree.FaultSectionNode;
 import org.scec.geo3d.commons.opensha.tree.events.ColorChangeListener;
@@ -57,9 +56,6 @@ ParameterChangeListener,
 VisibleFaultSurfacesProvider,
 AnimationListener {
 	
-	// TODO:
-	// everything related to pick behaviour
-	
 	private static final boolean D = false;
 	private static final boolean queue_renders = true;
 	
@@ -86,8 +82,7 @@ AnimationListener {
 	
 	private Color defaultFaultColor;
 	
-//	private PickHandler defaultPickHandler;
-//	private FaultSectionPickBehavior pickBehavior;
+	private FaultSectionPickBehavior pickBehavior;
 	
 	private LockableUI panelLock;
 	private Thread currentCalcThread;
@@ -105,8 +100,7 @@ AnimationListener {
 		this.rendererPanel = rendererPanel;
 		this.renderer = rendererPanel.GetRenderer();
 		this.defaultFaultColor = defaultFaultColor;
-//		this.pickBehavior = pickBehavior;
-//		this.defaultPickHandler = pickBehavior.getPickHandler();
+		this.pickBehavior = pickBehavior;
 		this.panelLock = panelLock;
 		
 		this.colorerPanel = colorerPanel;
@@ -246,6 +240,7 @@ AnimationListener {
 		if (D) System.out.println("Displaying fault: '"+fault.getName()+"'");
 		for (vtkActor actor : actors) {
 			actor.SetVisibility(1);
+			actor.SetPickable(1);
 			if (isActorDisplayed(actor)) {
 				// it's already in there, update it
 				actor.Modified();
@@ -339,6 +334,7 @@ AnimationListener {
 		FaultSectionActorList actors = actorsMap.get(fault);
 		for (vtkActor actor : actors) {
 			actor.SetVisibility(0);
+			actor.SetPickable(0);
 			actor.Modified(); // TODO needed?
 		}
 		if (actors instanceof FaultSectionBundledActorList) {
@@ -357,21 +353,16 @@ AnimationListener {
 	
 	// synchroinzed externally
 	private void setBundledOpacity(FaultSectionBundledActorList bundleList, boolean visible) {
-		vtkUnsignedCharArray colors = bundleList.getBundle().getColorArray();
-		int firstIndex = bundleList.getMyFirstPointIndex();
-		int lastIndex = firstIndex + bundleList.getMyNumPoints() - 1;
-		double opacity;
-		if (visible)
-			opacity = bundleList.getMyOpacity();
-		else
-			opacity = 0;
-		int totNumTuples = colors.GetNumberOfTuples();
-		for (int index=firstIndex; index<=lastIndex; index++) {
-			Preconditions.checkState(index < totNumTuples, "Bad tuple index. index=%s, num tuples=%s", index, totNumTuples);
-			double[] orig = colors.GetTuple4(index);
-			colors.SetTuple4(index, orig[0], orig[1], orig[2], opacity); // keep same color
+		ActorBundle bundle = bundleList.getBundle();
+		bundle.setVisible(bundleList, visible);
+		if (visible) {
+			bundle.getActor().SetVisibility(1);
+			bundle.getActor().SetPickable(1);
+		} else if (!bundle.areAnyPointVisible()) {
+			// no points visible, we can hide the whole thing
+			bundle.getActor().SetVisibility(0);
+			bundle.getActor().SetPickable(0);
 		}
-		bundleList.getBundle().modified();
 	}
 
 	@Override
@@ -451,14 +442,11 @@ AnimationListener {
 	@Override
 	public synchronized void colorerChanged(final FaultColorer newColorer) {
 		// this is called when the fault colorer is changed
-		// TODO
-//		if (pickBehavior != null)
-//			pickBehavior.setColorer(null);
+		if (pickBehavior != null)
+			pickBehavior.setColorer(null);
 		
-		// if it's null, then they switched to custom and we don't have to do anything
 		if (newColorer == null) {
-//			if (pickBehavior != null)
-//				pickBehavior.setPickHandler(defaultPickHandler);
+			// if it's null, then they switched to custom and we don't have to do anything
 		} else {
 			// this can take a while, depending, so lets do it threaded and lock the UI
 			
@@ -490,8 +478,8 @@ AnimationListener {
 						}
 					} finally {
 						unlockGUI();
-//						if (pickBehavior != null)
-//							pickBehavior.setColorer(newColorer);
+						if (pickBehavior != null)
+							pickBehavior.setColorer(newColorer);
 					}
 				}
 				
@@ -549,8 +537,8 @@ AnimationListener {
 			colorer = null;
 		else
 			colorer = colorerPanel.getSelectedColorer();
-//		if (pickBehavior != null)
-//			pickBehavior.setColorer(colorer);
+		if (pickBehavior != null)
+			pickBehavior.setColorer(colorer);
 		processAllChildren(newRoot, colorer);
 		
 		rebuildAllVisibleFaults();

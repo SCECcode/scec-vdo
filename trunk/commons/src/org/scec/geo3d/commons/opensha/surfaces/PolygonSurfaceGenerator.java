@@ -14,6 +14,8 @@ import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PointPickEnabledActor;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -150,11 +152,13 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 			currentBundle = null;
 		}
 		
+		boolean bundle = this.bundle && currentBundle != null;
+		
 		vtkPolyData polyData;
 		vtkPoints pts;
 		vtkUnsignedCharArray colors;
 		vtkCellArray polys;
-		vtkActor actor;
+		PickEnabledActor<AbstractFaultSection> actor;
 		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
 		if (newBundle) {
 			polyData = new vtkPolyData();
@@ -168,9 +172,14 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 			}
 			polys = new vtkCellArray();
 			
-			actor = new vtkActor();
-			
-			currentBundle.initialize(actor, polyData, pts, colors, polys);
+			if (bundle) {
+				PointPickEnabledActor<AbstractFaultSection> myActor =
+						new PointPickEnabledActor<AbstractFaultSection>(getPickHandler());
+				actor = myActor;
+				currentBundle.initialize(myActor, polyData, pts, colors, polys);
+			} else {
+				actor = new PickEnabledActor<AbstractFaultSection>(getPickHandler(), fault);
+			}
 		} else {
 			polyData = currentBundle.getPolyData();
 			pts = currentBundle.getPoints();
@@ -191,16 +200,19 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 					double[] pt2 = pointSurface.get(row+1,	col+1);	// bottom right
 					double[] pt3 = pointSurface.get(row,	col+1);	// top right
 					
-					pts.InsertNextPoint(pt0);
-					pts.InsertNextPoint(pt1);
-					pts.InsertNextPoint(pt2);
-					pts.InsertNextPoint(pt3);
+					int[] ids = new int[4];
+					ids[0] = pts.InsertNextPoint(pt0);
+					ids[1] = pts.InsertNextPoint(pt1);
+					ids[2] = pts.InsertNextPoint(pt2);
+					ids[3] = pts.InsertNextPoint(pt3);
 					myNumPoints += 4;
 					if (bundle) {
 						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
 						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
 						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
 						colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+						
+						PointPickEnabledActor<AbstractFaultSection> pointPickActor = currentBundle.getActor();
 					}
 				}
 			}

@@ -2,12 +2,6 @@ package org.scec.geo3d.commons.opensha.surfaces;
 
 import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
 
-import vtk.vtkActor;
-import vtk.vtkCellArray;
-import vtk.vtkPoints;
-import vtk.vtkPolyData;
-import vtk.vtkUnsignedCharArray;
-
 public class FaultSectionBundledActorList extends FaultSectionActorList {
 	
 	private ActorBundle bundle;
