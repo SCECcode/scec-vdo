@@ -1563,9 +1563,14 @@ MouseListener {
 						focEqs.setColor2(extColor3f);
 						eqList.add(focEqs);
 					} else {*/
-						//plot the earthquakes as spheres with radius as magnitude			
+						//plot the earthquakes as spheres with radius as magnitude	
+				Date time;
+				if(cat.getEq_time(i)!=null)
+				{time = cat.getEq_time(i);}
+				else
+					time=new Date();
 						eqs = new Earthquake(cat.getEq_depth(i),cat.getEq_magnitude(i),cat.getEq_latitude(i),
-								cat.getEq_longitude(i),cat.getEq_time(i));
+								cat.getEq_longitude(i),time);
 //						if (cat.getDataScope() == EQCatalog.DATA_SCOPE_UNCERT || cat.getDataScope() == EQCatalog.DATA_SCOPE_UNCERT_FOCAL) {
 //							eqs.setEq_xy_error(cat.getEq_xy_error(i));
 //							eqs.setEq_z_error(cat.getEq_z_error(i));
@@ -1755,7 +1760,7 @@ MouseListener {
 				
 				vtkPoints pts = new vtkPoints();
 				radi = (vtkDoubleArray) inputData.GetPointData().GetArray("radi");
-				double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
+				//double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
 				for(int i =0;i<eqList.size();i++)
 				{
 					Earthquake eq = eqList.get(i);
@@ -2007,12 +2012,12 @@ MouseListener {
 				
 				colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
 				
-				double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
+				//double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
 				for(int i =0;i<eqList.size();i++)
 				{
 					Earthquake eq = eqList.get(i);
 					// Color based on magnitude
-					int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude(i)) / stepSize)-cat.getMinMagnitude());
+					int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude(i)))-cat.getMinMagnitude());
 					if(ind<0)
 						ind=0;
 					
