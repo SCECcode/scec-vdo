@@ -8,6 +8,7 @@ import org.opensha.commons.data.Container2DImpl;
 import org.opensha.commons.data.Named;
 import org.opensha.commons.geo.Location;
 import org.opensha.commons.param.ParameterList;
+import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
@@ -53,6 +54,19 @@ public abstract class GeometryGenerator implements Named {
 	public abstract FaultSectionActorList createFaultActors(RuptureSurface surface, Color color,
 			AbstractFaultSection fault);
 	
+	protected FaultSectionActorList handleCompound(CompoundSurface surface, Color color, AbstractFaultSection fault) {
+		FaultSectionActorList list = new FaultSectionActorList(fault);
+		for (RuptureSurface subSurf : surface.getSurfaceList()) {
+			FaultSectionActorList sub;
+			if (subSurf instanceof EvenlyGriddedSurface)
+				sub = createFaultActors((EvenlyGriddedSurface)subSurf, color, fault);
+			else
+				sub = createFaultActors(subSurf, color, fault);
+			list.addAll(sub);
+		}
+		return list;
+	}
+	
 	/**
 	 * Update the color of the given branch group. The branch group supplied will always have been generated
 	 * by this geometry generator. Should return true if the color was successfully updated, and false if it
@@ -66,11 +80,11 @@ public abstract class GeometryGenerator implements Named {
 	public boolean updateColor(FaultSectionActorList actorList, Color color) {
 		if (actorList instanceof FaultSectionBundledActorList) {
 			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actorList;
-			ActorBundle bundle = bundleList.getBundle();
+			FaultActorBundle bundle = bundleList.getBundle();
 			synchronized (bundle) {
 				vtkUnsignedCharArray colors = bundle.getColorArray();
 				int firstIndex = bundleList.getMyFirstPointIndex();
-				int lastIndex = firstIndex + bundleList.getMyNumPoints() - 1;
+				int lastIndex = firstIndex + bundleList.getMyNumPointsForColoring() - 1;
 				int totNumTuples = colors.GetNumberOfTuples();
 //				System.out.println("Updating color for points at index "+firstIndex+" through "+lastIndex);
 				for (int index=firstIndex; index<=lastIndex; index++) {

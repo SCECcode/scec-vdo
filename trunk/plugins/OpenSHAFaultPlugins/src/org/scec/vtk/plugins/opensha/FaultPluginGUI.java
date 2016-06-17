@@ -60,9 +60,8 @@ public class FaultPluginGUI extends JSplitPane {
 	public static ArrayList<GeometryGenerator> createDefaultGeomGens() {
 		ArrayList<GeometryGenerator> geomGens = new ArrayList<GeometryGenerator>();
 		
-		// TODO
-//		geomGens.add(new PointSurfaceGenerator());
 		geomGens.add(new LineSurfaceGenerator());
+		geomGens.add(new PointSurfaceGenerator());
 		geomGens.add(new PolygonSurfaceGenerator());
 		return geomGens;
 	}

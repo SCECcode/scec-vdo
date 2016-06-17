@@ -1,15 +1,12 @@
 package org.scec.vtk.commons.opensha.surfaces;
 
 import java.awt.Color;
-import java.util.ArrayList;
 
 import org.opensha.commons.data.Container2DImpl;
-import org.opensha.commons.geo.LocationList;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.DoubleParameter;
-import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
@@ -18,11 +15,8 @@ import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PointPickEnabledActor;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
-import vtk.vtkActor;
 import vtk.vtkCellArray;
-import vtk.vtkLine;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
@@ -66,18 +60,8 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 	@Override
 	public FaultSectionActorList createFaultActors(RuptureSurface surface,
 			Color color, AbstractFaultSection fault) {
-		if (surface instanceof CompoundSurface) {
-			FaultSectionActorList list = new FaultSectionActorList(fault);
-			for (RuptureSurface subSurf : ((CompoundSurface)surface).getSurfaceList()) {
-				FaultSectionActorList sub;
-				if (subSurf instanceof EvenlyGriddedSurface)
-					sub = createFaultActors((EvenlyGriddedSurface)subSurf, color, fault);
-				else
-					sub = createFaultActors(subSurf, color, fault);
-				list.addAll(sub);
-			}
-			return list;
-		}
+		if (surface instanceof CompoundSurface)
+			return handleCompound((CompoundSurface)surface, color, fault);
 		if (surface instanceof EvenlyGriddedSurface) {
 			return createFaultActors((EvenlyGriddedSurface)surface, color, fault);
 		}
@@ -142,7 +126,7 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 
 		int opacity = (int)(opacityParam.getValue()*255d);
 		double initialOpacity;
-		ActorBundle currentBundle;
+		FaultActorBundle currentBundle;
 		if (bundle && bundler != null) {
 			// initialized to transparent, will get updated when displayed
 			initialOpacity = 0;
@@ -160,6 +144,7 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 		vtkCellArray polys;
 		PickEnabledActor<AbstractFaultSection> actor;
 		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
+		Object synchOn = this;
 		if (newBundle) {
 			polyData = new vtkPolyData();
 			pts = new vtkPoints();
@@ -177,6 +162,7 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 						new PointPickEnabledActor<AbstractFaultSection>(getPickHandler());
 				actor = myActor;
 				currentBundle.initialize(myActor, polyData, pts, colors, polys);
+				synchOn = currentBundle;
 			} else {
 				actor = new PickEnabledActor<AbstractFaultSection>(getPickHandler(), fault);
 			}
@@ -191,7 +177,7 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 		}
 		int firstIndex;
 		int myNumPoints = 0;
-		synchronized (currentBundle) {
+		synchronized (synchOn) {
 			firstIndex = pts.GetNumberOfPoints();
 			for (int row=0; row<(rows-1); row++) {
 				for (int col=0; col<(cols-1); col++) {
@@ -258,7 +244,8 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 				else
 					actor.GetProperty().SetColor(getColorDoubleArray(color));
 			} else {
-				currentBundle.modified();
+				if (currentBundle != null)
+					currentBundle.modified();
 			}
 		}
 		
