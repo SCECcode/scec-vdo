@@ -328,18 +328,6 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	{
 		int oldColumnCount = model.getColumnCount();
 		model.addRow(new Object[] {""});
-		/* for(int i =0;i<Integer.parseInt(noOfFrames.getText());i++)
-	        {
-			  if(i>=oldColumnCount)
-	        	{
-				  model.addColumn(new String(Integer.toString(i+1)));
-				  table.setValueAt("1",model.getRowCount()-1,i);
-				  framePoints.add(new vtkCamera());
-	        	}
-			  else{
-	        	table.setValueAt("1",model.getRowCount()-1,i);
-	          }
-	        }*/
 		int numberOfFrames = this.catlogs.get(this.catlogs.size()-1).getSelectedEqList().size();
 		table.setValueAt("EQCatalog-"+(this.catlogs.size()-1),model.getRowCount()-1,0);
 		for(int i =1;i<=numberOfFrames;i++)
@@ -406,8 +394,6 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		}
 	}
 
-
-
 	public void animateSceneWithLayers(double startTime)
 	{
 		//create splines
@@ -417,131 +403,68 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		ArrayList<vtkActor> nw = new ArrayList<>();
 		nw.add(profile);
 		nw.add(glyph);
-		//Info.getMainGUI().addActors(nw);
-
-		//Info.getMainGUI().updateRenderWindow();
 		scene = new vtkAnimationScene();
 		scene.RemoveAllCues();
-		//sequence of frames evenly spaced in the specified Start Time and End Time for the animation
-		scene.SetModeToSequence();//SetModeToRealTime();//
-
-		scene.SetLoop(0);//loop once 
-		//framerate is 1/tickrate
-		//starttime by default is 0. tickrate = (end time-start time)/(no. of frames)
-		tickrate = 1/(Double.parseDouble(endTime.getText())/Double.parseDouble(noOfFrames.getText()));
-		scene.SetFrameRate(tickrate);
-		System.out.println("tick:"+tickrate);
-		scene.SetStartTime(0);//startTime);
+		
+		if(rendering)
+		{
+			scene.SetModeToSequence();
+			scene.SetFrameRate(30); // TODO make selectable
+		}else
+		{
+			//sequence of frames evenly spaced in the specified Start Time and End Time for the animation
+			scene.SetModeToRealTime();
+			
+		}
+		scene.SetStartTime(startTime);
 		scene.SetEndTime(Double.parseDouble(endTime.getText()));
-
-		boolean start,end,onlyEQ=true;
-		start=false;
-		end=false;
+		
 		vtkAnimationCue cue1 = new vtkAnimationCue();
-		// Create an Animation Cue.
-		for(int i =1;i<framePoints.size();i++)
+		cue1.SetStartTime(0);
+		cue1.SetEndTime(Double.parseDouble(endTime.getText()));
+		cb = new CueAnimator();
+		cb.pointsPosition = pointsToMoveCameraOnPosition;//pos;
+		cb.pointsFocalPoint = pointsToMoveCameraOnFocalPoint;//fp;
+		cb.pointsViewUp = pointsToMoveCameraOnViewUp;//up
+		cb.actor = focusActor;
+		cb.cue = cue1;
+		cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+		cb.included = included;
+		cb.scene = scene;
+		if(included)
+		{	
+			cb.cat = catlogs;
+		}
+
+		if(rendering)
 		{
-			vtkCamera cam = framePoints.get(i);
+			//capture screenshot
+			cue1.AddObserver("StartAnimationCueEvent", cb, "StartCue");
+			cue1.AddObserver("EndAnimationCueEvent", cb, "EndCueCameraAniamtionRender");
+			cue1.AddObserver("AnimationCueTickEvent", cb, "TickCameraAniamtionRender");
 
-			if((cam.GetPosition()[0]!=0 && cam.GetPosition()[1]!=0 && cam.GetPosition()[2]!=0))
-			{
-				onlyEQ=false;
-				if(!start)
-				{
-					cue1.SetStartTime(startTime + i*(1/tickrate));
-					System.out.println("cue start time: "+ i*(1/tickrate));
-					start= true;
-					end=false;
-				}
-				else if(start&&!end)
-				{
-					cue1.SetEndTime(i*(1/tickrate));
-					//scene.SetEndTime(i*(1/tickrate));
-					System.out.println("cue end time: "+ i*(1/tickrate));
-					//start = false;
-					end = false;
-
-
-					cb = new CueAnimator();
-					cb.pointsPosition = pointsToMoveCameraOnPosition;//pos;
-					cb.pointsFocalPoint = pointsToMoveCameraOnFocalPoint;//fp;
-					cb.pointsViewUp = pointsToMoveCameraOnViewUp;//up
-					cb.actor = focusActor;
-					cb.cue = cue1;
-					double t = cue1.GetEndTime()/scene.GetEndTime();
-					cb.ptSize = (int) ((1-t)*(1)+ t*(pointsToMoveCameraOnPosition.GetNumberOfPoints()-1));
-					System.out.println("ptSize:"+cb.ptSize);
-					cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-					cb.included = included;
-					cb.scene = scene;
-					if(included)
-					{	//cb.earthquakeList = (ArrayList<Earthquake>) list;
-						cb.cat = catlogs;
-						t = cue1.GetEndTime()/scene.GetEndTime();
-						cb.EQPtSize = (int) ((1-t)*(1)+ t*(Integer.parseInt(noOfFrames.getText())-1));
-
-					}
-
-
-					if(rendering)
-					{
-						//capture screenshot
-						//cb.renderSizeold = Info.getMainGUI().getRenderWindow().GetRenderWindow().GetSize();
-						//Info.getMainGUI().getRenderWindow().GetRenderWindow().SetSize(1920,1020);
-
-						cue1.AddObserver("StartAnimationCueEvent", cb, "StartCue");
-						cue1.AddObserver("EndAnimationCueEvent", cb, "EndCueCameraAniamtionRender");
-						cue1.AddObserver("AnimationCueTickEvent", cb, "TickCameraAniamtionRender");
-
-						//render image files to movie
-						try {
-							m = new MediaLocator(movieFile.toURL()+ ".mov");
-							System.out.println("Writing " + m.getURL());
-							cb.m = m;
-						} catch (MalformedURLException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					} else
-					{
-						cue1.AddObserver("StartAnimationCueEvent", cb, "StartCue");
-						cue1.AddObserver("EndAnimationCueEvent", cb, "EndCue");
-						cue1.AddObserver("AnimationCueTickEvent", cb, "TickCameraAniamtion");
-					}
-					System.out.println("s: "+scene.GetStartTime());
-					System.out.println("e: "+scene.GetEndTime());
-					scene.AddCue(cue1);
-					cue1 = new vtkAnimationCue();
-					cue1.SetStartTime((i+1)*(1/tickrate));
-				}
-
+			//render image files to movie
+			try {
+				m = new MediaLocator(movieFile.toURL()+ ".mov");
+				System.out.println("Writing " + m.getURL());
+				cb.m = m;
+			} catch (MalformedURLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
 		}
-		if(included && onlyEQ)
+		else
 		{
-			cue1.SetStartTime(startTime);
-			cue1.SetEndTime(scene.GetEndTime());
-			cb = new CueAnimator();
-			cue1.AddObserver("StartAnimationCueEvent", cb, "StartCueEarthquakeCatalogAniamtion");
+			cue1.AddObserver("StartAnimationCueEvent", cb, "StartCue");
 			cue1.AddObserver("EndAnimationCueEvent", cb, "EndCue");
-			cue1.AddObserver("AnimationCueTickEvent", cb, "TickEarthquakeCatalogAniamtion");
-			cb.cue =cue1;
-			cb.scene = scene;
-			cb.included =included;
-			cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
-			if(included)
-			{
-				cb.cat = catlogs;
-				double t = cue1.GetEndTime()/scene.GetEndTime();
-				cb.EQPtSize = (int) ((1-t)*(1)+ t*(Integer.parseInt(noOfFrames.getText())-1));
-
-			}
-			System.out.println("s: "+cue1.GetStartTime());
-			System.out.println("e: "+cue1.GetEndTime());
-			scene.AddCue(cue1);
+			cue1.AddObserver("AnimationCueTickEvent", cb, "TickCameraAniamtion");
 		}
-		//scene.SetStartTime(startTime);
-		//scene.SetEndTime(Double.parseDouble(endTime.getText()));
+		
+		
+		
+		System.out.println("s: "+scene.GetStartTime());
+		System.out.println("e: "+scene.GetEndTime());
+		scene.AddCue(cue1);
 	}
 	public void scenePlay(){
 		// TODO also disable modifying/adding keyframes here and re-enable later
@@ -553,9 +476,6 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 				if(scene.IsInPlay()==1)
 					scene.Stop();
 				scene.Play();
-				//scene.Stop();
-				//System.out.println(scene.GetAnimationTime());
-
 				pauseScriptingPluginButton.setEnabled(true);
 				playScriptingPluginButton.setEnabled(true);
 				stopScriptingPluginButton.setEnabled(true);
