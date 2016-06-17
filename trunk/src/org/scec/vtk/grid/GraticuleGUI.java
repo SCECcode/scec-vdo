@@ -546,16 +546,20 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 		if (firstsceneRadioButton.isSelected()) {
 			gridWidth = 1.0;
-			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth));
+			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth),labelsOn);
 			Info.getMainGUI().updateRenderWindow();
+			System.out.println("One degree selected");
+			
 		} else if (secondsceneRadioButton.isSelected()) {
 			gridWidth = 0.1;
-			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth));
+			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth),labelsOn);
 			Info.getMainGUI().updateRenderWindow();
+			System.out.println("0.1 degree selected");
 		}
 		else if (noneRadioButton.isSelected()) {
 			if (Info.getMainGUI().getGridDisplayBool())
 				Info.getMainGUI().toggleGridDisplay();
+			System.out.println("No grid selected");
 			Info.getMainGUI().updateRenderWindow();
 		} else if (customRadioButton.isSelected()) {
 			double customGrid = 0;
@@ -563,7 +567,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 				customGrid = Double.parseDouble(customTextBox.getText());
 				if (customGrid >= .05) {
 					gridWidth = customGrid;
-					Info.getMainGUI().makeGrids(makeNewGrid(gridWidth));
+					Info.getMainGUI().makeGrids(makeNewGrid(gridWidth),labelsOn);
 					Info.getMainGUI().updateRenderWindow();
 				} else {
 					throw new NumberFormatException();
@@ -590,13 +594,16 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		//}
 		if (latLonLabelsCheckBox.isSelected()!=labelsOn) {
 			labelsOn = latLonLabelsCheckBox.isSelected();
+			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth), labelsOn);
+			Info.getMainGUI().updateRenderWindow();
+			System.out.println("Checkbox switched from " + !labelsOn + " to " + labelsOn);
 			//globeView.getSwitchNode().removeAllChildren();
-			if (grids != null) {
+			/*if (grids != null) {
 				for (GlobeBox gb: grids) {
 					//gb.setShowLabels(labelsOn);
 					//globeView.getSwitchNode().addChild(gb.getGlobeScene());
 				}
-			}
+			}*/
 		}
 	}
 
