@@ -29,12 +29,16 @@ import vtk.vtkUnsignedCharArray;
 
 public class CueAnimator  {
 
-
+int ctFrames=0;
+int endFrame =0;
+int prevFrame =0;
 	public boolean included;
 	public ArrayList<EQCatalog> cat;
 	void StartCue()
 	{
 		//System.out.println("*** IN StartCue " + scene.GetStartTime() );
+		endFrame = (int) (FPS * scene.GetEndTime());
+		//System.out.println(endFrame);
 		this.TimerCount = 0;
 		System.nanoTime();
 		camnew = new vtkCamera();
@@ -47,7 +51,8 @@ public class CueAnimator  {
 		//speed interpolation
 		double t = scene.GetAnimationTime()/scene.GetEndTime();
 		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
-		if(this.TimerCount<ptSize)
+		//System.out.println(ctFrames++);
+		if(this.TimerCount<(pointsPosition.GetNumberOfPoints()-1))
 		{
 			//System.out.println(TimerCount);
 			camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
@@ -74,6 +79,15 @@ public class CueAnimator  {
 		}
 		if(included)
 			TickEarthquakeCatalogAniamtion();
+		
+		//capture frames depending on rendering fps by default is 30
+//				t = scene.GetAnimationTime()/scene.GetEndTime();
+//				this.TimerCount = (int) ((1-t)*(1)+ t*(endFrame+2)); //need 2 additional frames 
+//				if(TimerCount<endFrame+2 && prevFrame<TimerCount)
+//				{
+//					prevFrame = TimerCount;
+//					System.out.println(TimerCount);
+//				}
 	}
 
 	void TickCameraAniamtionRender()
@@ -82,7 +96,8 @@ public class CueAnimator  {
 		//speed interpolation
 		double t = scene.GetAnimationTime()/scene.GetEndTime();
 		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
-		if(this.TimerCount<ptSize)
+		//System.out.println(ctFrames++);
+		if(this.TimerCount<pointsPosition.GetNumberOfPoints()-1)
 		{
 			camnew.SetPosition(pointsPosition.GetPoint(TimerCount)[0],pointsPosition.GetPoint(TimerCount)[1],pointsPosition.GetPoint(TimerCount)[2]);
 			camnew.SetFocalPoint(pointsFocalPoint.GetPoint(TimerCount)[0],pointsFocalPoint.GetPoint(TimerCount)[1],pointsFocalPoint.GetPoint(TimerCount)[2]);  
@@ -91,8 +106,6 @@ public class CueAnimator  {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {	
-
-
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
@@ -109,6 +122,13 @@ public class CueAnimator  {
 		if(included)
 			TickEarthquakeCatalogAniamtion();
 
+		//capture frames depending on rendering fps by default is 30
+		t = scene.GetAnimationTime()/scene.GetEndTime();
+		this.TimerCount = (int) ((1-t)*(1)+ t*(endFrame+2)); //need 2 additional frames 
+		if(TimerCount<endFrame+2 && prevFrame<TimerCount)
+		{
+			prevFrame = TimerCount;
+			//System.out.println(TimerCount);
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
@@ -128,6 +148,7 @@ public class CueAnimator  {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		}
 	}
 
 	void StartCueEarthquakeCatalogAniamtion()
@@ -137,24 +158,24 @@ public class CueAnimator  {
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {	
-		
-		//System.out.println(t);
-		if((int)Math.floor(scene.GetAnimationTime())==(int)scene.GetStartTime())
-		{
-			System.out.println("EQptSize:"+EQPtSize);
-		for(int j=0;j<cat.size();j++)
-		{
-			earthquakeList = cat.get(j).getSelectedEqList();
-			double t = scene.GetStartTime()/scene.GetEndTime();
-			TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
-		
-		for(int i=TimerCount;i<earthquakeList.size();i++)
-		{
-			eq = earthquakeList.get(i);
-			EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),0);
-		}
-		}
-		}
+
+					//System.out.println(t);
+					if((int)Math.floor(scene.GetAnimationTime())==(int)scene.GetStartTime())
+					{
+						//System.out.println("EQptSize:"+EQPtSize);
+						for(int j=0;j<cat.size();j++)
+						{
+							earthquakeList = cat.get(j).getSelectedEqList();
+							double t = scene.GetStartTime()/scene.GetEndTime();
+							TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+						
+							for(int i=TimerCount;i<earthquakeList.size();i++)
+							{
+								eq = earthquakeList.get(i);
+								EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),0);
+							}
+						}
+					}
 				}
 			});
 		} catch (InvocationTargetException e) {
@@ -177,16 +198,23 @@ public class CueAnimator  {
 			double t = scene.GetAnimationTime()/scene.GetEndTime();
 			this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
 			//System.out.println(TimerCount);
-		if(this.TimerCount<EQPtSize)//earthquakeList.size())
-		{
+			if(this.TimerCount<earthquakeList.size()-1)
+			{
+			for(int i=0;i<=TimerCount;i++)
+			{
+				eq = earthquakeList.get(i);
+				EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),255);
+			}
+		//if(this.TimerCount<earthquakeList.size()-1)
+		//{
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {	
 						
-						eq = earthquakeList.get(TimerCount);
-						 ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(TimerCount,eq,cat.get(j),255);
-						
-						Info.getMainGUI().addActors(eqActorList);
+//						eq = earthquakeList.get(TimerCount);
+//						 ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(TimerCount,eq,cat.get(j),255);
+//						
+//						Info.getMainGUI().addActors(eqActorList);
 						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
 					}
 				});
@@ -207,17 +235,30 @@ public class CueAnimator  {
 		if(included )//&& ((int)Math.ceil(scene.GetAnimationTime())==(int)scene.GetEndTime()||this.TimerCount>=EQPtSize))
 		{
 			//showing all the earthquakes previously shown
-			//System.out.println("*** IN EndCue "+scene.GetAnimationTime());
+			System.out.println("*** IN EndCue "+scene.GetAnimationTime());
 			for(int j=0;j<cat.size();j++)
 			{
 				earthquakeList = cat.get(j).getSelectedEqList();
-				double t = scene.GetStartTime()/scene.GetEndTime();
-				this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
+				//double t = scene.GetStartTime()/scene.GetEndTime();
+				//this.TimerCount = (int) ((1-t)*(1)+ t*(earthquakeList.size()-1));
 				
-			for(int i=0;i<TimerCount;i++)
+			for(int i=0;i<earthquakeList.size()-1;i++)
 			{
 				eq = earthquakeList.get(i);
 				EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(i,eq,cat.get(j),255);
+			}
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {	
+						Info.getMainGUI().updateRenderWindow();
+					}
+				});
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			}
 
@@ -250,6 +291,7 @@ public class CueAnimator  {
 		        	f.delete();
 		        	}
 		        }
+				System.out.println("img Size:" + ScriptingPluginGUI.imagePixelData.size());
 				for(int i =0;i<ScriptingPluginGUI.imagePixelData.size();i++){
 					String fileName;
 					fileName = Prefs.getLibLoc() + "/tmp/Capture" + i + ".jpg";
