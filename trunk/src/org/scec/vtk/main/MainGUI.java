@@ -433,7 +433,7 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 		//draw Grid
 		gridGUI = new GraticuleGUI(gridPlugin);
 		addPluginGUI("org.scec.vdo.graticulePlugin","Graticule",gridGUI);
-		makeGrids(gridGUI.getGlobeBox(1.0));
+		makeGrids(gridGUI.getGlobeBox(1.0),true); //Labels default to on
 
 
 		//draw DrawingTools
@@ -442,7 +442,7 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 
 	}
 
-	public void makeGrids(ArrayList<GlobeBox> gbs)
+	public void makeGrids(ArrayList<GlobeBox> gbs, boolean labelsOn)
 	{
 
 		vtkPolyDataMapper tempMapper = (vtkPolyDataMapper) (gbs.get(0)).globeScene; 
@@ -459,7 +459,10 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 
 		pointActor.SetMapper(gbs.get(0).ptMapper);
 		pointActor.Modified();
-		labelActor.SetMapper(gbs.get(0).labelMapperLat);
+		if(labelsOn)
+			labelActor.SetMapper(gbs.get(0).labelMapperLat);
+		else
+			labelActor.SetMapper(null);
 		labelActor.Modified();
 		renderWindow.GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
 	}
