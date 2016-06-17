@@ -443,6 +443,12 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 		return sol.getRateForRup(rupIndex) * FaultMomentCalc.getMoment(
 				invRupSet.getAreaForRup(rupIndex), invRupSet.getAveSlipForRup(rupIndex));
 	}
+	
+	private double getAveSlip(int rupIndex) {
+		if (invRupSet == null)
+			return Double.NaN;
+		return invRupSet.getAveSlipForRup(rupIndex);
+	}
 
 	@Override
 	public void addRangeChangeListener(ChangeListener l) {
@@ -475,9 +481,16 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 		String str = "Rupture "+rupID;
 		str += " ("+rupSet.getSectionsIndicesForRup(rupID).size()+" sects).";
 		str += " Mag: "+(float)rupSet.getMagForRup(rupID);
+		str += " Area: "+(float)rupSet.getAreaForRup(rupID)+" m^2";
+		str += " Len: "+(float)rupSet.getLengthForRup(rupID)+" m";
 		if (sol != null) {
 			str += " Rate: "+(float)sol.getRateForRup(rupID);
-			str += " MoRate: "+(float)getMomentRate(rupID);
+			double moRate = getMomentRate(rupID);
+			if (!Double.isNaN(moRate))
+				str += " MoRate: "+(float)moRate;
+			double aveSlip = getAveSlip(rupID);
+			if (!Double.isNaN(aveSlip))
+				str += " aveSlip: "+(float)aveSlip+" m";
 		}
 		return str;
 	}
