@@ -27,6 +27,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -87,6 +88,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	boolean resetScene = false;
 	vtkAnimationScene scene = new vtkAnimationScene();
 	CueAnimator cb = new CueAnimator();
+	private JProgressBar progress;
 
 	//end time line frame #
 	JTextField endTime = new JTextField();
@@ -181,6 +183,9 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		//timelineKeyFramePanel.setPreferredSize(new Dimension(Prefs.getPluginWidth(),200));
 		this.scriptingPluginSubPanelUpper.add(upperHalfPanel);
 		this.scriptingPluginSubPanelUpper.add(timelinePropPanel);
+		progress = new JProgressBar();
+//		progress.setPreferredSize(new Dimension((int)(Prefs.getPluginWidth()*0.7d), 15));
+		this.scriptingPluginSubPanelUpper.add(progress);
 		this.scriptingPluginSubPanelUpper.add(timelineButtonPanel);
 		this.scriptingPluginSubPanelUpper.add(timelineKeyFramePanel);
 
@@ -423,6 +428,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		cue1.SetStartTime(0);
 		cue1.SetEndTime(Double.parseDouble(endTime.getText()));
 		cb = new CueAnimator();
+		cb.setProgressBar(progress);
 		cb.pointsPosition = pointsToMoveCameraOnPosition;//pos;
 		cb.pointsFocalPoint = pointsToMoveCameraOnFocalPoint;//fp;
 		cb.pointsViewUp = pointsToMoveCameraOnViewUp;//up
