@@ -273,7 +273,7 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 					// Pick from this location. 
 					picker.Pick(clickPos[0], clickPos[1],0, renderWindow.GetRenderer());
 					vtkActor pickedActor = picker.GetActor();
-					if (pickedActor != null){
+					if (pickedActor != null && pickedActor.GetMapper().GetInputAsDataSet() instanceof vtkPolyData) {
 						oldColor = pickedActor.GetProperty().GetColor();
 						vtkPolyData pd = (vtkPolyData) pickedActor.GetMapper().GetInputAsDataSet();
 						vtkStringArray info = (vtkStringArray) (pd).GetPointData().GetAbstractArray("Info");

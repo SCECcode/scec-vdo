@@ -6,26 +6,27 @@ import org.scec.vtk.tools.picking.PointPickEnabledActor;
 import com.google.common.base.Preconditions;
 
 import vtk.vtkCellArray;
+import vtk.vtkDataSet;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkUnsignedCharArray;
 
-public class ActorBundle {
+public class FaultActorBundle {
 	
 	private PointPickEnabledActor<AbstractFaultSection> actor;
-	private vtkPolyData polyData;
+	private vtkDataSet dataSet;
 	private vtkPoints points;
 	private vtkUnsignedCharArray colorArray;
 	private vtkCellArray cellArray;
 	
-	public ActorBundle() {
+	public FaultActorBundle() {
 		super();
 	}
 	
-	public void initialize(PointPickEnabledActor<AbstractFaultSection> actor, vtkPolyData polyData, vtkPoints points,
+	public void initialize(PointPickEnabledActor<AbstractFaultSection> actor, vtkDataSet dataSet, vtkPoints points,
 			vtkUnsignedCharArray colorArray, vtkCellArray cellArray) {
 		this.actor = actor;
-		this.polyData = polyData;
+		this.dataSet = dataSet;
 		this.points = points;
 		this.colorArray = colorArray;
 		this.cellArray = cellArray;
@@ -40,7 +41,12 @@ public class ActorBundle {
 	}
 
 	public vtkPolyData getPolyData() {
-		return polyData;
+		Preconditions.checkState(dataSet instanceof vtkPolyData);
+		return (vtkPolyData)getVtkDataSet();
+	}
+	
+	public vtkDataSet getVtkDataSet() {
+		return dataSet;
 	}
 
 	public vtkPoints getPoints() {
@@ -84,11 +90,11 @@ public class ActorBundle {
 	}
 	
 	public void modified() {
-		actor.Modified();
-		polyData.Modified();
-		points.Modified();
-		colorArray.Modified();
-		cellArray.Modified();
+		if (actor != null) actor.Modified();
+		if (dataSet != null) dataSet.Modified();
+		if (points != null) points.Modified();
+		if (colorArray != null) colorArray.Modified();
+		if (cellArray != null) cellArray.Modified();
 	}
 
 }

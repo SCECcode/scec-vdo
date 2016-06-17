@@ -20,7 +20,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.gui.anim.AnimationListener;
 import org.scec.vtk.commons.opensha.gui.dist.VisibleFaultSurfacesProvider;
-import org.scec.vtk.commons.opensha.surfaces.ActorBundle;
+import org.scec.vtk.commons.opensha.surfaces.FaultActorBundle;
 import org.scec.vtk.commons.opensha.surfaces.FaultSectionActorList;
 import org.scec.vtk.commons.opensha.surfaces.FaultSectionBundledActorList;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
@@ -251,7 +251,7 @@ AnimationListener {
 		}
 		if (actors instanceof FaultSectionBundledActorList) {
 			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actors;
-			ActorBundle bundle = bundleList.getBundle();
+			FaultActorBundle bundle = bundleList.getBundle();
 			synchronized (bundle) {
 				vtkActor actor = bundle.getActor();
 				Preconditions.checkNotNull(actor);
@@ -339,7 +339,7 @@ AnimationListener {
 		}
 		if (actors instanceof FaultSectionBundledActorList) {
 			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actors;
-			ActorBundle bundle = bundleList.getBundle();
+			FaultActorBundle bundle = bundleList.getBundle();
 			synchronized (bundle) {
 				vtkActor actor = bundle.getActor();
 				Preconditions.checkNotNull(actor);
@@ -353,7 +353,7 @@ AnimationListener {
 	
 	// synchroinzed externally
 	private void setBundledOpacity(FaultSectionBundledActorList bundleList, boolean visible) {
-		ActorBundle bundle = bundleList.getBundle();
+		FaultActorBundle bundle = bundleList.getBundle();
 		bundle.setVisible(bundleList, visible);
 		if (visible) {
 			bundle.getActor().SetVisibility(1);
