@@ -7,17 +7,17 @@ public class GenericFaultActorBundler implements FaultActorBundler {
 	private int maxBundleSize;
 	private int curBundleSize;
 	
-	private ActorBundle curBundle;
+	private FaultActorBundle curBundle;
 	
 	public GenericFaultActorBundler(int maxBundleSize) {
 		this.maxBundleSize = maxBundleSize;
 	}
 
 	@Override
-	public synchronized ActorBundle getBundle(AbstractFaultSection fault) {
+	public synchronized FaultActorBundle getBundle(AbstractFaultSection fault) {
 		if (curBundle == null || maxBundleSize > 0 && curBundleSize >= maxBundleSize) {
 			curBundleSize = 0;
-			curBundle = new ActorBundle();
+			curBundle = new FaultActorBundle();
 		}
 		curBundleSize++;
 		return curBundle;
