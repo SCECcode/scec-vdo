@@ -3,10 +3,10 @@ package org.scec.vtk.plugins.opensha.simulators;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
-import org.scec.geo3d.commons.opensha.faults.faultSectionImpl.RectangularElementFault;
-import org.scec.geo3d.commons.opensha.surfaces.ActorBundle;
-import org.scec.geo3d.commons.opensha.surfaces.FaultActorBundler;
+import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.RectangularElementFault;
+import org.scec.vtk.commons.opensha.surfaces.ActorBundle;
+import org.scec.vtk.commons.opensha.surfaces.FaultActorBundler;
 
 public class EQSimsFaultSectionBundler implements FaultActorBundler {
 	

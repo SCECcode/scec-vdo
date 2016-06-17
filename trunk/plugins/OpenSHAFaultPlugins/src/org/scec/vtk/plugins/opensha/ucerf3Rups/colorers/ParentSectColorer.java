@@ -8,9 +8,9 @@ import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
-import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
-import org.scec.geo3d.commons.opensha.faults.colorers.CPTBasedColorer;
-import org.scec.geo3d.commons.opensha.faults.faultSectionImpl.PrefDataSection;
+import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
+import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 
 import com.google.common.collect.Maps;
 

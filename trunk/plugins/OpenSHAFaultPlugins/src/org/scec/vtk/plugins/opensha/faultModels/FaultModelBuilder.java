@@ -12,10 +12,10 @@ import org.opensha.refFaultParamDb.dao.db.FaultModelSummaryDB_DAO;
 import org.opensha.refFaultParamDb.dao.db.PrefFaultSectionDataDB_DAO;
 import org.opensha.refFaultParamDb.vo.FaultModelSummary;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
-import org.scec.geo3d.commons.opensha.faults.faultSectionImpl.PrefDataSection;
-import org.scec.geo3d.commons.opensha.tree.FaultCategoryNode;
-import org.scec.geo3d.commons.opensha.tree.FaultSectionNode;
-import org.scec.geo3d.commons.opensha.tree.builders.MultiDBBuilder;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
+import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
+import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
+import org.scec.vtk.commons.opensha.tree.builders.MultiDBBuilder;
 
 public class FaultModelBuilder extends MultiDBBuilder {
 	

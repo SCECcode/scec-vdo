@@ -8,8 +8,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.opensha.commons.util.ExceptionUtils;
-import org.scec.geo3d.commons.opensha.surfaces.FaultActorBundler;
-import org.scec.geo3d.commons.opensha.surfaces.GeometryGenerator;
+import org.scec.vtk.commons.opensha.surfaces.FaultActorBundler;
+import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.plugins.ActionPlugin;
 import org.scec.vtk.plugins.PluginInfo;
 
