@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.opensha.commons.util.DataUtils.MinMaxAveTracker;
-import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
-import org.scec.geo3d.commons.opensha.faults.faultSectionImpl.PrefDataSection;
-import org.scec.geo3d.commons.opensha.surfaces.ActorBundle;
-import org.scec.geo3d.commons.opensha.surfaces.FaultActorBundler;
+import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
+import org.scec.vtk.commons.opensha.surfaces.ActorBundle;
+import org.scec.vtk.commons.opensha.surfaces.FaultActorBundler;
 
 public class ParentFaultSectionBundler implements FaultActorBundler {
 	

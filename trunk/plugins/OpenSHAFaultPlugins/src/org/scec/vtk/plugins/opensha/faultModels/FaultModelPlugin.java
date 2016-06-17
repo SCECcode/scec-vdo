@@ -6,10 +6,10 @@ import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-import org.scec.geo3d.commons.opensha.faults.colorers.AseismicityColorer;
-import org.scec.geo3d.commons.opensha.faults.colorers.CouplingCoefficientColorer;
-import org.scec.geo3d.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.geo3d.commons.opensha.surfaces.GeometryGenerator;
+import org.scec.vtk.commons.opensha.faults.colorers.AseismicityColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.CouplingCoefficientColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.plugins.opensha.AbstractFaultPlugin;
 import org.scec.vtk.plugins.opensha.FaultPluginGUI;
 

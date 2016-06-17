@@ -17,8 +17,8 @@ import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.sha.simulators.EQSIM_Event;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
-import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
-import org.scec.geo3d.commons.opensha.faults.colorers.CPTBasedColorer;
+import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
+import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 
 public class EQSlipRateColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener {
 	

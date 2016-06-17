@@ -5,8 +5,8 @@ import java.io.IOException;
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
-import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
-import org.scec.geo3d.commons.opensha.faults.colorers.CPTBasedColorer;
+import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
+import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 
 import scratch.UCERF3.FaultSystemRupSet;

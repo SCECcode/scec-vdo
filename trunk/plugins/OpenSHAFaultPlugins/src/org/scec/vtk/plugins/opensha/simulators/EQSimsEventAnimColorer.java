@@ -23,11 +23,11 @@ import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.sha.simulators.EQSIM_Event;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
-import org.scec.geo3d.commons.opensha.faults.AbstractFaultSection;
-import org.scec.geo3d.commons.opensha.faults.anim.IDBasedFaultAnimation;
-import org.scec.geo3d.commons.opensha.faults.anim.TimeBasedFaultAnimation;
-import org.scec.geo3d.commons.opensha.faults.colorers.CPTBasedColorer;
-import org.scec.geo3d.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
+import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
+import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
+import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;

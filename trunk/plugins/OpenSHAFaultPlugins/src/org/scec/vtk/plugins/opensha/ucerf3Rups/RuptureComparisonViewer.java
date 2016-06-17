@@ -25,7 +25,7 @@ import javax.swing.table.TableModel;
 
 import org.opensha.commons.data.CSVFile;
 import org.opensha.commons.util.CustomFileFilter;
-import org.scec.geo3d.commons.opensha.gui.FaultHighlighter;
+import org.scec.vtk.commons.opensha.gui.FaultHighlighter;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer.ComparePlotType;
 

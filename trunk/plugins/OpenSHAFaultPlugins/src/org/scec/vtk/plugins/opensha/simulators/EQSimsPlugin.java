@@ -4,10 +4,10 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import org.opensha.commons.util.ListUtils;
-import org.scec.geo3d.commons.opensha.faults.anim.FaultAnimation;
-import org.scec.geo3d.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.geo3d.commons.opensha.surfaces.GeometryGenerator;
-import org.scec.geo3d.commons.opensha.surfaces.LineSurfaceGenerator;
+import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
+import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
+import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.plugins.opensha.AbstractFaultPlugin;
 import org.scec.vtk.plugins.opensha.FaultPluginGUI;
 
