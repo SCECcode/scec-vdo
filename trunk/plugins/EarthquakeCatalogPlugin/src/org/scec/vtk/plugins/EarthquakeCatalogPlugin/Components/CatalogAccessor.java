@@ -729,7 +729,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
      */
     public void setNumEvents(int events) {
         this.numEvents = events;
-        this.dataAttributes.getAttribute("num_events").setValue(String.valueOf(events));
+        //this.dataAttributes.getAttribute("num_events").setValue(String.valueOf(events));
     }
 
     /**
