@@ -18,6 +18,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.scec.vtk.main.Info;
+import org.scec.vtk.tools.actors.AppendActors;
+
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.DBFReaderJGeom;
 import oracle.spatial.util.ShapefileReaderJGeom;
@@ -124,12 +126,13 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private void addBuiltInFiles(Vector<DrawingTool> locations) {
 
 		for (int i = 0; i < locations.size(); i++) {
-			DrawingTool tempLocation = locations.get(i);
-			this.guiparent.addDrawingTool(tempLocation);
+			DrawingTool tempLocation = locations.get(i);		
+			this.guiparent.addDrawingTool(tempLocation);//.addDrawingTool(tempLocation);
 			ArrayList<DrawingTool> newObjects = new ArrayList<>();
 			newObjects.add(tempLocation);
 			this.drawingToolTable.addDrawingTool(newObjects);
 		}
+		this.guiparent.getAppendedActors();
 	}
 
 	private void removeBuiltInFiles(Vector<DrawingTool> locations) {
