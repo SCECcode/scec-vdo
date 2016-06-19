@@ -31,7 +31,7 @@ public class EQSimsPlugin extends AbstractFaultPlugin {
 		ArrayList<FaultAnimation> faultAnims = new ArrayList<FaultAnimation>();
 		faultAnims.add(faultAnim);
 		
-		FaultPluginGUI gui = new FaultPluginGUI(builder, colorers, geomGens, Color.GRAY, faultAnims);
+		FaultPluginGUI gui = new FaultPluginGUI(getPluginActors(), builder, colorers, geomGens, Color.GRAY, faultAnims);
 //		gui.addDistTab(); // TODO?
 		
 		return gui;

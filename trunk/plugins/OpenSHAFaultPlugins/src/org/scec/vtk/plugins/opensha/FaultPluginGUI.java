@@ -42,6 +42,7 @@ import org.scec.vtk.commons.opensha.tree.builders.FaultSectionInfoViewier;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
 import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickHandler;
 
@@ -103,11 +104,12 @@ public class FaultPluginGUI extends JSplitPane {
 	private JXLayer<JComponent> jxLayer;
 	private LockableUI lockUI;
 	
-	public FaultPluginGUI(	FaultTreeBuilder builder,
+	public FaultPluginGUI(	PluginActors pluginActors,
+							FaultTreeBuilder builder,
 							ArrayList<FaultColorer> colorers,
 							ArrayList<GeometryGenerator> geomGens,
 							Color defaultColor) {
-		this(builder, colorers, geomGens, defaultColor, null);
+		this(pluginActors, builder, colorers, geomGens, defaultColor, null);
 	}
 	
 	private static boolean hasAnimColorer(ArrayList<FaultAnimation> faultAnims) {
@@ -118,7 +120,8 @@ public class FaultPluginGUI extends JSplitPane {
 		return false;
 	}
 
-	public FaultPluginGUI(	FaultTreeBuilder builder,
+	public FaultPluginGUI(	PluginActors pluginActors,
+							FaultTreeBuilder builder,
 							ArrayList<FaultColorer> colorers,
 							ArrayList<GeometryGenerator> geomGens,
 							Color defaultColor,
@@ -193,7 +196,7 @@ public class FaultPluginGUI extends JSplitPane {
 		for (GeometryGenerator geomGen : geomGens)
 			geomGen.setPickHandler(pickhandler);
 
-		em = new EventManager( MainGUI.getRenderWindow(), table, colorPanel, geomPanel,
+		em = new EventManager( pluginActors, table, colorPanel, geomPanel,
 				builder.getFaultParams(), defaultColor, pickhandler, lockUI, pickhandler);
 
 		if (faultAnims != null && faultAnims.size() > 0) {

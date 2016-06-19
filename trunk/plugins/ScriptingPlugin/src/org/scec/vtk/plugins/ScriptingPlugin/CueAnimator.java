@@ -417,7 +417,6 @@ public class CueAnimator  {
 	vtkPoints pointsPosition = new vtkPoints();
 	vtkPoints pointsFocalPoint = new vtkPoints();
 	vtkPoints pointsViewUp = new vtkPoints();
-	public vtkActor actor;
 	int TimerCount = 0;
 	vtkAnimationCue info = new vtkAnimationCue();
 	vtkCameraInterpolator incam = new vtkCameraInterpolator();

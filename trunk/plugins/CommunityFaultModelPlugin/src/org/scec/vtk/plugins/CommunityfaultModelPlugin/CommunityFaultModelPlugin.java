@@ -32,72 +32,60 @@ import vtk.vtkActor;
  * @version $Id: Fault3DPlugin.java 2071 2008-07-03 15:39:24Z rberti $
  */
 public class CommunityFaultModelPlugin extends ActionPlugin {
-    
-    // TODO  can pluginInfo be made static and then use the plugin name as the data 
-    // repository directory name eg "Fault3DPlugin"
-    CommunityFaultModelGUI f3DGui;
-    private boolean guidisplayed = false;
-	
-	
-    /**
-     * Static field for location of fault data in <i>ScecVideo</i> data library.
-     */
-    public static String dataStoreDir = "Fault3DStore";
-       
-    /**
-     * Constructs a new <code>Fault3DPlugin</code> with appropriate metadata.
-     */
-    public CommunityFaultModelPlugin() {
-        //this.metadata = new PluginInfo("Community Fault Model (CFM)", "Community Fault Model (CFM)", "P. Powers", "0.1", "Faults");
-        
-    }
-    
-    /**
-     * Overrides createGUI() in ActionPlugin
-     * @see org.scec.geo3d.plugins.ActionPlugin#createGUI()
-     */
-    public JPanel createGUI() {
-    	f3DGui = new CommunityFaultModelGUI();
-    	guidisplayed = true;
-    	setActors();
-        return f3DGui;
-    }
-    public void unload()
-	{
 
-        Info.getMainGUI().removeActors(f3DGui.getMasterFaultBranchGroup());
-        f3DGui.getMasterFaultBranchGroup().clear();
+	// TODO  can pluginInfo be made static and then use the plugin name as the data 
+	// repository directory name eg "Fault3DPlugin"
+	CommunityFaultModelGUI f3DGui;
+	private boolean guidisplayed = false;
+
+
+	/**
+	 * Static field for location of fault data in <i>ScecVideo</i> data library.
+	 */
+	public static String dataStoreDir = "Fault3DStore";
+
+	/**
+	 * Constructs a new <code>Fault3DPlugin</code> with appropriate metadata.
+	 */
+	public CommunityFaultModelPlugin() {
+		//this.metadata = new PluginInfo("Community Fault Model (CFM)", "Community Fault Model (CFM)", "P. Powers", "0.1", "Faults");
+
+	}
+
+	/**
+	 * Overrides createGUI() in ActionPlugin
+	 * @see org.scec.geo3d.plugins.ActionPlugin#createGUI()
+	 */
+	public JPanel createGUI() {
+		f3DGui = new CommunityFaultModelGUI(getPluginActors());
+		guidisplayed = true;
+		setActors();
+		return f3DGui;
+	}
+	public void unload()
+	{
+		getPluginActors().clearActors();;
 		super.unload();
 		f3DGui=null;
 	}
-    
-    public void setActors()
-    {
-    	//ArrayList<vtkActor> allCFMActors = new ArrayList<vtkActor>();
-    	if(guidisplayed){
-  
-    	List loadedRows = f3DGui.faultTable.getLibraryModel().getAllObjects();
 
-		for(int i = 0; i < loadedRows.size(); i++)
-		{
-			FaultAccessor fa = (FaultAccessor)loadedRows.get(i);
-			fa.readDataFile();
-			//allCFMActors.add(fa.getFaultBranch());
-			fa.setFaultBranch(fa.getFaultBranch());
+	public void setActors()
+	{
+		//ArrayList<vtkActor> allCFMActors = new ArrayList<vtkActor>();
+		if(guidisplayed){
+
+			List loadedRows = f3DGui.faultTable.getLibraryModel().getAllObjects();
+
+			for(int i = 0; i < loadedRows.size(); i++)
+			{
+				FaultAccessor fa = (FaultAccessor)loadedRows.get(i);
+				fa.readDataFile();
+				//allCFMActors.add(fa.getFaultBranch());
+			}
+
 		}
-		if(loadedRows.size()>0)
-			Info.getMainGUI().addActors(getActors());
-    	}
-		
-    }
-    public ArrayList<vtkActor> getActors()
-    {
-    	ArrayList<vtkActor> actorMasterFaultBranchGroup = f3DGui.getMasterFaultBranchGroup();
-    	if(actorMasterFaultBranchGroup == null)
-    		actorMasterFaultBranchGroup = new ArrayList<vtkActor>();
-    	return actorMasterFaultBranchGroup;
-    }
-    /*public Element getState()
+	}
+	/*public Element getState()
     {
     	/*Element root = new Element("fault3DPlugin");
     	if(guidisplayed){
@@ -149,10 +137,10 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
 
     	return root;
     }*/
-    
-    public void setState(Element e)
-    {
-    	/*Element root = e.getChild("fault3DPlugin");
+
+	public void setState(Element e)
+	{
+		/*Element root = e.getChild("fault3DPlugin");
     	if(root.getAttributeValue("displayed").equals("true")){
     		ListSelectionModel lsm = f3DGui.faultTable.getSelectionModel();
     		FaultTableModel ftm = f3DGui.faultTable.getLibraryModel();
@@ -203,9 +191,9 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
     			}
     		}
     	}*/
-    }    
-    
-    /*public void setClickableEnabled(boolean enable){
+	}    
+
+	/*public void setClickableEnabled(boolean enable){
     	if(f3DGui!=null) f3DGui.setPickable(enable);
     }*/
 }

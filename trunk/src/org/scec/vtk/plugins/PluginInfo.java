@@ -163,11 +163,11 @@ public class PluginInfo implements Comparable<PluginInfo>{
 
 	}
 
-	public Plugin newInstance() throws ClassNotFoundException,
+	public Plugin newInstance(PluginActors actors) throws ClassNotFoundException,
 			InstantiationException, IllegalAccessException {
 		Class clazz = PluginInfo.class.getClassLoader().loadClass(pluginClass);
 		Plugin plugin = (Plugin) clazz.newInstance();
-		plugin.initialize(this);
+		plugin.initialize(this, actors);
 		return plugin;
 	}
 }

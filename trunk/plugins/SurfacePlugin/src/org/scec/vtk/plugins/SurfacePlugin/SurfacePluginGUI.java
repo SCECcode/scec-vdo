@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import javax.swing.JPanel;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.SurfacePlugin.Component.LoadedFilesProperties;
 import org.scec.vtk.tools.Transform;
 
@@ -32,7 +33,6 @@ public class SurfacePluginGUI {
 	private JPanel allPanel = new JPanel();
 	private double scaleFactor;
 	private ArrayList<double[]> data;
-	private ArrayList<vtkActor> surfaceActors = new ArrayList<vtkActor>();
 	private Vector<LoadedFilesProperties> displayedImageSurfaceVector = new Vector<LoadedFilesProperties>();
 	protected Vector<String> displayedImageInfoVector = new Vector<String>();
 	protected Vector<String> displayedSurfaceInfoVector = new Vector<String>();
@@ -41,8 +41,11 @@ public class SurfacePluginGUI {
 	private double altitude;
 	private String filename;
 	private BufferedReader demReader;
+	
+	private PluginActors surfaceActors;
 
-	public SurfacePluginGUI(){
+	public SurfacePluginGUI(PluginActors surfaceActors){
+		this.surfaceActors = surfaceActors;
 		//ip = new ImagePlugin(this);
 		ipg = new ImagePluginGUI(this);
 
@@ -208,8 +211,7 @@ public class SurfacePluginGUI {
 		actor.GetProperty().SetOpacity(0.5);
 		// actor.GeneralTextureTransform();
 		//actor.GetProperty().SetRepresentationToWireframe();
-		surfaceActors.add(actor);
-		Info.getMainGUI().addActors(surfaceActors);
+		surfaceActors.addActor(actor);
 		Info.getMainGUI().updateRenderWindow(actor);
 	}
 
