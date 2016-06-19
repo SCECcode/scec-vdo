@@ -35,6 +35,8 @@ import org.scec.vtk.commons.opensha.tree.events.CustomColorSelectionListener;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.commons.opensha.tree.events.VisibilityChangeListener;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
+import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.PluginActors;
 
 import vtk.vtkActor;
 import vtk.vtkPanel;
@@ -59,11 +61,10 @@ AnimationListener {
 	private static final boolean D = false;
 	private static final boolean queue_renders = true;
 	
-	private vtkPanel rendererPanel;
+	private PluginActors pluginActors;
 	
 	private HashMap<AbstractFaultSection, FaultSectionActorList> actorsMap =
 		new HashMap<AbstractFaultSection, FaultSectionActorList>();
-	private vtkRenderer renderer;
 	
 	private HashMap<AbstractFaultSection, RuptureSurface> surfaces =
 		new HashMap<AbstractFaultSection, RuptureSurface>();
@@ -88,7 +89,7 @@ AnimationListener {
 	private Thread currentCalcThread;
 	
 	
-	public EventManager(		vtkPanel rendererPanel,
+	public EventManager(		PluginActors pluginActors,
 								FaultTreeTable table,
 								ColorerPanel colorerPanel,
 								GeometryTypeSelectorPanel geomPanel,
@@ -97,8 +98,7 @@ AnimationListener {
 								FaultSectionPickBehavior pickBehavior,
 								LockableUI panelLock,
 								FaultSectionPickBehavior pick) {
-		this.rendererPanel = rendererPanel;
-		this.renderer = rendererPanel.GetRenderer();
+		this.pluginActors = pluginActors;
 		this.defaultFaultColor = defaultFaultColor;
 		this.pickBehavior = pickBehavior;
 		this.panelLock = panelLock;
@@ -196,12 +196,12 @@ AnimationListener {
 		FaultSectionActorList actors = actorsMap.remove(fault);
 		for (vtkActor actor : actors) {
 			if (isActorDisplayed(actor))
-				renderer.RemoveActor(actor);
+				pluginActors.removeActor(actor);
 		}
 		if (actors instanceof FaultSectionBundledActorList) {
 			vtkActor actor = ((FaultSectionBundledActorList)actors).getBundle().getActor();
 			if (isActorDisplayed(actor))
-				renderer.RemoveActor(actor);
+				pluginActors.removeActor(actor);
 		}
 		updateViewer();
 	}
@@ -227,12 +227,7 @@ AnimationListener {
 	}
 	
 	private boolean isActorDisplayed(vtkActor actor) {
-		Stopwatch watch = null;
-		if (D) watch = Stopwatch.createStarted();
-		boolean present = renderer.GetActors().IsItemPresent(actor) != 0;
-		if (D) watch.stop();
-		if (D) System.out.println("Took "+watch.elapsed(TimeUnit.MILLISECONDS)+" ms detect if present");
-		return present;
+		return pluginActors.containsActor(actor);
 	}
 	
 	private void displayFault(AbstractFaultSection fault, boolean updateViewer) {
@@ -246,7 +241,7 @@ AnimationListener {
 				actor.Modified();
 			} else {
 				// add it
-				renderer.AddActor(actor);
+				pluginActors.addActor(actor);
 			}
 		}
 		if (actors instanceof FaultSectionBundledActorList) {
@@ -260,7 +255,7 @@ AnimationListener {
 				if (isActorDisplayed(actor))
 					actor.Modified();
 				else
-					renderer.AddActor(actor);
+					pluginActors.addActor(actor);
 			}
 		}
 		if (updateViewer)
@@ -281,8 +276,7 @@ AnimationListener {
 				Stopwatch watch;
 				if (D) watch = Stopwatch.createStarted();
 				long myRenderTime = System.nanoTime();
-				rendererPanel.Render();
-				rendererPanel.repaint();
+				MainGUI.updateRenderWindow();
 				if (D) watch.stop();
 				if (D) System.out.println("Took "+watch.elapsed(TimeUnit.MILLISECONDS)+" ms to render");
 				if (myRenderTime > lastCompletedRender)

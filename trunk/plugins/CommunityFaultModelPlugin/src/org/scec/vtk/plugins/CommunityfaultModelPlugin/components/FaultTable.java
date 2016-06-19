@@ -18,6 +18,7 @@ import javax.swing.event.*;
 
 import vtk.vtkActor;
 
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.*;
 
 
@@ -62,7 +63,7 @@ public class FaultTable extends JTable implements ChangeListener {
     /**
      * (Re)loads all <code>Fault3D</code>s in <i>ScecVideo</i> data store.
      */
-    public void loadLibrary(ArrayList<vtkActor> masterFaultBranchGroup) {
+    public void loadLibrary() {
 
         // clear current list
         this.tableModel.clear();
@@ -94,7 +95,7 @@ public class FaultTable extends JTable implements ChangeListener {
         }
         
         for (int i=0; i<faultList.size(); i++) {
-            Fault3D fault = new Fault3D((File)faultList.get(i), masterFaultBranchGroup);
+            Fault3D fault = new Fault3D((File)faultList.get(i));
             addFault(fault);
         }
         
@@ -177,12 +178,12 @@ public class FaultTable extends JTable implements ChangeListener {
      * 
      * @return selected <code>DataAccessor</code>s
      */
-    public ArrayList getSelected() {
+    public ArrayList<Fault3D> getSelected() {
     	FaultTableModel libModel = FaultTable.this.getLibraryModel();
-        ArrayList selectedObjects = new ArrayList();
+        ArrayList<Fault3D> selectedObjects = new ArrayList<>();
         for (int i=0; i<libModel.getRowCount(); i++) {
         	if(libModel.getLoadedStateForRow(i)){
-        		selectedObjects.add(this.tableModel.getObjectAtRow(i));
+        		selectedObjects.add((Fault3D)this.tableModel.getObjectAtRow(i));
         	}
         }
         return selectedObjects;

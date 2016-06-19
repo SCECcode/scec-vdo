@@ -44,10 +44,5 @@ public abstract class AbstractFaultPlugin extends ActionPlugin {
 		}
 		return gui;
 	}
-	
-	@Override
-	public ArrayList<vtkActor> getActors() {
-		throw new UnsupportedOperationException("I doubt this is used, this execption will help me find out");
-	}
 
 }

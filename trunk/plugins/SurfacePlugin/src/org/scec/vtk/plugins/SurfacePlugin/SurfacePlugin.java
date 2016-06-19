@@ -18,7 +18,7 @@ public class SurfacePlugin extends ActionPlugin {
 	}
 
 	protected JPanel createGUI() {
-		spGui = new SurfacePluginGUI();
+		spGui = new SurfacePluginGUI(getPluginActors());
 		guidisplayed = true;
 		return spGui.getPanel();
 	}
@@ -26,12 +26,6 @@ public class SurfacePlugin extends ActionPlugin {
 	public void unload(){
 		//if(spGui.getImageMasterBranchGroup() != null)
 			//spGui.getImageMasterBranchGroup().detach();
-	}
-
-	@Override
-	public ArrayList<vtkActor> getActors() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

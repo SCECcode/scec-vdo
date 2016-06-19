@@ -8,7 +8,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
 import org.scec.vtk.plugins.utils.DataImport;
@@ -155,8 +156,10 @@ public class EQCatalog extends CatalogAccessor {
 	private long secondLimit;
 	private long thirdLimit;
 	ArrayList<Earthquake> eqList= new ArrayList<>();
-	public ArrayList masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
+	private ArrayList<vtkActor> myActors = new ArrayList<vtkActor>();
 	Component parent;
+	
+	private PluginActors pluginActors;
 
 	private double[][] eventCoords;
 
@@ -171,26 +174,6 @@ public class EQCatalog extends CatalogAccessor {
 	//	Added so that we can get the earthquakes that are currently 
 	//  being displayed for disabling or enabling pickability
 	//ArrayList<Earthquake> displayedEQs = new ArrayList<Earthquake>(); 
-
-	/**
-	 * Constructs a new <code>EQCatalog</code> (display catalog) with a given parent
-	 * and derived from a given source.
-	 * 
-	 * @param parent <code>Component</code> (plugin GUI)
-	 * @param source catalog
-	 */
-
-	public EQCatalog(Component parent, CatalogAccessor source) {
-		super(parent);
-
-		this.parent=parent;
-
-		if (newDocument(source)) {
-			this.initialized = true;
-		}
-		this.setMasterCatBranchGroup();
-
-	}
 
 	private void setupSizedEventPoint()
 	{
@@ -208,8 +191,9 @@ public class EQCatalog extends CatalogAccessor {
 	 * @param parent <code>Component</code> (plugin GUI)
 	 * @param sourcefile object attribute file
 	 */
-	public EQCatalog(Component parent, File sourcefile) {
+	public EQCatalog(Component parent, File sourcefile, PluginActors pluginActors) {
 		super(parent);
+		this.pluginActors = pluginActors;
 
 		this.parent = parent;
 
@@ -222,6 +206,7 @@ public class EQCatalog extends CatalogAccessor {
 	public EQCatalog(EarthquakeCatalogPluginGUI parent) {
 		super(parent);
 
+		this.pluginActors = parent.getPluginActors();
 		this.parent = parent;
 		//initializing default values
 		this.geometry      = 0;//this.displayAttributes.getChild("geometry").getAttribute("value").getIntValue();
@@ -235,27 +220,6 @@ public class EQCatalog extends CatalogAccessor {
 		this.displayName="_New Comcat Catalog-"+ parent.getCatalogTable().getRowCount();
 
 		//this.setMasterCatBranchGroup();
-	}
-
-	private void setMasterCatBranchGroup() 
-	{
-		// When EQCatalog plugin loads, GlobeView is already live so one can only add a BranchGroup
-		// to the pluginBranchGroup. Initialize master branch group to which picking behavior is
-		// added so that it affects all faultBranchGroup children
-		/*  masterCatBranchGroup = new BranchGroup();
-        masterCatBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
-        masterCatBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-        masterCatBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-        masterCatBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-        catBranchGroup = new BranchGroup();
-        catBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
-        catBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-        catBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-        catBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-		if(Geo3dInfo.getMainWindow() != null)
-		{
-			Geo3dInfo.getMainWindow().getPluginBranchGroup().addChild(masterCatBranchGroup);
-		}*/
 	}
 
 	/**
@@ -610,12 +574,13 @@ public class EQCatalog extends CatalogAccessor {
 		//			  scalarBar.SetTitle("Title");
 		//			  scalarBar.SetNumberOfLabels(4);
 		//			  Info.getMainGUI().getRenderWindow().GetRenderer().AddActor2D(scalarBar);
-		masterEarthquakeCatalogBranchGroup.add(actorEQCatalog);
-
-		Info.getMainGUI().addActors(masterEarthquakeCatalogBranchGroup);
+		myActors.add(actorEQCatalog);
+		pluginActors.addActor(actorEQCatalog);
 	}
 
-
+	public List<vtkActor> getActors() {
+		return myActors;
+	}
 
 
 	private void addSpheresToBranchGroup() {

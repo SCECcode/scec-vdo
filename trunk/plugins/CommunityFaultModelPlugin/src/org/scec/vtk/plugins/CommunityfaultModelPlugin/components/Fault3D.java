@@ -3,7 +3,7 @@ package org.scec.vtk.plugins.CommunityfaultModelPlugin.components;
 import java.io.File;
 import java.util.ArrayList;
 
-
+import org.scec.vtk.plugins.PluginActors;
 
 import vtk.vtkActor;
 
@@ -15,18 +15,16 @@ public class Fault3D extends FaultAccessor {
      * 
      * @param file the source file to be read
      */
-    public Fault3D(File file, ArrayList<vtkActor> masterFaultBranchGroup) {
+    public Fault3D(File file) {
         super();
-        this.setMasterFaultBranchGroup(masterFaultBranchGroup);
         readAttributeFile(file);
     }    
     
     /**
      * Creates a new empty Fault3D.
      */
-    public Fault3D(ArrayList<vtkActor> masterFaultBranchGroup) {
+    public Fault3D() {
         super();
-        this.setMasterFaultBranchGroup(masterFaultBranchGroup);
         newDocument();
     }
         

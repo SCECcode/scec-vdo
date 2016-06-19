@@ -19,6 +19,7 @@ import javax.swing.JMenuItem;
 import org.apache.log4j.Logger;
 import org.scec.vtk.main.MainGUI.StayOpenCheckBoxMenuItem;
 import org.scec.vtk.plugins.Plugin;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.tools.plugins.Plugins;
@@ -76,7 +77,9 @@ public class MainMenu implements ActionListener ,ItemListener{
 	//
 	
 	Map<String, PluginInfo> availablePlugins = null;
+	// TODO why are these static?
 	static Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
+	static Map<Plugin, PluginActors> pluginActors = new HashMap<>();
 	static Map<String, Plugin> activePlugins = new HashMap<String, Plugin>();
 	private static Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
@@ -444,7 +447,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 
 	private void loadPlugin(String id) {
 
-		if (loadedPlugins!=null && loadedPlugins.containsKey(id)) {
+		if (loadedPlugins != null && loadedPlugins.containsKey(id)) {
 			log.warn("Plugin " + id + " already loaded");
 			return;
 		}
@@ -453,7 +456,10 @@ public class MainMenu implements ActionListener ,ItemListener{
 			try {
 				PluginInfo info = availablePlugins.get(id);
 				log.debug("Loading plugin " + id);
-				Plugin plugin = info.newInstance();
+				PluginActors actors = new PluginActors();
+				actors.addActorsChangeListener(Info.getMainGUI());
+				Plugin plugin = info.newInstance(actors);
+				pluginActors.put(plugin, actors);
 				loadedPlugins.put(id, plugin);
 				plugin.load();
 			} catch (Exception e) {

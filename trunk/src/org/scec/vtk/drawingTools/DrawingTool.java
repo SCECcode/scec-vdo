@@ -1,18 +1,10 @@
 package org.scec.vtk.drawingTools;
 
-import java.io.File;
 import java.util.ArrayList;
 
-import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.utils.AbstractDataAccessor;
-import org.scec.vtk.plugins.utils.DataAccessor;
-import org.scec.vtk.tools.Transform;
 
-import vtk.vtkActor;
 import vtk.vtkObject;
-import vtk.vtkPolyDataMapper;
-import vtk.vtkTextActor3D;
-import vtk.vtkVectorText;
 
 public class DrawingTool extends AbstractDataAccessor{
 
@@ -20,6 +12,7 @@ public class DrawingTool extends AbstractDataAccessor{
 	double latitude, longitude,  altitude;
 	String textString;
 	DisplayAttributes displayAttributes;
+	
 	public DrawingTool(double latitude, double longitude, double altitude, String textString, DisplayAttributes displayAttributes) {
 		// TODO Auto-generated constructor stub
 		this.latitude=latitude;
@@ -28,10 +21,9 @@ public class DrawingTool extends AbstractDataAccessor{
 		this.textString = textString;
 		this.displayAttributes = displayAttributes;
 	}
-	public DrawingTool()
-	{
+	public DrawingTool() {
 	}
-	
+
 	public double getLatitude()
 	{
 		return this.latitude;
@@ -85,7 +77,7 @@ public class DrawingTool extends AbstractDataAccessor{
 	@Override
 	public void setInMemory(boolean load) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -97,7 +89,7 @@ public class DrawingTool extends AbstractDataAccessor{
 	@Override
 	public void setDisplayed(boolean show) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -115,7 +107,7 @@ public class DrawingTool extends AbstractDataAccessor{
 	@Override
 	public void setDisplayName(String name) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -145,7 +137,7 @@ public class DrawingTool extends AbstractDataAccessor{
 	@Override
 	public void setCitation(String citation) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -157,7 +149,7 @@ public class DrawingTool extends AbstractDataAccessor{
 	@Override
 	public void setReference(String reference) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -169,16 +161,8 @@ public class DrawingTool extends AbstractDataAccessor{
 	@Override
 	public void setNotes(String notes) {
 		// TODO Auto-generated method stub
-		
-	}*/
-	 public void setMasterFaultBranchGroup(ArrayList<vtkObject> masterFaultBranchGroup) 
-	    {
-	    	this.masterDrawingToolBranchGroup = masterFaultBranchGroup;
-	    }
-	    public static ArrayList<vtkObject> getMasterFaultBranchGroup() 
-	    {
-	    	return masterDrawingToolBranchGroup;
-	    }
 
-	 
+	}*/
+
+
 }

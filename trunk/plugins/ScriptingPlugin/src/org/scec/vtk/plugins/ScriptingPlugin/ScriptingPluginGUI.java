@@ -84,7 +84,6 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 	//private JpegImagesToMovie jpegToImages = new JpegImagesToMovie();
 	//private Vector imagesToConvert = new Vector<>();
 	ArrayList<Integer> inputPtIndex = new ArrayList<Integer>();
-	vtkActor focusActor = new vtkActor();
 	boolean resetScene = false;
 	vtkAnimationScene scene = new vtkAnimationScene();
 	CueAnimator cb = new CueAnimator();
@@ -285,13 +284,6 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 
 		});
 
-		ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-		actorPoliticalBoundariesSegments = Info.getMainGUI().pbGUI.getPoliticalBoundaries();
-
-		if(actorPoliticalBoundariesSegments.size()>0){
-			focusActor = actorPoliticalBoundariesSegments.get(4);
-		}
-
 		Info.getMainGUI().getRenderWindow().addMouseListener(new MouseAdapter()
 		{
 			//public void mouseClicked(MouseEvent e)
@@ -432,7 +424,6 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		cb.pointsPosition = pointsToMoveCameraOnPosition;//pos;
 		cb.pointsFocalPoint = pointsToMoveCameraOnFocalPoint;//fp;
 		cb.pointsViewUp = pointsToMoveCameraOnViewUp;//up
-		cb.actor = focusActor;
 		cb.cue = cue1;
 		cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
 		cb.included = included;

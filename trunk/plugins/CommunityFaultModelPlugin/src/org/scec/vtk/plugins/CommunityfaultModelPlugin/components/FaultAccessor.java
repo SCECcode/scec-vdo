@@ -11,6 +11,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.utils.AbstractDataAccessor;
 import vtk.vtkActor;
 import vtk.vtkCellArray;
@@ -58,10 +59,9 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
     protected vtkDoubleArray lat = new vtkDoubleArray();
     protected vtkDoubleArray lon = new vtkDoubleArray();
     // master branch group to which behaviors and faultBranchGroups are added
-    private static ArrayList<vtkActor> masterFaultBranchGroup = new ArrayList<vtkActor>();
 
     // j3d parts of a Fault3D
-    private vtkActor faultBranchGroup;
+    private vtkActor faultActor;
     private vtkPolyDataMapper faultRepresentation;       
     //private TransparencyAttributes alphTransAtts;
 
@@ -182,8 +182,8 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
 		vtkPolyDataMapper mapperassign1 = new vtkPolyDataMapper();
 		mapperassign1.SetInputData(pd);
 		
-			this.faultBranchGroup = new vtkActor();
-			this.faultBranchGroup.SetMapper(mapperassign1);
+			this.faultActor = new vtkActor();
+			this.faultActor.SetMapper(mapperassign1);
 			
 			vtkDoubleArray c1 = (vtkDoubleArray) objIn.GetOutput().GetPointData().GetScalars("Colors");
 			double[] c = c1.GetTuple3(0);
@@ -192,7 +192,7 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
 			c[0] /= Info.rgbMax;
 			c[1] /= Info.rgbMax;
 			c[2] /= Info.rgbMax;
-			this.faultBranchGroup.GetProperty().SetColor(c);
+			this.faultActor.GetProperty().SetColor(c);
 			
     }
        catch (Exception e) {
@@ -416,7 +416,7 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
 
         
         // inti J3D object root
-        this.faultBranchGroup = new vtkActor();
+        this.faultActor = new vtkActor();
         
     }
         //this.faultBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
@@ -583,7 +583,7 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
             this.fillMaterial.setSpecularColor(new Color3f(newColor));
             this.meshMaterial.setDiffuseColor(new Color3f(newColor.darker()));
             this.meshMaterial.setAmbientColor(new Color3f(newColor.darker()));*/
-        	this.faultBranchGroup.GetProperty().SetColor(newColor.getRed(),newColor.getGreen(),newColor.getBlue());
+        	this.faultActor.GetProperty().SetColor(newColor.getRed(),newColor.getGreen(),newColor.getBlue());
 
         }
         /*if (this.meshMaterial.getLightingEnable()==false){//assume that if one is set, so are both to save time
@@ -697,27 +697,13 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
                 String.valueOf(meshValue));*/
     }   
     
-    public void setMasterFaultBranchGroup(ArrayList<vtkActor> masterFaultBranchGroup) 
-    {
-    	this.masterFaultBranchGroup = masterFaultBranchGroup;
-    }
-    public static ArrayList<vtkActor> getMasterFaultBranchGroup() 
-    {
-    	return masterFaultBranchGroup;
-    }
-    
     public vtkPoints getVertices(){
     	return vertices;
     }
     
-    public void setFaultBranch(vtkActor faultBranchGroup)
+    public vtkActor getFaultActor()
     {
-    	this.faultBranchGroup = faultBranchGroup;
-    	this.masterFaultBranchGroup.add(this.faultBranchGroup);
-    }
-    public vtkActor getFaultBranch()
-    {
-    	return this.faultBranchGroup;
+    	return this.faultActor;
     }
     
     

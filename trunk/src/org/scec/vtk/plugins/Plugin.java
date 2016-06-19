@@ -27,8 +27,9 @@ public interface Plugin {
 	
 	/**
 	 * This method gets called when the plugin is instantiated.
+	 * @param pluginActors TODO
 	 */
-    public void initialize(PluginInfo metadata);
+    public void initialize(PluginInfo metadata, PluginActors pluginActors);
     
     /**
      * This method gets called when a plugin is loaded. It will
@@ -63,7 +64,5 @@ public interface Plugin {
      * passivate() is always called before unload().
      */
     public void unload();
-
-	public ArrayList<vtkActor> getActors();
 }
 

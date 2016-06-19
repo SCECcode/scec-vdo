@@ -22,7 +22,7 @@ public class UCERF3FaultSystemRupturesPlugin extends AbstractFaultPlugin {
 		ArrayList<GeometryGenerator> geomGens = FaultPluginGUI.createDefaultGeomGens();
 		setBundlerInGeomGens(geomGens, new ParentFaultSectionBundler());
 
-		FaultPluginGUI gui = new FaultPluginGUI(builder, faultColorers, geomGens, Color.GRAY, faultAnims);
+		FaultPluginGUI gui = new FaultPluginGUI(getPluginActors(), builder, faultColorers, geomGens, Color.GRAY, faultAnims);
 //		gui.addDistTab();
 //		UCERF3_FaultZonesPanel zonesPanel = new UCERF3_FaultZonesPanel(gui.getEventManager());
 //		builder.addRupSetChangeListener(zonesPanel);
