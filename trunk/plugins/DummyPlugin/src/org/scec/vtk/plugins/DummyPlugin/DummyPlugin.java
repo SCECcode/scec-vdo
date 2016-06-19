@@ -54,7 +54,8 @@ public class DummyPlugin extends ActionPlugin {
 		actor.SetVisibility(1);
 		actor.Modified();
 		// will only add if not already present
-		Info.getMainGUI().addActors(getActors());
+		getPluginActors().addActor(actor);
+		MainGUI.updateRenderWindow();
 		sphereLoaded = true;
 	}
 	
@@ -66,13 +67,6 @@ public class DummyPlugin extends ActionPlugin {
 		actor.SetVisibility(0);
 		MainGUI.updateRenderWindow();
 		sphereLoaded = false;
-	}
-	
-	@Override
-	public ArrayList<vtkActor> getActors() {
-		ArrayList<vtkActor> list = new ArrayList<vtkActor>();
-		list.add(actor);
-		return list;
 	}
 
 	@Override

@@ -62,7 +62,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private int defaultLocationsStartIndex = 0;
 	
 	
-	public DefaultLocationsGUI(DrawingToolsPlugin parent, DrawingToolsGUI guiparent) {
+	public DefaultLocationsGUI(DrawingToolsGUI guiparent) {
 		this.guiparent = guiparent;
 		this.drawingToolTable = guiparent.getTable();
 		this.drawingTooltablemodel = drawingToolTable.getLibraryModel();
@@ -132,7 +132,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			newObjects.add(tempLocation);
 			this.drawingToolTable.addDrawingTool(newObjects);
 		}
-		this.guiparent.getAppendedActors();
+		Info.getMainGUI().updateRenderWindow();
 	}
 
 	private void removeBuiltInFiles(Vector<DrawingTool> locations) {

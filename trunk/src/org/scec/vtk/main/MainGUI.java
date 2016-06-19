@@ -41,7 +41,6 @@ import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.apache.log4j.Logger;
-import org.scec.vtk.plugins.ClickablePlugin;
 import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
 import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.drawingTools.DrawingToolsGUI;
@@ -52,6 +51,8 @@ import org.scec.vtk.grid.GraticulePlugin;
 import org.scec.vtk.grid.GraticulePreset;
 import org.scec.vtk.grid.ViewRange;
 import org.scec.vtk.plugins.Plugin;
+import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
@@ -73,7 +74,7 @@ import vtk.vtkSphereSource;
 import vtk.vtkStringArray;
 import vtk.vtkTextActor;
 
-public  class MainGUI extends JFrame implements  ChangeListener{
+public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsChangeListener{
 	private final int BORDER_SIZE = 10;
 	//	private static JFrame frame ;
 	private static vtkCanvas  renderWindow;
@@ -99,10 +100,14 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 	}
 	private static File getCWD;
 
+	// TODO why static?
 	static MainMenu mainMenu;
 
-	public static PoliticalBoundariesGUI pbGUI ;
+	// TODO why static?
+	// TODO this should be a plugin
+	public static PoliticalBoundariesGUI pbGUI;
 
+	// TODO why static???
 	private static JPanel pluginGUIPanel;
 	private static JScrollPane pluginGUIScrollPane;
 	private static JSplitPane pluginSplitPane;
@@ -110,8 +115,6 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 	private int ysBorder=0;
 	private GraticuleGUI gridGUI;
 	GraticulePlugin gridPlugin;
-	private static ArrayList<vtkActor> allActors = new ArrayList<vtkActor>();
-	private static ArrayList<vtkActor> allTextActors = new ArrayList<vtkActor>();
 	vtkActor tempGlobeScene = new vtkActor();
 	vtkActor2D labelActor =new vtkActor2D();
 	vtkActor pointActor = new 
@@ -267,6 +270,7 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 				// DON'T REMOVE THIS when playing with the highlighting stuff you're doing below please!
 				if (cellPicker.GetActor() instanceof PickEnabledActor<?>) {
 					PickEnabledActor<?> actor = (PickEnabledActor<?>)cellPicker.GetActor();
+					// TODO check to see that the actor belongs to the currently visible plugin, if not ignore pick
 					actor.picked(cellPicker, e);
 				}
 				
@@ -360,58 +364,10 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 		//System.out.println("user.dir is: " + System.getProperty("user.dir"));
 		return getCWD;
 	}
-	/*public void updateActors(ArrayList<vtkActor> allCFMActors)
-	{
-
-	    if(allCFMActors.size()>0){
-	    	//loading form previous import
-	    for(int i =0;i<allCFMActors.size();i++)
-	    {
-	    	renderWindow.GetRenderer().AddActor(allCFMActors.get(i));
-
-	    }
-	    }
-	    updateRenderWindow();
-	}*/
-	public void addActors(ArrayList allActors)
-	{
-		renderWindow.GetRenderer().GetViewProps();
-		//System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
-		if(allActors.size()>0){
-
-			for(int j =0;j<allActors.size();j++)
-			{
-				renderWindow.GetRenderer().AddActor((vtkProp) allActors.get(j));
-			}
-		}
-		updateRenderWindow();
-		//System.out.println(renderWindow.GetRenderer().GetViewProps().GetNumberOfItems());
-
-	}
-	public void removeActors(ArrayList allActors)
-	{
-		vtkPropCollection renderedActors = renderWindow.GetRenderer().GetViewProps();
-		if(allActors.size()>0){
-			for(int j =0;j<allActors.size();j++)
-			{
-				if(renderedActors.IsItemPresent((vtkObject) allActors.get(j))!=0)
-				{
-					renderWindow.GetRenderer().GetViewProps().RemoveItem((vtkObject) allActors.get(j));
-				}
-				else{	System.out.println("no actor found to remove");}
-
-			}
-		}
-		updateRenderWindow();
-	}
-
-	public static ArrayList<vtkActor> getActorToAllActors()
-	{
-		return allActors;
-	}
 
 	private void addDefaultActors()
 	{
+		// TODO these should be treated as plugins that are loaded by default, not hardcoded here
 		pbGUI = new PoliticalBoundariesGUI();
 
 		addPluginGUI("org.scec.vdo.politicalBoundaries","Political Boundaries",pbGUI.loadAllRegions());
@@ -440,7 +396,9 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 
 
 		//draw DrawingTools
-		drawingTool = new DrawingToolsGUI(drawingToolPlugin);
+		PluginActors drawingActors = new PluginActors();
+		drawingActors.addActorsChangeListener(this);
+		drawingTool = new DrawingToolsGUI(drawingActors);
 		addPluginGUI("org.scec.vdo.drawingToolsPlugin","Drawing Tools",drawingTool);
 
 	}
@@ -603,23 +561,6 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 		// TODO Auto-generated method stub
 		return (pluginTabPane.getTabCount() > 0);
 	}
-	//update political boundaries
-	public  void updatePoliticalBoundaries()
-	{
-		ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-		actorPoliticalBoundariesSegments = pbGUI.getPoliticalBoundaries();
-
-		if(actorPoliticalBoundariesSegments.size()>0){
-
-			// actorPoliticalBoundariesSegments = actorPoliticalBoundariesMain.get(i);
-			for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
-			{
-				vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
-				renderWindow.GetRenderer().AddActor(pbActor);
-			}
-
-		}
-	}
 
 
 	//update renderwindow and focus on actor
@@ -686,18 +627,6 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 
 		// Get the id of the selected plugin
 		String selectedPlugin = c.getName();
-
-		// Update all loaded, clickable plugins
-		for (Plugin p : mainMenu.loadedPlugins.values()) {
-			if (p instanceof ClickablePlugin) {
-				ClickablePlugin cp = (ClickablePlugin) p;
-				if (cp.getId().equals(selectedPlugin)) {
-					cp.setClickableEnabled(true);
-				} else {
-					cp.setClickableEnabled(false);
-				}
-			}
-		}
 	}
 	/*public void componentHidden(ComponentEvent arg0) {
 		// TODO Auto-generated method stub
@@ -959,5 +888,17 @@ public  class MainGUI extends JFrame implements  ChangeListener{
 			mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
 		}
 		return scriptingPluginObj.getScriptingPluginGUI();
+	}
+
+	@Override
+	public void actorAdded(vtkProp actor) {
+		// called when a plugin adds an actor
+		renderWindow.GetRenderer().AddActor(actor);
+	}
+
+	@Override
+	public void actorRemoved(vtkProp actor) {
+		// called when a plugin removes an actor
+		renderWindow.GetRenderer().RemoveActor(actor);
 	}
 }

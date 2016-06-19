@@ -199,9 +199,8 @@ public class TSurfImport implements DataImport {
      * @param file to process
      * @return <i>ScecVideo</i> object
      */
-    public DataAccessor processFile(File file) {
-    	CommunityFaultModelGUI f3dgui = (CommunityFaultModelGUI)this.owner; 
-        Fault3D newFault = new Fault3D(f3dgui.getMasterFaultBranchGroup());
+    public DataAccessor processFile(File file) { 
+        Fault3D newFault = new Fault3D();
         initNames(file);
         
         newFault.setObjectClass(newFault.getClass().getName());

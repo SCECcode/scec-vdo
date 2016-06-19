@@ -18,17 +18,11 @@ public class DrawingToolsPlugin extends ActionPlugin {
 		}
 
 		public JPanel createGUI() {
-			this.gratPanel = new DrawingToolsGUI(this);
+			this.gratPanel = new DrawingToolsGUI(this.getPluginActors());
 			return this.gratPanel;
 		}
 
 		public DrawingToolsGUI getGraticuleGUI() {
 			return gratPanel;
-		}
-
-		@Override
-		public ArrayList<vtkActor> getActors() {
-			// TODO Auto-generated method stub
-			return null;
 		}
 	}

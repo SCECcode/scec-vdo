@@ -14,22 +14,17 @@ import org.jdom.Element;
 public interface StatefulPlugin extends Plugin
 {
 	/**
-     * Get the state of the plugin as a DOM Element.
-     * This method is called when the user chooses to
-     * save the session from the menu.
+     * Get the state of the plugin
      * 
      * getState() will always be called after load()
      */
-    public Element getState();
+    public PluginState getState();
     
     /**
-     * Set the state of the plugin given a DOM Element.
-     * This method is called when the user chooses to
-     * start VDO from a saved session or restore a saved
-     * session from the menu.
+     * Set the state of the plugin
      * 
-     * setState() will always be called after load()
+     * setState() will always be called after Plugin.load()
      */
-    public void setState(Element s);
+    public void setState(PluginState s);
 }
 

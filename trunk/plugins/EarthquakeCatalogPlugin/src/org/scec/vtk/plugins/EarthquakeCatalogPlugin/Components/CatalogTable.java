@@ -18,6 +18,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
 import org.scec.vtk.plugins.utils.components.CheckBoxRenderer;
@@ -38,14 +39,17 @@ public class CatalogTable extends JTable {
     // table access fields
     public CatalogTableModel tableModel;
     private ListSelectionModel selModel;
+    
+    private PluginActors actors;
         
     /**
      * Constructs a new <code>CatalogLibraryTable</code> with the specified owner.
      *
      * @param owner parent <code>Component</code> that is registered for various event notifications
      */
-    public CatalogTable(Component owner) {
+    public CatalogTable(Component owner, PluginActors actors) {
         super();
+        this.actors = actors;
         this.tableOwner = owner;
         this.init();
     }
@@ -104,7 +108,7 @@ public class CatalogTable extends JTable {
         for (int i=0; i<cats.length; i++) {
         	try{
 	            EQCatalog cat;
-	            cat = new EQCatalog(this.tableOwner, cats[i]);
+	            cat = new EQCatalog(this.tableOwner, cats[i], actors);
 	            cat.setGeometry(EQCatalog.GEOMETRY_POINT);
 	            addCatalog(cat);
         	}

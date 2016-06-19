@@ -1,33 +1,34 @@
 package org.scec.vtk.plugins;
 
 import java.io.IOException;
-import java.sql.Array;
-import java.util.ArrayList;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 
-import org.jdom.Element;
 import org.scec.vtk.main.Info;
-import org.scec.vtk.main.MainGUI;
 
-import vtk.vtkActor;
-
-public abstract class ActionPlugin implements Plugin, StatefulPlugin, ClickablePlugin {
+public abstract class ActionPlugin implements Plugin {
 	
 	private JComponent gui;
 	protected PluginInfo metadata;
+	private PluginActors pluginActors;
 	
 	/**
 	 * Save the plugin metadata, create the gui
 	 */
-	public void initialize(PluginInfo metadata) {
+	@Override
+	public void initialize(PluginInfo metadata, PluginActors pluginActors) {
 		setMetadata(metadata);
+		this.pluginActors = pluginActors;
+	}
+	
+	public PluginActors getPluginActors() {
+		return pluginActors;
 	}
 	
 	/**
 	 * Get the id from the stored metadata
 	 */
+	@Override
 	public String getId() {
 		return metadata.getId();
 	}
@@ -47,20 +48,6 @@ public abstract class ActionPlugin implements Plugin, StatefulPlugin, ClickableP
     }
     
     /**
-     * @throws UnsupportedOperationException Always
-     */
-    public Element getState() {
-    	throw new UnsupportedOperationException();
-    }
-    
-    /**
-     * @throws UnsupportedOperationException Always
-     */
-    public void setState(Element s) {
-    	throw new UnsupportedOperationException();
-    }
-    
-    /**
      * Called when the plugin is initialized
      * @throws IOException 
      */
@@ -70,6 +57,7 @@ public abstract class ActionPlugin implements Plugin, StatefulPlugin, ClickableP
      * Create the GUI
      * @throws IOException 
      */
+    @Override
     final public void load() throws IOException {
     	this.gui = createGUI();
     }
@@ -77,6 +65,7 @@ public abstract class ActionPlugin implements Plugin, StatefulPlugin, ClickableP
     /**
      * Add the plugin GUI to the main window
      */
+    @Override
 	final public void activate() {
 		Info.getMainGUI().addPluginGUI(metadata.getId(), metadata.getShortName(), this.gui);
 	}
@@ -84,6 +73,7 @@ public abstract class ActionPlugin implements Plugin, StatefulPlugin, ClickableP
 	/**
 	 * Remove the plugin GUI from the main window
 	 */
+	@Override
 	final public void passivate() {
 		Info.getMainGUI().removePluginGUI(metadata.getId());
 	}
@@ -92,14 +82,8 @@ public abstract class ActionPlugin implements Plugin, StatefulPlugin, ClickableP
 	/**
 	 * Destroy the GUI
 	 */
+	@Override
 	 public void unload() {
 		gui = null;
-	}
-	
-	/**
-	 * Does nothing
-	 */
-	public void setClickableEnabled(boolean enable) {
-		/* Do nothing */
 	}
 }
