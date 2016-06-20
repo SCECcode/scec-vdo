@@ -1,69 +1,622 @@
 package org.scec.vtk.plugins.SurfacePlugin;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.SurfacePlugin.Component.LoadedFilesProperties;
+import org.scec.vtk.plugins.utils.components.AddButton;
+import org.scec.vtk.plugins.utils.components.RemoveButton;
+import org.scec.vtk.plugins.utils.components.ShowButton;
+import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 
 import com.google.common.base.Throwables;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
+import vtk.vtkDoubleArray;
 import vtk.vtkFloatArray;
 import vtk.vtkJPEGReader;
-import vtk.vtkLine;
+import vtk.vtkPNGReader;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkPolygon;
 import vtk.vtkTexture;
 import vtk.vtkTriangleStrip;
 
-public class SurfacePluginGUI {
+public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeListener,ListSelectionListener, TableModelListener{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JPanel mainPanel = new JPanel();
+	private JPanel topPanel = new JPanel();
+	private JPanel bottomPanel = new JPanel();
+	private JPanel sliderPanel = new JPanel();
+	private JPanel panesPanel = new JPanel();
+	private JPanel defaultPanel = new JPanel();
+	private JPanel checkboxPanel = new JPanel();
+	private JScrollPane defaultScrollPane = new JScrollPane(checkboxPanel);
+	private JLabel defaultSurfaces = new JLabel("Default Surfaces:");
+	private JCheckBox wm=new JCheckBox("World Map");
+	private JCheckBox sc=new JCheckBox("Southern California Map");
+	private JCheckBox cm=new JCheckBox("California Map");
+	private JCheckBox jm=new JCheckBox("Japan Map");
+	private JCheckBox nz=new JCheckBox("New Zealand Map");
+	private JCheckBox im=new JCheckBox("Indonesia Map");
+	private JCheckBox hm=new JCheckBox("Haiti Map");
+	private JCheckBox mm=new JCheckBox("Mexico Map");
+	private JCheckBox sa=new JCheckBox("South America Map");
+	private JCheckBox cd=new JCheckBox("California DEM");
+	private JCheckBox cdc=new JCheckBox("California DEM Colored");
 
-	private ImagePluginGUI ipg;
-	private JPanel allPanel = new JPanel();
-	private double scaleFactor;
-	private ArrayList<double[]> data;
-	private Vector<LoadedFilesProperties> displayedImageSurfaceVector = new Vector<LoadedFilesProperties>();
-	protected Vector<String> displayedImageInfoVector = new Vector<String>();
-	protected Vector<String> displayedSurfaceInfoVector = new Vector<String>();
-	private int longIncrements, latIncrements, horizontalItems;
-	private double w, e, n, s;
-	private double altitude;
-	private String filename;
-	private BufferedReader demReader;
-	
+	//private ButtonGroup bg=new ButtonGroup();
+
+	private JLabel addRemLabel = new JLabel("Add / Remove ");
+	protected RemoveButton   remISButton;
+	private AddButton   newISButton;
+
+	protected ShowButton showImageButton;
+	private JSlider transparencySlider = new JSlider(); 
+
+	String[] columnNames ={
+			"Visible",
+			"Image(s)",
+			"Surface(s)"
+	};
+	public SurfaceTableModel surfaceTableModel = new SurfaceTableModel(columnNames);
+	public JTable surfaceTable = new JTable(surfaceTableModel);
+	public Vector<Surface> surfaceArray = new Vector<Surface>();
+	private MapSetCreatePluginGUI mscpg;
 	private PluginActors surfaceActors;
-
-	public SurfacePluginGUI(PluginActors surfaceActors){
+	private String filename;
+	private double n;
+	private double w;
+	private double s;
+	private double e;
+	private double altitude;
+	private BufferedReader demReader;
+	private int horizontalItems;
+	private int longIncrements;
+	private double scaleFactor;
+	private ArrayList<double[]> data = new ArrayList<double[]>();
+	private int latIncrements;
+	public SurfacePluginGUI(PluginActors surfaceActors) {
+		// TODO Auto-generated constructor stub
 		this.surfaceActors = surfaceActors;
-		//ip = new ImagePlugin(this);
-		ipg = new ImagePluginGUI(this);
+		newISButton = new AddButton(this,"Add a new surface/image");
+		remISButton = new RemoveButton(this,"Remove selected surface/image");
+		showImageButton = new ShowButton(this,"Toggle visibility of selected image(s)");
 
-		allPanel.setLayout(new GridLayout(2,1,6,6));
-		allPanel.add(ipg.getPanel());	
+	
+		surfaceTable.setLayout(new GridLayout(1,3));
+		surfaceTable.setPreferredScrollableViewportSize(new Dimension(350, 70));
+		surfaceTable.getColumnModel().getColumn(0).setMaxWidth(116);
+		surfaceTable.getColumnModel().getColumn(1).setMaxWidth(116);
+		surfaceTable.getColumnModel().getColumn(2).setMaxWidth(118);
+		surfaceTable.getSelectionModel().addListSelectionListener(this);
+		surfaceTableModel.addTableModelListener(this);
+
+		JScrollPane scrollPane = new JScrollPane(surfaceTable);
+
+		panesPanel.setLayout(new GridLayout(1,2,10,10));
+		panesPanel.add(scrollPane);
+
+		topPanel.add(panesPanel, BorderLayout.CENTER);
+
+		JPanel bar = new JPanel();
+		bar.setBorder(BorderFactory.createEmptyBorder(3,0,0,0));
+		bar.setLayout(new BoxLayout(bar,BoxLayout.LINE_AXIS));
+		bar.setOpaque(true);
+		int buttonSpace = 3;
+
+		bar.add(this.showImageButton);
+		bar.add(Box.createHorizontalGlue());
+		bar.add(addRemLabel);
+		bar.add(this.newISButton);
+		bar.add(Box.createHorizontalStrut(buttonSpace));
+		bar.add(this.remISButton);
+		bar.add(Box.createHorizontalStrut(buttonSpace));
+		newISButton.setEnabled(true);
+		bottomPanel.setLayout(new BorderLayout());
+		bottomPanel.add(sliderPanel, BorderLayout.NORTH);
+		bottomPanel.add(bar, BorderLayout.SOUTH);
+
+		transparencySlider.setMajorTickSpacing(10);
+		transparencySlider.setMinorTickSpacing(5);
+		transparencySlider.setPaintLabels(true); 
+		transparencySlider.setPaintTicks(true);
+		transparencySlider.addChangeListener(this);
+		transparencySlider.setEnabled(false);
+
+		sliderPanel.setLayout(new BorderLayout());
+		sliderPanel.add(new JLabel("Transparency"),BorderLayout.NORTH);
+		sliderPanel.add(transparencySlider,BorderLayout.CENTER);
+
+
+		wm.addActionListener(this);
+		sc.addActionListener(this);
+		cm.addActionListener(this);
+		jm.addActionListener(this);
+		nz.addActionListener(this);
+		im.addActionListener(this);
+		hm.addActionListener(this);
+		mm.addActionListener(this);
+		sa.addActionListener(this);
+		cd.addActionListener(this);
+		cdc.addActionListener(this);
+		defaultPanel.add(defaultSurfaces);
+		defaultPanel.setLayout(new BoxLayout(defaultPanel,BoxLayout.Y_AXIS));
+		defaultPanel.setPreferredSize(new Dimension(300,120));
+		defaultScrollPane.setPreferredSize(new Dimension(300,120));
+		checkboxPanel.add(cm);
+		checkboxPanel.add(sc);
+		checkboxPanel.add(cd);
+		checkboxPanel.add(cdc);
+		checkboxPanel.add(wm);
+		checkboxPanel.add(mm);
+		checkboxPanel.add(sa);
+		checkboxPanel.add(jm);
+		checkboxPanel.add(im);
+		checkboxPanel.add(nz);
+		checkboxPanel.add(hm);
+		checkboxPanel.setLayout(new GridLayout(0,2));
+		defaultPanel.add(defaultScrollPane);
+
+
+		mainPanel.setLayout(new BorderLayout(5, 5));
+		mainPanel.add(topPanel, BorderLayout.CENTER);
+		mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+		mainPanel.add(defaultPanel,BorderLayout.NORTH);
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+		mainPanel.setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()/2));
+		add(mainPanel);
 	}
 
-
-	public JPanel getPanel() {
+	@Override
+	public void stateChanged(ChangeEvent e) {
 		// TODO Auto-generated method stub
-		return allPanel;
-	}
+		Object src = e.getSource();
+		if(src == transparencySlider)
+		{
+			double transparency = ((double)(transparencySlider.getValue())/100.0);
+			ListSelectionModel model = surfaceTable.getSelectionModel();
+			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+				int row = model.getMinSelectionIndex();
+				surfaceArray.get(row).getSurfaceActor().GetProperty().SetOpacity(transparency);
+			}
+			Info.getMainGUI().updateRenderWindow();
+		}
 
+	}
+	public void valueChanged(ListSelectionEvent e) {
+
+		Object src = e.getSource();
+		this.surfaceTable.getModel();
+		if (e.getValueIsAdjusting()) return;
+
+		if (src == this.surfaceTable.getSelectionModel()) {
+			processTableSelectionChange();
+		}
+	}
 
 	public void setScaleFactor(double newScale) {
 		// TODO Auto-generated method stub
 		scaleFactor = newScale;
 	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		Object source = e.getSource();
+		LoadedFilesProperties lfp;
+
+		if (source == newISButton) {
+			mscpg = new MapSetCreatePluginGUI(this);
+		}
+		if (source == cm) {
+			if(cm.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 42.2;
+				imageData[1] = 32.1;
+				imageData[2] = -113.4;
+				imageData[3] = -124.5;
+				imageData[4] = -5; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="CaliforniaFull"; //image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(cm);
+			}
+		}
+		if (source == wm) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(wm.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 90;
+				imageData[1] = -90;
+				imageData[2] = 180;
+				imageData[3] = -180;
+				imageData[4] = -5; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="world.topo.bathy.200410.3x5400x2700";//image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(wm);
+			}
+		}
+		if (source == sc) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(sc.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 36;
+				imageData[1] = 32.5;
+				imageData[2] = -114;
+				imageData[3] = -122;
+				imageData[4] = 0;
+
+				String surfaceTemp="-";
+				String imageTemp="largesocal";//image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(sc);
+			}
+		}
+		if (source == jm) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(jm.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 46.9; //Latitude Max
+				imageData[1] = 26.2; //Latitude Min
+				imageData[2] = 147; //Longitude Max
+				imageData[3] = 127.1; //Longitude Min
+				imageData[4] = -5; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="Japan"; //image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(jm);
+			}
+		}
+		if (source == nz) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(nz.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = -34.3; //Latitude Max
+				imageData[1] = -47.5; //Latitude Min
+				imageData[2] = 179.4; //Longitude Max
+				imageData[3] = 165.4; //Longitude Min
+
+				String surfaceTemp="-";
+				String imageTemp="NewZealand"; //image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(nz);
+			}
+		}
+		if (source == im) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(im.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 9.4; //Latitude Max
+				imageData[1] = -12.0; //Latitude Min
+				imageData[2] = 148.4; //Longitude Max
+				imageData[3] = 93.8; //Longitude Min
+				imageData[4] = -5; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="Indonesia"; //image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(im);
+			}
+		}
+		if (source == hm) {
+			//if changing map files or adding files please update switch case below as per file name so as to uncheck if preset is removed
+			if(hm.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 20.5; //Latitude Max
+				imageData[1] = 17.5; //Latitude Min
+				imageData[2] = -68.5; //Longitude Max
+				imageData[3] = -74.5; //Longitude Min
+				imageData[4] = -5; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="Haiti"; //image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(hm);
+			}
+		}
+		if (source == mm) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(mm.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 35.4; //Latitude Max
+				imageData[1] = 12.8; //Latitude Min
+				imageData[2] = -82.9; //Longitude Max
+				imageData[3] = -119; //Longitude Min
+				imageData[4] = -8; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="Mexico"; //image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(mm);
+			}
+		}
+		if (source == sa) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(sa.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 14.7; //Latitude Max 6.3
+				imageData[1] = -57; //Latitude Min -58
+				imageData[2] = -36; //Longitude Max
+				imageData[3] = -82.4; //Longitude Min -83
+				imageData[4] = -5; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="SouthAmerica";//image name
+				String imageExt=".jpg"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(sa);
+			}
+		}
+		if (source == cd) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(cd.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 42;
+				imageData[1] = 32.5;
+				imageData[2] = -114;
+				imageData[3] = -124.5;
+				imageData[4] = 0; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="CaliforniaDEM"; //image name
+				String imageExt=".png"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(cd);
+			}
+		}
+		if (source == cdc) {
+			//mscpg = new MapSetCreatePluginGUI(this);
+			if(cdc.isSelected()){
+				double imageData[] = new double[5];
+				imageData[0] = 42;
+				imageData[1] = 32.5;
+				imageData[2] = -114.131477;
+				imageData[3] = -124.409641;
+				imageData[4] = 0; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="CAlDEM_new"; // image name
+				String imageExt=".png"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+				System.out.println("Loaded File Path: "+loadedFilePath);
+				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg.createImage(lfp, this);
+			}
+			else
+			{
+				removePresetObject(cdc);
+			}
+		}
+		else if (source == remISButton) {
+			ListSelectionModel model = surfaceTable.getSelectionModel();
+			while (model.getMinSelectionIndex() >= 0) {
+				int row = model.getMinSelectionIndex();
+				JCheckBox tempCheckBox = uncheckPreset(row);
+				if(tempCheckBox!=null && tempCheckBox.isSelected())
+					tempCheckBox.setSelected(false);
+				surfaceTableModel.removeRow(row);
+				surfaceActors.removeActor(surfaceArray.get(row).getSurfaceActor());
+				surfaceArray.remove(row);
+
+			}
+			Info.getMainGUI().updateRenderWindow();
+		}
+		else if (source == showImageButton) {
+			ListSelectionModel model = surfaceTable.getSelectionModel();
+			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+				int row = i;//model.getMinSelectionIndex();
+				if(surfaceArray.get(row).getSurfaceActor().GetVisibility()==1)
+				{surfaceArray.get(row).getSurfaceActor().VisibilityOff();
+				surfaceTableModel.setValueAt("false",row, 0);
+				//surfaceTableModel.fireTableCellUpdated(row, 0);
+				}
+				else
+				{surfaceArray.get(row).getSurfaceActor().VisibilityOn();
+				surfaceTableModel.setValueAt("true",row, 0);
+				//surfaceTableModel.fireTableCellUpdated(row, 0);
+				}
+			}
+			Info.getMainGUI().updateRenderWindow();
+		}
+	}
+
+	private void removePresetObject(JCheckBox uncheckedCheckBox)
+	{
+		ListSelectionModel model = surfaceTable.getSelectionModel();
+		for(int i =0;i<surfaceTableModel.getRowCount();i++)
+		{
+			JCheckBox tempCheckBox = uncheckPreset(i);
+			if(tempCheckBox!=null && tempCheckBox == uncheckedCheckBox)
+			{
+				surfaceTableModel.removeRow(i);
+				surfaceActors.removeActor(surfaceArray.get(i).getSurfaceActor());
+				surfaceArray.remove(i);
+			}
+		}
+		Info.getMainGUI().updateRenderWindow();
+	}
+	private JCheckBox uncheckPreset(int row)
+	{
+		String presetImage = (String) surfaceTableModel.getValueAt(row, 1);
+		switch (presetImage)
+		{
+		case "CaliforniaFull":
+		{
+			return cm;
+		}
+		case "world.topo.bathy.200410.3x5400x2700":
+		{
+			return wm;
+		}
+		case "largesocal":
+		{
+			return sc;
+		}
+		case "Japan":
+		{
+			return jm;
+		}
+		case "NewZealand":
+		{
+			return nz;
+		}
+		case "Haiti":
+		{
+			return hm;
+		}
+		case "Mexico":
+		{
+			return mm;
+		}
+		case "SouthAmerica":
+		{
+			return sa;
+		}
+		case "CaliforniaDEM":
+		{
+			return cd;
+		}
+		case "CAlDEM_new":
+		{
+			return cdc;
+		}
+		}
+		return null;
+	}
+
+	public JPanel getPanel() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
 
 	private void loadData(GeographicSurfaceInfo si) throws IOException {
 		filename = si.getFilename();
@@ -128,7 +681,6 @@ public class SurfacePluginGUI {
 			//number of vertices are twice 
 			triangleStrip.GetPointIds().SetNumberOfIds(longIncrements*2);
 
-			new vtkLine();
 			stripIndex=0;
 			firstLineOfData = (double[])data.get(latIncrements-i-1);
 			secondLineOfData = (double[])data.get(latIncrements-i);
@@ -179,26 +731,45 @@ public class SurfacePluginGUI {
 
 		return triangleStripPolydata;
 	}
-	public void display(GeographicSurfaceInfo si,ImageInfo ii) { //creates the surface
-		data = new ArrayList<double[]>();
+	//both images and surface information
+	public void display(GeographicSurfaceInfo si, ImageInfo ii) {
+		new ArrayList<double[]>();
 
 		try {
 			loadData(si);
 		} catch (IOException e) {
 			Throwables.propagate(e);
 		}
-		//texture file
-		vtkJPEGReader jPEGReader = new vtkJPEGReader();
+		// Apply the texture
+		vtkTexture texture = new vtkTexture();
 
-		jPEGReader.SetFileName(ii.getFilename());
+		//texture file
+		if(ii.getFilename().contains("png"))
+		{
+			vtkPNGReader pngReader = new vtkPNGReader();
+
+			pngReader.SetFileName(ii.getFilename());
+			System.out.println(ii.getFilename());
+			pngReader.Update();
+
+			texture.SetInputConnection(pngReader.GetOutputPort());
+		}
+		else
+		{
+			vtkJPEGReader jPEGReader = new vtkJPEGReader();
+
+			jPEGReader.SetFileName(ii.getFilename());
+			System.out.println(ii.getFilename());
+			jPEGReader.Update();
+
+
+			texture.SetInputConnection(jPEGReader.GetOutputPort());
+		}
 
 		vtkPolyData polydata = new vtkPolyData(); 
 		polydata = createSurface(si);
 		// Create an actor and mapper
 
-		// Apply the texture
-		vtkTexture texture = new vtkTexture();
-		texture.SetInputConnection(jPEGReader.GetOutputPort());
 
 
 		//Create a mapper and actor
@@ -211,79 +782,125 @@ public class SurfacePluginGUI {
 		actor.GetProperty().SetOpacity(0.5);
 		// actor.GeneralTextureTransform();
 		//actor.GetProperty().SetRepresentationToWireframe();
+		Surface surface = new Surface(ii, si, actor);
+		surfaceArray.add(surface);
+
+		Object[] tempRow = surface.createRow();
+		surfaceTableModel.addRow(tempRow);
 		surfaceActors.addActor(actor);
-		Info.getMainGUI().updateRenderWindow(actor);
+		Info.getMainGUI().updateRenderWindow();
 	}
 
 	public void display(ImageInfo ii) {	//This is the method to display an image
 
 		System.out.println("Image added");
+		//texture file
+		vtkTexture texture = new vtkTexture();
+		if(ii.getFilename().contains("png"))
+		{
+			vtkPNGReader pngReader = new vtkPNGReader();
+
+			pngReader.SetFileName(ii.getFilename());
+			System.out.println(ii.getFilename());
+			pngReader.Update();
+
+			texture.SetInputConnection(pngReader.GetOutputPort());
+		}
+		else
+		{
+			vtkJPEGReader jPEGReader = new vtkJPEGReader();
+
+			jPEGReader.SetFileName(ii.getFilename());
+			System.out.println(ii.getFilename());
+			jPEGReader.Update();
+
+
+			texture.SetInputConnection(jPEGReader.GetOutputPort());
+		}
+
+
+		double[] upperLeft = ii.getUpperLeft();
+		double[] lowerRight = ii.getLowerRight();
+		double height = upperLeft[2]; //or lower right (altitude) are same
+		double[][] tuple = new double[4][3];
+		tuple[0] = Transform.transformLatLonHeight(upperLeft[0], upperLeft[1],height);
+		tuple[1] = Transform.transformLatLonHeight(upperLeft[0], lowerRight[1],height);
+		tuple[2] = Transform.transformLatLonHeight(lowerRight[0], lowerRight[1],height);
+		tuple[3] = Transform.transformLatLonHeight(lowerRight[0], upperLeft[1],height);
+
+
+		vtkPoints points = new vtkPoints();
+		points.InsertNextPoint(tuple[0]);
+		points.InsertNextPoint(tuple[1]);
+		points.InsertNextPoint(tuple[2]);
+		points.InsertNextPoint(tuple[3]);
+
+
+		vtkDoubleArray textureCoordinates = new  vtkDoubleArray();
+		textureCoordinates.SetNumberOfComponents(3);
+		textureCoordinates.SetName("TextureCoordinates");
+		textureCoordinates.InsertNextTuple2(0,1);// tuple[0][0], tuple[0][1], tuple[0][2]);
+		textureCoordinates.InsertNextTuple2(1,1);//( tuple[1][0], tuple[1][1], tuple[1][2]);
+		textureCoordinates.InsertNextTuple2(1,0);//3( tuple[2][0], tuple[2][1], tuple[2][2]);
+		textureCoordinates.InsertNextTuple2(0,0);//3( tuple[3][0], tuple[3][1], tuple[3][2]);
+		// Create the polygon
+		vtkPolygon polygon = new vtkPolygon();
+		polygon.GetPointIds().SetNumberOfIds(4); //make a quad
+		polygon.GetPointIds().SetId(0, 0);
+		polygon.GetPointIds().SetId(1, 1);
+		polygon.GetPointIds().SetId(2, 2);
+		polygon.GetPointIds().SetId(3, 3);
+
+		// Add the polygon to a list of polygons
+		vtkCellArray polygons = new vtkCellArray();
+		polygons.InsertNextCell(polygon);
+
+		// Create a PolyData
+		vtkPolyData polygonPolyData = new vtkPolyData();
+		polygonPolyData.SetPoints(points);
+		polygonPolyData.SetPolys(polygons);
+
+		polygonPolyData.GetPointData().SetTCoords(textureCoordinates);
+		// Create an actor
+		//Create a mapper and actor
+		vtkPolyDataMapper mapper =new vtkPolyDataMapper();
+		mapper.SetInputData(polygonPolyData);
+		//mapper.ScalarVisibilityOff();
+		vtkActor actor = new vtkActor();
+		actor.SetMapper(mapper);
+		actor.SetTexture(texture);
+		actor.GetProperty().SetOpacity(0.5);
+
+		Surface surface = new Surface(ii, null, actor);
+		surfaceArray.add(surface);
+
+		Object[] tempRow = surface.createRow();
+		surfaceTableModel.addRow(tempRow);
+		surfaceActors.addActor(actor);
+		Info.getMainGUI().updateRenderWindow();
 	}
 
-
-	public int addSurfaceImage(LoadedFilesProperties lfp, ImagePluginGUI ipg){
-		displayedImageSurfaceVector.addElement(lfp);
-
-		String data = new String();
-		String file = new String();
-		int begin,end;
-		if(lfp.getSurfaceFilePath() != null)
-			file = lfp.getSurfaceFilePath();
-		else{
-			file = lfp.getGeoInfo().getFilename();
-			display(lfp.getGeoInfo(),lfp.getImageInfo());
+	public void processTableSelectionChange() {
+		int[] selectedRows = this.surfaceTable.getSelectedRows();
+		if (selectedRows.length > 0) {
+			this.remISButton.setEnabled(true);
+			this.showImageButton.setEnabled(true);
+			this.transparencySlider.setEnabled(true);
+		} else {
+			this.remISButton.setEnabled(false);
+			this.showImageButton.setEnabled(false);
+			this.transparencySlider.setEnabled(false);
 		}
-		if(file.equalsIgnoreCase("-")){
-			data = "-";
-		}
-		else{
-			if(file.contains("\\")) {
-				begin = file.lastIndexOf("\\") + 1;
-			}
-			else {
-				begin = file.lastIndexOf("/") + 1;
-			}
-			end = file.length()-1;
-			if(file.endsWith(".txt")){
-				end = file.indexOf(".txt");
-			}
-			else if(file.endsWith(".dem")){
-				end = file.indexOf(".dem");
-			}
-			data = file.substring(begin,end);
-		}
-		displayedSurfaceInfoVector.add(data);
-		if(lfp.getImageFilePath() != null)
-			file = lfp.getImageFilePath();
-		else{
-			file = lfp.getImgInfo().getFilename();
-			display(lfp.getImgInfo());
-		}
-		if(file.equalsIgnoreCase("-")){
-			data = "-";
-		}
-		else{
-			if(file.contains("\\")) {
-				begin = file.lastIndexOf("\\") + 1;
-			}
-			else {
-				begin = file.lastIndexOf("/") + 1;
-			}
-			end = file.length() - 1;
-			if(file.endsWith(".jpg")){
-				end = file.indexOf(".jpg");
-			}
-			else if(file.endsWith(".jpeg")){
-				end = file.indexOf(".jpeg");
-			}
-			data = file.substring(begin,end);
-		}
-		displayedImageInfoVector.add(data);
-		ipg.displayedImageList.setListData(displayedImageInfoVector);
-		ipg.displayedSurfaceList.setListData(displayedSurfaceInfoVector);
-		int index=displayedImageInfoVector.size()-1;
-		ipg.displayedSurfaceList.setSelectedIndex(index);
-		ipg.displayedImageList.setSelectedIndex(index);
-		return index;
 	}
+
+	public void unloadPlugin() {
+		// TODO Auto-generated method stub
+		for(int i =0;i<surfaceArray.size();i++)
+		{
+			surfaceActors.removeActor(surfaceArray.get(i).getSurfaceActor());
+		}
+		surfaceArray.removeAllElements();
+		Info.getMainGUI().updateRenderWindow();
+	}
+
 }

@@ -181,9 +181,12 @@ public class FaultTable extends JTable implements ChangeListener {
     public ArrayList<Fault3D> getSelected() {
     	FaultTableModel libModel = FaultTable.this.getLibraryModel();
         ArrayList<Fault3D> selectedObjects = new ArrayList<>();
+        int[] selectedRows = getSelectedRows();
         for (int i=0; i<libModel.getRowCount(); i++) {
-        	if(libModel.getLoadedStateForRow(i)){
-        		selectedObjects.add((Fault3D)this.tableModel.getObjectAtRow(i));
+        	for(int j=0;j<selectedRows.length;j++)
+        	{
+        		if(i==selectedRows[j])
+        			selectedObjects.add((Fault3D)this.tableModel.getObjectAtRow(i));
         	}
         }
         return selectedObjects;
@@ -239,18 +242,7 @@ public class FaultTable extends JTable implements ChangeListener {
         this.setRowHeight(getRowHeight()+4);
         this.setIntercellSpacing(new Dimension(0,0));
         this.setShowGrid(false);
-        
-        // set renderers --> use custom nested classes because default renderers
-        // put things like grey lines around focused text cells, even though
-        // they're not editable 
-        
-        // set/fix column widths and renderers
-        /*TableColumn col1 = getColumnModel().getColumn(0);
-        col1.setCellRenderer(new CheckBoxRenderer());
-        col1.setPreferredWidth(26);
-        col1.setMinWidth(26);
-        col1.setMaxWidth(26);
-        */
+  
         TableColumn col2 = getColumnModel().getColumn(1);
         col2.setCellRenderer(new ColorWellRenderer());
         col2.setPreferredWidth(20);
@@ -263,9 +255,7 @@ public class FaultTable extends JTable implements ChangeListener {
         col3.setMinWidth(20);
         col3.setMaxWidth(20);
         
-        /*TableColumn col4 = getColumnModel().getColumn(3);
-        col4.setCellRenderer(new StringRenderer());*/
-        
+ 
     }
     
     private static boolean deleteDir(File dir) {

@@ -25,6 +25,7 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
 	// table access fields
 	private DrawingToolsTableModel tableModel;
 	private ListSelectionModel selModel;
+	String[] columnNames ={"Labels"};
 
 	/**
 	 * Constructs a new <code>FaultTable</code> with the specified owner, i.e <code>FaultGUI</code>.
@@ -39,36 +40,10 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
 
 	private void init() {
 		// TODO Auto-generated method stub
-		this.tableModel = new DrawingToolsTableModel();
+		this.tableModel = new DrawingToolsTableModel(columnNames);
 		this.tableModel.addTableModelListener((TableModelListener)this.tableOwner);
 		setModel(this.tableModel);
-		// set to monitor mouse clicks
-		addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-
-				// Get column and row values for X and Y clicked
-				DrawingToolsTableModel libModel = DrawingToolsTable.this.getLibraryModel();
-				DrawingToolsGUI gui = (DrawingToolsGUI)DrawingToolsTable.this.tableOwner;
-				int col = DrawingToolsTable.this.getColumnModel().getColumnIndexAtX(e.getX());
-				int row = e.getY() / getRowHeight();
-
-				if (col == 0) {
-					if(!libModel.getLoadedStateForRow(row)){
-						libModel.setLoadedStateForRow(true, row);
-						gui.processTableSelectionChange();
-					}
-					//libModel.toggleVisibilityForRow(row);
-				} /*else if (col == 1 && libModel.getColorForRow(row) != null) {
-                	// restrict showing color chooser to clicks that fall on non-null color wells
-                	Color newColor = null;//((CommunityFaultModelGUI)FaultTable.this.tableOwner).getColorChooser().getColor();
-                	if (newColor != null) {
-                		libModel.setColorForRows(newColor, getSelectedRows());
-                	}
-                } else if (col == 2) {
-                	libModel.toggleMeshStateForRow(row);
-                }*/
-			}
-		});
+	
 
 		// Set up selection model and register GUI as listener for 
 		// button en/disabling.
@@ -87,8 +62,11 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
 		// TODO Auto-generated method stub
 		return this.tableModel;
 	}
-	public void addDrawingTool(ArrayList<DrawingTool> drawringTool) {
-		this.tableModel.addObjects(drawringTool);
+	public void addDrawingTool(DrawingTool drawringTool) {
+		Object[] rowData = { 
+				drawringTool.getDisplayName()
+		} ;
+		this.tableModel.addRow(rowData);
 	}
 
 	@Override
@@ -97,15 +75,5 @@ public class DrawingToolsTable  extends JTable implements ChangeListener {
 
 	}
 
-	public ArrayList<DrawingTool> getSelected() {
-		// TODO Auto-generated method stub
-		DrawingToolsTableModel libModel = DrawingToolsTable.this.getLibraryModel();
-		ArrayList<DrawingTool> selectedObjects = new ArrayList<>();
-		for (int i=0; i<libModel.getRowCount(); i++) {
-			if(libModel.getLoadedStateForRow(i)){
-				selectedObjects.add((DrawingTool)this.tableModel.getObjectAtRow(i));
-			}
-		}
-		return selectedObjects;
-	}
+
 }

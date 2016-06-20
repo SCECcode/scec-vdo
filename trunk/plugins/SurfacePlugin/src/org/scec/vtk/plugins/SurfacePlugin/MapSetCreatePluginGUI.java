@@ -3,7 +3,6 @@ package org.scec.vtk.plugins.SurfacePlugin;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -16,8 +15,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -33,6 +30,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.Logger;
 import org.jdom.Document;
@@ -47,11 +45,10 @@ import org.scec.vtk.plugins.SurfacePlugin.Component.WMSLayer;
 import org.scec.vtk.plugins.SurfacePlugin.Component.WMSService;
 import org.scec.vtk.plugins.SurfacePlugin.Component.WMSStyle;
 import org.scec.vtk.plugins.SurfacePlugin.Component.WMSUrlGenerator;
+import org.scec.vtk.plugins.utils.components.DataFileChooser;
 import org.scec.vtk.tools.Prefs;
 
 import vtk.vtkActor;
-import vtk.vtkConeSource;
-import vtk.vtkPolyDataMapper;
 
 
 
@@ -59,13 +56,12 @@ import vtk.vtkPolyDataMapper;
 
 public class MapSetCreatePluginGUI extends JFrame implements ActionListener, DocumentListener {
 
-	private ImagePluginGUI parent;
+	private SurfacePluginGUI parent;
 	private static final long serialVersionUID = 1L;
 	private JPanel instructionsPanel = new JPanel();
 	private JPanel centerPanel = new JPanel();
 	private JPanel topPanel = new JPanel();
-	//private JPanel bottomPanel = new JPanel();
-	private JPanel surfaceFilePanel = new JPanel();
+		private JPanel surfaceFilePanel = new JPanel();
 	private JPanel surfaceCoordPanel = new JPanel();
 	private JPanel surfaceLabelPanel = new JPanel();
 	private JPanel surfaceCoordLabelPanel = new JPanel();
@@ -88,18 +84,12 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	protected JTextField imageUpperLongitude = new JTextField("-125",6); 
 	protected JTextField imageLowerLongitude = new JTextField("-114",6);
 	protected JTextField imageAltitude = new JTextField("0.0",6);
-//	protected JTextField surfaceRightLatitude = new JTextField("32.5",6); // default settings used for the California topography map 
-//	protected JTextField surfaceLeftLatitude = new JTextField("42",6); 
-//	protected JTextField surfaceUpperLongitude = new JTextField("-124.4",6); 
-//	protected JTextField surfaceLowerLongitude = new JTextField("-114.1",6); 
 	protected JTextField surfaceRightLatitude = new JTextField("32",6); 
 	protected JTextField surfaceLeftLatitude = new JTextField("43",6); 
 	protected JTextField surfaceUpperLongitude = new JTextField("-125",6); 
 	protected JTextField surfaceLowerLongitude = new JTextField("-114",6); 
 	protected JTextField surfaceAltitude = new JTextField("0.0",6);
-	//private JLabel imageCoordinates = new JLabel("Image ");
-	//private JLabel surfaceCoordinates = new JLabel("Surface ");
-	private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): ");
+private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): ");
 	private JLabel imageLowerRightCorner = new JLabel("Lower right corner (lat,long): ");
 	private JLabel imageAltitudeLabel = new JLabel("Altitude, in km:  ");
 	private JLabel surfaceUpperLeftCorner = new JLabel("Upper left corner (lat,long): ");
@@ -107,10 +97,7 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	private JLabel surfaceAltitudeLabel = new JLabel("Altitude, in km:  ");
 	private JLabel selectSurface = new JLabel("Surface(topography):  ");
 	private JLabel selectImage = new JLabel("Image:    ");
-	//private DefaultListModel surfaceListModel = new DefaultListModel();
-	//private DefaultListModel imageListModel = new DefaultListModel();
-	//private JList displayedImageList;
-	//private JList displayedSurfaceList;
+
 	private JButton displayButton = new JButton("Display");
 	private JButton saveDisplayButton = new JButton("Save & Display");
 	private JButton cancelButton = new JButton("Cancel");
@@ -176,8 +163,12 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	private boolean enableGoogle = false;
 	private static final String wms_layer_default = "bmng200407";
 	
-	
-	public MapSetCreatePluginGUI(ImagePluginGUI ipg){
+	public MapSetCreatePluginGUI(double[] imageData){
+		this.imageData= imageData;
+		
+	}
+	private vtkActor mapSetActor = new vtkActor();
+	public MapSetCreatePluginGUI(SurfacePluginGUI ipg){
 	parent = ipg;
 	ImageIcon pic = new ImageIcon("./scecvdo_sm.jpg");
 	iconLabel = new JLabel(pic);
@@ -290,9 +281,7 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	mainPanel.setSize(1000,1050);
 	mainPanel.setIgnoreRepaint(true);
 	
-	//setProgressString(" ");
-	//setProgressStringPainted(true);
-	
+
 	bottomPanel.add(buttonsPanel, BorderLayout.NORTH);
 	bottomPanel.add(downloadProgressBar, BorderLayout.SOUTH);
 
@@ -307,11 +296,10 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	browseSurfaceButton.addActionListener(this);
 	browseImageButton.addActionListener(this);
 
-	//displayButton.setEnabled(false);
+	
 	saveDisplayButton.setEnabled(false);
 	
-	//updateRecommendedWebResolutions();
-	
+
 	getContentPane().add(mainPanel);
 	pack();
 	setResizable(false);
@@ -366,7 +354,15 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 			return imageData;
 		}
 	}
-
+	
+	public void setMapSetActor(vtkActor actor)
+	{
+		mapSetActor = actor;
+	}
+	
+	public vtkActor getMapSetActor() {
+		return mapSetActor;
+	}
 	
 	public boolean isDifferentImageCoords() {
 		return differentImageBox.isSelected();
@@ -402,8 +398,6 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 		    	surfaceTemp = "-";
 		    }
 		    if(imageData != null &&  imageFilePath.getText().length() > 0){
-//		    	System.out.println(mscg.imageFilePath.getText());
-//		    	System.out.flush();
 		    	String name = imageFilePath.getText();
 		    	begin =name.lastIndexOf(File.separator);
 		    	if (name.toLowerCase().contains(".jpg"))
@@ -775,7 +769,7 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 		return true;
 	}
 	
-	public void createSurface(LoadedFilesProperties temp, ImagePluginGUI ipg) {
+	public void createSurface(LoadedFilesProperties temp, SurfacePluginGUI ipg) {
 		double[] ul = new double[3];
 		double[] lr = new double[3];
 		try {
@@ -808,7 +802,7 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	public void setFilePath(String filePath){
 		this.filePath = filePath;
 	}
-	public void createImage(LoadedFilesProperties temp, ImagePluginGUI ipg) {
+	public void createImage(LoadedFilesProperties temp, SurfacePluginGUI ipg) {
 		double[] ul = new double[3];
 		double[] lr = new double[3];
 		try {
@@ -839,14 +833,19 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 					lr[1] = lr[1]+360; //to deal with the fact that the lr.y < ul.y, but that's ok
 				}
 			}
+		
 			//image file info
 			   temp.addImageInfo(new ImageInfo(temp.getImageFilePath(), ul, lr, meshType));
-			   /*   ipg.getImagePluginGUIParent().display(temp.getImgInfo());
-			    temp.setShow(true);
-			    temp.setPlot(true);*/
 			//create surface plus texture
-			temp.addGeographicSurfaceInfo(new GeographicSurfaceInfo(temp.getSurfaceFilePath(), ul, lr));
-			ipg.getImagePluginGUIParent().display(temp.getGeoInfo(),temp.getImageInfo());
+			   if(temp.getSurfaceFilePath()!="-")
+			{
+				   temp.addGeographicSurfaceInfo(new GeographicSurfaceInfo(temp.getSurfaceFilePath(), ul, lr));
+				   ipg.display(temp.getGeoInfo(),temp.getImageInfo());
+			}
+			   else
+			   {
+				   ipg.display(temp.getImageInfo());
+			   }
 			System.out.println("ipg == null");
 			
 		} catch (NumberFormatException nfe) {
@@ -875,7 +874,8 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object source = e.getSource();
-		
+		File sFileName;
+		File iFileName;
 		if (source == surfaceDiskButton) {
 			surfaceWebButton.setSelected(!surfaceDiskButton.isSelected());
 			
@@ -936,6 +936,35 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 					displayButton.setEnabled(false);
 			}
 		}
+		else if(source == browseSurfaceButton)
+		{
+			DataFileChooser fileChooser = new DataFileChooser(this, "Import Surface Data",false,new File(Info.getMainGUI().getRootPluginDir()+File.separator+"DEMs"));
+			fileChooser.setCurrentFilter(".dem","DEM Files");
+			fileChooser.setCurrentFilter(".txt","Text Files");
+			sFileName = fileChooser.getFile();
+			
+			if(sFileName!=null){
+				surfaceFilePath.setText(sFileName.getAbsolutePath());
+				surfaceFile = true;
+				displayButton.setEnabled(true);
+			}
+		}
+        else if(source == browseImageButton)
+		{
+        	DataFileChooser fileChooser = new DataFileChooser(this, "Import Image Data",false,new File(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"));
+			//fileChooser.setCurrentFilter(".jpg","JPG Image Files");
+			ImageFileFilter filter = new ImageFileFilter();
+			fileChooser.setFileFilter(filter);
+		
+			iFileName = fileChooser.getFile();
+			if(iFileName!=null){
+				imageFilePath.setText(iFileName.getAbsolutePath());
+				displayButton.setEnabled(true);
+				imageFile = true;
+				if(surfaceFile)
+					saveDisplayButton.setEnabled(true);
+			}
+		}
 		if(source == displayButton)
 		{
 			//Create a cone
@@ -980,11 +1009,11 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 						
 						String loadedFilePath;
 			
-						/*if((surfaceFile) && !imageFile)
+						if((surfaceFile) && !imageFile)
 						{   
-							parent.getImagePluginGUIParent().setScaleFactor(Double.parseDouble(surfaceScale.getText()));
-							surfaceData = parent.setSurfaceData();
-							loadedFilePath = parent.saveToMemory();
+							parent.setScaleFactor(Double.parseDouble(surfaceScale.getText()));
+							surfaceData = setSurfaceData();
+							loadedFilePath = saveToMemory();
 							if(loadedFilePath == null) {
 								setProgressString("Couldn't Find File...");
 								setProgressIndeterminate(false);
@@ -994,15 +1023,15 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 							lfp = new LoadedFilesProperties("-", null, surfaceFilePath.getText(),surfaceData,null,false,loadedFilePath);
 							lfp.setPlot(true);
 							lfp.setShow(true);
-							parent.createSurface(lfp,ipg);
-							ipg.getImagePluginGUIParent().addSurfaceImage(lfp,ipg);
+							createSurface(lfp,parent);
 							dispose();
 						}
-						else if(!surfaceFile && imageFile)
+						else 
+						if(!surfaceFile && imageFile)
 						{
-							ipg.getImagePluginGUIParent().setScaleFactor(Double.parseDouble(surfaceScale.getText()));
-							imageData = parent.setImageData();
-							loadedFilePath = parent.saveToMemory();
+							parent.setScaleFactor(Double.parseDouble(surfaceScale.getText()));
+							imageData = setImageData();
+							loadedFilePath = saveToMemory();
 							if(loadedFilePath == null) {
 								setProgressString("Couldn't Find File...");
 								setProgressIndeterminate(false);
@@ -1011,14 +1040,13 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 							LoadedFilesProperties lfp = new LoadedFilesProperties(imageFilePath.getText(), imageData,"-",null,null,false,loadedFilePath);
 							lfp.setPlot(true);
 							lfp.setShow(true);
-							parent.createImage(lfp,ipg.getImagePluginGUIParent());
-							ipg.getImagePluginGUIParent().addSurfaceImage(lfp,ipg);
+							createImage(lfp,parent);
 							dispose();
-						}*/
-						//else
+						}
+						else
 							if(surfaceFile && imageFile)
 						{	
-							parent.getImagePluginGUIParent().setScaleFactor(Double.parseDouble(surfaceScale.getText()));
+							parent.setScaleFactor(Double.parseDouble(surfaceScale.getText()));
 							surfaceData = setSurfaceData();
 							imageData = setImageData();
 							loadedFilePath = saveToMemory();
@@ -1032,7 +1060,7 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 							lfp.setShow(true);
 							createSurface(lfp,parent);
 							createImage(lfp,parent);
-							parent.getImagePluginGUIParent().addSurfaceImage(lfp,parent);
+							//parent.getImagePluginGUIParent().addSurfaceImage(lfp,parent);
 							dispose();
 						}
 					}
@@ -1107,5 +1135,28 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 		this.mapStyleLabel.setEnabled(internet);
 		this.imageLoadPanel.repaint();
 	}
+	public class ImageFileFilter extends FileFilter{
+		   private final String[] okFileExtensions = 
+		     new String[] {"jpg", "png"};
+
+		   public boolean accept(File file)
+		   {
+		     for (String extension : okFileExtensions)
+		     {
+		       if (file.getName().toLowerCase().endsWith(extension))
+		       {
+		         return true;
+		       }
+		     }
+		     return false;
+		   }
+
+		@Override
+		public String getDescription() {
+			// TODO Auto-generated method stub
+			return "JPEG and PNG image files";
+		}
+		
+		 }
 	
 }

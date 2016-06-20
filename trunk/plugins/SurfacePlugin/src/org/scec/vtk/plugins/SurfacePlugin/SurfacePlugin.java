@@ -26,6 +26,7 @@ public class SurfacePlugin extends ActionPlugin {
 	public void unload(){
 		//if(spGui.getImageMasterBranchGroup() != null)
 			//spGui.getImageMasterBranchGroup().detach();
+		spGui.unloadPlugin();
 	}
 
 }
