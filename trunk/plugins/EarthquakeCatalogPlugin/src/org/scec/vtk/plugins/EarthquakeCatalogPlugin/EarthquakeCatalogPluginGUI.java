@@ -17,18 +17,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -57,27 +51,21 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
-import org.opensha.commons.util.ExceptionUtils;
-import org.opensha.nshmp2.util.FocalMech;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3DPickBehavior;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogAccessor;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogTable;
-import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogTableModel;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.ComcatResourcesDialog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQPickBehavior;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.FocalMechIcons;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.FocalMechRenderer;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.SourceCatalog;
-import org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity.RelativeIntensity;
-import org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity.RelativeIntensityGUI;
-import org.scec.vtk.plugins.ScriptingPlugin.CueAnimator;
-import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
-import org.scec.vtk.plugins.utils.components.DataFileChooser;
 import org.scec.vtk.plugins.utils.components.EditButton;
 import org.scec.vtk.plugins.utils.components.EndButton;
 import org.scec.vtk.plugins.utils.components.GradientColorChooser;
@@ -91,31 +79,18 @@ import org.scec.vtk.plugins.utils.components.RemoveButton;
 import org.scec.vtk.plugins.utils.components.SaveButton;
 import org.scec.vtk.plugins.utils.components.StopButton;
 import org.scec.vtk.tools.Prefs;
-import org.scec.vtk.tools.Transform;
+import org.scec.vtk.tools.picking.PickHandler;
 
-import gov.usgs.earthquake.event.EventQuery;
-import gov.usgs.earthquake.event.EventWebService;
-import gov.usgs.earthquake.event.Format;
-import gov.usgs.earthquake.event.JsonEvent;
 import javafx.animation.Animation;
 
 import vtk.vtkActor;
-import vtk.vtkAnimationCue;
 import vtk.vtkAnimationScene;
-import vtk.vtkAssignAttribute;
 import vtk.vtkCellArray;
-import vtk.vtkDataSetAttributes;
 import vtk.vtkDoubleArray;
 import vtk.vtkGlyph3D;
-import vtk.vtkGradientFilter;
-import vtk.vtkLookupTable;
 import vtk.vtkMapper;
-import vtk.vtkPointData;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
-import vtk.vtkPolyDataMapper;
-import vtk.vtkRegularPolygonSource;
-import vtk.vtkSphereSource;
 import vtk.vtkUnsignedCharArray;
 import vtk.vtkVertexGlyphFilter;
 
@@ -150,11 +125,6 @@ MouseListener {
 	private static final String NO_VALUE = " -- ";
 	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("##0.0");
 	private static  final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMMM dd, yyyy");
-
-	//to offset the "Compression" and "Tension" JLabel and color button so it looks nice
-	private static int oso_osx = 20;
-	private static int oso_win = 0;
-	private static int oso_nix = 0; //hasn't been tested
 
 	private static int a_l	= GridBagConstraints.LINE_START;       // anchor left
 	private static int a_c	= GridBagConstraints.CENTER;           // anchor center
@@ -215,9 +185,6 @@ MouseListener {
 	public StopButton catProp_stopButton;
 	public EndButton catProp_endButton;
 	public JPanel controlPanel;
-	private Color animationColor1;
-	private Color animationColor2;
-	private int animationScale;
 	private int animationStyle;
 	private JCheckBox animationDisplayTimeCheckbox = new JCheckBox();
 
@@ -227,13 +194,10 @@ MouseListener {
 	private JLabel          dispProp_geometry;				// "Geometry:" label
 	private JRadioButton    dispProp_geomPoint;				// "Point" radio button
 	private JRadioButton    dispProp_geomSphere;			// "Sphere" radio button
-	//private JRadioButton	dispProp_geomCow;				// "Cow" radio button
 	// Magnitude scaling:
 	private JLabel          dispProp_scaling;				// "Magnitude scaling:" label
-	//private JComboBox       dispProp_scaleMenu;				// Scaling options
 	private JSlider			dispProp_slider;				// Additional scaling options
-	//private JLabel          dispProp_pscaling;				// "Magnitude scaling:" label
-	//private JComboBox       dispProp_pscaleMenu;			// Point display size
+
 	// Color:
 	private JLabel          dispProp_color;					// "Color:" label
 	private ColorWellButton dispProp_colGradientButton;				// Color button
@@ -261,13 +225,10 @@ MouseListener {
 	private ColorWellButton dispProp_focalCompColButton;			// Compression color well
 	private JLabel 			dispProp_focalExtLabel;				// "Extension" label
 	private ColorWellButton dispProp_focalExtColButton;			// Extension color well
-	// Apply:
-	//private JButton			dispProp_apply;					// "Apply" button
+
 	// Earthquake Transparency
 	private JSlider transparencySlider;
 	private  JLabel transLabel;
-
-	private HelpButton btnStatsHelp;
 
 	//Space-time panel - Ryan Lacey / Marshall Rogers-Martinez 2011
 	public JPanel spaceTimePanel;
@@ -288,8 +249,6 @@ MouseListener {
 
 	private JButton getInfoButton;
 
-	// accessible panels
-	private JTabbedPane catsTabbedPane;
 	private JTabbedPane propsTabbedPane;
 
 	// adjustable status field.
@@ -297,31 +256,14 @@ MouseListener {
 
 	// accessory windows and dialogs
 	private GradientColorChooser colorChooser;
-	private DataFileChooser fileChooser;
 	protected ObjectInfoDialog srcInfoDialog;
-	//protected FilterDialog catalogFilterDialog;
 
-	// property change monitor
-	//private int propsChange = EQCatalog.CHANGE_NONE;
-
-	private boolean stopflag;
 	public static JProgressBar progbar;
 	public static JLabel progLabel;
 	private Animation a;
 
-	private Color compColor = Color.RED;
-	private Color extColor = Color.YELLOW;
-
-	private RelativeIntensity ri;
-	private RelativeIntensityGUI riGUI;
-
-	//private NetworkSourcesDialog netSourceDialog;
-
-	private boolean renderProtect = false;
-
-	//public static ArrayList<Tuple> discreteRangesList = new ArrayList<Tuple>();
 	public static boolean bIsDiscreteColors = false;
-	//public DiscreteColorDialog colorDialog;
+
 
 	public static boolean bIsUnrecordedDepthFound = false;
 
@@ -329,21 +271,11 @@ MouseListener {
 	private JPanel statsPanel = new JPanel();
 
 
-
-	//private EarthquakeStatistics EQStats;
-
 	//Max & Min Dates
 	public static  Date maxDate, minDate;
 	public static long maxDateMill, minDateMill;
 	public static  long timeDifference;
 
-	//filter added by Ryan Berti 2008
-	private boolean ROIFilter = false;//beta version of ROI filter for earthquake filteration
-	//private ArrayList<RegionWrapper> plist = new ArrayList<RegionWrapper>();//polygon list used to filter epicenters
-	//private CatalogAccessor catalogAcc;
-
-
-	private ArrayList<vtkActor> masterEarthquakeCatalogBranchGroup;
 
 	private CatalogTable catalogTable;
 
@@ -352,10 +284,10 @@ MouseListener {
 	ArrayList<vtkActor> earthquakePointActorList = new ArrayList<>();
 
 	public CatalogAccessor catalogAcc;
+
+	private EQPickBehavior pickHandler;
 	public static ArrayList<EQCatalog> eqCatalogs = new ArrayList<>();
 
-
-	//private CueAnimator cb;
 
 	// init data store
 	static {
@@ -373,17 +305,7 @@ MouseListener {
 		if (!(file = new File(sourceStore)).exists()) file.mkdirs();
 		if (!(file = new File(displayStore)).exists()) file.mkdirs();
 	}
-	/**
-	 * Needed for earthquake animations
-	 * @param eq
-	 */
-	/*public static void setEarthquakes(ArrayList<Earthquake> eq){
-			earthquakes = eq;
-		}
-		/**
-	 * Needed for earthquake animations
-	 * @param eq
-	 */
+
 	public static ArrayList<Earthquake> getEarthquakes() {
 		return earthquakes;
 	}
@@ -397,20 +319,13 @@ MouseListener {
 	public  EarthquakeCatalogPluginGUI(EarthquakeCatalogPlugin plugin){
 		super();
 		pluginActors = plugin.getPluginActors();
+		pickHandler = new EQPickBehavior();
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()));
 		setName("Earthquake Catalog Plugin");
-		// Need this tabbed pane for now so everything functions correctly
-		// TODO: Anything regarding the "catsTabbedPane" should be removed/replaced
-		//this.catsTabbedPane = new JTabbedPane();
+
 		JPanel upperPane = getLibraryPanel();
 		upperPane.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-		//this.catsTabbedPane.add(upperPane);
-		//this.catsTabbedPane.addChangeListener(this);
-
-		// relative intensity
-		//ri = new RelativeIntensity(this);
-		//riGUI = ri.getGUI();
 
 		// creates and adds extents, animation, display, and ri gui's to the lower pane
 		this.propsTabbedPane = new JTabbedPane();
@@ -418,9 +333,8 @@ MouseListener {
 		this.propsTabbedPane.add(getPropsExtentsPanel());
 		this.propsTabbedPane.add(getPropsAnimationPanel());
 		this.propsTabbedPane.add(getSpaceTimePanel());
-		//this.propsTabbedPane.setEnabledAt(1, false);
 		this.propsTabbedPane.add(getPropsDisplayPanel());
-		//this.propsTabbedPane.add(riGUI);
+
 
 		// assemble lower pane
 		JPanel lowerPane = new JPanel();
@@ -428,40 +342,15 @@ MouseListener {
 		lowerPane.add(this.propsTabbedPane);
 		lowerPane.add(getStatusPanel());
 
-		//add(this.catsTabbedPane, BorderLayout.CENTER);
 		add(upperPane, BorderLayout.CENTER);
 		add(lowerPane, BorderLayout.PAGE_END);
 		// now load any data
-		//this.sourceList = new SourceList(this);
-		//this.sourceList.loadSourceCatalogs();
 		try {
 			this.catalogTable.loadCatalogs();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// other initializations
-		//setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		/*EarthquakeCatalogPluginGUI.status.addMouseListener(this);
-
-
-
-			animationColor1 = new Color(255,0,0);
-			animationColor2 = new Color(0,255,0);
-			//animationScale = EQCatalog.SCALING_NONE;
-
-			// update combo box in RI GUI to show newly added catalogs
-			//riGUI.updateCombo();
-
-			btnStatistics.addActionListener(this);
-			btnStatistics.setEnabled(false);
-			//EQStats = new EarthquakeStatistics();
-			statsPanel  = new JPanel(new GridBagLayout());
-			statsPanel.setName("Gutenberg-Richter Relation");
-			propsTabbedPane.add(statsPanel);
-			statsPanel.add(btnStatistics);
-			btnStatsHelp = new HelpButton(this,"Help");
-			statsPanel.add(btnStatsHelp);*/
 
 	}
 	
@@ -489,31 +378,6 @@ MouseListener {
 		}
 		return this.srcInfoDialog;
 	}
-
-	/*public NetworkSourcesDialog getNetworkSourceDialog() {
-			if (this.netSourceDialog == null) {
-				this.netSourceDialog = new NetworkSourcesDialog(this);
-			}
-			return this.netSourceDialog;
-		}*/
-
-	/**
-	 * Returns the list used to display available source catalogs.
-	 *
-	 * @return the list component
-	 */
-	/*public SourceList getSourceList() {
-			return this.sourceList;
-		}*/
-
-	/**
-	 * Returns the table used to display catalogs in a users library.
-	 *
-	 * @return the table component
-	 */
-	/*public CatalogTable getLibraryTable() {
-			return this.catalogTable;
-		}*/
 
 	/**
 	 * Utility method that makes the display properties panel active.
@@ -610,8 +474,6 @@ MouseListener {
 			this.exportLibraryCatButton.setEnabled(false);
 			this.editLibraryCatButton.setEnabled(false);
 			this.remLibraryCatButton.setEnabled(false);
-			//this.loadCatsButton.setEnabled(false);
-			//this.unloadCatsButton.setEnabled(false);
 		}
 		setAttributePanels();
 	}
@@ -661,9 +523,6 @@ MouseListener {
 		this.remLibraryCatButton	= new RemoveButton(this, "Remove catalog from SCEC-VDO");
 		this.helpButton				= new HelpButton(this, "Help");
 
-		//this.loadCatsButton			= new UploadButton(this, "Load selected catalog into memory");
-		//this.unloadCatsButton		= new DownloadButton(this, "Unload selected catalog from memory");
-
 		JPanel bar = new JPanel();
 		bar.setLayout(new BoxLayout(bar,BoxLayout.LINE_AXIS));
 		bar.setOpaque(false);
@@ -673,10 +532,6 @@ MouseListener {
 		bar.add(this.newInternetSourceButton);
 		bar.add(Box.createHorizontalStrut(5));
 		bar.add(this.newFromLibraryButton);
-		//bar.add(Box.createHorizontalStrut(5));
-		//bar.add(this.loadCatsButton);
-		//bar.add(Box.createHorizontalStrut(5));
-		//bar.add(this.unloadCatsButton);
 		bar.add(Box.createHorizontalGlue());
 		bar.add(this.referenceButton);
 		bar.add(Box.createHorizontalGlue());
@@ -1133,32 +988,6 @@ MouseListener {
 		this.dispProp_slider.addChangeListener(this);
 		this.dispProp_slider.setSnapToTicks(true);
 
-		/*this.dispProp_scaleMenu = new JComboBox(scaleMenuItems);
-			this.dispProp_scaleMenu.setOpaque(false);
-			this.dispProp_scaleMenu.addActionListener(this);
-			BasicComboBoxRenderer scaleRender = new BasicComboBoxRenderer();
-			scaleRender.setHorizontalAlignment(SwingConstants.CENTER);
-			this.dispProp_scaleMenu.setRenderer(scaleRender);
-			Dimension menuSize = new Dimension(80, this.dispProp_scaleMenu.getPreferredSize().height);
-			this.dispProp_scaleMenu.setPreferredSize(menuSize);*/
-
-		/*this.dispProp_slider = new JSlider(0,100);
-			this.dispProp_slider.setMajorTickSpacing(25);
-			this.dispProp_slider.setMinorTickSpacing(5);
-			this.dispProp_slider.setPaintLabels(true);
-			this.dispProp_slider.setPaintTicks(true);
-			this.dispProp_slider.addChangeListener(this);
-			this.dispProp_slider.setValue(50);
-			this.dispProp_slider.setMaximumSize(new Dimension(120,18));
-			this.dispProp_slider.setMinimumSize(new Dimension(120,18));
-			this.dispProp_slider.setPreferredSize(new Dimension(120,18));*/
-
-		/*this.dispProp_pscaling = new JLabel("Point scaling:");
-
-			Integer[] pscaleMenuItems = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-			this.dispProp_pscaleMenu = new JComboBox(pscaleMenuItems);
-			this.dispProp_pscaleMenu.setOpaque(false);
-			dispProp_pscaleMenu.addActionListener(this);*/
 
 		//Transparency
 		transparencySlider=new JSlider(0,100,100);
@@ -1260,15 +1089,9 @@ MouseListener {
 		dispProp_gradButtonGroup.add(this.dispProp_gradMag);
 		dispProp_gradButtonGroup.add(this.dispProp_gradDepth);
 
-		// APPLY
-		/*this.dispProp_apply = new JButton("Apply");
-			this.dispProp_apply.addActionListener(this);
-			this.dispProp_apply.setEnabled(false);
-			this.dispProp_apply.setOpaque(false);*/
 
 		assemblePropsDispPanel(false);
 
-		//disableDisplayPanelComponents();
 
 		return this.propsDisplayPanel;
 	}
@@ -1286,46 +1109,23 @@ MouseListener {
 		geometryPanel.add(Box.createHorizontalStrut(10));
 		geometryPanel.add(this.dispProp_geomSphere);
 		this.propsDisplayPanel.add(geometryPanel,		new GridBagConstraints( 1, 0, 1, 1, 0.7, 0.0, a_l, f, new Insets( 0,10,0,0), 0, 0 ));
-		//        this.propsDisplayPanel.add(this.dispProp_geomPoint,		new GridBagConstraints( 1, 0, 1, 1, 0.7, 0.0, a_l, f, new Insets( 0,10,0,0), 0, 0 ));
-		//        this.propsDisplayPanel.add(this.dispProp_geomSphere,	new GridBagConstraints( 1, 0, 1, 1, 0.0, 0.0, a_r, f, new Insets( 0,10,0,0), 80, 0 ));
-
+	
 		int offset = 0;
-		/*if (showCowOption) {
-				this.propsDisplayPanel.add(this.dispProp_geomCow,	new GridBagConstraints( 1, 2, 1, 1, 0.0, 0.0, a_l, f, new Insets( 0,10,0,0), 0, 0 ));
-				offset = 1;
-			}*/
-
+	
 		this.propsDisplayPanel.add(this.dispProp_scaling,		new GridBagConstraints( 0, 2+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
 		//this.propsDisplayPanel.add(this.dispProp_scaleMenu,		new GridBagConstraints( 1, 2+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,0,0), 0, 0 ));
 		this.propsDisplayPanel.add(this.dispProp_slider,		new GridBagConstraints( 1, 2+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10,20,0,10), 0, 0 ));
 
-		/*this.propsDisplayPanel.add(this.dispProp_pscaling,		new GridBagConstraints( 0, 3+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_pscaleMenu,		new GridBagConstraints( 1, 3+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,0,0), 0, 0 ));
-		 */
-		int oso; //OS offset
-		if (Prefs.getOS() == Prefs.OSX)
-			oso = oso_osx;
-		else if (Prefs.getOS() == Prefs.WINDOWS)
-			oso = oso_win;
-		else
-			oso = oso_nix;
+		if (Prefs.getOS() == Prefs.OSX) {
+		} else if (Prefs.getOS() == Prefs.WINDOWS) {
+		} else {
+		}
 
 		//Add new transparency slider here
 		this.propsDisplayPanel.add(transLabel,new GridBagConstraints( 0, 4+offset, 1, 1, 0.0, 0.0, a_c, f, new Insets(0, 0,0,0), 0, 0 ));
 		this.propsDisplayPanel.add(this.transparencySlider,		new GridBagConstraints( 1, 4+offset, 2, 1, 0.0, 0.0, a_c, f, new Insets(0, 0,0,0), 0, 0 ));
 		offset++;
 
-		//TODO focal mechanism
-		/*this.propsDisplayPanel.add(this.dispProp_focalmechanism,		new GridBagConstraints( 0, 4+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,				0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_focalNone,				new GridBagConstraints( 1, 4+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,				0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_focalBall,				new GridBagConstraints( 1, 5+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,				0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_focalBallDropDownBox,	new GridBagConstraints( 1, 5+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,60,				0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_focalDisc,				new GridBagConstraints( 1, 6+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,				0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_focalCompColButton,	new GridBagConstraints( 1, 6+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,60+oso,0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_focalCompLabel,		new GridBagConstraints( 1, 6+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,90+oso,0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_focalExtColButton,		new GridBagConstraints( 1, 7+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,60+oso,0,0), 0, 0 ));
-			this.propsDisplayPanel.add(this.dispProp_focalExtLabel,			new GridBagConstraints( 1, 7+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,90+oso,0,0), 0, 0 ));
-		 */
 		this.propsDisplayPanel.add(this.dispProp_color,			new GridBagConstraints( 0, 8+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10, 10,0,0), 0, 0 ));
 		this.propsDisplayPanel.add(this.dispProp_colGradientButton,		new GridBagConstraints( 1, 8+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,0,0,0), 0, 0 ));
 		this.propsDisplayPanel.add(this.lowerGradientLabel,       new GridBagConstraints(1, 9+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(0,0,0,0), 0, 0));
@@ -1365,31 +1165,25 @@ MouseListener {
 	private void disableDisplayPanelComponents() {
 		setGeometryEnabled(true);
 		setMagScaleEnabled(true);
-		//setPointScaleEnabled(false);
 		setColorEnabled(true);
 		setRecentEQColorEnabled(false);
 		setDiscreteEQColorEnabled(false);
 		setGradApplyEnabled(false);
 		setFocalMechEnabled(false);
 
-		//this.dispProp_apply.setEnabled(false);
 	}
 
 	private void setGeometryEnabled(boolean enable) {
 		this.dispProp_geometry.setEnabled(enable);
 		this.dispProp_geomPoint.setEnabled(enable);
 		this.dispProp_geomSphere.setEnabled(enable);
-		//this.dispProp_geomCow.setEnabled(enable);
+		
 	}
 	private void setMagScaleEnabled(boolean enable) {
 		this.dispProp_scaling.setEnabled(enable);
-		//this.dispProp_scaleMenu.setEnabled(enable);
 		this.dispProp_slider.setEnabled(enable);
 	}
-	/*private void setPointScaleEnabled(boolean enable) {
-			this.dispProp_pscaling.setEnabled(enable);
-			this.dispProp_pscaleMenu.setEnabled(enable);
-		}*/
+
 	private void setColorEnabled(boolean enable) {
 		this.dispProp_color.setEnabled(enable);
 		this.dispProp_colGradientButton.setEnabled(enable);
@@ -1486,9 +1280,6 @@ MouseListener {
 			this.catProp_stopButton.setEnabled(false);
 			this.catProp_endButton.setEnabled(false);
 			this.catProp_relative.setSelected(true);
-			//if (a!=null && !a.getFinishedFlag()){
-			//a.stopAnimation();
-			//}
 			this.catProp_relative.setEnabled(true);
 			this.catProp_static.setEnabled(true);
 		} else {
@@ -1533,7 +1324,7 @@ MouseListener {
 		//FocalEQ focEqs;
 		ArrayList<Earthquake> eqList = new ArrayList<Earthquake>();
 		cat.readDataFile();
-		vtkCellArray spherePolys = new vtkCellArray();
+		new vtkCellArray();
 		for (int i=0; i<cat.getNumEvents();i++){
 			//				if(ROIFilter && !isContained(cat.getEq_latitude(i),cat.getEq_longitude(i))){//checks for ROIfilter, then checks if the eq is contained in any stored ROI polygons
 			//					continue;//skips eq if ROIfilter is on and epicenter is outside of polygons
@@ -1600,12 +1391,8 @@ MouseListener {
 		// get the current selection
 		CatalogAccessor catalog = null;
 		EQCatalog cat = this.catalogTable.getSelectedValue();
-		//        if (this.catsTabbedPane.getSelectedComponent() == this.catsSourcePanel) {
-		//            catalog = (CatalogAccessor)this.sourceList.getSelectedValue();
-		//        } else if (this.catsTabbedPane.getSelectedComponent() == this.catsLibraryPanel) {
 		catalog = this.catalogTable.getSelectedValue();
-		//        }
-
+	
 		// if there is no catalog, clear panels and abort
 		if (catalog == null) {
 			clearAttributePanels();
@@ -1623,10 +1410,6 @@ MouseListener {
 		}
 
 		if (a != null){
-			//stopflag = true;
-			//if (!a.getFinishedFlag()) { //if it didn't finish, stop it.  If it did finish, skip this step so the BG isn't removed.
-			//a.stopAnimation();
-			//}
 			this.propsAnimationPanel.remove(controlPanel);
 			this.propsAnimationPanel.repaint();
 			controlPanel = new JPanel(new GridBagLayout());
@@ -1675,13 +1458,6 @@ MouseListener {
 	 * @see javax.swing.event.TableModelListener#tableChanged(javax.swing.event.TableModelEvent)
 	 */
 	public void tableChanged(TableModelEvent e) {
-		// only one table right now, no need to check source
-		//        if (this.catalogTable.getRowCount() == 0) {
-		//           this.saveLibraryCatButton.setEnabled(false);
-		//        } else {
-		//            this.saveLibraryCatButton.setEnabled(true);
-		//        }
-		//riGUI.updateCombo();
 	}
 
 	/**
@@ -1692,21 +1468,6 @@ MouseListener {
 	public void valueChanged(ListSelectionEvent e) {
 
 		Object src = e.getSource();
-		//SourceList is not used anymore
-		/*      if (src == this.sourceList.getSelectionModel()) {
-	            if (e.getValueIsAdjusting()) return;
-	            if (this.sourceList.getSelectedIndex() != -1) {
-	                //this.newFromSourceButton.setEnabled(true);
-	                //this.editSourceCatButton.setEnabled(true);
-	                //this.remSourceCatButton.setEnabled(true);
-	            } else {
-	                //this.newFromSourceButton.setEnabled(false);
-	                //this.editSourceCatButton.setEnabled(false);
-	                //this.remSourceCatButton.setEnabled(false);
-	            }
-	            setAttributePanels();
-
-	        } else*/
 		if (src == this.catalogTable.getSelectionModel()) {
 			if (e.getValueIsAdjusting()) return;
 			processTableSelectionChange();
@@ -1720,11 +1481,6 @@ MouseListener {
 	 */
 	public void stateChanged(ChangeEvent e) {
 		Object src = e.getSource();
-		//this.propsTabbedPane.setEnabledAt(1, true);
-		//this.propsTabbedPane.setEnabledAt(2, true);
-		//            }
-		//setAttributePanels();
-		//        }
 		if(src == dispProp_slider){
 			//earthquake magnitude scaling
 			//setPropertyChange(true, EQCatalog.CHANGE_SIZE_SLIDER);
@@ -1767,13 +1523,13 @@ MouseListener {
 			inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
 			//int lastIndex = eqList.indexOf(eq);
 
-			vtkPoints pts = new vtkPoints();
+			new vtkPoints();
 			radi = (vtkDoubleArray) inputData.GetPointData().GetArray("radi");
 			//double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
 			for(int i =0;i<eqList.size();i++)
 			{
 				Earthquake eq = eqList.get(i);
-				radi.SetTuple1(i,eq.getEq_magnitude(i)*scaleSet);
+				radi.SetTuple1(i,eq.getEq_magnitude()*scaleSet);
 			}
 			radi.Modified();
 			inputData.GetPointData().AddArray(radi);
@@ -1821,12 +1577,9 @@ MouseListener {
 	}
 
 	public void setAnimationColor(Color c1, Color c2){
-		animationColor1=c1;
-		animationColor2=c2;
 	}
 
 	private void setAnimationScaling(int size){
-		animationScale=size;
 	}
 
 	private void setAnimationStyle(int type){
@@ -1868,9 +1621,10 @@ MouseListener {
 		return this.netSourceDialog;
 	}
 
+	//if catalogs opacity has to be changed
 	public static List<vtkActor> aniamteEarthquakeOpacity(int lastIndex,Earthquake eq,EQCatalog cat,int opacity)
 	{
-		//called on every animation tick to add the earthquake point to the actor
+		//also called on every animation tick
 		ArrayList<Earthquake> eqList = cat.getSelectedEqList();
 		vtkActor actorPointsOld = (vtkActor) cat.getActors().get(0);
 		vtkActor actorSpheresOld = (vtkActor) cat.getActors().get(1);
@@ -1895,7 +1649,7 @@ MouseListener {
 		inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
 		//int lastIndex = eqList.indexOf(eq);
 
-		vtkPoints pts = new vtkPoints();
+		new vtkPoints();
 
 		colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
 
@@ -1920,8 +1674,7 @@ MouseListener {
 	public void actionPerformed(ActionEvent e) {
 
 		Object src = e.getSource();
-		vtkAnimationScene scene = new vtkAnimationScene();
-		CueAnimator cb;
+		new vtkAnimationScene();
 		if (src == newInternetSourceButton){
 			if (this.netSourceDialog == null) {
 				this.netSourceDialog = new ComcatResourcesDialog(this);
@@ -2024,7 +1777,7 @@ MouseListener {
 			inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
 			//int lastIndex = eqList.indexOf(eq);
 
-			vtkPoints pts = new vtkPoints();
+			new vtkPoints();
 
 			colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
 
@@ -2033,7 +1786,7 @@ MouseListener {
 			{
 				Earthquake eq = eqList.get(i);
 				// Color based on magnitude
-				int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude(i)))-cat.getMinMagnitude());
+				int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude()))-cat.getMinMagnitude());
 				if(ind<0)
 					ind=0;
 
@@ -2202,7 +1955,6 @@ MouseListener {
 
 	public void setRenderProtect(boolean on, boolean auto) {
 		if (on) {
-			renderProtect = true;
 			if (auto) {
 				catProp_playButton.setEnabled(false);
 				catProp_pauseButton.setEnabled(false);
@@ -2216,7 +1968,6 @@ MouseListener {
 			catProp_playButton.setEnabled(true);
 			catProp_stopButton.setEnabled(false);
 			catProp_endButton.setEnabled(true);
-			renderProtect = false;
 		}
 	}
 
@@ -2247,6 +1998,10 @@ MouseListener {
 	public ArrayList<EQCatalog> getCatalogs() {
 		// TODO Auto-generated method stub
 		return eqCatalogs;
+	}
+	public PickHandler<EQCatalog> getPickHandler() {
+		// TODO Auto-generated method stub
+		return pickHandler;
 	}
 
 }

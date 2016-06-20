@@ -32,9 +32,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-
-
-
+import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
+import org.scec.vtk.commons.opensha.surfaces.pickBehavior.FaultSectionPickBehavior;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.utils.DataAccessor;
@@ -48,10 +47,14 @@ import org.scec.vtk.plugins.utils.components.RemoveButton;
 import org.scec.vtk.plugins.utils.components.ShowButton;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PickHandler;
+import org.scec.vtk.tools.picking.PointPickEnabledActor;
 
 import vtk.vtkActor;
 
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3DPickBehavior;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultAccessor;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTable;
@@ -113,6 +116,7 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 
 	//branch group connection to core branch group
 	private PluginActors actors;
+	private PickHandler<Fault3D> pickHandler;
 
 
 	/**
@@ -165,7 +169,7 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 		add(lowerPane, BorderLayout.PAGE_END);
 
 		// other initializations
-
+		pickHandler = new Fault3DPickBehavior();
 
 	}
 
@@ -184,6 +188,10 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 		this.groupList.loadGroups();
 	}
 
+	
+	public PickHandler<Fault3D> getPickHandler() {
+		return pickHandler;
+	}
 	/**
 	 * Method centralizes button enabling based on selections. An object's state
 	 * may change without changing a selection so a means to alter button state's
@@ -498,6 +506,7 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 	 *
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
+	@SuppressWarnings("unchecked")
 	public void actionPerformed(ActionEvent e) {
 
 		FaultTableModel libModel  = this.faultTable.getLibraryModel();
@@ -564,7 +573,8 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 					{
 						Fault3D  fault =(Fault3D) loadedRows.get(i);
 						System.out.println("Adding "+fault.getDisplayName());
-						vtkActor actor = (fault.getFaultActor());
+						PickEnabledActor<Fault3D> actor = new PickEnabledActor<Fault3D>(getPickHandler(), fault);
+						actor.SetMapper(fault.getFaultActor().GetMapper());
 						actors.addActor(actor);
 					}
 					MainGUI.updateRenderWindow();

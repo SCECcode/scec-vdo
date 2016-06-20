@@ -2,8 +2,11 @@ package org.scec.vtk.main;
 
 import java.awt.Color;
 
+import vtk.vtkTextActor;
+
 public class Info {
 	private static MainGUI mainGUI;
+	public static vtkTextActor textDisplayActor= new vtkTextActor();
 	public static final double rgbMax = 255.0;
 	public static MainGUI getMainGUI() {
 		 
