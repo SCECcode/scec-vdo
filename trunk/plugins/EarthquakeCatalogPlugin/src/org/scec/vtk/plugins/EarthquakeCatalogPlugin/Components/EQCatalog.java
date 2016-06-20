@@ -20,12 +20,14 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
 import org.scec.vtk.plugins.utils.DataImport;
 import org.scec.vtk.plugins.utils.components.ObjectInfoDialog;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
+import org.scec.vtk.tools.picking.PickEnabledActor;
 
 import vtk.vtkActor;
 import vtk.vtkAppendFilter;
@@ -352,121 +354,10 @@ public class EQCatalog extends CatalogAccessor {
 			addEqList();
 
 		}
-		// COWS:
-		/*else if (getGeometry() == GEOMETRY_COW){
-
-        		// init cow transform groups if not already
-        		int numevents = getNumEvents();
-        		if (eventCows == null) {
-        			eventCows = new TransformGroup[getNumEvents()];
-        			if ( numevents > 30 ){
-        				JOptionPane.showMessageDialog(Geo3dInfo.getDesktop(),
-							"<html>The Unit Cow shape is meant to be displayed for small catalogs.<br>" +
-							"Only the first 30 earthquakes in your catalog will display.</html>");
-        				numevents = 30;
-        			}
-        			for (int i = 0; i< numevents; i++) {
-        				eventCows[i] = new TransformGroup();
-        				eventCows[i].setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        			}
-        		}
-
-        		// set position (and perform some other necessary transforms for our friendly cow)
-        		for (int i = 0; i < numevents; i++) {
-        			this.eventTrans.rotX(45); //make the cows look like they're standing - feet tangent to earth
-        			//you want to be able to rotate so the cow is touching the ground, all four feet (as close as you can)
-        			this.eventTrans.setScale(6*getEventDisplaySize(eq_magnitude[i])); //make the cows big 'cuz they start unit
-        			this.eventTrans.setTranslation(new Vector3f(this.eventCoords[i])); 
-        			eventCows[i].setTransform(this.eventTrans);
-        			// TODO: figure out why it crashes here after you change the display settings once
-        		}
-
-        		// add cows to transforms
-        		for (int i = 0; i < numevents; i++) {
-
-        			// init cow w/o Appearance
-        			Cow3D event = new Cow3D();
-
-        			// remove existing cow if any
-        			// (catch ArrayIndexOutOfBounds exception)
-        			try {
-        				this.eventCows[i].removeChild(0);
-        			} catch (Exception e) {
-        				// do nothing; continue
-        			}
-
-        			// add to transform
-        			this.eventCows[i].addChild(event);
-
-        			// add to branch group
-        			this.catBranchGroup.addChild(eventCows[i]);                
-        		}
-
-        		if (recentEQcoloring == 1) {
-        			initRecentEQAppearance();
-        			for (int i = 0; i < numevents; i++) {
-        				((Cow3D)this.eventCows[i].getChild(0)).setAppearance(
-        						sphereGradientAppearance[getGradientScaleValue(i)]);
-        			}    
-        		}
-        		// paint as single color
-        		else if (getColor1().equals(getColor2())) {
-        			initColorAppearance();
-        			for (int i = 0; i < numevents; i++) {
-        				((Cow3D)this.eventCows[i].getChild(0)).setAppearance(
-        						sphereColorAppearance);
-        			}
-        		}
-        		// paint gradient on depth or magnitude (initGradientMagnitude takes care
-        		// of initializing appearance array with correct number of divisions
-        		// getGradientScales value also checks apply style before returning
-        		// a value
-        		else {
-        			initGradientAppearance();
-        			for (int i = 0; i < numevents; i++) {
-        				((Cow3D)this.eventCows[i].getChild(0)).setAppearance(
-        						sphereGradientAppearance[getGradientScaleValue(i)]);
-        			}                
-        		}
-        	}
-        	// SPHERES:
-        	else if (getGeometry() == GEOMETRY_SPHERE) {
-        		if( (focalDisplay == FOCAL_BALL) || (focalDisplay == FOCAL_NONE) ) {
-        			// init sphere transform groups if not already
-        			initializeEventSpheres();
-
-        			// add spheres to transforms
-        			addSpheresToBranchGroup();
-
-        		} else if (focalDisplay == FOCAL_DISC) {
-        			addDiscsToBranchGroup();
-        		}
-        	}
-        }
-		 */
-		//EarthquakeCatalogPluginGUI.status.setText("Status");
+		
 	}
 
 	private void addDiscsToBranchGroup() {
-		/*FocalEQ eq;
-		BranchGroup focalBG;
-
-		Color3f compColor3f = new Color3f(focalDiscCompColor);
-		Color3f extColor3f = new Color3f(focalDiscExtColor);
-
-		ArrayList list = EarthquakeCatalogPluginGUI.getEarthquakes();
-		for (int i = 0; i<list.size(); i++) {
-			eq = (FocalEQ)list.get(i);
-
-			eq.setColor1(compColor3f);
-			eq.setColor2(extColor3f);
-
-			eq.setScaleFactor(getEventDisplaySize(eq_magnitude[i]) * 5.0f);
-
-			focalBG = eq.displayFocal();
-			focalBG.detach();
-			this.catBranchGroup.addChild(focalBG);
-		}*/
 	}
 
 	public ArrayList<Earthquake> getSelectedEqList(){
@@ -486,10 +377,9 @@ public class EQCatalog extends CatalogAccessor {
 	}
 	public void addComcatEqList()
 	{
-		//if(((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog()!=null)
-		//{
+
 		eqList = ((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog().getAllEarthquakes();
-		//}
+
 		catalogTypeIsComcat = true;
 		addPointsToBranchGroup(false,eqList);
 		addPointsToBranchGroup(true,eqList);
@@ -499,7 +389,6 @@ public class EQCatalog extends CatalogAccessor {
 	public void addPointsToBranchGroup(boolean sphere,ArrayList<Earthquake> eqList)
 	{
 		initGradientAppearance();
-		vtkActor actorEQCatalog = new vtkActor();
 		vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
 		vtkPoints pts = new vtkPoints();
 		vtkPolyDataMapper mapperEQCatalog = new vtkPolyDataMapper();
@@ -516,11 +405,11 @@ public class EQCatalog extends CatalogAccessor {
 		{
 
 			Earthquake eq = eqList.get(i);
-			xForm = Transform.transformLatLonHeight(eq.getEq_latitude(i), eq.getEq_longitude(i), -eq.getEq_depth(i));
+			xForm = Transform.transformLatLonHeight(eq.getEq_latitude(), eq.getEq_longitude(), -eq.getEq_depth());
 			pts.InsertNextPoint(xForm);
-			radi.InsertNextTuple1(eq.getEq_magnitude(i));
+			radi.InsertNextTuple1(eq.getEq_magnitude());
 			// Color based on magnitude
-			int ind =  (int)Math.floor(eq.getEq_magnitude(i)) - (int)getMinMagnitude();
+			int ind =  (int)Math.floor(eq.getEq_magnitude()) - (int)getMinMagnitude();
 			if(ind<0)
 				ind=0;
 
@@ -568,14 +457,19 @@ public class EQCatalog extends CatalogAccessor {
 		//mapperEQCatalog.colorve
 		mapperEQCatalog.SelectColorArray("colors");
 
-		actorEQCatalog.SetMapper(mapperEQCatalog);
+		//actorEQCatalog.SetMapper(mapperEQCatalog);
+		//if uncommented this code helps to check the correct gradient
 		//		vtkScalarBarActor scalarBar = new vtkScalarBarActor();
 		//			  scalarBar.SetLookupTable(lut);
 		//			  scalarBar.SetTitle("Title");
 		//			  scalarBar.SetNumberOfLabels(4);
 		//			  Info.getMainGUI().getRenderWindow().GetRenderer().AddActor2D(scalarBar);
+		
+		PickEnabledActor<EQCatalog> actorEQCatalog = new PickEnabledActor<EQCatalog>(((EarthquakeCatalogPluginGUI) parent).getPickHandler(), this);
+		actorEQCatalog.SetMapper(mapperEQCatalog);
 		myActors.add(actorEQCatalog);
 		pluginActors.addActor(actorEQCatalog);
+		Info.getMainGUI().updateRenderWindow();
 	}
 
 	public List<vtkActor> getActors() {
