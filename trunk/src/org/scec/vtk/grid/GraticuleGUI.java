@@ -574,7 +574,10 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		}
 		else if (noneRadioButton.isSelected()) {
 			if (Info.getMainGUI().getGridDisplayBool())
+			{
+				Info.getMainGUI().makeGrids(makeNewGrid(gridWidth),labelsOn);
 				Info.getMainGUI().toggleGridDisplay();
+			}
 			System.out.println("No grid selected");
 			Info.getMainGUI().updateRenderWindow();
 		} else if (customRadioButton.isSelected()) {
@@ -590,7 +593,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 				}
 			} catch (NumberFormatException nfe) {
 				customTextBox
-				.setText("Please enter a number greater than .1");
+				.setText("Please enter a number greater than .05");
 				customTextBox.setSelectionStart(0);
 				customTextBox.setSelectionEnd(customTextBox.getText()
 						.length());
