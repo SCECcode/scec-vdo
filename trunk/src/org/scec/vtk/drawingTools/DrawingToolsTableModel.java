@@ -1,32 +1,22 @@
 package org.scec.vtk.drawingTools;
 
 import java.awt.Color;
+import java.awt.Component;
+
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 import org.scec.vtk.plugins.utils.AbstractLibraryModel;
 
-public class DrawingToolsTableModel extends AbstractLibraryModel {
+public class DrawingToolsTableModel extends DefaultTableModel {
     
     private static final long serialVersionUID = 1L;
 
-	@Override
-	public int getColumnCount() {
-		// TODO Auto-generated method stub
-		return 1;
+    public DrawingToolsTableModel(String[] columnNames) {
+		// TODO Auto-generated constructor stub
+    	super(columnNames, 0);
 	}
-
-	public Object getColorForRow(int row) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setColorForRows(Color newColor, int[] selectedRows) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void toggleMeshStateForRow(int row) {
-		// TODO Auto-generated method stub
-		
-	}
-
+    public boolean isCellEditable(int row, int column){  
+        return false;  
+    }
 }

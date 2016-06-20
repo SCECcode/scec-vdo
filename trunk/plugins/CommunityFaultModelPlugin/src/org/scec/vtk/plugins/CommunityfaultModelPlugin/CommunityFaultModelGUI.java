@@ -446,7 +446,7 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 	public void valueChanged(ListSelectionEvent e) {
 
 		Object src = e.getSource();
-		FaultTableModel libModel  = this.faultTable.getLibraryModel();
+		this.faultTable.getLibraryModel();
 		if (e.getValueIsAdjusting()) return;
 
 		if (src == this.faultTable.getSelectionModel()) {
@@ -534,8 +534,7 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 			Color newColor = this.colorChooser.getColor();
 			if (newColor != null) {
 				libModel.setColorForRows(newColor, this.faultTable.getSelectedRows());
-				//update mesh color of the actor
-				int[] selectedRows = this.faultTable.getSelectedRows();
+				this.faultTable.getSelectedRows();
 				ArrayList<Fault3D> selectedFaults = faultTable.getSelected();
 				for (Fault3D fault : selectedFaults) {
 					vtkActor actor = fault.getFaultActor();
@@ -558,7 +557,7 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 				ArrayList newObjects = tsImport.processFiles();
 				if (newObjects.size() > 0) {
 					this.faultTable.addFaults(newObjects);
-					int faultTableRows = this.faultTable.getRowCount();
+					this.faultTable.getRowCount();
 					//reloading as the faults are sorted alphabetically 
 					List loadedRows = this.faultTable.getLibraryModel().getAllObjects();
 					for(int i = 0; i < loadedRows.size(); i++)
@@ -574,7 +573,7 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 		} else if (src == this.remFaultsButton) {
 			int[] selectedRows = this.faultTable.getSelectedRows();
 			ArrayList<Fault3D> selectedFaults = faultTable.getSelected();
-			ArrayList<vtkActor> removedActors = new ArrayList<vtkActor>();
+			new ArrayList<vtkActor>();
 			int delete = libModel.deleteObjects(
 					this.faultTable,
 					selectedRows);
