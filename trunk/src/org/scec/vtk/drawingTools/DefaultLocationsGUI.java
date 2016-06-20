@@ -66,7 +66,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		this.guiparent = guiparent;
 		this.drawingToolTable = guiparent.getTable();
 		this.drawingTooltablemodel = drawingToolTable.getLibraryModel();
-		this.defaultLocationsStartIndex = 0;//this.drawingToolTable.getRowCount();
+		this.defaultLocationsStartIndex = this.drawingToolTable.getRowCount();
 		// Set main panel layout manager and dimensions
 		this.setLayout(new BorderLayout(5,5));
 		this.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
@@ -124,13 +124,13 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 
 
 	private void addBuiltInFiles(Vector<DrawingTool> locations) {
-
+		defaultLocationsStartIndex = this.drawingToolTable.getRowCount();
 		for (int i = 0; i < locations.size(); i++) {
 			DrawingTool tempLocation = locations.get(i);		
 			this.guiparent.addDrawingTool(tempLocation);//.addDrawingTool(tempLocation);
-			ArrayList<DrawingTool> newObjects = new ArrayList<>();
-			newObjects.add(tempLocation);
-			this.drawingToolTable.addDrawingTool(newObjects);
+			//ArrayList<DrawingTool> newObjects = new ArrayList<>();
+			//newObjects.add(tempLocation);
+			this.drawingToolTable.addDrawingTool(tempLocation);//newObjects);
 		}
 		Info.getMainGUI().updateRenderWindow();
 	}
@@ -138,27 +138,21 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private void removeBuiltInFiles(Vector<DrawingTool> locations) {
 		//System.out.println(defaultLocationsStartIndex);
 		if(locations!=null){
-		this.drawingToolTable.setRowSelectionInterval(defaultLocationsStartIndex,locations.size()-1);
-		int[] selectedRows = this.drawingToolTable.getSelectedRows() ;
-			
-			int delete = drawingTooltablemodel.deleteObjects(
-	                this.drawingToolTable,
-	                selectedRows);
-	        if (delete == JOptionPane.NO_OPTION ||
-	                delete == JOptionPane.CLOSED_OPTION) {
-	        }
-	        else
-	        {
-	        	guiparent.removeTextActors(selectedRows);
-	        }
+			for(int i =0;i<this.drawingToolTable.getRowCount();i++)
+			{
+				if(locations.elementAt(0).getTextString()== this.drawingToolTable.getValueAt(i, 0))
+				{
+					defaultLocationsStartIndex=i;
+				}
+			}
+		this.drawingToolTable.setRowSelectionInterval(defaultLocationsStartIndex,defaultLocationsStartIndex+locations.size()-1);
+		guiparent.removeTextActors();
+		
 		}
 	}
 	
 	private Vector<DrawingTool> loadBuiltInFiles() {
-//		BranchGroup mainBranchGroup = new BranchGroup();
-//		mainBranchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-//		mainBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
-//		
+	
 		/**
 		 * Only reads point data
 		 */

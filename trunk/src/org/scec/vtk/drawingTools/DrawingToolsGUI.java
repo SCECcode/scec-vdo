@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -83,6 +85,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	AppendActors appendActors = new AppendActors();
 
 	private int  numText =0;
+	private ArrayList<DrawingTool> drawingToolsArray ;
 
 	public DrawingToolsGUI(PluginActors pluginActors){
 		this.pluginActors = pluginActors;
@@ -92,7 +95,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()));
 		setName("Drawing Tools");
 		this.drawingToolTable = new DrawingToolsTable(this);
-		new DrawingToolsTableModel();
 
 		defaultLocations = new DefaultLocationsGUI(this);
 		JScrollPane drawingToolSubPanelUpper = new JScrollPane();
@@ -121,7 +123,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		displayPanel.add(getDrawingToolLibraryPanel());//mid level
 		displayPanel.add(this.drawingToolSubPanelLowest);//lowest level
 		add(displayPanel);
-
+		drawingToolsArray  = new ArrayList<>();
 		//labels.SetName("labels");
 
 	}
@@ -184,85 +186,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 
 		return bar;
 	}
-	/*public void addDrawingToolList(DrawingTool drawingTool){
-		String text = "Text";
-		double[] pt= {Transform.calcRadius(37),37,-120};
-		ArrayList<DataAccessor> a = this.drawingToolTable.getLibraryModel().getAllObjects();
-		if(drawingTool.getTextString()==null)
-		{
-			drawingTool = new DrawingTool(pt[1],pt[2],pt[0],text,null);
-			drawingTool.setDisplayName(text +" -"+ numText++); 
-		}
-		else
-		{
-			text = drawingTool.getTextString();
-			drawingTool.setDisplayName(drawingTool.getTextString() +" -"+ numText++);
-			pt[0]= pt[0]+drawingTool.getaltitude();
-			pt[1]= drawingTool.getLatitude();
-			pt[2]= drawingTool.getLongitude();
-		}
-
-		//text as label facing camera
-		vtkStringArray labels =new vtkStringArray();
-		labels.SetName("labels");
-		labels.SetNumberOfValues(1);
-		labels.SetValue(0, text);
-		vtkPoints labelPoints = new vtkPoints();
-		labelPoints.InsertNextPoint(Transform.customTransform(pt));
-
-
-		//create a pin near the text to mark the location 
-
-		vtkPolyData pinPolydata = new  vtkPolyData();
-		pinPolydata.SetPoints(labelPoints);
-
-		// Use sphere as glyph source.
-		vtkConeSource conePin = new vtkConeSource();
-		conePin.SetRadius(5);
-		conePin.SetHeight(10);
-		conePin.SetDirection(-Transform.customTransform(pt)[0],-Transform.customTransform(pt)[1],-Transform.customTransform(pt)[2]);
-		conePin.SetResolution(10);
-
-		vtkGlyph3D glyphPoints = new vtkGlyph3D();
-		glyphPoints.SetInputData(pinPolydata);
-		glyphPoints.SetSourceConnection(conePin.GetOutputPort());
-
-		vtkPolyDataMapper pm = new vtkPolyDataMapper();
-		pm.SetInputConnection(glyphPoints.GetOutputPort());
-
-		vtkPolyData temp = new vtkPolyData();
-		temp.SetPoints(labelPoints);
-		temp.GetPointData().AddArray(labels);
-
-		vtkPointSetToLabelHierarchy pointSetToLabelHierarchyFilter =new vtkPointSetToLabelHierarchy();
-		pointSetToLabelHierarchyFilter.SetInputData(temp);
-		pointSetToLabelHierarchyFilter.GetTextProperty().SetJustificationToLeft();
-		pointSetToLabelHierarchyFilter.SetLabelArrayName("labels");
-		//pointSetToLabelHierarchyFilter.SetInputConnection(pinSource.GetOutputPort());
-		pointSetToLabelHierarchyFilter.Update();
-		pointSetToLabelHierarchyFilter.GetTextProperty().SetFontSize(Integer.parseInt(displayAttributes.fontSizeField.getText()));
-
-
-		vtkLabelPlacementMapper cellMapper = new vtkLabelPlacementMapper();
-		cellMapper.SetInputConnection(pointSetToLabelHierarchyFilter.GetOutputPort());
-
-
-		vtkActor2D actor = new vtkActor2D();
-		actor.SetMapper(cellMapper);
-
-		vtkActor actorPin = new vtkActor();
-		actorPin.SetMapper(pm);
-		appendActors.addToAppendedPolyData(actor);
-		appendActors.addToAppendedPolyData(actorPin);
-	}*/
-
-	//TODO: change actor index when a new actor is added 
 	//grouping actor 
 	public DrawingTool addDrawingTool(DrawingTool drawingTool){
 		//indivisual text as actors
 		String text = "Text";
 		double[] pt= {Transform.calcRadius(37),37,-120};
-		ArrayList<DataAccessor> a = this.drawingToolTable.getLibraryModel().getAllObjects();
+		//ArrayList<DataAccessor> a = this.drawingToolTable.getLibraryModel().getAllObjects();
 		if(drawingTool.getTextString()==null)
 		{
 			drawingTool = new DrawingTool(pt[1],pt[2],pt[0],text,null);
@@ -271,7 +200,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		else
 		{
 			text = drawingTool.getTextString();
-			drawingTool.setDisplayName(drawingTool.getTextString() +" -"+ numText++);
+			drawingTool.setDisplayName(drawingTool.getTextString());
 			pt[0]= pt[0]+drawingTool.getaltitude();
 			pt[1]= drawingTool.getLatitude();
 			pt[2]= drawingTool.getLongitude();
@@ -327,7 +256,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 
 		vtkActor actorPin = new vtkActor();
 		actorPin.SetMapper(pm);
-
+	
 		//first pin then label
 		appendActors.addToAppendedPolyData(actorPin);
 		appendActors.addToAppendedPolyData(actor);
@@ -340,51 +269,43 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		Object src = e.getSource();
 		DrawingToolsTableModel drawingTooltablemodel = this.drawingToolTable.getLibraryModel();
 		if (src == this.showDrawingToolsButton) {
-			int[] selectedRows =  this.drawingToolTable.getSelectedRows();
-			for(int i =0;i<selectedRows.length;i++)
-			{
-				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject((selectedRows[i]*2)+1);
-				vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(selectedRows[i]*2);
-
+			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+	 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+	 			//int row = model.getMinSelectionIndex();
+				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+				vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
 				if(actor.GetVisibility() == 1 && actorPin.GetVisibility() == 1)
 				{actor.SetVisibility(0); actorPin.SetVisibility(0);}
 				else
 				{actor.SetVisibility(1); actorPin.SetVisibility(1);}
-
-			}
-			MainGUI.updateRenderWindow();
+				
+	 		}
+	 		appendActors.getAppendedActor().Modified();
+	 		Info.getMainGUI().updateRenderWindow();
 		}
 		else if (src == this.editDrawingToolsButton) {
-			runObjectInfoDialog(this.drawingToolTable.getSelectedRows());
+//			ArrayList<DrawingTool> selectedDrawingToolObjs = this.drawingToolTable.getSelected();
+//			
+			runObjectInfoDialog();
 		}
 		else if (src == this.addDrawingToolsButton) {
 			DrawingTool drawingToolObj = new DrawingTool();
 			drawingToolObj = addDrawingTool(drawingToolObj);
-			ArrayList<DrawingTool> newObjects = new ArrayList<>();
-			newObjects.add(drawingToolObj);
-			this.drawingToolTable.addDrawingTool(newObjects);
+			//ArrayList<DrawingTool> newObjects = new ArrayList<>();
+			//newObjects.add(drawingToolObj);
+			this.drawingToolTable.addDrawingTool(drawingToolObj);
 			MainGUI.updateRenderWindow();
 		}
 		if (src == this.remDrawingToolsButton) {
-			int[] selectedRows = this.drawingToolTable.getSelectedRows();
-			int delete = drawingTooltablemodel.deleteObjects(
-					this.drawingToolTable,
-					selectedRows);
-			if (delete == JOptionPane.NO_OPTION ||
-					delete == JOptionPane.CLOSED_OPTION) {
-			}
-			else
-			{
-				removeTextActors(selectedRows);
-			}
+			removeTextActors();
 		}
 		if (src == this.displayAttributes.latField || src == this.displayAttributes.lonField || src == this.displayAttributes.altField ) {
-			int[] selectedRows =  this.drawingToolTable.getSelectedRows();
-			for(int i =0;i<selectedRows.length;i++)
-			{
-				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject((selectedRows[i]*2)+1);
-				vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(selectedRows[i]*2);
-
+			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+	 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+	 			//int row = model.getMinSelectionIndex();
+				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+				vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+				
 				vtkPoints labelPoints = new vtkPoints();
 				labelPoints.InsertNextPoint(Transform.transformLatLonHeight(Double.parseDouble((String) this.displayAttributes.latField.getText()),
 						Double.parseDouble((String) this.displayAttributes.lonField.getText()),
@@ -402,12 +323,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			MainGUI.updateRenderWindow();
 		}
 		if (src == this.displayAttributes.fontSizeField ) {
-			int[] selectedRows =  this.drawingToolTable.getSelectedRows();
-			for(int i =0;i<selectedRows.length;i++)
-			{
-				//vtkProp actor = (vtkProp) actors.get((selectedRows[i]*2)+1);
-				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject((selectedRows[i]*2)+1);
-
+			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+	 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+	 			//int row = model.getMinSelectionIndex();
+				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+				//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+				
 				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
 			}
 			MainGUI.updateRenderWindow();
@@ -419,12 +340,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			Color newColor = this.colorChooser.getColor();
 			if (newColor != null) {
 				double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
-				int[] selectedRows = this.drawingToolTable.getSelectedRows();
-				for(int i =0;i<selectedRows.length;i++)
-				{
-					vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject((selectedRows[i]*2)+1);
-					vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(selectedRows[i]*2);
-
+				ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+		 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+		 			//int row = model.getMinSelectionIndex();
+					vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+					vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+					
 					((vtkActor) actorPin).GetProperty().SetColor(color);
 					((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
 
@@ -436,26 +357,24 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	}
 
 
-	public void removeTextActors(int[] selectedRows) {
+	public void removeTextActors() {
 		//remove actors
+		DrawingToolsTableModel drawingTooltablemodel = this.drawingToolTable.getLibraryModel();
+		ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+ 		while (model.getMinSelectionIndex() >= 0) {
+ 			int row = model.getMinSelectionIndex();
+ 			
+ 			vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(row*2+1);
+			vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(row*2);
+       		appendActors.getAppendedActor().RemovePart(actorPin);
+       		appendActors.getAppendedActor().RemovePart(actor);
+       		drawingTooltablemodel.removeRow(row);
+ 		}
+ 		Info.getMainGUI().updateRenderWindow();
 		ArrayList<vtkObject> removedActors = new ArrayList<>();
-		for(int i =0;i<selectedRows.length;i++)
-		{
-			vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject((selectedRows[i]*2)+1);
-			vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(selectedRows[i]*2);
-
-			removedActors.add(actorPin);
-			removedActors.add(actor);
-			appendActors.getAppendedActor().RemovePart(actorPin);
-			appendActors.getAppendedActor().RemovePart(actor);
-			//DrawingTool.getMasterFaultBranchGroup().remove(2*(selectedRows[i]-i));
-			//DrawingTool.getMasterFaultBranchGroup().remove(2*(selectedRows[i]-i));
-		}
-		//Info.getMainGUI().removeActors(removedActors);
-		MainGUI.updateRenderWindow();
 
 	}
-	private void runObjectInfoDialog(int[] objects) {
+	private void runObjectInfoDialog() {
 		String displayTextInput = JOptionPane.showInputDialog(
 				this.drawingToolTable,
 				"Change text:",
@@ -464,13 +383,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		if (displayTextInput == null) return;
 		else
 		{
-			for(int i =0;i<objects.length;i++)
-			{
-				//vtkProp actor = (vtkProp) actors.get(objects[i]);
-				//vtkProp actor = (vtkProp) actors.get(objects[i]*2+1);
-				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(objects[i]*2+1);
-				//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(selectedRows[i]*2);
-
+			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+	 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+	 			//int row = model.getMinSelectionIndex();
+				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+				//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+				this.drawingToolTable.setValueAt(displayTextInput,i, 0);//= .setDisplayName(displayTextInput);
 				vtkStringArray labels =new vtkStringArray();
 				labels.SetName("labels");
 				labels.SetNumberOfValues(1);
@@ -481,10 +399,11 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				temp.GetPointData().AddArray(labels);
 				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).SetLabelArrayName("labels");
 				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).Update();
-				MainGUI.updateRenderWindow();//.addActors(DrawingTool.getMasterFaultBranchGroup());
-			}
+				MainGUI.updateRenderWindow();
+	 		}
 		}
-	}
+		}
+
 
 	@Override
 	public void tableChanged(TableModelEvent e) {
@@ -506,13 +425,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			this.remDrawingToolsButton.setEnabled(true);
 			this.editDrawingToolsButton.setEnabled(true);
 			this.colorDrawingToolsButton.setEnabled(true);
-			if (this.drawingToolTable.getLibraryModel().allAreLoaded(selectedRows)) {
-				enablePropertyEditButtons(true);
-			} else if (this.drawingToolTable.getLibraryModel().noneAreLoaded(selectedRows)) {
-				enablePropertyEditButtons(true);
-			} else {
-				enablePropertyEditButtons(true);
-			}
+
 		} else {
 			enablePropertyEditButtons(false);
 			this.remDrawingToolsButton.setEnabled(false);
