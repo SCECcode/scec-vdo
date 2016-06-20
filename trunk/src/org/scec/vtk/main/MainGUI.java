@@ -260,8 +260,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 		// Show the point on the sphere the mouse is hovering over in the status bar
 		renderWindow.addMouseListener(new MouseAdapter() {
-			vtkTextActor textActor = new vtkTextActor();
-			double[] oldColor = new double[3];
 			public void mousePressed(MouseEvent e) {
 				int[] clickPos = renderWindow.getRenderWindowInteractor().GetEventPosition();
  
@@ -273,64 +271,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 					// TODO check to see that the actor belongs to the currently visible plugin, if not ignore pick
 					actor.picked(cellPicker, e);
 				}
-				
-				if (e.getButton() == MouseEvent.BUTTON1) {
-					// Pick from this location. 
-					picker.Pick(clickPos[0], clickPos[1],0, renderWindow.GetRenderer());
-					vtkActor pickedActor = picker.GetActor();
-					if (pickedActor != null && pickedActor.GetMapper().GetInputAsDataSet() instanceof vtkPolyData) {
-						oldColor = pickedActor.GetProperty().GetColor();
-						vtkPolyData pd = (vtkPolyData) pickedActor.GetMapper().GetInputAsDataSet();
-						vtkStringArray info = (vtkStringArray) (pd).GetPointData().GetAbstractArray("Info");
-						// Highlight the picked actor by changing its properties
-						if(info!=null){
-							textActor.SetInput ((info.GetValue(0)));
-							textActor.SetPosition2 ( 10, 40 );
-							textActor.GetTextProperty().SetFontSize ( 24 );
-							textActor.GetTextProperty().SetColor ( 1.0, 0.0, 0.0 );
-							renderWindow.GetRenderer().AddActor2D ( textActor );
-						}
-						pickedActor.GetProperty().SetColor(1.0, 1.0, 0.0);
-						pickedActor.Modified();
-						renderWindow.repaint();
-					}
-				}
-				if (e.getButton() == MouseEvent.BUTTON3) {
-
-					// The call to Pick needs to be surrounded by lock and unlock to prevent crashes.
-					renderWindow.lock();
-					int pickSucceeded = cellPicker.Pick(e.getX(), renderWindow.getHeight()-e.getY()-1,
-							0.0, renderWindow.GetRenderer());
-					renderWindow.unlock();
-
-					if (pickSucceeded == 0)
-					{
-						//gets points position 
-						double[] p = cellPicker.GetPickPosition();
-						setPointerPosition(cellPicker.GetPickPosition());
-						System.out.println("Position: " + p[0] + ", " + p[1] + ", " + p[2]);
-					}
-
-				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1) {
-					vtkActor pickedActor = picker.GetActor();
-					if (pickedActor != null){
-						if(textActor!=null){
-							textActor.SetInput ("");
-							textActor.SetPosition2 ( 10, 40 );
-							textActor.GetTextProperty().SetFontSize ( 24 );
-							textActor.GetTextProperty().SetColor ( 1.0, 0.0, 0.0 );
-							textActor.Modified();
-						}
-						pickedActor.GetProperty().SetColor(oldColor);
-						pickedActor.Modified();
-						renderWindow.repaint();
-					}
-				}
 			}
 		});
+
 		mainPanel.add(renderWindow, BorderLayout.CENTER);
 		try {
 			mainMenu.availablePlugins = Plugins.getAvailablePlugins();
@@ -574,6 +517,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public static void updateRenderWindow()
 	{
 		//updateActors(getActorToAllActors());
+		
 		renderWindow.Render();
 		//renderWindow.repaint();
 	}

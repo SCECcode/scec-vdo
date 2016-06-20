@@ -39,6 +39,8 @@ import org.scec.vtk.tools.actors.AppendActors;
 import vtk.vtkActor;
 import vtk.vtkActor2D;
 import vtk.vtkProp;
+import vtk.vtkSphere;
+import vtk.vtkSphereSource;
 import vtk.vtkConeSource;
 import vtk.vtkGlyph3D;
 import vtk.vtkLabelPlacementMapper;
@@ -107,9 +109,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		displayAttributes.latField.addActionListener(this);
 		displayAttributes.lonField.addActionListener(this);
 		displayAttributes.altField.addActionListener(this);
-		displayAttributes.rotateXField.addActionListener(this);
-		displayAttributes.rotateYField.addActionListener(this);
-		displayAttributes.rotateZField.addActionListener(this);
+		displayAttributes.coneHeightField.addActionListener(this);
+		displayAttributes.coneBaseRadiusField.addActionListener(this);
+		//displayAttributes.rotateZField.addActionListener(this);
 		displayAttributes.fontSizeField.addActionListener(this);
 
 		JPanel displayPanel = new JPanel();
@@ -322,6 +324,30 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			}
 			MainGUI.updateRenderWindow();
 		}
+		if (src == this.displayAttributes.coneHeightField || src == this.displayAttributes.coneBaseRadiusField) {
+			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+	 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+				vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+				double coneHeight = (Double.parseDouble( this.displayAttributes.coneHeightField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneHeightField.getText());
+				double coneRadius = (Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText());
+			
+				vtkGlyph3D glyphPoints = new vtkGlyph3D();
+				glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
+				
+				vtkPolyData temp = new vtkPolyData();
+				temp = (vtkPolyData) (glyphPoints).GetInput();
+				
+				vtkConeSource conePin = new vtkConeSource();
+				conePin.SetRadius(coneRadius);
+				conePin.SetHeight(coneHeight);
+				conePin.SetDirection(-temp.GetPoint(0)[0],-temp.GetPoint(0)[1],-temp.GetPoint(0)[2]);
+				conePin.SetResolution(10);
+				
+				glyphPoints.SetSourceConnection(conePin.GetOutputPort());
+			}
+			MainGUI.updateRenderWindow();
+		}
+		
 		if (src == this.displayAttributes.fontSizeField ) {
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 	 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
@@ -425,7 +451,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			this.remDrawingToolsButton.setEnabled(true);
 			this.editDrawingToolsButton.setEnabled(true);
 			this.colorDrawingToolsButton.setEnabled(true);
-
+			enablePropertyEditButtons(true);
 		} else {
 			enablePropertyEditButtons(false);
 			this.remDrawingToolsButton.setEnabled(false);
@@ -437,6 +463,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	}
 	private void enablePropertyEditButtons(boolean enable) {
 		this.showDrawingToolsButton.setEnabled(enable);
+		this.displayAttributes.coneBaseRadiusField.setEnabled(enable);
+		this.displayAttributes.coneHeightField.setEnabled(enable);
+		this.displayAttributes.latField.setEnabled(enable);
+		this.displayAttributes.lonField.setEnabled(enable);
+		this.displayAttributes.altField.setEnabled(enable);
+		this.displayAttributes.fontSizeField.setEnabled(enable);
 	}
 
 
