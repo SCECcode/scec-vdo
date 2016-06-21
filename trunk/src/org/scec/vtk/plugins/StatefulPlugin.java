@@ -1,7 +1,5 @@
 package org.scec.vtk.plugins;
 
-import org.jdom.Element;
-
 /**
  * Interface for all plugins which have state that needs
  * to be saved.
