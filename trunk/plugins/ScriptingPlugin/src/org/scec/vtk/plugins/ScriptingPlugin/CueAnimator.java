@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -62,11 +63,14 @@ public class CueAnimator  {
 			});
 		}
 	}
+	
+	private static final DecimalFormat timeStringFormat = new DecimalFormat("0.0");
 
 	void TickCameraAniamtion()
 	{
 		//speed interpolation
-		double t = scene.GetAnimationTime()/scene.GetEndTime();
+		final double animTime = scene.GetAnimationTime();
+		double t = animTime/scene.GetEndTime();
 		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
 		if (progressBar != null) {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -74,6 +78,8 @@ public class CueAnimator  {
 				@Override
 				public void run() {
 					progressBar.setValue(TimerCount);
+					progressBar.setString("Animating: "+timeStringFormat.format(animTime)+" s");
+					progressBar.setStringPainted(true);
 				}
 			});
 		}
@@ -120,7 +126,8 @@ public class CueAnimator  {
 	{
 
 		//speed interpolation
-		double t = scene.GetAnimationTime()/scene.GetEndTime();
+		final double animTime = scene.GetAnimationTime();
+		double t = animTime/scene.GetEndTime();
 		this.TimerCount = (int) ((1-t)*(1)+ t*(pointsPosition.GetNumberOfPoints()-1));
 		if (progressBar != null) {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -128,6 +135,8 @@ public class CueAnimator  {
 				@Override
 				public void run() {
 					progressBar.setValue(TimerCount);
+					progressBar.setString("Rendering: "+timeStringFormat.format(animTime)+" s");
+					progressBar.setStringPainted(true);
 				}
 			});
 		}
@@ -272,7 +281,9 @@ public class CueAnimator  {
 
 				@Override
 				public void run() {
-					progressBar.setValue(progressBar.getMaximum());
+					progressBar.setValue(0);
+					progressBar.setString("");
+					progressBar.setStringPainted(false);
 				}
 			});
 		}
