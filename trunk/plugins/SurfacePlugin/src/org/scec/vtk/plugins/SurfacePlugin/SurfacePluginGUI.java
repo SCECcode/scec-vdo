@@ -32,8 +32,6 @@ import javax.swing.event.TableModelListener;
 
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
-import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.SurfacePlugin.Component.LoadedFilesProperties;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.RemoveButton;
@@ -120,7 +118,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		remISButton = new RemoveButton(this,"Remove selected surface/image");
 		showImageButton = new ShowButton(this,"Toggle visibility of selected image(s)");
 
-	
+
 		surfaceTable.setLayout(new GridLayout(1,3));
 		surfaceTable.setPreferredScrollableViewportSize(new Dimension(350, 70));
 		surfaceTable.getColumnModel().getColumn(0).setMaxWidth(116);
@@ -823,37 +821,67 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		double[] lowerRight = ii.getLowerRight();
 		double height = upperLeft[2]; //or lower right (altitude) are same
 		double[][] tuple = new double[4][3];
-		tuple[0] = Transform.transformLatLonHeight(upperLeft[0], upperLeft[1],height);
-		tuple[1] = Transform.transformLatLonHeight(upperLeft[0], lowerRight[1],height);
-		tuple[2] = Transform.transformLatLonHeight(lowerRight[0], lowerRight[1],height);
-		tuple[3] = Transform.transformLatLonHeight(lowerRight[0], upperLeft[1],height);
-
-
 		vtkPoints points = new vtkPoints();
-		points.InsertNextPoint(tuple[0]);
-		points.InsertNextPoint(tuple[1]);
-		points.InsertNextPoint(tuple[2]);
-		points.InsertNextPoint(tuple[3]);
-
-
-		vtkDoubleArray textureCoordinates = new  vtkDoubleArray();
-		textureCoordinates.SetNumberOfComponents(3);
+		vtkDoubleArray textureCoordinates = new vtkDoubleArray();
 		textureCoordinates.SetName("TextureCoordinates");
-		textureCoordinates.InsertNextTuple2(0,1);// tuple[0][0], tuple[0][1], tuple[0][2]);
-		textureCoordinates.InsertNextTuple2(1,1);//( tuple[1][0], tuple[1][1], tuple[1][2]);
-		textureCoordinates.InsertNextTuple2(1,0);//3( tuple[2][0], tuple[2][1], tuple[2][2]);
-		textureCoordinates.InsertNextTuple2(0,0);//3( tuple[3][0], tuple[3][1], tuple[3][2]);
-		// Create the polygon
-		vtkPolygon polygon = new vtkPolygon();
-		polygon.GetPointIds().SetNumberOfIds(4); //make a quad
-		polygon.GetPointIds().SetId(0, 0);
-		polygon.GetPointIds().SetId(1, 1);
-		polygon.GetPointIds().SetId(2, 2);
-		polygon.GetPointIds().SetId(3, 3);
-
-		// Add the polygon to a list of polygons
+		textureCoordinates.SetNumberOfComponents(3);
 		vtkCellArray polygons = new vtkCellArray();
-		polygons.InsertNextCell(polygon);
+
+		double upperLat = upperLeft[0];
+		double lowerLat = lowerRight[0];
+		double leftLon = upperLeft[1];
+		double rightLon= lowerRight[1];
+
+
+		// textureCoordinates.SetNumberOfTuples(noOfTuples);
+		//creating temp curved surface
+		int ptCount =0;//pt ids
+		double u ;double v ;//texture uv
+		for(double i=upperLat;i>lowerLat;i--)
+		{
+			for(double j=rightLon;j>leftLon;j--)
+			{
+
+				vtkPolygon polygon = new vtkPolygon();
+				polygon.GetPointIds().SetNumberOfIds(4);
+				points.InsertNextPoint(Transform.transformLatLon(i-1, j));
+				u=(leftLon-(j))/(leftLon-rightLon);
+				v=(lowerLat-(i-1))/(lowerLat-upperLat);
+				u=clampTextureCoord(u);
+				v=clampTextureCoord(v);;
+				// System.out.println(k+","+u);
+				textureCoordinates.InsertNextTuple2(u,v);
+				polygon.GetPointIds().SetId(0, ptCount++);
+
+				points.InsertNextPoint(Transform.transformLatLon(i, j));
+				u=(leftLon-j)/(leftLon-rightLon);
+				v=(lowerLat-i)/(lowerLat-upperLat);
+				u=clampTextureCoord(u);
+				v=clampTextureCoord(v);
+				// System.out.println(k+","+u);
+				textureCoordinates.InsertNextTuple2(u,v);
+				polygon.GetPointIds().SetId(1, ptCount++);
+
+				points.InsertNextPoint(Transform.transformLatLon(i, j-1));
+				u=(leftLon-(j-1))/(leftLon-rightLon);
+				v=(lowerLat-i)/(lowerLat-upperLat);
+				u=clampTextureCoord(u);
+				v=clampTextureCoord(v);
+				// System.out.println(k+","+u);
+				textureCoordinates.InsertNextTuple2(u,v);
+				polygon.GetPointIds().SetId(2, ptCount++);
+
+				points.InsertNextPoint(Transform.transformLatLon(i-1, j-1));
+				u=(leftLon-(j-1))/(leftLon-rightLon);
+				v=(lowerLat-(i-1))/(lowerLat-upperLat);
+				u=clampTextureCoord(u);
+				v=clampTextureCoord(v);
+				// System.out.println(k+","+u);
+				textureCoordinates.InsertNextTuple2(u,v);
+				polygon.GetPointIds().SetId(3, ptCount++);
+				polygons.InsertNextCell(polygon);
+			}
+		}
 
 		// Create a PolyData
 		vtkPolyData polygonPolyData = new vtkPolyData();
@@ -880,6 +908,11 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		Info.getMainGUI().updateRenderWindow();
 	}
 
+	private double clampTextureCoord(double t)
+	{	t=t<0?0:t;
+		t=t>1?1:t;
+		return t;
+	}
 	public void processTableSelectionChange() {
 		int[] selectedRows = this.surfaceTable.getSelectedRows();
 		if (selectedRows.length > 0) {
