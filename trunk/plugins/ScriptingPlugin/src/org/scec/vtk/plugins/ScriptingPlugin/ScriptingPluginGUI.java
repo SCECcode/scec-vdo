@@ -473,11 +473,11 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 				if(scene.IsInPlay()==1)
 					scene.Stop();
 				scene.Play();
+				scene.Stop();
 				pauseScriptingPluginButton.setEnabled(true);
 				playScriptingPluginButton.setEnabled(true);
 				stopScriptingPluginButton.setEnabled(true);
-				renderButton.setEnabled(true);
-				renderPauseButton.setEnabled(true);
+
 			}
 		}.start();
 	}
@@ -673,11 +673,11 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 
 		else if (src == this.playScriptingPluginButton)
 		{
-			//			new Thread(){ 
-			//				public void run(){
 			playScriptingPluginButton.setEnabled(false);
 			renderButton.setEnabled(false);
 			renderPauseButton.setEnabled(false);
+			rendering = false;
+	
 			if(framePoints.size()>=2)
 			{
 				if(!play && stop){
@@ -689,6 +689,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 				else if(!play && !stop)
 				{
 					//resume
+					stop=true;
 					if(Math.round(scene.GetAnimationTime())==Math.round(scene.GetEndTime()))
 					{
 						animateSceneWithLayers(0);
@@ -702,13 +703,10 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 					}
 				}
 			}
-
-			//		           }
-			//			}.start();
-			//
 		}
 		else if (src == this.pauseScriptingPluginButton)
 		{
+			rendering = false;
 			pauseScriptingPluginButton.setEnabled(false);
 			playScriptingPluginButton.setEnabled(false);
 			stop=false;
@@ -718,9 +716,13 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 			System.out.println("aniamtion time:"+scene.GetAnimationTime());
 			playScriptingPluginButton.setEnabled(true);
 			pauseScriptingPluginButton.setEnabled(true);
+			renderButton.setEnabled(false);
+			renderPauseButton.setEnabled(false);
+			
 		}
 		else if (src == this.stopScriptingPluginButton)
 		{
+			rendering = false;
 			pauseScriptingPluginButton.setEnabled(false);
 			playScriptingPluginButton.setEnabled(false);
 			stopScriptingPluginButton.setEnabled(false);
@@ -732,6 +734,8 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 			pauseScriptingPluginButton.setEnabled(true);
 			playScriptingPluginButton.setEnabled(true);
 			stopScriptingPluginButton.setEnabled(true);
+			renderButton.setEnabled(true);
+			renderPauseButton.setEnabled(true);
 		}
 		else if (src == this.renderPauseButton)
 		{
@@ -744,15 +748,17 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 			if(scene.IsInPlay()==1)
 				scene.Stop();
 			this.rendering = false;
-			renderPauseButton.setEnabled(true);
+			renderPauseButton.setEnabled(false);
+			renderButton.setEnabled(true);
 		}
 		else if (src == this.renderButton)
 		{
 			pauseScriptingPluginButton.setEnabled(false);
 			playScriptingPluginButton.setEnabled(false);
 			stopScriptingPluginButton.setEnabled(false);
-			renderButton.setEnabled(false);
-
+			//renderButton.setEnabled(false);
+			renderPauseButton.setEnabled(true);
+			
 			this.rendering = true;
 			if(framePoints.size()>=2)
 			{
@@ -764,10 +770,19 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 						File tmpDir = new File(Prefs.getLibLoc()+"/tmp/");
 						if (!tmpDir.exists())
 							tmpDir.mkdir();
-
+						imagePixelData.clear();
 						animateSceneWithLayers(0);
 						scenePlay();
 
+					}
+					else
+					{
+						pauseScriptingPluginButton.setEnabled(true);
+						playScriptingPluginButton.setEnabled(true);
+						stopScriptingPluginButton.setEnabled(true);
+						renderButton.setEnabled(true);
+						renderPauseButton.setEnabled(true);
+						this.rendering = false;
 					}
 				}
 				else if(!play && !stop)
