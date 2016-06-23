@@ -23,5 +23,11 @@ public interface PluginState {
 	 * @param stateEl
 	 */
 	public void fromXML(Element stateEl);
+	
+	/**
+	 * Creates a deep copy of this plugin state, e.g. for use with KeyFrames
+	 * @return
+	 */
+	public PluginState deepCopy();
 
 }
