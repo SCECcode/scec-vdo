@@ -1,15 +1,12 @@
 package org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.io.File;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,31 +20,18 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.ListModel;
-import javax.swing.WindowConstants;
-import javax.swing.JTextArea;
-
 import org.opensha.commons.util.ExceptionUtils;
-import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
-import org.scec.vtk.tools.Transform;
-
-import com.sun.glass.events.WindowEvent;
-
 import gov.usgs.earthquake.event.EventQuery;
 import gov.usgs.earthquake.event.EventWebService;
 import gov.usgs.earthquake.event.Format;
 import gov.usgs.earthquake.event.JsonEvent;
 import gov.usgs.earthquake.event.OrderBy;
-import vtk.vtkActor;
-import vtk.vtkPolyDataMapper;
-import vtk.vtkSphereSource;
 
 public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 
@@ -797,6 +781,10 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		cat.setMinDate(startDate);
 		cat.setMaxDate(endDate);
 		cat.setNumEvents(events.size());
+		cat.setMaxLatitude((float)maxLat);
+		cat.setMinLatitude((float)minLat);
+		cat.setMaxLongitude((float)maxLon);
+		cat.setMinLongitude((float)minLon);
 		cat.addComcatEqList();
 		}
 		else{
