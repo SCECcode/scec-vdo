@@ -17,6 +17,11 @@ public class KeyFrame implements Comparable<KeyFrame> {
 		this.state = state;
 	}
 	
+	KeyFrame(double startTime) {
+		Preconditions.checkArgument(startTime >= 0);
+		this.startTime = startTime;
+	}
+	
 	public PluginState getState() {
 		return state;
 	}
