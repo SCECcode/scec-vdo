@@ -197,6 +197,24 @@ public class CatalogTable extends JTable {
                     		EQCatalog libCat = getSelectedValue();
                     		gui.setAnimationColor(libCat.getColor1(), libCat.getColor2());
                     	}
+                    	EQCatalog libCat = getSelectedValue();
+                    	//changing visibility of eq catalog on checkbox click
+                        if(libModel.getObjectAtRow(row).isDisplayed())
+                        {
+                        	if(libCat.getActors().get(0)!=null){
+                        	libCat.getActors().get(0).SetVisibility(0);
+                        	libCat.getActors().get(1).SetVisibility(0);
+                        	Info.getMainGUI().updateRenderWindow();
+                        	}
+                        }
+                        else
+                        {
+                        	if(libCat.getActors().get(0)!=null){
+                            	libCat.getActors().get(0).SetVisibility(1);
+                            	libCat.getActors().get(1).SetVisibility(1);
+                            	Info.getMainGUI().updateRenderWindow();
+                            	}
+                        }
                         libModel.toggleVisibilityForRow(row);
                     } 
                     else if (col == 1 || col == 2) {

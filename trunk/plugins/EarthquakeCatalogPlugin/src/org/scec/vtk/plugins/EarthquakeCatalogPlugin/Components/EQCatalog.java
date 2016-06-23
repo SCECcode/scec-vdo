@@ -11,7 +11,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 
 
@@ -20,7 +19,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
 import org.scec.vtk.plugins.utils.DataImport;
@@ -30,21 +28,13 @@ import org.scec.vtk.tools.Transform;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 
 import vtk.vtkActor;
-import vtk.vtkAppendFilter;
-import vtk.vtkAppendPolyData;
-import vtk.vtkCellArray;
-import vtk.vtkDataSetMapper;
 import vtk.vtkDoubleArray;
 import vtk.vtkGlyph3D;
-import vtk.vtkIntArray;
-import vtk.vtkLookupTable;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
-import vtk.vtkScalarBarActor;
 import vtk.vtkSphereSource;
 import vtk.vtkUnsignedCharArray;
-import vtk.vtkUnstructuredGrid;
 import vtk.vtkVertexGlyphFilter;
 
 
@@ -467,6 +457,7 @@ public class EQCatalog extends CatalogAccessor {
 		
 		PickEnabledActor<EQCatalog> actorEQCatalog = new PickEnabledActor<EQCatalog>(((EarthquakeCatalogPluginGUI) parent).getPickHandler(), this);
 		actorEQCatalog.SetMapper(mapperEQCatalog);
+		actorEQCatalog.SetVisibility(0);
 		myActors.add(actorEQCatalog);
 		pluginActors.addActor(actorEQCatalog);
 		Info.getMainGUI().updateRenderWindow();
@@ -556,6 +547,9 @@ public class EQCatalog extends CatalogAccessor {
 
 	// clears data arrays and j3d component references
 	private void unload() {
+		pluginActors.removeActor(this.getActors().get(0)); //remove points and then remove spheres
+		pluginActors.removeActor(this.getActors().get(1));
+		Info.getMainGUI().updateRenderWindow();
 		/*displayedEQs.clear();
         clearArrays();
         catBranchGroup.removeAllChildren();
@@ -944,8 +938,8 @@ public class EQCatalog extends CatalogAccessor {
             masterCatBranchGroup.addChild(this.catBranchGroup);
         } else {
             this.catBranchGroup.detach();
-        }
-        super.setDisplayed(show);*/
+        }*/
+        super.setDisplayed(show);
 	}
 
 	/**
@@ -966,9 +960,10 @@ public class EQCatalog extends CatalogAccessor {
 			EarthquakeCatalogPluginGUI.status.setText("Status");
 		} else {
 			if (isDisplayed()) {
+				unload();
 				setDisplayed(false);
 			}
-			unload();
+			
 		}
 		super.setInMemory(load);
 	}
