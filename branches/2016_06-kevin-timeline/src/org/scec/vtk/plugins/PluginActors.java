@@ -56,5 +56,23 @@ public class PluginActors {
 	public Set<vtkProp> getActors() {
 		return Collections.unmodifiableSet(actors);
 	}
+	
+	/**
+	 * Remove all actors from any listeners without removing them from the actors group
+	 */
+	public void visibilityOff() {
+		for (vtkProp actor : actors)
+			for (PluginActorsChangeListener l : listeners)
+				l.actorRemoved(actor);
+	}
+	
+	/**
+	 * Re-add all actors to any listeners
+	 */
+	public void visibilityOn() {
+		for (vtkProp actor : actors)
+			for (PluginActorsChangeListener l : listeners)
+				l.actorAdded(actor);
+	}
 
 }
