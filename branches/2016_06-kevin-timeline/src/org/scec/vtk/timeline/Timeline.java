@@ -5,10 +5,14 @@ import java.util.List;
 
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.timeline.camera.CameraAnimator;
 
 import com.google.common.base.Preconditions;
 
 public class Timeline {
+	
+	private KeyFrameList cameraKeys;
+	private CameraAnimator cameraAnim;
 	
 	private List<Plugin> plugins;
 	private List<PluginActors> pluginActors;
@@ -18,12 +22,16 @@ public class Timeline {
 	private List<AnimationTimeListener> listeners;
 	
 	public Timeline() {
+		cameraKeys = new KeyFrameList();
+		cameraAnim = new CameraAnimator(cameraKeys);
+		listeners = new ArrayList<>();
+		// camera will update through listener interface
+		addAnimationTimeListener(cameraAnim);
+		
 		plugins = new ArrayList<>();
 		pluginActors = new ArrayList<>();
 		pluginKeyFrameLists = new ArrayList<>();
 		currentActivatedKeys = new ArrayList<>();
-		
-		listeners = new ArrayList<>();
 	}
 	
 	public synchronized void addPlugin(Plugin p, PluginActors actors) {
@@ -63,6 +71,18 @@ public class Timeline {
 		pluginKeyFrameLists.get(index).removeKeyFrame(key);
 	}
 	
+	public synchronized void addCameraKeyFrame(KeyFrame key) {
+		cameraKeys.addKeyFrame(key);
+	}
+	
+	public synchronized void removeCameraKeyFrame(KeyFrame key) {
+		cameraKeys.removeKeyFrame(key);
+	}
+	
+	public KeyFrameList getCameraKeys() {
+		return cameraKeys;
+	}
+	
 	public synchronized void activateTime(double time) {
 		for (int index=0; index<plugins.size(); index++) {
 			KeyFrameList keys = pluginKeyFrameLists.get(index);
@@ -96,6 +116,8 @@ public class Timeline {
 				}
 			}
 		}
+		// notify any listeners of time change
+		// primary listener is camera animator, this call will update the camera position
 		fireAnimationTimeChanged(time);
 	}
 	

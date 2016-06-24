@@ -22,7 +22,7 @@ public class KeyFrame implements Comparable<KeyFrame> {
 		this.state = state;
 	}
 	
-	KeyFrame(double startTime) {
+	protected KeyFrame(double startTime) {
 		Preconditions.checkArgument(startTime >= 0);
 		this.startTime = startTime;
 	}
