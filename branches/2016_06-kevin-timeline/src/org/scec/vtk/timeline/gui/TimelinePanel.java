@@ -200,6 +200,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 	private void removeKey(KeyFrameLabel label) {
 		label.getKeyFrameList().removeKeyFrame(label.getKeyFrame());
 		remove(label);
+		repaint();
 	}
 	
 	private void addKey(double time, int pluginIndex, boolean forceVisibilityKey) {
