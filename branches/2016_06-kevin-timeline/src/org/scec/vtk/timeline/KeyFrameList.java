@@ -3,6 +3,7 @@ package org.scec.vtk.timeline;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -12,6 +13,8 @@ public class KeyFrameList implements Iterable<KeyFrame>, KeyFrameChangeListener 
 	private ArrayList<KeyFrame> keys;
 	// keep separate times list for quick binary searches by time
 	private ArrayList<Double> startTimes;
+	
+	private List<KeyFrameChangeListener> listeners = new ArrayList<>();
 	
 	public KeyFrameList() {
 		keys = new ArrayList<>();
@@ -52,6 +55,7 @@ public class KeyFrameList implements Iterable<KeyFrame>, KeyFrameChangeListener 
 		keys.add(index, key);
 		startTimes.add(index, key.getStartTime());
 		key.addKeyFrameChangeListener(this);
+		fireKeyChanged(key);
 	}
 	
 	public synchronized void removeKeyFrame(KeyFrame key) {
@@ -61,6 +65,7 @@ public class KeyFrameList implements Iterable<KeyFrame>, KeyFrameChangeListener 
 		if (startTimes != null)
 			startTimes.remove(index);
 		key.removeKeyFrameChangeListener(this);
+		fireKeyChanged(null);
 	}
 	
 	private void checkBuildStartTimes() {
@@ -75,6 +80,32 @@ public class KeyFrameList implements Iterable<KeyFrame>, KeyFrameChangeListener 
 	@Override
 	public synchronized void keyChanged(KeyFrame key) {
 		startTimes = null;
+		fireKeyChanged(key);
+	}
+	
+	public void addKeyFrameChangeListener(KeyFrameChangeListener l) {
+		listeners.add(l);
+	}
+	
+	public boolean removeKeyFrameChangeListener(KeyFrameChangeListener l) {
+		return listeners.remove(l);
+	}
+	
+	private void fireKeyChanged(KeyFrame key) {
+		for (KeyFrameChangeListener l : listeners)
+			l.keyChanged(key);
+	}
+	
+	public KeyFrame getKeyAt(int index) {
+		return keys.get(index);
+	}
+	
+	public int size() {
+		return keys.size();
+	}
+	
+	public boolean isEmpty() {
+		return size() == 0;
 	}
 
 }
