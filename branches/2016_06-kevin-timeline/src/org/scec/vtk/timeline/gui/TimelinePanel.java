@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.opensha.commons.util.ClassUtils;
+import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.StatefulPlugin;
@@ -25,6 +26,9 @@ import org.scec.vtk.timeline.RangeAnimationListener;
 import org.scec.vtk.timeline.RangeKeyFrame;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.VisibilityKeyFrame;
+import org.scec.vtk.timeline.camera.CameraKeyFrame;
+
+import vtk.vtkCamera;
 
 import com.google.common.base.Preconditions;
 
@@ -61,6 +65,12 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 	static final Color keyOutlineColor = Color.BLACK;
 	static final Color keyOutlineSelectedColor = Color.BLACK;
 	
+	private static final int cameraHeight = heightPerPlugin;
+	private static final int cameraMaxY = headerHeight + cameraHeight;
+	
+	private static final int INDEX_TAG_HEADER = -1;
+	private static final int INDEX_TAG_CAMERA = -2;
+	
 	private Timeline timeline;
 	
 	public TimelinePanel(Timeline timeline) {
@@ -78,9 +88,24 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 	
 	private synchronized void rebuildKeyLabels() {
 		removeAll();
-		int pluginY = headerHeight;
+		// camera keys
+		KeyFrameList camKeys = timeline.getCameraKeys();
+		for (KeyFrame key : camKeys) {
+			KeyFrameLabel label = buildKeyLabel(key, camKeys);
+			
+			// this is the left side of of the icon so subtract half width
+			int x = getPixelX(key.getStartTime()) - halfKeyWidth;
+			// this is the top of the icon
+			int y = headerHeight + keyYRelative;
+			add(label);
+			label.setLocation(x, y);
+			label.updateSize();
+		}
+		
+		// plugin keys
 		for (int index=0; index < timeline.getNumPlugins(); index++) {
 			KeyFrameList keys = timeline.getKeysForPlugin(index);
+			int pluginY = yForPluginIndex(index);
 			for (KeyFrame key : keys) {
 				KeyFrameLabel label = buildKeyLabel(key, keys);
 				
@@ -92,7 +117,6 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				label.setLocation(x, y);
 				label.updateSize();
 			}
-			pluginY += heightPerPlugin;
 		}
 	}
 	
@@ -120,10 +144,13 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		g.setColor(pluginDividerColor);
 		g.drawLine(0, y, panelWidth, y);
 		
+		// add camera line
+		y += heightPerPlugin;
+		g.drawLine(0, y, panelWidth, y);
+		
 		for (int index=0; index < timeline.getNumPlugins(); index++) {
 			
 			y += heightPerPlugin;
-			g.setColor(pluginDividerColor);
 			g.drawLine(0, y, panelWidth, y);
 		}
 		
@@ -144,6 +171,13 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		}
 		if (key instanceof RangeKeyFrame)
 			return Color.GREEN;
+		if (key instanceof CameraKeyFrame) {
+			CameraKeyFrame c = (CameraKeyFrame)key;
+			if (c.isPause())
+				return Color.GRAY;
+			else
+				return Color.ORANGE;
+		}
 		return Color.RED;
 	}
 	
@@ -179,8 +213,15 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 	
 	private int pluginIndexForY(int y) {
 		if (y < headerHeight)
-			return -1;
-		return (y - headerHeight)/heightPerPlugin;
+			return INDEX_TAG_HEADER;
+		if (y < (cameraMaxY))
+			return INDEX_TAG_CAMERA;
+		// subtract header and camera area first
+		return (y - cameraMaxY)/heightPerPlugin;
+	}
+	
+	private int yForPluginIndex(int index) {
+		return cameraMaxY + (heightPerPlugin*index);
 	}
 	
 	public double getCurrentTotalTime() {
@@ -249,6 +290,14 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		timeline.addKeyFrame(pluginIndex, key);
 		rebuildKeyLabels();
 	}
+	
+	private void addCameraKey(double time, boolean pause) {
+		vtkCamera cam = MainGUI.getRenderWindow().GetRenderer().GetActiveCamera();
+		CameraKeyFrame key = new CameraKeyFrame(time, cam, pause);
+		
+		timeline.addCameraKeyFrame(key);
+		rebuildKeyLabels();
+	}
 
 	@Override
 	public synchronized void mouseClicked(MouseEvent e) {
@@ -298,11 +347,15 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 			
 			int pluginIndex = pluginIndexForY(e.getY());
 			double time = getTime(e.getX());
-			if (pluginIndex < 0) {
+			if (pluginIndex == INDEX_TAG_HEADER) {
 				// clicked header, go to that time
 				System.out.println("Going to time "+time);
 				timeline.activateTime(time);
+			} else if (pluginIndex == INDEX_TAG_CAMERA) {
+				// create a camera key
+				addCameraKey(time, e.isShiftDown());
 			} else if (pluginIndex < timeline.getNumPlugins()) {
+				Preconditions.checkState(pluginIndex >= 0);
 				// add keyframe
 				System.out.println("Adding KeyFrame at time "+time+", plugin "+pluginIndex);
 				addKey(time, pluginIndex, e.isShiftDown());
