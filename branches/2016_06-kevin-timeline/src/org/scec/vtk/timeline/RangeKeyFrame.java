@@ -25,6 +25,23 @@ public class RangeKeyFrame extends KeyFrame {
 		return endTime;
 	}
 	
+	@Override
+	public synchronized void setStartTime(double startTime) {
+		// also update duration
+		double duration = getDuration();
+		this.endTime = startTime + duration;
+		super.setStartTime(startTime); // will fire event
+	}
+
+	public double getDuration() {
+		return getEndTime() - getStartTime();
+	}
+	
+	public synchronized void setDuration(double duration) {
+		this.endTime = getStartTime() + duration;
+		fireKeyChangedEvent();
+	}
+	
 	public double getCurFractionalTime() {
 		return curFractionalTime;
 	}
@@ -49,6 +66,12 @@ public class RangeKeyFrame extends KeyFrame {
 	
 	boolean isEnded() {
 		return curFractionalTime >= 1d;
+	}
+	
+	public RangeKeyFrame duplicate() {
+		RangeKeyFrame key = new RangeKeyFrame(getStartTime(), getEndTime(), getState());
+		// don't copy listeners, they will be set up when added to the key frame list
+		return key;
 	}
 
 }

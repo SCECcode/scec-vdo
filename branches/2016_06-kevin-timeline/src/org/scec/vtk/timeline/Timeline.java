@@ -15,11 +15,15 @@ public class Timeline {
 	private List<KeyFrameList> pluginKeyFrameLists;
 	private List<KeyFrame> currentActivatedKeys;
 	
+	private List<AnimationTimeListener> listeners;
+	
 	public Timeline() {
 		plugins = new ArrayList<>();
 		pluginActors = new ArrayList<>();
 		pluginKeyFrameLists = new ArrayList<>();
 		currentActivatedKeys = new ArrayList<>();
+		
+		listeners = new ArrayList<>();
 	}
 	
 	public synchronized void addPlugin(Plugin p, PluginActors actors) {
@@ -54,6 +58,11 @@ public class Timeline {
 		pluginKeyFrameLists.get(index).addKeyFrame(key);
 	}
 	
+	public synchronized void removeKeyFrame(int index, KeyFrame key) {
+		Preconditions.checkState(index >= 0 && index < plugins.size());
+		pluginKeyFrameLists.get(index).removeKeyFrame(key);
+	}
+	
 	public synchronized void activateTime(double time) {
 		for (int index=0; index<plugins.size(); index++) {
 			KeyFrameList keys = pluginKeyFrameLists.get(index);
@@ -61,7 +70,11 @@ public class Timeline {
 			KeyFrame newKey = keys.getCurrentFrame(time);
 			if (newKey != cur) {
 				// need to laod new key frame, otherwise do nothing
-				newKey.load();
+				if (newKey != null) {
+					newKey.load();
+					if (!(newKey instanceof VisibilityKeyFrame))
+						pluginActors.get(index).visibilityOn();
+				}
 				currentActivatedKeys.set(index, newKey);
 			}
 			if (newKey instanceof RangeKeyFrame) {
@@ -83,6 +96,7 @@ public class Timeline {
 				}
 			}
 		}
+		fireAnimationTimeChanged(time);
 	}
 	
 	public int getNumPlugins() {
@@ -95,6 +109,23 @@ public class Timeline {
 	
 	public KeyFrameList getKeysForPlugin(int index) {
 		return pluginKeyFrameLists.get(index);
+	}
+	
+	public PluginActors getActorsForPlugin(int index) {
+		return pluginActors.get(index);
+	}
+	
+	public void addAnimationTimeListener(AnimationTimeListener l) {
+		listeners.add(l);
+	}
+	
+	public boolean removeAnimationTimeListener(AnimationTimeListener l) {
+		return listeners.remove(l);
+	}
+	
+	private void fireAnimationTimeChanged(double time) {
+		for (AnimationTimeListener l : listeners)
+			l.animationTimeChanged(time);
 	}
 
 }
