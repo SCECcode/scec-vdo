@@ -5,7 +5,7 @@ import org.scec.vtk.plugins.PluginActors;
 public class VisibilityKeyFrame extends KeyFrame {
 	
 	private PluginActors actors;
-	private boolean visibile;
+	private final boolean visibile;
 
 	public VisibilityKeyFrame(double startTime, PluginActors actors, boolean visible) {
 		super(startTime);
@@ -24,6 +24,12 @@ public class VisibilityKeyFrame extends KeyFrame {
 	
 	public boolean isVisible() {
 		return visibile;
+	}
+	
+	public VisibilityKeyFrame duplicate() {
+		VisibilityKeyFrame key = new VisibilityKeyFrame(getStartTime(), actors, isVisible());
+		// don't copy listeners, they will be set up when added to the key frame list
+		return key;
 	}
 
 }
