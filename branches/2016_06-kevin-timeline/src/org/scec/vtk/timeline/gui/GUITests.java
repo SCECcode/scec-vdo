@@ -47,6 +47,9 @@ public class GUITests {
 		final TimelinePanel tl = new TimelinePanel(timeline);
 		panel.add(tl, BorderLayout.CENTER);
 		
+		boolean play = false;
+		final long sleepTime = 100;
+//		final long sleepTime = 1;
 		Thread playThread = new Thread() {
 			
 			@Override
@@ -62,11 +65,12 @@ public class GUITests {
 						
 //						System.out.println("Setting with time="+time);
 						
+						System.out.println("Rendering "+time);
 						timeline.activateTime(time);
 					}
 					
 					try {
-						Thread.sleep(100);
+						Thread.sleep(sleepTime);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -75,7 +79,8 @@ public class GUITests {
 			}
 			
 		};
-//		playThread.start();
+		if (play)
+			playThread.start();
 		
 		frame.setContentPane(panel);
 		
