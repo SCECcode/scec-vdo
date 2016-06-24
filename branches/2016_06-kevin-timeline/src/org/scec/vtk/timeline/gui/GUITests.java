@@ -16,7 +16,9 @@ import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.timeline.KeyFrame;
+import org.scec.vtk.timeline.RangeAnimationListener;
 import org.scec.vtk.timeline.RangeKeyFrame;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.VisibilityKeyFrame;
@@ -31,13 +33,13 @@ public class GUITests {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		
-		Timeline timeline = new Timeline();
+		final Timeline timeline = new Timeline();
 		
 		timeline.addPlugin(new DummyPlugin(), new PluginActors());
-		timeline.addPlugin(new DummyPlugin(), new PluginActors());
-		timeline.addPlugin(new DummyPlugin(), new PluginActors());
-		timeline.addKeyFrame(0, new VisibilityKeyFrame(0d, null, true));
-		timeline.addKeyFrame(0, new VisibilityKeyFrame(5d, null, false));
+		timeline.addPlugin(new DummyRangePlugin(), new PluginActors());
+		timeline.addPlugin(new DummyStatefulPlugin(), new PluginActors());
+		timeline.addKeyFrame(0, new VisibilityKeyFrame(0d, new PluginActors(), true));
+		timeline.addKeyFrame(0, new VisibilityKeyFrame(5d, new PluginActors(), false));
 		timeline.addKeyFrame(1, new RangeKeyFrame(0d, 3d, new DummyState()));
 		timeline.addKeyFrame(2, new KeyFrame(1d, new DummyState()));
 		timeline.addKeyFrame(2, new KeyFrame(4d, new DummyState()));
@@ -60,7 +62,7 @@ public class GUITests {
 						
 //						System.out.println("Setting with time="+time);
 						
-						tl.setCurTime(time);
+						timeline.activateTime(time);
 					}
 					
 					try {
@@ -121,6 +123,43 @@ public class GUITests {
 		
 	}
 	
+	private static class DummyStatefulPlugin extends DummyPlugin implements StatefulPlugin {
+
+		@Override
+		public PluginState getState() {
+			return new DummyState();
+		}
+
+		@Override
+		public void setState(PluginState s) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
+	private static class DummyRangePlugin extends DummyStatefulPlugin implements RangeAnimationListener {
+
+		@Override
+		public void rangeStarted() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void rangeEnded() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void rangeTimeChanged(double fractionalTime) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
 	private static class DummyState implements PluginState {
 
 		@Override
@@ -143,8 +182,7 @@ public class GUITests {
 
 		@Override
 		public PluginState deepCopy() {
-			// TODO Auto-generated method stub
-			return null;
+			return this;
 		}
 		
 	}
