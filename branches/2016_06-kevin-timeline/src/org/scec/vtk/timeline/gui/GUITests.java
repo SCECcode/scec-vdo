@@ -47,7 +47,7 @@ public class GUITests {
 		final TimelinePanel tl = new TimelinePanel(timeline);
 		panel.add(tl, BorderLayout.CENTER);
 		
-		new Thread() {
+		Thread playThread = new Thread() {
 			
 			@Override
 			public void run() {
@@ -74,7 +74,8 @@ public class GUITests {
 				}
 			}
 			
-		}.start();
+		};
+//		playThread.start();
 		
 		frame.setContentPane(panel);
 		
