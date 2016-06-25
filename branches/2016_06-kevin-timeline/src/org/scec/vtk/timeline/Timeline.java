@@ -19,12 +19,15 @@ public class Timeline {
 	private List<KeyFrameList> pluginKeyFrameLists;
 	private List<KeyFrame> currentActivatedKeys;
 	
-	private List<AnimationTimeListener> listeners;
+	private List<AnimationTimeListener> timeListeners;
+	private List<TimelinePluginChangeListener> pluginChangeListeners;
+	
+	private double maxTime = 15d;
 	
 	public Timeline() {
 		cameraKeys = new KeyFrameList();
 		cameraAnim = new CameraAnimator(cameraKeys);
-		listeners = new ArrayList<>();
+		timeListeners = new ArrayList<>();
 		// camera will update through listener interface
 		addAnimationTimeListener(cameraAnim);
 		
@@ -32,6 +35,8 @@ public class Timeline {
 		pluginActors = new ArrayList<>();
 		pluginKeyFrameLists = new ArrayList<>();
 		currentActivatedKeys = new ArrayList<>();
+		
+		pluginChangeListeners = new ArrayList<>();
 	}
 	
 	public synchronized void addPlugin(Plugin p, PluginActors actors) {
@@ -41,6 +46,7 @@ public class Timeline {
 		pluginActors.add(actors);
 		pluginKeyFrameLists.add(new KeyFrameList());
 		currentActivatedKeys.add(null);
+		fireTimelinePluginsChanged();
 	}
 	
 	public synchronized void removePlugin(Plugin p) {
@@ -50,6 +56,7 @@ public class Timeline {
 		pluginActors.remove(index);
 		pluginKeyFrameLists.remove(index);
 		currentActivatedKeys.remove(index);
+		fireTimelinePluginsChanged();
 	}
 	
 	private int indexForPlugin(Plugin p) {
@@ -84,6 +91,8 @@ public class Timeline {
 	}
 	
 	public synchronized void activateTime(double time) {
+		if (time > maxTime)
+			time = maxTime;
 		for (int index=0; index<plugins.size(); index++) {
 			KeyFrameList keys = pluginKeyFrameLists.get(index);
 			KeyFrame cur = currentActivatedKeys.get(index);
@@ -138,16 +147,39 @@ public class Timeline {
 	}
 	
 	public void addAnimationTimeListener(AnimationTimeListener l) {
-		listeners.add(l);
+		timeListeners.add(l);
 	}
 	
 	public boolean removeAnimationTimeListener(AnimationTimeListener l) {
-		return listeners.remove(l);
+		return timeListeners.remove(l);
 	}
 	
 	private void fireAnimationTimeChanged(double time) {
-		for (AnimationTimeListener l : listeners)
+		for (AnimationTimeListener l : timeListeners)
 			l.animationTimeChanged(time);
+	}
+	
+	public void addTimelinePluginChangeListener(TimelinePluginChangeListener l) {
+		pluginChangeListeners.add(l);
+	}
+	
+	public boolean removeTimelinePluginChangeListener(TimelinePluginChangeListener l) {
+		return pluginChangeListeners.remove(l);
+	}
+	
+	private void fireTimelinePluginsChanged() {
+		for (TimelinePluginChangeListener l : pluginChangeListeners)
+			l.timelinePluginsChanged();
+	}
+	
+	public double getMaxTime() {
+		return maxTime;
+	}
+	
+	public synchronized void setMaxTime(double maxTime) {
+		this.maxTime = maxTime;
+		for (AnimationTimeListener l : timeListeners)
+			l.animationBoundsChanged(maxTime);
 	}
 
 }

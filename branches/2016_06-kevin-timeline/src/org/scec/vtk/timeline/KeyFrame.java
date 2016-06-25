@@ -53,6 +53,7 @@ public class KeyFrame implements Comparable<KeyFrame> {
 	}
 	
 	public void setStartTime(double startTime) {
+		Preconditions.checkArgument(startTime >= 0);
 		this.startTime = startTime;
 		fireKeyChangedEvent();
 	}

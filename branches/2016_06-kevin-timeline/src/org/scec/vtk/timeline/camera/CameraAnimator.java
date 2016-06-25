@@ -43,6 +43,9 @@ public class CameraAnimator implements AnimationTimeListener {
 			double[] focal = focalSpline.getPoint(time);
 			double[] up = upSpline.getPoint(time);
 			
+			if (cam == null)
+				cam = new vtkCamera();
+			
 			cam.SetPosition(position[0], position[1], position[2]);
 			cam.SetFocalPoint(focal[0], focal[1], focal[2]);
 			cam.SetViewUp(up[0], up[1], up[2]);
@@ -54,22 +57,31 @@ public class CameraAnimator implements AnimationTimeListener {
 	
 	static void setActiveCamera(final vtkCamera cam) {
 		final vtkRenderer renderer = MainGUI.getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer();
-		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
-				public void run() {	
-					MainGUI.updateRenderWindow();//.GetRenderWindow().Render();
-					renderer.SetActiveCamera(cam);
-					renderer.ResetCameraClippingRange();
-				}
-			});
-		} catch (Exception e) {
-			ExceptionUtils.throwAsRuntimeException(e);;
+		Runnable run = new Runnable() {
+			public void run() {	
+//				MainGUI.updateRenderWindow();
+				renderer.SetActiveCamera(cam);
+				renderer.ResetCameraClippingRange();
+				MainGUI.updateRenderWindow();
+			}
+		};
+		if (SwingUtilities.isEventDispatchThread()) {
+			run.run();
+		} else {
+			try {
+				SwingUtilities.invokeAndWait(run);
+			} catch (Exception e) {
+				ExceptionUtils.throwAsRuntimeException(e);;
+			}
 		}
 	}
 
 	@Override
-	public void animationTimeChanged(double time) {
-		activateTime(time);
+	public void animationTimeChanged(double curTime) {
+		activateTime(curTime);
 	}
+
+	@Override
+	public void animationBoundsChanged(double maxTime) {}
 
 }

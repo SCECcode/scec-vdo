@@ -63,19 +63,19 @@ import java.util.Vector;
 
 
 public class MainMenu implements ActionListener ,ItemListener{
-	
+
 	private MenuBar menuBar;
 	private Menu fileMenu;
 	private MenuItem fileOpen;
 	private MenuItem saveItem ;
 	private MenuItem appExit;
-	
+
 	//not used
 	private Menu displayMenu;
 	private Menu faults;
 	private MenuItem communityFaultModel;
 	//
-	
+
 	Map<String, PluginInfo> availablePlugins = null;
 	// TODO why are these static?
 	static Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
@@ -84,26 +84,26 @@ public class MainMenu implements ActionListener ,ItemListener{
 	private static Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 	public MainMenu(){
-	//Creates the main menu bar.
-	menuBar = new MenuBar();
+		//Creates the main menu bar.
+		menuBar = new MenuBar();
 		setupFileMenu();
 		//setupDisplayMenu();
-		
+
 	}
-	
-	
+
+
 	public MenuBar getMenuBar()
 	{
 		return menuBar;
 	}
-	
+
 	private void setupFileMenu() {
 		//File menu - save and open a scene.
 		fileMenu = new Menu("File");
 		fileOpen = new MenuItem("Open...");
 		saveItem = new MenuItem("Save As...");
 		appExit = new MenuItem("Quit");
-		
+
 		fileMenu.addActionListener(this);
 		this.saveItem.addActionListener(this);
 		this.appExit.addActionListener(this);
@@ -122,25 +122,25 @@ public class MainMenu implements ActionListener ,ItemListener{
 		//submenu - faults
 		faults = new Menu("Faults");
 		communityFaultModel = new MenuItem("Community Fault Model");
-		
+
 		displayMenu.addActionListener(this); 
 		this.faults.addActionListener(this);
 		this.communityFaultModel.addActionListener(this);
 
-		
+
 		this.faults.add(communityFaultModel);
 		this.displayMenu.add(faults);
 		//this.faults.addSeparator();
-		
-		
+
+
 
 		this.menuBar.add(displayMenu);
 	}
-	
+
 	public void quit() {
 		System.exit(0);
 	}
-	
+
 	public void saveVTKObj()
 	{
 		//vtkOBJExporter objExporter = new vtkOBJExporter();
@@ -152,42 +152,42 @@ public class MainMenu implements ActionListener ,ItemListener{
 		objExporter.SetInput(renWin);
 		objExporter.Update();
 		objExporter.Write();
-		*/
+		 */
 		vtkActorCollection actorlist = renderWindow.GetRenderer().GetActors();
 		if(actorlist.GetNumberOfItems()>0){
 			System.out.println(actorlist.GetNumberOfItems());
-			 vtkPolyDataWriter objExporter = new vtkPolyDataWriter();
-			 objExporter.SetFileName("testAll.vtk"); 
-			 vtkAppendPolyData  mainData = new vtkAppendPolyData ();
-			 //vtkPolyDataMapper maingMapper = new vtkPolyDataMapper();
-			 //vtkActor maingActor = new vtkActor();
+			vtkPolyDataWriter objExporter = new vtkPolyDataWriter();
+			objExporter.SetFileName("testAll.vtk"); 
+			vtkAppendPolyData  mainData = new vtkAppendPolyData ();
+			//vtkPolyDataMapper maingMapper = new vtkPolyDataMapper();
+			//vtkActor maingActor = new vtkActor();
 			for(int i = 0; i <actorlist.GetNumberOfItems();i++)
 			{
-				 vtkActor pbActor = (vtkActor) actorlist.GetItemAsObject(i);
-				 //double[] c = pbActor.GetProperty().GetColor();
-				 //vtkDoubleArray dc = new vtkDoubleArray();
-				 if(pbActor.GetVisibility() == 1)
-				 {
-				 vtkPolyDataMapper gmapper = (vtkPolyDataMapper) pbActor.GetMapper();
-				 //dc.SetNumberOfComponents(3);
-				 //dc.SetName("Colors");
-				 //for(int j = 0;j<3;j++)
-				 //{
-				 //dc.InsertNextTuple3(c[0]*Info.rgbMax, c[1]*Info.rgbMax, c[2]*Info.rgbMax);
-				// }
-				 /*if(c[0]==0)
+				vtkActor pbActor = (vtkActor) actorlist.GetItemAsObject(i);
+				//double[] c = pbActor.GetProperty().GetColor();
+				//vtkDoubleArray dc = new vtkDoubleArray();
+				if(pbActor.GetVisibility() == 1)
+				{
+					vtkPolyDataMapper gmapper = (vtkPolyDataMapper) pbActor.GetMapper();
+					//dc.SetNumberOfComponents(3);
+					//dc.SetName("Colors");
+					//for(int j = 0;j<3;j++)
+					//{
+					//dc.InsertNextTuple3(c[0]*Info.rgbMax, c[1]*Info.rgbMax, c[2]*Info.rgbMax);
+					// }
+					/*if(c[0]==0)
 				 {
 					 System.out.println("here");
 				 }*/
-				 vtkPolyData pd  = new vtkPolyData();
-				 //vtkPolyData pd = gmapper.GetInput();
-				 pd.SetPoints(gmapper.GetInput().GetPoints());
-				 pd.SetLines(gmapper.GetInput().GetLines());
-				 pd.SetPolys(gmapper.GetInput().GetPolys());
-				 //pd.GetPointData().SetScalars(dc);
-				 mainData.AddInputData(pd);
-				 mainData.Update();
-				 }
+					vtkPolyData pd  = new vtkPolyData();
+					//vtkPolyData pd = gmapper.GetInput();
+					pd.SetPoints(gmapper.GetInput().GetPoints());
+					pd.SetLines(gmapper.GetInput().GetLines());
+					pd.SetPolys(gmapper.GetInput().GetPolys());
+					//pd.GetPointData().SetScalars(dc);
+					mainData.AddInputData(pd);
+					mainData.Update();
+				}
 			}
 			objExporter.SetInputConnection(mainData.GetOutputPort());
 			objExporter.Write();
@@ -196,63 +196,63 @@ public class MainMenu implements ActionListener ,ItemListener{
 		/*ArrayList<ArrayList> actorPoliticalBoundariesMain = new ArrayList<ArrayList>();
 		 ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
 		actorPoliticalBoundariesSegments = MainGUI.pbGUI.getPoliticalBoundaries();
-		 
+
 		 if(actorPoliticalBoundariesSegments.size()>0){
 			 for(int j =4;j<5;j++)
 			 {
 				 vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
 				 vtkPolyDataMapper gmapper = (vtkPolyDataMapper) pbActor.GetMapper();
 
-				
+
 				 objExporter.SetInputData(gmapper.GetInput());
 				 //objExporter.Update();
 				 objExporter.Write();
 			 }
 		 }*/
-		
+
 	}
 	public void openVTKObj()
 	{
 
-		 
+
 		vtkPolyDataReader reader =new vtkPolyDataReader();
-		  reader.SetFileName("testAll.vtk");
-		  reader.Update();
-		  //vtkXMLPolyDataReader reader = new vtkXMLPolyDataReader();
-		  //reader.SetFileName("Coastlines_Los_Alamos.vtp");
-		  //reader.Update();
-		  vtkDoubleArray c1 = (vtkDoubleArray) reader.GetOutput().GetPointData().GetScalars("Colors");
-			double[] c = c1.GetTuple3(0);
-			Color color = new Color((int)c[0], (int) c[1], (int)c[2]); 
-			//setColor(color);
-			c[0] /= Info.rgbMax;
-			c[1] /= Info.rgbMax;
-			c[2] /= Info.rgbMax;
-			
-			vtkPolyData pd = new vtkPolyData();
-			pd.SetPoints(reader.GetOutput().GetPoints());
-			pd.SetLines(reader.GetOutput().GetLines());
-			pd.SetPolys(reader.GetOutput().GetPolys());
-			//pd.GetPointData().SetScalars(id0)
-		  // Visualize
-		  vtkPolyDataMapper mapper =new vtkPolyDataMapper();
-		  //mapper.SetInputConnection(reader.GetOutputPort());
-		 mapper.SetInputData(pd);
-		  vtkActor actor = new vtkActor();
-		  actor.SetMapper(mapper);
-		  actor.GetProperty().SetColor(c);
-		  vtkPanel renderWindow = MainGUI.getRenderWindow();
-		  renderWindow.GetRenderer().AddActor(actor);
-		  MainGUI.updateRenderWindow(actor);
+		reader.SetFileName("testAll.vtk");
+		reader.Update();
+		//vtkXMLPolyDataReader reader = new vtkXMLPolyDataReader();
+		//reader.SetFileName("Coastlines_Los_Alamos.vtp");
+		//reader.Update();
+		vtkDoubleArray c1 = (vtkDoubleArray) reader.GetOutput().GetPointData().GetScalars("Colors");
+		double[] c = c1.GetTuple3(0);
+		Color color = new Color((int)c[0], (int) c[1], (int)c[2]); 
+		//setColor(color);
+		c[0] /= Info.rgbMax;
+		c[1] /= Info.rgbMax;
+		c[2] /= Info.rgbMax;
+
+		vtkPolyData pd = new vtkPolyData();
+		pd.SetPoints(reader.GetOutput().GetPoints());
+		pd.SetLines(reader.GetOutput().GetLines());
+		pd.SetPolys(reader.GetOutput().GetPolys());
+		//pd.GetPointData().SetScalars(id0)
+		// Visualize
+		vtkPolyDataMapper mapper =new vtkPolyDataMapper();
+		//mapper.SetInputConnection(reader.GetOutputPort());
+		mapper.SetInputData(pd);
+		vtkActor actor = new vtkActor();
+		actor.SetMapper(mapper);
+		actor.GetProperty().SetColor(c);
+		vtkPanel renderWindow = MainGUI.getRenderWindow();
+		renderWindow.GetRenderer().AddActor(actor);
+		MainGUI.updateRenderWindow(actor);
 	}
-	
+
 	//@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object eventSource = e.getSource();
 		if (eventSource == appExit) {
 			quit();
-			}
+		}
 		else if(eventSource == fileOpen)
 		{
 			openVTKObj();
@@ -261,36 +261,36 @@ public class MainMenu implements ActionListener ,ItemListener{
 		{
 			saveVTKObj();
 		}
-		 else {
+		else {
 			System.out.println("Unhandled event");
 		}
 	}
-	
+
 	//plugin menu and events to load and unload plugins
 	public void itemStateChanged(ItemEvent e) {
 		// for checkboxitem menu
 		Object eventSource = e.getSource();
 		if (eventSource instanceof CheckboxMenuItem) {
-			
-	
-		CheckboxMenuItem jmi = (CheckboxMenuItem) eventSource;
-		if (jmi.getState()) {
-			activatePlugin(jmi.getName());
-		} else {
-			passivatePlugin(jmi.getName());
-		}
-		}
-		 else {
-				System.out.println("Unhandled event");
+
+
+			CheckboxMenuItem jmi = (CheckboxMenuItem) eventSource;
+			if (jmi.getState()) {
+				activatePlugin(jmi.getName());
+			} else {
+				passivatePlugin(jmi.getName());
 			}
+		}
+		else {
+			System.out.println("Unhandled event");
+		}
 	}
-     
-   
-	
+
+
+
 	public static  Map<String, Plugin> getActivePlugins() {
 		return activePlugins;
 	}
-	
+
 	public  Map<String, Plugin> getLoadedPluginsAsMap() {
 		return loadedPlugins;
 	}
@@ -298,12 +298,12 @@ public class MainMenu implements ActionListener ,ItemListener{
 	public void setActivePlugins(Map<String, Plugin> activePlugins) {
 		this.activePlugins = activePlugins;
 	}
-	
+
 	boolean isPluginActive(String id) {
 		// TODO Auto-generated method stub
 		return getActivePlugins().containsKey(id);
 	}
-	
+
 	void setupPluginMenus() {
 		Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 				availablePlugins.values());
@@ -377,12 +377,12 @@ public class MainMenu implements ActionListener ,ItemListener{
 
 				// Add the item to the submenu
 				submenu.add(mi);
-				
+
 			}
 		}
 	}
 
-	
+
 	void activatePlugin(String id) {
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -401,11 +401,12 @@ public class MainMenu implements ActionListener ,ItemListener{
 				// Activate plugin
 				Plugin plugin = loadedPlugins.get(id);
 				getActivePlugins().put(id, plugin);
-				
+
 				//System.out.println("**************** Loaded plugins: " + loadedPlugins);
 
 				plugin.activate();
-				
+				Info.getMainGUI().getTimeline().addPlugin(plugin, pluginActors.get(plugin));
+
 
 			} else {
 				// Just in case loading fails for some odd reason
@@ -418,7 +419,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 
 	private void setCursor(Cursor predefinedCursor) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
@@ -433,10 +434,12 @@ public class MainMenu implements ActionListener ,ItemListener{
 
 			log.debug("Passivating plugin " + id);
 			if (loadedPlugins.containsKey(id)) {
+				Info.getMainGUI().getTimeline().removePlugin(loadedPlugins.get(id));
 
 				// Update menu
 				updateMenu(id);
 				
+
 			} else {
 				log.warn("Unknown plugin: " + id);
 			}
@@ -485,7 +488,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 	public static void updateMenu(String id){
 		CheckboxMenuItem mi = pluginMenuItems.get(id);
 		mi.setState(false);
-		
+
 		// Passivate plugin
 		Plugin plugin = loadedPlugins.get(id);
 		plugin.unload();
@@ -495,5 +498,5 @@ public class MainMenu implements ActionListener ,ItemListener{
 	}
 
 
-	
+
 }
