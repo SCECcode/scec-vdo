@@ -54,6 +54,8 @@ import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
+import org.scec.vtk.timeline.Timeline;
+import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.plugins.Plugins;
@@ -124,6 +126,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private DrawingToolsPlugin drawingToolPlugin;
 	private double[] pointerPosition;
 	private ScriptingPlugin scriptingPluginObj;
+	
+	private Timeline timeline;
+	private TimelineGUI timelineGUI;
 
 	//default starting cam coordinates
 	double[] camCord = {7513.266063258975,
@@ -285,6 +290,22 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		} catch (IOException ioe) {
 			throw new RuntimeException("Unable to get available plugins", ioe);
 		}
+		
+		timeline = new Timeline();
+		timelineGUI = new TimelineGUI(timeline);
+		// temporary
+		JFrame timelineFrame = new JFrame();
+		timelineFrame.setContentPane(timelineGUI);
+		timelineFrame.setSize(800, 500);
+		timelineFrame.setVisible(true);
+	}
+	
+	public TimelineGUI getTimelineGUI() {
+		return timelineGUI;
+	}
+	
+	public Timeline getTimeline() {
+		return timeline;
 	}
 
 	public void setPointerPosition(double[] ds)

@@ -64,5 +64,10 @@ public interface Plugin {
      * passivate() is always called before unload().
      */
     public void unload();
+    
+    /**
+	 * @return Plugin metadata
+	 */
+    public PluginInfo getMetadata();
 }
 

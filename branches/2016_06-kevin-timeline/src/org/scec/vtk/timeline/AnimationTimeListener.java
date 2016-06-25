@@ -4,8 +4,10 @@ public interface AnimationTimeListener {
 	
 	/**
 	 * 
-	 * @param time in seconds
+	 * @param curTime in seconds
 	 */
-	public void animationTimeChanged(double time);
+	public void animationTimeChanged(double curTime);
+	
+	public void animationBoundsChanged(double maxTime);
 
 }

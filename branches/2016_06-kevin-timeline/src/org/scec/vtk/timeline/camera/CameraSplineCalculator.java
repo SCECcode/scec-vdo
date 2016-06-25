@@ -36,6 +36,8 @@ public class CameraSplineCalculator implements KeyFrameChangeListener {
 			checkBuildSpline();
 			if (keys.isEmpty())
 				return null;
+			if (keys.size() == 1)
+				return getPoints((CameraKeyFrame)keys.getKeyAt(0));
 			double t;
 			if (time <= timeMapFunc.getMinX())
 				t = 0;
@@ -43,6 +45,7 @@ public class CameraSplineCalculator implements KeyFrameChangeListener {
 				t = timeMapFunc.getMaxY();
 			else
 				t = timeMapFunc.getInterpolatedY(time);
+//			System.out.println("Getting "+element.name()+" for time="+time+" (spline time="+t+")");
 			Preconditions.checkState(Double.isFinite(t));
 			return new double[] { splineX.Evaluate(t), splineY.Evaluate(t), splineZ.Evaluate(t) };
 		}
@@ -74,27 +77,27 @@ public class CameraSplineCalculator implements KeyFrameChangeListener {
 				prevTime = time;
 				paused = camKey.isPause();
 				
-				vtkCamera cam = camKey.getCam();
-				double[] pts;
-				switch (element) {
-				case POSITION:
-					pts = cam.GetPosition();
-					break;
-				case FOCAL_POINT:
-					pts = cam.GetFocalPoint();
-					break;
-				case VIEW_UP:
-					pts = cam.GetViewUp();
-					break;
-
-				default:
-					throw new IllegalStateException("Unknown spline element: "+element);
-				}
+				double[] pts = getPoints(camKey);
 				
 				splineX.AddPoint(splineTime, pts[0]);
 				splineY.AddPoint(splineTime, pts[1]);
 				splineZ.AddPoint(splineTime, pts[2]);
 			}
+		}
+	}
+	
+	private double[] getPoints(CameraKeyFrame camKey) {
+		vtkCamera cam = camKey.getCam();
+		switch (element) {
+		case POSITION:
+			return cam.GetPosition();
+		case FOCAL_POINT:
+			return cam.GetFocalPoint();
+		case VIEW_UP:
+			return cam.GetViewUp();
+
+		default:
+			throw new IllegalStateException("Unknown spline element: "+element);
 		}
 	}
 	
