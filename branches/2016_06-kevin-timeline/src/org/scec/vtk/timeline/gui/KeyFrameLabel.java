@@ -62,6 +62,8 @@ class KeyFrameLabel extends JLabel implements Icon {
 	
 	public void dragTo(double time) {
 		dragging = true;
+		if (time < 0)
+			time = 0;
 		// time at the location where it's currently drawn
 		double locTime = panel.getTime(getX()+TimelinePanel.halfKeyWidth);
 		if (time != locTime) {
@@ -75,6 +77,8 @@ class KeyFrameLabel extends JLabel implements Icon {
 		dragging = false;
 		int x = getX() + TimelinePanel.halfKeyWidth;
 		double time = panel.getTime(x);
+		if (time < 0)
+			time = 0;
 		key.setStartTime(time);
 		System.out.println("Dragged to "+time);
 		repaint();

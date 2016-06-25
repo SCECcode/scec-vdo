@@ -1,8 +1,10 @@
 package org.scec.vtk.timeline.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -12,6 +14,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 
 import org.opensha.commons.util.ClassUtils;
@@ -25,6 +28,7 @@ import org.scec.vtk.timeline.KeyFrameList;
 import org.scec.vtk.timeline.RangeAnimationListener;
 import org.scec.vtk.timeline.RangeKeyFrame;
 import org.scec.vtk.timeline.Timeline;
+import org.scec.vtk.timeline.TimelinePluginChangeListener;
 import org.scec.vtk.timeline.VisibilityKeyFrame;
 import org.scec.vtk.timeline.camera.CameraKeyFrame;
 
@@ -32,7 +36,8 @@ import vtk.vtkCamera;
 
 import com.google.common.base.Preconditions;
 
-public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener, AnimationTimeListener {
+public class TimelinePanel extends JPanel
+implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePluginChangeListener, Scrollable {
 	
 	private int pixelsPerSecond = 100;
 	private double secondsPerPixel = 1d/(double)pixelsPerSecond;
@@ -45,7 +50,8 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 	private static final double minorTickInterval = 0.1d;
 	private static final int majorTickHeight = 12;
 	private static final int minorTickHeight = 6;
-	private static final DecimalFormat timeLabelFormat = new DecimalFormat("0s");
+	static final DecimalFormat timeMajorLabelFormat = new DecimalFormat("0s");
+	static final DecimalFormat timeMinorLabelFormat = new DecimalFormat("0.0s");
 	private static final Font timeLabelFont = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
 	private static final int timeLabelLowerPad = 3;
 	
@@ -65,8 +71,8 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 	static final Color keyOutlineColor = Color.BLACK;
 	static final Color keyOutlineSelectedColor = Color.BLACK;
 	
-	private static final int cameraHeight = heightPerPlugin;
-	private static final int cameraMaxY = headerHeight + cameraHeight;
+	static final int cameraHeight = heightPerPlugin;
+	static final int cameraMaxY = headerHeight + cameraHeight;
 	
 	private static final int INDEX_TAG_HEADER = -1;
 	private static final int INDEX_TAG_CAMERA = -2;
@@ -78,6 +84,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		setBackground(Color.WHITE);
 		this.timeline = timeline;
 		timeline.addAnimationTimeListener(this);
+		timeline.addTimelinePluginChangeListener(this);
 		
 //		JLabel testLabel = new JLabel(new Icon)
 		
@@ -118,6 +125,25 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				label.updateSize();
 			}
 		}
+	}
+	
+	private Dimension calculateSize() {
+		int maxY = cameraMaxY + timeline.getNumPlugins()*heightPerPlugin;
+		int width = getPixelX(timeline.getMaxTime());
+		
+//		if (getParent() != null && getParent().getHeight() > maxY)
+//			maxY = getParent().getHeight();
+		
+		return new Dimension(width, maxY);
+	}
+	
+	public void updateSize() {
+		Dimension size = calculateSize();
+		setPreferredSize(size);
+		setMinimumSize(size);
+		setMaximumSize(size);
+		setSize(size);
+		revalidate();
 	}
 	
 	private KeyFrameLabel buildKeyLabel(KeyFrame key, KeyFrameList keys) {
@@ -196,7 +222,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 			}
 			g.drawLine(x, 0, x, tickHeight);
 			if (label)
-				g.drawString(timeLabelFormat.format(time), x, headerHeight-timeLabelLowerPad);
+				g.drawString(timeMajorLabelFormat.format(time), x, headerHeight-timeLabelLowerPad);
 		}
 	}
 	
@@ -211,7 +237,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		return Math.round(time/minorTickInterval)*minorTickInterval;
 	}
 	
-	private int pluginIndexForY(int y) {
+	int pluginIndexForY(int y) {
 		if (y < headerHeight)
 			return INDEX_TAG_HEADER;
 		if (y < (cameraMaxY))
@@ -220,7 +246,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		return (y - cameraMaxY)/heightPerPlugin;
 	}
 	
-	private int yForPluginIndex(int index) {
+	int yForPluginIndex(int index) {
 		return cameraMaxY + (heightPerPlugin*index);
 	}
 	
@@ -413,9 +439,50 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 	public void mouseMoved(MouseEvent e) {}
 
 	@Override
-	public void animationTimeChanged(double time) {
-		this.curTime = time;
+	public void animationTimeChanged(double curTime) {
+		this.curTime = curTime;
 		this.repaint();
+	}
+	
+	@Override
+	public void animationBoundsChanged(double maxTime) {
+		updateSize();
+	}
+
+	@Override
+	public void timelinePluginsChanged() {
+		rebuildKeyLabels();
+		repaint();
+	}
+
+	@Override
+	public Dimension getPreferredScrollableViewportSize() {
+//		if (getParent() == null)
+			return calculateSize();
+//			return null;
+//		return getParent().getSize();
+	}
+
+	@Override
+	public int getScrollableUnitIncrement(Rectangle visibleRect,
+			int orientation, int direction) {
+		return 30;
+	}
+
+	@Override
+	public int getScrollableBlockIncrement(Rectangle visibleRect,
+			int orientation, int direction) {
+		return 100;
+	}
+
+	@Override
+	public boolean getScrollableTracksViewportWidth() {
+		return false;
+	}
+
+	@Override
+	public boolean getScrollableTracksViewportHeight() {
+		return true;
 	}
 
 }

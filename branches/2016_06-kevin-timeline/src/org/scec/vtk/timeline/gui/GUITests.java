@@ -35,17 +35,17 @@ public class GUITests {
 		
 		final Timeline timeline = new Timeline();
 		
-		timeline.addPlugin(new DummyPlugin(), new PluginActors());
-		timeline.addPlugin(new DummyRangePlugin(), new PluginActors());
-		timeline.addPlugin(new DummyStatefulPlugin(), new PluginActors());
+		timeline.addPlugin(new DummyPlugin("Normal Plugin"), new PluginActors());
+		timeline.addPlugin(new DummyRangePlugin("Range Plugin"), new PluginActors());
+		timeline.addPlugin(new DummyStatefulPlugin("Stateful Plugin"), new PluginActors());
 		timeline.addKeyFrame(0, new VisibilityKeyFrame(0d, new PluginActors(), true));
 		timeline.addKeyFrame(0, new VisibilityKeyFrame(5d, new PluginActors(), false));
 		timeline.addKeyFrame(1, new RangeKeyFrame(0d, 3d, new DummyState()));
 		timeline.addKeyFrame(2, new KeyFrame(1d, new DummyState()));
 		timeline.addKeyFrame(2, new KeyFrame(4d, new DummyState()));
 		
-		final TimelinePanel tl = new TimelinePanel(timeline);
-		panel.add(tl, BorderLayout.CENTER);
+		final TimelineGUI gui = new TimelineGUI(timeline);
+		panel.add(gui, BorderLayout.CENTER);
 		
 		boolean play = false;
 		final long sleepTime = 100;
@@ -57,7 +57,7 @@ public class GUITests {
 				Stopwatch watch = Stopwatch.createStarted();
 				while (true) {
 					double time = watch.elapsed(TimeUnit.MILLISECONDS)/1000d;
-					double curMax = tl.getCurrentTotalTime();
+					double curMax = timeline.getMaxTime();
 //					System.out.println("curMax="+curMax+" s");
 					if (curMax > 0) {
 						double fract = time/curMax;
@@ -84,12 +84,20 @@ public class GUITests {
 		
 		frame.setContentPane(panel);
 		
-		frame.setSize(500, 300);
+		frame.setSize(800, 300);
 		frame.setVisible(true);
+		gui.updateSize();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	private static class DummyPlugin implements Plugin {
+		
+		private PluginInfo metadata;
+		
+		public DummyPlugin(String name) {
+			metadata = new PluginInfo();
+			metadata.setName(name);
+		}
 
 		@Override
 		public String getId() {
@@ -126,10 +134,19 @@ public class GUITests {
 			// TODO Auto-generated method stub
 			
 		}
+
+		@Override
+		public PluginInfo getMetadata() {
+			return metadata;
+		}
 		
 	}
 	
 	private static class DummyStatefulPlugin extends DummyPlugin implements StatefulPlugin {
+
+		public DummyStatefulPlugin(String name) {
+			super(name);
+		}
 
 		@Override
 		public PluginState getState() {
@@ -145,6 +162,10 @@ public class GUITests {
 	}
 	
 	private static class DummyRangePlugin extends DummyStatefulPlugin implements RangeAnimationListener {
+
+		public DummyRangePlugin(String name) {
+			super(name);
+		}
 
 		@Override
 		public void rangeStarted() {
