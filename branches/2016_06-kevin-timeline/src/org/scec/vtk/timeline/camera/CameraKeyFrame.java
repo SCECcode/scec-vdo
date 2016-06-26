@@ -32,4 +32,9 @@ public class CameraKeyFrame extends KeyFrame {
 		return pause;
 	}
 
+	@Override
+	public KeyFrame duplicate() {
+		return new CameraKeyFrame(getStartTime(), getCam(), isPause());
+	}
+
 }
