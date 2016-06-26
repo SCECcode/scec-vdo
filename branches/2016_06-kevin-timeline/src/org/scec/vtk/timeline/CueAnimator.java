@@ -121,8 +121,10 @@ public class CueAnimator {
 		return playThread != null && playThread.isAlive();
 	}
 	
-	public void play(final double time) {
+	public void play(double time) {
 		rendering = false;
+		if (time == scene.GetEndTime())
+			time = 0d; // TODO this isn't working
 		scene.SetModeToRealTime();
 		scene.SetAnimationTime(time);
 		
