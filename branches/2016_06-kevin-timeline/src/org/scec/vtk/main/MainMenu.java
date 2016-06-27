@@ -10,71 +10,46 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 
 import org.apache.log4j.Logger;
-import org.scec.vtk.main.MainGUI.StayOpenCheckBoxMenuItem;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
-import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
-import org.scec.vtk.tools.plugins.Plugins;
+import org.scec.vtk.timeline.Timeline;
+import org.scec.vtk.timeline.gui.TimelineGUI;
+
+import com.google.common.base.Preconditions;
 
 import vtk.vtkActor;
 import vtk.vtkActorCollection;
-import vtk.vtkAlgorithm;
 import vtk.vtkAppendPolyData;
-import vtk.vtkDataObject;
-import vtk.vtkDataSet;
 import vtk.vtkDoubleArray;
-import vtk.vtkGenericDataObjectWriter;
-import vtk.vtkGeoAssignCoordinates;
-import vtk.vtkGraph;
-import vtk.vtkGraphMapper;
-import vtk.vtkGraphWriter;
-import vtk.vtkMutableDirectedGraph;
-import vtk.vtkOBJExporter;
-import vtk.vtkOBJReader;
-import vtk.vtkPNGWriter;
 import vtk.vtkPanel;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
 import vtk.vtkRenderWindow;
-import vtk.vtkSTLWriter;
-import vtk.vtkStructuredGrid;
-import vtk.vtkStructuredGridWriter;
-import vtk.vtkUnstructuredGrid;
-import vtk.vtkUnstructuredGridWriter;
-import vtk.vtkWindowToImageFilter;
-import vtk.vtkXMLPolyDataReader;
-import vtk.vtkXMLPolyDataWriter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
 
 
-public class MainMenu implements ActionListener ,ItemListener{
+public class MainMenu implements ActionListener, ItemListener{
 
 	private MenuBar menuBar;
 	private Menu fileMenu;
 	private MenuItem fileOpen;
-	private MenuItem saveItem ;
+	private MenuItem saveItem;
 	private MenuItem appExit;
-
-	//not used
-	private Menu displayMenu;
-	private Menu faults;
-	private MenuItem communityFaultModel;
-	//
+	
+	private Timeline timeline;
+	private TimelineGUI timelineGUI;
+	private JFrame timelineFrame;
+	private CheckboxMenuItem timelineItem;
 
 	Map<String, PluginInfo> availablePlugins = null;
 	// TODO why are these static?
@@ -87,14 +62,34 @@ public class MainMenu implements ActionListener ,ItemListener{
 		//Creates the main menu bar.
 		menuBar = new MenuBar();
 		setupFileMenu();
-		//setupDisplayMenu();
-
 	}
 
 
 	public MenuBar getMenuBar()
 	{
 		return menuBar;
+	}
+	
+	public void setupTimeline(Timeline timeline, TimelineGUI timelineGUI) {
+		Preconditions.checkState(this.timeline == null, "Timeline already initialized!");
+		this.timeline = timeline;
+		this.timelineGUI = timelineGUI;
+		
+		Menu menu = getMenuByName("Render");
+
+		// If the menu was not found, then create it. A plugin could use this menu name which is why we check ahead of time
+		if (menu == null) {
+			menu = new Menu();
+			menu.setLabel("Render");
+			menu.setName("Render");
+			menuBar.add(menu);
+		}
+		
+		timelineItem = new CheckboxMenuItem("Timeline");
+		timelineItem.setName("Timeline");
+		timelineItem.addItemListener(this);
+		
+		menu.add(timelineItem);
 	}
 
 	private void setupFileMenu() {
@@ -115,26 +110,6 @@ public class MainMenu implements ActionListener ,ItemListener{
 		this.fileMenu.add(appExit);
 
 		this.menuBar.add(fileMenu);
-	}
-	private void setupDisplayMenu() {
-		//Display menu - different plugins
-		displayMenu = new Menu("Display");
-		//submenu - faults
-		faults = new Menu("Faults");
-		communityFaultModel = new MenuItem("Community Fault Model");
-
-		displayMenu.addActionListener(this); 
-		this.faults.addActionListener(this);
-		this.communityFaultModel.addActionListener(this);
-
-
-		this.faults.add(communityFaultModel);
-		this.displayMenu.add(faults);
-		//this.faults.addSeparator();
-
-
-
-		this.menuBar.add(displayMenu);
 	}
 
 	public void quit() {
@@ -270,9 +245,9 @@ public class MainMenu implements ActionListener ,ItemListener{
 	public void itemStateChanged(ItemEvent e) {
 		// for checkboxitem menu
 		Object eventSource = e.getSource();
-		if (eventSource instanceof CheckboxMenuItem) {
-
-
+		if (eventSource == timelineItem) {
+			setTimelineVisible(timelineItem.getState());
+		} else if (eventSource instanceof CheckboxMenuItem) {
 			CheckboxMenuItem jmi = (CheckboxMenuItem) eventSource;
 			if (jmi.getState()) {
 				activatePlugin(jmi.getName());
@@ -285,7 +260,15 @@ public class MainMenu implements ActionListener ,ItemListener{
 		}
 	}
 
-
+	public void setTimelineVisible(boolean visible) {
+		// TODO panel in main gui?
+		if (timelineFrame == null) {
+			timelineFrame = new JFrame();
+			timelineFrame.setContentPane(timelineGUI);
+			timelineFrame.setSize(1000, 300);
+		}
+		timelineFrame.setVisible(visible);
+	}
 
 	public static  Map<String, Plugin> getActivePlugins() {
 		return activePlugins;
@@ -313,6 +296,19 @@ public class MainMenu implements ActionListener ,ItemListener{
 			addPluginToMenu(plugin);
 		}
 	}
+	
+	private Menu getMenuByName(String menuName) {
+		// Try to find the menu
+		for (int i = 0; i < menuBar.getMenuCount(); i++) {
+			Menu candidate = menuBar.getMenu(i);
+			if (candidate != null
+					&& candidate.getName().equalsIgnoreCase(menuName)) {
+				return candidate;
+			}
+		}
+		return null;
+	}
+	
 	private void addPluginToMenu(PluginInfo info) {
 		// If the plugin has a menu
 		if (info.hasMenu()) {
@@ -325,17 +321,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 			pluginMenuItems.put(info.getId(), mi);
 
 			final String menuName = info.getMenuName();
-			Menu menu = null;
-
-			// Try to find the menu
-			for (int i = 0; i < menuBar.getMenuCount(); i++) {
-				Menu candidate = menuBar.getMenu(i);
-				if (candidate != null
-						&& candidate.getName().equalsIgnoreCase(menuName)) {
-					menu = candidate;
-					break;
-				}
-			}
+			Menu menu = getMenuByName(menuName);
 
 			// If the menu was not found, then create it
 			if (menu == null) {
@@ -405,7 +391,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 				//System.out.println("**************** Loaded plugins: " + loadedPlugins);
 
 				plugin.activate();
-				Info.getMainGUI().getTimeline().addPlugin(plugin, pluginActors.get(plugin));
+				timeline.addPlugin(plugin, pluginActors.get(plugin));
 
 
 			} else {
@@ -434,7 +420,7 @@ public class MainMenu implements ActionListener ,ItemListener{
 
 			log.debug("Passivating plugin " + id);
 			if (loadedPlugins.containsKey(id)) {
-				Info.getMainGUI().getTimeline().removePlugin(loadedPlugins.get(id));
+				timeline.removePlugin(loadedPlugins.get(id));
 
 				// Update menu
 				updateMenu(id);
