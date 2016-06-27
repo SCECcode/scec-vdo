@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -264,8 +266,18 @@ public class MainMenu implements ActionListener, ItemListener{
 		// TODO panel in main gui?
 		if (timelineFrame == null) {
 			timelineFrame = new JFrame();
+			timelineFrame.setTitle("Timeline");
 			timelineFrame.setContentPane(timelineGUI);
 			timelineFrame.setSize(1000, 300);
+			// catch window close events to update check box
+			timelineFrame.addWindowListener(new WindowAdapter() {
+
+				@Override
+				public void windowClosing(WindowEvent e) {
+					timelineItem.setState(false);
+				}
+				
+			});
 		}
 		timelineFrame.setVisible(visible);
 	}
