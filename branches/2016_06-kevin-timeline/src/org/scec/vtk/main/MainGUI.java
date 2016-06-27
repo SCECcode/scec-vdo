@@ -293,11 +293,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 		timeline = new Timeline();
 		timelineGUI = new TimelineGUI(timeline);
-		// temporary
-		JFrame timelineFrame = new JFrame();
-		timelineFrame.setContentPane(timelineGUI);
-		timelineFrame.setSize(800, 500);
-		timelineFrame.setVisible(true);
+		mainMenu.setupTimeline(timeline, timelineGUI);
 	}
 	
 	public TimelineGUI getTimelineGUI() {
