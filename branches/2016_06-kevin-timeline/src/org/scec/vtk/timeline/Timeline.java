@@ -3,6 +3,7 @@ package org.scec.vtk.timeline;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.timeline.camera.CameraAnimator;
@@ -128,6 +129,9 @@ public class Timeline {
 		// notify any listeners of time change
 		// primary listener is camera animator, this call will update the camera position
 		fireAnimationTimeChanged(time);
+		
+		// finally update the render window
+		MainGUI.updateRenderWindow();
 	}
 	
 	public int getNumPlugins() {
