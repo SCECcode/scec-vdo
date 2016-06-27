@@ -20,6 +20,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
+import org.opensha.commons.util.DataUtils;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.FileUtils;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
@@ -123,8 +124,10 @@ public class CueAnimator {
 	
 	public void play(double time) {
 		rendering = false;
-		if (time == scene.GetEndTime())
-			time = 0d; // TODO this isn't working
+		// if within 1% of end start over
+		// this happens when playing as it skips frames as needed while playing live
+		if (DataUtils.getPercentDiff(time, scene.GetEndTime()) < 1d)
+			time = 0d;
 		scene.SetModeToRealTime();
 		scene.SetAnimationTime(time);
 		

@@ -62,7 +62,6 @@ public class CameraAnimator implements AnimationTimeListener {
 //				MainGUI.updateRenderWindow();
 				renderer.SetActiveCamera(cam);
 				renderer.ResetCameraClippingRange();
-				MainGUI.updateRenderWindow();
 			}
 		};
 		if (SwingUtilities.isEventDispatchThread()) {
