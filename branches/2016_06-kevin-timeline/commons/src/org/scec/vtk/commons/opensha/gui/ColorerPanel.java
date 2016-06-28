@@ -223,6 +223,12 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 			cptPanel.updateCPT(null);
 		}
 		cptPanel.repaint();
+		System.out.println("Updated cptBased="+cptBased);
+	}
+	
+	public void cptChangedExternally() {
+		updateForCPT();
+		fireColorerChangeEvent();
 	}
 	
 	public void fireColorerChangeEvent() {
