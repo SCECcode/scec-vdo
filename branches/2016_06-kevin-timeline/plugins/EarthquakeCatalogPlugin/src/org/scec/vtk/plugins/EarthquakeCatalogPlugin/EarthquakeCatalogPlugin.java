@@ -16,6 +16,7 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 	EarthquakeCatalogPluginGUI eQGui;
 	private boolean guidisplayed = false;
 	private PluginInfo metadata;
+	private PluginState state;
 
 
 	/**
@@ -60,6 +61,8 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 	@Override
 	public PluginState getState() {
 		// TODO Auto-generated method stub
+//		if(state==null)
+//			state = 
 		return new EarthquakeCatalogPluginState(this.eQGui);
 	}
 
