@@ -100,6 +100,10 @@ public class FaultTreeTable extends Outline implements TreeChangeListener {
 		fireTreeChangeEvent(root);
 	}
 	
+	public void refreshTreeView() {
+		this.treeModel.reload((TreeNode) treeModel.getRoot());
+	}
+	
 	public FaultTableRowModel getRowModel() {
 		return rowModel;
 	}

@@ -8,6 +8,7 @@ import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
+import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.opensha.AbstractFaultPlugin;
 import org.scec.vtk.plugins.opensha.FaultPluginGUI;
 

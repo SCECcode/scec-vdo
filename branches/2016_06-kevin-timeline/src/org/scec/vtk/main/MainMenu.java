@@ -64,6 +64,12 @@ public class MainMenu implements ActionListener, ItemListener{
 		//Creates the main menu bar.
 		menuBar = new MenuBar();
 		setupFileMenu();
+		
+		// manually add Display menu so that it is second from the left
+		Menu displayMenu = new Menu();
+		displayMenu.setLabel("Display");
+		displayMenu.setName("Display");
+		menuBar.add(displayMenu);
 	}
 
 
