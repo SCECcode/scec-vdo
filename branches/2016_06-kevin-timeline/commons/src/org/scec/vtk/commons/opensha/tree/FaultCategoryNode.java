@@ -12,12 +12,26 @@ public class FaultCategoryNode extends AbstractFaultNode {
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	// user data object must be unique for saving/loading state, so we can't just pass in the String which could be a duplicate
+	private static class CategoryUserObject {
+		private String name;
+		
+		public CategoryUserObject(String name) {
+			this.name = name;
+		}
+		
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
+	
 	public FaultCategoryNode(String name) {
 		this(name, null);
 	}
 	
 	public FaultCategoryNode(String name, String info) {
-		super(name);
+		super(new CategoryUserObject(name));
 		
 		this.name = name;
 		this.info = info;
