@@ -17,6 +17,8 @@ import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.gui.ColorerPanel;
 
+import com.google.common.base.Preconditions;
+
 public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChangeListener {
 	
 	/**
@@ -87,6 +89,11 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 	public FaultAnimation getSelectedAnim() {
 		String name = (String)combo.getSelectedItem();
 		return animMap.get(name);
+	}
+	
+	public void setSelectedAnim(FaultAnimation anim) {
+		Preconditions.checkState(animMap.containsKey(anim.getName()));
+		combo.setSelectedItem(anim.getName());
 	}
 
 	@Override

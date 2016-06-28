@@ -276,6 +276,8 @@ public class FaultPluginGUI extends JSplitPane {
 	}
 	
 	ParameterList getFaultParams() {
+		if (faultParamEditor == null)
+			return null;
 		return faultParamEditor.getParameterList();
 	}
 
