@@ -1,19 +1,16 @@
 package org.scec.vtk.plugins.EarthquakeCatalogPlugin;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.swing.JPanel;
 
-import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.ActionPlugin;
 import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 
 import vtk.vtkActor;
 
-public class EarthquakeCatalogPlugin extends ActionPlugin {
+public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlugin{
 
 
 	EarthquakeCatalogPluginGUI eQGui;
@@ -57,21 +54,19 @@ public class EarthquakeCatalogPlugin extends ActionPlugin {
 
 	public void setActors()
 	{
-		//ArrayList<vtkActor> allCFMActors = new ArrayList<vtkActor>();
-		if(guidisplayed){
 
-			//List loadedRows = f3DGui.faultTable.getLibraryModel().getAllObjects();
+	}
 
-			/*for(int i = 0; i < loadedRows.size(); i++)
-		{
-			FaultAccessor fa = (FaultAccessor)loadedRows.get(i);
-			fa.readDataFile();
-			//allCFMActors.add(fa.getFaultBranch());
-			fa.setFaultBranch(fa.getFaultBranch());
-		}
-		if(loadedRows.size()>0)
-			Info.getMainGUI().updateActors(getActors());*/
-		}
+	@Override
+	public PluginState getState() {
+		// TODO Auto-generated method stub
+		return new EarthquakeCatalogPluginState(this.eQGui);
+	}
 
+	@Override
+	public void setState(PluginState s) {
+		// TODO Auto-generated method stub
+		s.load();
+		
 	}
 }
