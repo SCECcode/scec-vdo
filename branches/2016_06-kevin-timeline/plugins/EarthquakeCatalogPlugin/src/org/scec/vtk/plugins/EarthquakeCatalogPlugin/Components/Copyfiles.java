@@ -30,9 +30,9 @@ public class Copyfiles {
       if (!toFile.canWrite())
         throw new IOException("FileCopy: "
             + "destination file is unwriteable: " + toFileName);
-      System.out.print("Overwrite existing file " + toFile.getName()
-          + "? (Y/N): ");
-      System.out.flush();
+//      System.out.print("Overwrite existing file " + toFile.getName()
+//          + "? (Y/N): ");
+//      System.out.flush();
       String response = "y";
       if (!response.equals("Y") && !response.equals("y"))
         throw new IOException("FileCopy: "

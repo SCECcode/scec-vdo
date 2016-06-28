@@ -12,19 +12,35 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import org.apache.log4j.Logger;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
+import org.scec.vtk.tools.Prefs;
 
 import com.google.common.base.Preconditions;
 
@@ -47,7 +63,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem fileOpen;
 	private MenuItem saveItem;
 	private MenuItem appExit;
-	
+
 	private Timeline timeline;
 	private TimelineGUI timelineGUI;
 	private JFrame timelineFrame;
@@ -60,11 +76,15 @@ public class MainMenu implements ActionListener, ItemListener{
 	static Map<String, Plugin> activePlugins = new HashMap<String, Plugin>();
 	private static Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
+
+
+
+
 	public MainMenu(){
 		//Creates the main menu bar.
 		menuBar = new MenuBar();
 		setupFileMenu();
-		
+
 		// manually add Display menu so that it is second from the left
 		Menu displayMenu = new Menu();
 		displayMenu.setLabel("Display");
@@ -77,12 +97,12 @@ public class MainMenu implements ActionListener, ItemListener{
 	{
 		return menuBar;
 	}
-	
+
 	public void setupTimeline(Timeline timeline, TimelineGUI timelineGUI) {
 		Preconditions.checkState(this.timeline == null, "Timeline already initialized!");
 		this.timeline = timeline;
 		this.timelineGUI = timelineGUI;
-		
+
 		Menu menu = getMenuByName("Render");
 
 		// If the menu was not found, then create it. A plugin could use this menu name which is why we check ahead of time
@@ -92,11 +112,11 @@ public class MainMenu implements ActionListener, ItemListener{
 			menu.setName("Render");
 			menuBar.add(menu);
 		}
-		
+
 		timelineItem = new CheckboxMenuItem("Timeline");
 		timelineItem.setName("Timeline");
 		timelineItem.addItemListener(this);
-		
+
 		menu.add(timelineItem);
 	}
 
@@ -238,16 +258,94 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 		else if(eventSource == fileOpen)
 		{
-			openVTKObj();
+			JFileChooser chooser = new JFileChooser();
+			int ret = chooser.showOpenDialog(Info.getMainGUI());
+			if (ret == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				SAXReader reader = new SAXReader();
+				try {
+					Document document = reader.read(file.getPath());
+					Element root = document.getRootElement();
+					// iterate through child elements of root with element name "foo"
+					Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
+							availablePlugins.values());
+					for(PluginInfo pluginDescriptor:pluginDescriptors)
+					{
+						Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+						if (plugin instanceof StatefulPlugin) {
+							((StatefulPlugin)plugin).getState().fromXML(root);
+						}
+					}
+				} catch (DocumentException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			//	openVTKObj();
 		}
 		else if(eventSource == saveItem)
 		{
-			saveVTKObj();
-		}
-		else {
-			System.out.println("Unhandled event");
+			JFileChooser chooser = new JFileChooser();
+			int ret = chooser.showSaveDialog(Info.getMainGUI());
+			if (ret == JFileChooser.APPROVE_OPTION) {
+				Document document = DocumentHelper.createDocument();
+				Element root = document.addElement("root");
+				File file = chooser.getSelectedFile();
+				String destinationData =  file.getPath();//Prefs.getLibLoc() + File.separator;
+
+				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
+						availablePlugins.values());
+				for(PluginInfo pluginDescriptor:pluginDescriptors)
+				{
+					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+					if (plugin instanceof StatefulPlugin) {
+						((StatefulPlugin)plugin).getState().toXML(root);
+					}
+				}
+				saveXMLFile(document, root, destinationData);
+			}
+			else {
+				System.out.println("Unhandled event");
+			}
 		}
 	}
+
+	private void saveXMLFile(Document document,Element root,String destinationData) {
+		// TODO Auto-generated method stub
+		XMLWriter writer = null;
+		try {
+			writer = new XMLWriter(
+					new FileWriter( destinationData)
+					);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			writer.write( document );
+
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// Pretty print the document to System.out
+		OutputFormat format = OutputFormat.createPrettyPrint();
+		try {
+			writer = new XMLWriter( System.out, format );
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			writer.write( document );
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 
 	//plugin menu and events to load and unload plugins
 	public void itemStateChanged(ItemEvent e) {
@@ -282,7 +380,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				public void windowClosing(WindowEvent e) {
 					timelineItem.setState(false);
 				}
-				
+
 			});
 		}
 		timelineFrame.setVisible(visible);
@@ -314,7 +412,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			addPluginToMenu(plugin);
 		}
 	}
-	
+
 	private Menu getMenuByName(String menuName) {
 		// Try to find the menu
 		for (int i = 0; i < menuBar.getMenuCount(); i++) {
@@ -326,7 +424,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 		return null;
 	}
-	
+
 	private void addPluginToMenu(PluginInfo info) {
 		// If the plugin has a menu
 		if (info.hasMenu()) {
@@ -443,7 +541,7 @@ public class MainMenu implements ActionListener, ItemListener{
 
 				// Update menu
 				updateMenu(id);
-				
+
 
 			} else {
 				log.warn("Unknown plugin: " + id);

@@ -1493,7 +1493,7 @@ MouseListener
 			int scale = dispProp_slider.getValue();
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			cat.setScaling(scale);
-			setMagnitudeScale(scale,cat);
+			setMagnitudeScale(cat,scale);
 		}
 		if(src == transparencySlider)
 		{
@@ -1522,7 +1522,7 @@ MouseListener
 		}
 		Info.getMainGUI().updateRenderWindow();
 	}
-	public void setMagnitudeScale(int scale,EQCatalog cat) {
+	public void setMagnitudeScale(EQCatalog cat,int scale) {
 		// TODO Auto-generated method stub
 		double[] scaleMenuItems = {0.05,0.1,0.2,0.5,1.0,2.0,3.0,4.0,5.0,6.0};
 
@@ -1732,13 +1732,13 @@ MouseListener
 		if (src == this.dispProp_geomPoint) {
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			cat.setGeometry(0);
-			setCatalogVisible(cat,cat.getGeometry());
+			setCatalogVisible(cat,cat.getGeometry(),true);
 		}
 		else if (src == this.dispProp_geomSphere) {
 
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			cat.setGeometry(1);
-			setCatalogVisible(cat,cat.getGeometry());
+			setCatalogVisible(cat,cat.getGeometry(),true);
 		}
 		else if(src==this.dispProp_colGradientButton)
 		{
@@ -1811,24 +1811,61 @@ MouseListener
 			}
 		}}
 
-	public void setCatalogVisible(EQCatalog cat, int geometry) {
-		// TODO Auto-generated method stub
+	public void setVisibility(EQCatalog cat, boolean visible)
+	{
 		vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
 		vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
-		if(geometry==0)
+		if(visible)
 		{
 			actorPoints.VisibilityOn();
-			actorSpheres.VisibilityOff();
+			actorSpheres.VisibilityOn();
 		}
 		else
 		{
 			actorPoints.VisibilityOff();
-			actorSpheres.VisibilityOn();
+			actorSpheres.VisibilityOff();
 		}
+		updateActorsAndRender(cat);
+		
+	}
+	public void setCatalogVisible(EQCatalog cat, int geometry,boolean visible) {
+		// TODO Auto-generated method stub
+		vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
+		vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
+		System.out.println(geometry);
+		System.out.println(visible);
+		if(geometry==0)
+		{
+			if(visible)
+			{
+				actorPoints.VisibilityOn();
+				actorSpheres.VisibilityOff();
+			}
+			else
+			{
+				actorPoints.VisibilityOff();
+				actorSpheres.VisibilityOff();
+			}
+		}
+		else if(geometry==1 )
+		{
+			if(visible)
+			{
+				actorPoints.VisibilityOff();
+				actorSpheres.VisibilityOn();
+			}
+			else
+			{
+				actorPoints.VisibilityOff();
+				actorSpheres.VisibilityOff();
+			}
+		}
+	
 		updateActorsAndRender(cat);
 	}
 	public void setColGradient(EQCatalog cat,Color[] newColor) {
 		// TODO Auto-generated method stub
+		if(newColor!=null){
 		cat.setGradColor1(newColor[0]);
 		cat.setGradColor2(newColor[1]);
 		cat.initGradientAppearance();
@@ -1853,8 +1890,6 @@ MouseListener
 		vtkPolyData inputData = new vtkPolyData();
 		inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
 		//int lastIndex = eqList.indexOf(eq);
-
-		new vtkPoints();
 
 		colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
 
@@ -1885,30 +1920,9 @@ MouseListener
 		cat.getActors().set(0,actorPointsOld);
 		cat.getActors().set(1,actorSpheresOld);
 		updateActorsAndRender(cat);
+		}
 	}
 	public void mouseClicked(MouseEvent e) {
-		Object src = e.getSource();
-
-		//currently should only be the status label
-		if (src == status){
-
-			//if it says status, do one thing
-			if (status.getText() == "Status" && e.getButton() != MouseEvent.BUTTON1)
-				status.setText("Moo!");
-
-			//if it says "Moo!" do another
-			if (status.getText() == "Moo!" && e.getButton() == MouseEvent.BUTTON1){
-				//change the GUI to fit in the cow option
-				assemblePropsDispPanel(true);
-				//show the dialogue with warning
-				/*JOptionPane.showMessageDialog(Geo3dInfo.getDesktop(),
-							"<html>You've unlocked the Unit Cow easter egg!<br><br>" +
-							"This specialized shape is not meant to be used on catalogs of more than <br>" +
-							"10-20 earthquakes, due to the memory requirements for each cow.  Because of the <br>" +
-							"high polygon count for the cows, loading will take longer than for spheres or points.<br><br>" +
-					"Enjoy!</html>");*/
-			}
-		}
 	}
 	public void mousePressed(MouseEvent arg0) {
 	}
