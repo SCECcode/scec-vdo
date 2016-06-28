@@ -59,9 +59,10 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	private static final Color tickColor = Color.BLACK;
 	private static final Color pluginDividerColor = Color.LIGHT_GRAY;
 	private static final Color tickGridColor = new Color(225, 225, 225); // null if no grid
+	private static final Color tickGridMajorColor = Color.LIGHT_GRAY; // null if no grid
 	
 	static final int heightPerPlugin = 30;
-	static final int keyWidth = 5; // prefer odd for perfect alignment
+	static final int keyWidth = 7; // prefer odd for perfect alignment
 	static final int keyHeight = 15; // prefer odd for perfect alignment
 	static final int halfKeyWidth = keyWidth/2;
 	static final int keyYRelative = (heightPerPlugin-keyHeight)/2;
@@ -129,7 +130,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	
 	private Dimension calculateSize() {
 		int maxY = cameraMaxY + timeline.getNumPlugins()*heightPerPlugin;
-		int width = getPixelX(timeline.getMaxTime());
+		int width = getPixelX(timeline.getMaxTime())+halfKeyWidth;
 		
 //		if (getParent() != null && getParent().getHeight() > maxY)
 //			maxY = getParent().getHeight();
@@ -208,20 +209,25 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	}
 	
 	private void drawTicks(Graphics g, double interval, int tickHeight, int panelWidth, int panelHeight,
-			double maxTime, boolean label) {
-		if (label)
+			double maxTime, boolean major) {
+		if (major)
 			g.setFont(timeLabelFont);
 		g.setColor(tickColor);
 		for (double time=0; time<=maxTime; time+=interval) {
 			int x = getPixelX(time);
-			if (tickGridColor != null) {
+			Color gridColor;
+			if (major)
+				gridColor = tickGridMajorColor;
+			else
+				gridColor = tickGridColor;
+			if (gridColor != null) {
 				// draw grid
-				g.setColor(tickGridColor);
+				g.setColor(gridColor);
 				g.drawLine(x, 0, x, panelHeight);
 				g.setColor(tickColor);
 			}
 			g.drawLine(x, 0, x, tickHeight);
-			if (label)
+			if (major)
 				g.drawString(timeMajorLabelFormat.format(time), x, headerHeight-timeLabelLowerPad);
 		}
 	}
@@ -420,19 +426,25 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 			return;
 		Preconditions.checkState(e.getSource() instanceof KeyFrameLabel);
 		double time = getTime(e);
+		if (time > timeline.getMaxTime())
+			time = timeline.getMaxTime();
+		if (time < 0)
+			time = 0;
 //		System.out.println("drag x="+e.getX()+", y="+e.getY()+", class="
 //				+ClassUtils.getClassNameWithoutPackage(e.getSource().getClass())+", time="+time);
 		KeyFrameLabel label = (KeyFrameLabel)e.getSource();
-		if (e.isShiftDown() && !label.isDragging()) {
-			// duplicate in place and drag the old one
-			KeyFrame dupKey = label.getKeyFrame().duplicate();
-			label.getKeyFrameList().addKeyFrame(dupKey);
-			KeyFrameLabel dupLabel = buildKeyLabel(dupKey, label.getKeyFrameList());
-			add(dupLabel);
-			dupLabel.setLocation(label.getX(), label.getY());
-			dupLabel.updateSize();
+		if (label.isDragging() || time != label.getKeyFrame().getStartTime()) {
+			if (e.isShiftDown() && !label.isDragging()) {
+				// duplicate in place and drag the old one
+				KeyFrame dupKey = label.getKeyFrame().duplicate();
+				label.getKeyFrameList().addKeyFrame(dupKey);
+				KeyFrameLabel dupLabel = buildKeyLabel(dupKey, label.getKeyFrameList());
+				add(dupLabel);
+				dupLabel.setLocation(label.getX(), label.getY());
+				dupLabel.updateSize();
+			}
+			label.dragTo(time);
 		}
-		label.dragTo(time);
 	}
 
 	@Override

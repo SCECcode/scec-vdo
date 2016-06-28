@@ -30,7 +30,7 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 	
 	private HashMap<String, FaultAnimation> animMap;
 	
-	private JComboBox combo;
+	private JComboBox<String> combo;
 	
 	private ColorerPanel cp;
 	
@@ -53,14 +53,16 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 				isAnimColorerSelected = true;
 		}
 		
-		combo = new JComboBox(animMap.keySet().toArray());
+		combo = new JComboBox<String>((animMap.keySet().toArray(new String[0])));
 		
-		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
-		topPanel.add(new JLabel("Animation: "));
-		topPanel.add(combo);
+		if (anims.size() > 1) {
+			JPanel topPanel = new JPanel();
+			topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+			topPanel.add(new JLabel("Animation: "));
+			topPanel.add(combo);
+			super.add(topPanel, BorderLayout.NORTH);
+		}
 		
-		super.add(topPanel, BorderLayout.NORTH);
 		super.add(mainPanel, BorderLayout.CENTER);
 		
 		combo.addItemListener(this);
@@ -82,7 +84,7 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 		}
 	}
 	
-	private FaultAnimation getSelectedAnim() {
+	public FaultAnimation getSelectedAnim() {
 		String name = (String)combo.getSelectedItem();
 		return animMap.get(name);
 	}
