@@ -6,8 +6,6 @@ import java.io.File;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -27,6 +25,7 @@ import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 
+import gov.usgs.earthquake.event.EventQuery;
 import vtk.vtkActor;
 import vtk.vtkDoubleArray;
 import vtk.vtkGlyph3D;
@@ -46,8 +45,6 @@ public class EQCatalog extends CatalogAccessor {
 	public static final int GEOMETRY_POINT  = 0;
 	/** Value to represent events as spheres. */
 	public static final int GEOMETRY_SPHERE = 1;
-	/** Value to represent events as cows. */
-	public static final int GEOMETRY_COW = 2;
 
 	/** Value to apply color gradient to magnitude (default). */
 	public static final int GRADIENT_APPLY_MAGNITUDE = 0;
@@ -143,10 +140,6 @@ public class EQCatalog extends CatalogAccessor {
 	private Color focalDiscCompColor;
 	private Color focalDiscExtColor;
 
-	private long currentTimeSec;
-	private long firstLimit;
-	private long secondLimit;
-	private long thirdLimit;
 	ArrayList<Earthquake> eqList= new ArrayList<>();
 	private ArrayList<vtkActor> myActors = new ArrayList<vtkActor>();
 	Component parent;
@@ -161,20 +154,10 @@ public class EQCatalog extends CatalogAccessor {
 
 	private boolean catalogTypeIsComcat = false;
 
-	//private ArrayList<Earthquake> earthquakes; 
+	private String comcatQueryString;
 
-	//	Added so that we can get the earthquakes that are currently 
-	//  being displayed for disabling or enabling pickability
-	//ArrayList<Earthquake> displayedEQs = new ArrayList<Earthquake>(); 
+	private EventQuery comcatQuery;
 
-	private void setupSizedEventPoint()
-	{
-		/*sizedEventPoints.clear();
-    	 for(int i=0;i<10;i++)
-         {
-         	sizedEventPoints.add(new ArrayList<PointColor>());
-         }*/
-	}
 
 	/**
 	 * Reconstructs an <code>EQCatalog</code> (display catalog) with a given parent
@@ -208,7 +191,7 @@ public class EQCatalog extends CatalogAccessor {
 		//this.applyGradient = this.displayAttributes.getChild("colors").getAttribute("apply_gradient").getIntValue();
 		this.color1        = Color.BLUE;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_1"));
 		this.color2        = Color.RED;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_2"));
-		this.transparency=100;
+		transparency=100;
 		this.displayName="_New Comcat Catalog-"+ parent.getCatalogTable().getRowCount();
 
 		//this.setMasterCatBranchGroup();
@@ -347,9 +330,6 @@ public class EQCatalog extends CatalogAccessor {
 		
 	}
 
-	private void addDiscsToBranchGroup() {
-	}
-
 	public ArrayList<Earthquake> getSelectedEqList(){
 		return eqList;
 	}
@@ -360,7 +340,9 @@ public class EQCatalog extends CatalogAccessor {
 		{
 			catalogTypeIsComcat = false;
 			eqList = EarthquakeCatalogPluginGUI.getEarthquakes();
+			geometry=0;
 			addPointsToBranchGroup(false,eqList);
+			geometry=1;
 			addPointsToBranchGroup(true,eqList);
 			EarthquakeCatalogPluginGUI.eqCatalogs.add(this);
 		}
@@ -371,7 +353,9 @@ public class EQCatalog extends CatalogAccessor {
 		eqList = ((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog().getAllEarthquakes();
 
 		catalogTypeIsComcat = true;
+		geometry=0;
 		addPointsToBranchGroup(false,eqList);
+		geometry=1;
 		addPointsToBranchGroup(true,eqList);
 		EarthquakeCatalogPluginGUI.eqCatalogs.add(this);
 	}
@@ -468,286 +452,17 @@ public class EQCatalog extends CatalogAccessor {
 	}
 
 
-	private void addSpheresToBranchGroup() {
-		/*Earthquake eq;
-    	BranchGroup sphereBG;
-
-		ArrayList eqList = EarthquakeCatalogPluginGUI.getEarthquakes();
-		for (int i = 0; i<getNumEvents(); i++) {
-
-		    // set size and primitive flags
-		    float size = getEventDisplaySize(eq_magnitude[i]);
-
-		    int primflags = (getFocalDisplay() != EQCatalog.FOCAL_NONE) ?
-		            Sphere.GENERATE_NORMALS | Sphere.GENERATE_TEXTURE_COORDS :
-		            Sphere.GENERATE_NORMALS;
-
-		    /** This is where objects are being displayed onto the scenegraph
-		 * 1. Collection of earthquake objects are retrieved from Geo3dInfo
-		 * 2. Iterate through collection and for each earthquake object call its
-		 *    display method that returns a Sphere object after having taken in
-		 *    relevant display parameters
-		 *    Note: The earthquake class extends Shape3D
-		 * 3. The individual earthquake object is added to a TransformGroup which
-		 *    in turn is added to the main branchgroup
-		 */
-		/* if(i == eqList.size())//hack to make sure filter doesnt crash
-		    	break;
-		    eq = (Earthquake)eqList.get(i);
-
-		    if ( getFocalDisplay() != FOCAL_NONE) {
-		    	//create and set focal mechanism appearance
-		    	initFocalAppearance();
-		    	eq.setAppearance(sphereFocalAppearance);
-		    } else if (recentEQcoloring == 1) {
-		    	initRecentEQAppearance();
-		    	eq.setAppearance(sphereRecentEQAppearance[getRecentEQScaleValue(i)]);
-		    } else if (getColor1().equals(getColor2())){
-		    	initColorAppearance();
-		    	if(sphereColorAppearance!= null){
-		    		eq.setAppearance(sphereColorAppearance);
-		    	} else {
-		    		System.out.println("sphere apperance is null");
-		    	}
-		    } else {
-		    	initGradientAppearance();
-		    	if (this.gradientDivisions != 1)
-		    		eq.setAppearance(sphereGradientAppearance[getGradientScaleValue(i)]);
-		    	else {
-		    		//if there is not enough range within the catalog for a gradient
-		    		//color all earthquakes the first selected color
-		    		initColorAppearance();
-		        	eq.setAppearance(sphereColorAppearance);
-		        	EarthquakeCatalogPluginGUI.status.setText("Magnitude range too small for gradient");
-		    	}
-		    }
-		    sphereBG = eq.display(size,primflags);
-			this.catBranchGroup.addChild(sphereBG);
-			displayedEQs.add(eq); 
-		}*/
-	}
-
-	/*public ArrayList<Earthquake> getDisplayedEQs(){
-		return displayedEQs;
-	}*/
-
-	private void initializeEventSpheres() {
-		/*if (eventSpheres == null) {
-			eventSpheres = new TransformGroup[getNumEvents()];
-			for (int i = 0; i < getNumEvents(); i++) {
-				eventSpheres[i] = new TransformGroup();
-				eventSpheres[i].setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-		    }
-		}*/
-	}
-
-	/* public BranchGroup getBranchGroup(){
-    	return this.masterCatBranchGroup;
-    }*/
+	
 
 	// clears data arrays and j3d component references
 	private void unload() {
 		pluginActors.removeActor(this.getActors().get(0)); //remove points and then remove spheres
 		pluginActors.removeActor(this.getActors().get(1));
 		Info.getMainGUI().updateRenderWindow();
-		/*displayedEQs.clear();
-        clearArrays();
-        catBranchGroup.removeAllChildren();
-        this.catBranchGroup = null;
-        this.eventTrans = null;
-        this.eventCoords = null;
-        this.eventSpheres = null;
-        this.gradientColors = null;
-        this.recentEQColors = null;
-        this.catMaterial = null;
-        this.sphereColorAppearance = null;
-        this.sphereFocalAppearance = null;
-        this.sphereGradientAppearance = null;
-        this.sharedPolyAtts = null;
-        this.sizedEventPoints=null;*/
 	}
 
-	// given an event magnitude, returns a sphere radius which
-	// can be adjusted by varying masterEventScale 
-	/*public float getEventDisplaySize(float magnitude) {
-        switch (getScaling()) {
-        case SCALING_NONE:
-            return magnitude;
-        case SCALING_TEN:
-        	return (float)(Math.floor((magnitude) + 1)*5) * masterEventScale;
-        case SCALING_FOUR:
-        	return (float)(Math.floor((magnitude) + 1)*2) * masterEventScale;
-        case SCALING_TWO:
-        	return (float)(Math.floor((magnitude) + 1)) * masterEventScale;
-        case SCALING_ONE:
-            return (float)(Math.floor((magnitude) + 1)/2) * masterEventScale;
-        case SCALING_HALF:
-            return (float)(Math.floor((magnitude*2) + 1)/4) * masterEventScale;
-        case SCALING_FIFTH:
-            return (float)(Math.floor((magnitude*5) + 1)/10) * masterEventScale;
-        case SCALING_TENTH:
-            return (float)(Math.floor((magnitude*10) + 1)/20) * masterEventScale;
-        case SCALING_FIFTIETH:
-            return (float)(Math.floor((magnitude*10) + 1)/40) * masterEventScale;
-        default:
-            return magnitude;
-    }	
-/*        switch (getScaling()) {
-            case SCALING_NONE:
-                return magnitude;
-            case SCALING_TWO:
-                return (float)(Math.floor((magnitude/2) + 1)) * masterEventScale;
-            case SCALING_ONE:
-                return (float)(Math.floor((magnitude) + 1)/2) * masterEventScale;
-            case SCALING_HALF:
-                return (float)(Math.floor((magnitude*2) + 1)/4) * masterEventScale;
-            case SCALING_FIFTH:
-                return (float)(Math.floor((magnitude*5) + 1)/10) * masterEventScale;
-            case SCALING_TENTH:
-                return (float)(Math.floor((magnitude*10) + 1)/20) * masterEventScale;
-            default:
-                return magnitude;
-        }*/
-
-	//}
-
-	/* public  float getMasterEventScale() {
-		return masterEventScale;
-	}*/
-
-	public void setMasterEventScale(float masterEventScale) {
-		//this.masterEventScale = masterEventScale;
-	}
-
-	// initialize j3d fields
-	public void initDisplay() {
-		/* this.eventTrans = new Transform3D();
-        //sets the material for the earthquake catalog for rendering
-        this.catMaterial = new Material(
-                new Color3f(Prefs.DEFAULT_MATERIAL_AMBIENT),
-                new Color3f(Prefs.DEFAULT_MATERIAL_EMISSIVE),
-                new Color3f(Prefs.DEFAULT_MATERIAL_DIFFUSE),
-                new Color3f(Prefs.DEFAULT_MATERIAL_SPECULAR),
-                Prefs.DEFAULT_MATERIAL_SHININESS);
-/*        this.catMaterial = new Material(
-                new Color3f(Color.GREEN),
-                new Color3f(Color.BLACK),
-                new Color3f(Color.GREEN),
-                new Color3f(Color.BLACK),
-                80.0f);*/
-		/*this.catMaterial.setCapability(Material.ALLOW_COMPONENT_WRITE);
-        this.sharedPolyAtts = new PolygonAttributes(
-        		PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_BACK, 0.0f);*/
-	}
-
-	// sets the focal mech Appearance to this catalogs current focal colors
-	private void initFocalAppearance() {
-		/* this.sphereFocalAppearance = new Appearance();
-        this.sphereFocalAppearance.setPolygonAttributes(this.sharedPolyAtts);
-
-        this.catMaterial.setDiffuseColor(new Color3f(Color.WHITE));
-        this.catMaterial.setAmbientColor(new Color3f(0.7f, 0.7f, 0.7f));
-        this.sphereFocalAppearance.setMaterial(catMaterial);
-
-        Texture focalTex = FocalMechIcons.getTexture(getFocalMech());
-        focalTex.setBoundaryModeS(Texture.WRAP);
-        focalTex.setBoundaryModeT(Texture.WRAP);
-        focalTex.setMagFilter(Texture.BASE_LEVEL_POINT);
-        TextureAttributes texAtt = new TextureAttributes();
-        texAtt.setTextureMode(TextureAttributes.MODULATE);
-        this.sphereFocalAppearance.setTexture(focalTex);
-        this.sphereFocalAppearance.setTextureAttributes(texAtt);
-		this.sphereFocalAppearance.setTransparencyAttributes(getTransparencyAttributes());*/
-	}
-
-	// sets the single color appearance to catalog color 1
-	// play around with the catMaterial to change appearance of earthquake spheres
-	private void initColorAppearance() {
-		/*this.sphereColorAppearance = new Appearance();
-        this.sphereColorAppearance.setPolygonAttributes(this.sharedPolyAtts);
-        catMaterial.setDiffuseColor(new Color3f(getColor1()));
-//        catMaterial.setShininess(100.0f);
-//        catMaterial.setEmissiveColor(new Color3f(Color.WHITE));
-        catMaterial.setAmbientColor(new Color3f(getColor1()));
-//        this.catMaterial.setSpecularColor(new Color3f(getColor1()));
-        this.sphereColorAppearance.setMaterial(this.catMaterial);
-		this.sphereColorAppearance.setTransparencyAttributes(getTransparencyAttributes());*/
-	}
-
-	// set the appearance array for gradient representations
-	private void initRecentEQAppearance() {
-		// initialize color array
-		/* initRecentEQColors();
-        initRecentEQLimits();
-
-        // init and apply colors to appearance array if sphere or cow geometry
-        if ((getGeometry() == GEOMETRY_COW) || (getGeometry() == GEOMETRY_SPHERE)) {
-        	this.sphereRecentEQAppearance = new Appearance[4];
-            for (int i = 0; i < 4; i++) {
-                Appearance app = new Appearance();
-                app.setPolygonAttributes(this.sharedPolyAtts);
-                Material gradMat = (Material)this.catMaterial.cloneNodeComponent(true);
-                gradMat.setDiffuseColor(this.recentEQColors[i]);
-                gradMat.setAmbientColor(this.recentEQColors[i]);
-                app.setMaterial(gradMat);
-	    		app.setTransparencyAttributes(getTransparencyAttributes());
-                this.sphereRecentEQAppearance[i] = app;
-            }
-        }*/
-	}
-	// builds an array of colors to be referenced by sphere appearances and point arrays
-	private void initRecentEQColors() {
-		/*this.recentEQColors = new Color3f[4];
-    	this.recentEQColors[0] = new Color3f(1.0f,0.0f,0.0f);
-    	this.recentEQColors[1] = new Color3f(0.0f,0.4f,1.0f);
-    	this.recentEQColors[2] = new Color3f(1.0f,1.0f,0.0f);
-    	this.recentEQColors[3] = new Color3f(0.5f,0.5f,0.5f);*/
-	}
-	// sets the time limit values for recent EQ coloring (in milliseconds)
-	private void initRecentEQLimits() {
-		Calendar cal=Calendar.getInstance();
-		// TODO: tlrobins - add GUI and code to allow custom date
-		//    	if ()
-		//        	cal.set(1994, 0, 17, 13, 0, 0);
-		this.currentTimeSec=(cal.getTimeInMillis()-cal.get(Calendar.ZONE_OFFSET)-cal.get(Calendar.DST_OFFSET))/1000;    	
-		// TODO: tlrobins - add GUI and code to allow custom colors and limits
-		this.firstLimit  = currentTimeSec - (60*60);		// one hour
-		this.secondLimit = currentTimeSec - (60*60*24);		// one day
-		this.thirdLimit  = currentTimeSec - (60*60*24*7);	// one week
-	}
-	// returns the appropriate index for color or appearance selection for use with recent EQ coloring scheme
-	private int getRecentEQScaleValue(int i) {
-		long eqTime = getEq_time(i).getTime()/1000;
-		if (eqTime>currentTimeSec){
-			System.out.println("Warning, your earthquakes are occuring in the future...check your clock");
-		}
-		if (eqTime >= this.firstLimit)
-			return 0;
-		else if (eqTime > this.secondLimit)
-			return 1;
-		else if (eqTime > this.thirdLimit)
-			return 2;
-		else {
-			return 3;
-		}
-	}
-	private int getRecentEQScaleValue(Date d)
-	{
-		long eqTime = d.getTime()/1000;
-		if (eqTime>currentTimeSec){
-			System.out.println("Warning, your earthquakes are occuring in the future...check your clock");
-		}
-		if (eqTime >= this.firstLimit)
-			return 0;
-		else if (eqTime > this.secondLimit)
-			return 1;
-		else if (eqTime > this.thirdLimit)
-			return 2;
-		else {
-			return 3;
-		}
-	}
-
+	
+	
 	// sets the appearance array for gradient representations
 	public void initGradientAppearance() {
 		// calc mag divisions
@@ -761,28 +476,8 @@ public class EQCatalog extends CatalogAccessor {
 		// initialize color array
 		initGradientColors(this.gradientDivisions);
 
-		// init and apply colors to appearance array if sphere or cow geometry
-		/*if ((getGeometry() == GEOMETRY_COW) || (getGeometry() == GEOMETRY_SPHERE)) {
-        	this.sphereGradientAppearance = new Appearance[this.gradientDivisions];
-            for (int i = 0; i<this.gradientDivisions; i++) {
-                Appearance app = new Appearance();
-                app.setPolygonAttributes(this.sharedPolyAtts);
-                Material gradMat = (Material)this.catMaterial.cloneNodeComponent(true);
-                gradMat.setDiffuseColor(this.gradientColors[i]);
-                gradMat.setAmbientColor(this.gradientColors[i]);
-                app.setMaterial(gradMat);
-	    		app.setTransparencyAttributes(getTransparencyAttributes());
-                this.sphereGradientAppearance[i] = app;
-            }
-        }*/
 	}
 
-	/* private TransparencyAttributes getTransparencyAttributes()
-    {
-    	TransparencyAttributes ta=new TransparencyAttributes(TransparencyAttributes.BLENDED,((100-transparency)/100.0f),
-				TransparencyAttributes.BLEND_SRC_ALPHA,TransparencyAttributes.BLEND_ONE_MINUS_SRC_ALPHA);
-    	return ta;
-    }*/
 	// builds an array of colors to be referenced by sphere appearances and point arrays
 	private void initGradientColors(int divisions) {
 
@@ -803,59 +498,7 @@ public class EQCatalog extends CatalogAccessor {
 					colorStart[2] + (colorIntervals[2]*i));
 		}     
 	}
-	// returns the appropriate index for color or appearance selection for use with gradients
-	/*private int getGradientScaleValue(int eventIndex) {
-
-        int divSpan = 1;
-        float datMin, datMax, dat;
-
-        if (getApplyGradientTo() == GRADIENT_APPLY_DEPTH) {
-            divSpan = 3;
-            datMin = 0.0f;
-            datMax = 18.0f;
-            dat = eq_depth[eventIndex];
-        } else {
-            datMin = (float)Math.floor(getMinMagnitude());
-            datMax = (float)Math.ceil(getMaxMagnitude());
-            dat = eq_magnitude[eventIndex];
-        }
-
-        if (dat < datMin) {
-            return 0;
-        } else if (dat >= datMin && dat < datMax) {
-            return (int)Math.floor(dat/divSpan) - (int)datMin;
-        } else {
-            return this.gradientDivisions-1;
-        }
-    }
-
- private int getGradientScaleValue(Earthquake event) {
-
-        int divSpan = 1;
-        float datMin, datMax, dat;
-
-        if (getApplyGradientTo() == GRADIENT_APPLY_DEPTH) {
-            divSpan = 3;
-            datMin = 0.0f;
-            datMax = 18.0f;
-            dat = -event.getEq_depth();
-        } else {
-            datMin = (float)Math.floor(getMinMagnitude());
-            datMax = (float)Math.ceil(getMaxMagnitude());
-            dat = event.getEq_magnitude();
-        }
-
-        if (dat < datMin) {
-            return 0;
-        } else if (dat >= datMin && dat < datMax) {
-            return (int)Math.floor(dat/divSpan) - (int)datMin;
-        } else {
-            return this.gradientDivisions-1;
-        }
-    }
-
-	 */
-	// generates a random catalog name
+		// generates a random catalog name
 	private String generateNewCatName() {
 		String dataLib = Prefs.getLibLoc() + 
 				File.separator + EarthquakeCatalogPlugin.dataStoreDir +
@@ -886,11 +529,11 @@ public class EQCatalog extends CatalogAccessor {
 			this.color2        = readColorElement(this.displayAttributes.getChild("colors").getChild("color_2"));
 			if(this.displayAttributes.getChild("transparency")!=null)
 			{
-				this.transparency=this.displayAttributes.getChild("transparency").getAttribute("value").getIntValue();
+				transparency=this.displayAttributes.getChild("transparency").getAttribute("value").getIntValue();
 			}
 			else
 			{
-				this.transparency=100;
+				transparency=100;
 			}
 		}
 		catch (Exception e) {
@@ -908,13 +551,7 @@ public class EQCatalog extends CatalogAccessor {
 	public void updateDisplay() {
 		EarthquakeCatalogPluginGUI.status.setText("Updating catalog display...");
 		// kill and reinitialize branch group
-
 		load();
-		if (isDisplayed()) 
-		{
-			//masterCatBranchGroup.addChild(this.catBranchGroup);
-
-		}
 		EarthquakeCatalogPluginGUI.status.setText("Status");
 	}
 
@@ -934,11 +571,6 @@ public class EQCatalog extends CatalogAccessor {
 	 * @see org.scec.geo3d.plugins.utils.DataAccessor#setDisplayed(boolean)
 	 */
 	public void setDisplayed(boolean show) {
-		/*  if (show) {
-            masterCatBranchGroup.addChild(this.catBranchGroup);
-        } else {
-            this.catBranchGroup.detach();
-        }*/
         super.setDisplayed(show);
 	}
 
@@ -1247,31 +879,25 @@ public class EQCatalog extends CatalogAccessor {
 		writeAttributeFile();
 	}
 
-	/*	public ArrayList<Earthquake> getEarthquakes()
+	public void setComcatQuery(EventQuery query) {
+		// TODO Auto-generated method stub
+		comcatQueryString = query.toString();
+		comcatQuery = query;
+	}
+	public EventQuery getComcatQuery() {
+		// TODO Auto-generated method stub
+		return comcatQuery;
+	}
+	public boolean getCatalogType()
 	{
-		if(earthquakes!=null)
-		{
-			return earthquakes;
-		}
-		else
-		{
-			earthquakes= new ArrayList<Earthquake>();
-			for(int i=0;i<eq_id.length;i++)
-			{
-				Earthquake eq= new Earthquake(eq_id[i],eq_time[i],eq_latitude[i],
-						eq_longitude[i],eq_depth[i],eq_magnitude[i]);
-				earthquakes.add(eq);
-			}
-
-			return earthquakes;
-		}
+		//true then comcat else from cat file
+		return catalogTypeIsComcat;
 	}
 
-	private class PointColor
-	{
-		public Point3f location;
-		public Color3f color;
-	}*/
+	public boolean isSphere() {
+		// TODO Auto-generated method stub
+		return true;
+	}
 }
 
 

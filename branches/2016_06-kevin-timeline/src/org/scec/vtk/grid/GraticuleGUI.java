@@ -26,12 +26,15 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.IntegerTextField;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 
+import vtk.vtkActor;
+import vtk.vtkActor2D;
 import vtk.vtkCellArray;
 import vtk.vtkDoubleArray;
 import vtk.vtkIntArray;
@@ -114,7 +117,13 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	relIntensityProp_extentsSval1 = new IntegerTextField(2, false, 3);
 
 	public int upperLat, lowerLat, upperLon, lowerLon;
-
+	private vtkActor tempGlobeScene=new vtkActor();
+	private vtkActor pointActor = new vtkActor();
+	vtkActor2D labelActor =new vtkActor2D();
+	private boolean gridDisplay=true;
+	
+	PluginActors pluginActors = new PluginActors();
+	
 	public static GraticulePreset getGraticlePreset(){
 		URL calGridURL = GraticuleGUI.class.getResource("resources/California.grat");
 		File calGrid = null;
@@ -126,6 +135,54 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		}
 		return new GraticulePreset(calGrid);
 	}
+	
+	public void makeGrids(ArrayList<GlobeBox> gbs, boolean labelsOn)
+	{
+
+		vtkPolyDataMapper tempMapper = (vtkPolyDataMapper) (gbs.get(0)).globeScene; 
+		tempGlobeScene.SetMapper(tempMapper);
+		if(gbs.get(0).getLineColor() != null)
+			tempGlobeScene.GetProperty().SetColor(Info.convertColor(gbs.get(0).getLineColor()));
+		else
+			tempGlobeScene.GetProperty().SetColor(1,1,1);
+		tempGlobeScene.Modified();
+		//renderWindow.GetRenderer().Render();
+
+		tempMapper.GetInput();
+
+
+		pointActor.SetMapper(gbs.get(0).ptMapper);
+		pointActor.Modified();
+		if(labelsOn)
+			labelActor.SetMapper(gbs.get(0).labelMapperLat);
+		else
+			labelActor.SetMapper(null);
+		labelActor.Modified();
+		
+		this.pluginActors.addActor(tempGlobeScene);
+		this.pluginActors.addActor(pointActor);
+		this.pluginActors.addActor(labelActor);
+		Info.getMainGUI().getRenderWindow().GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
+	}
+	public void toggleGridDisplay() {
+		if (!this.gridDisplay) {
+			tempGlobeScene.VisibilityOn();
+			gridDisplay = true;
+		} else {
+			tempGlobeScene.VisibilityOff();
+			gridDisplay = false;
+		}
+	}
+	public boolean getGridDisplayBool() {
+		return this.gridDisplay;
+	}
+
+	public vtkActor getGrid() {
+		// TODO Auto-generated method stub
+		return this.tempGlobeScene;
+	}
+	
+	
 	
 	public ArrayList<GlobeBox> getGlobeBox(GraticulePreset graticule, double spacing){
 		upperLat = (graticule.getUpperLatitude());
@@ -313,10 +370,9 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 				globeView.getSwitchNode().addChild(((GlobeBox) gbs.get(2)).drawGlobe());
 				globeView.getSwitchNode().addChild(((GlobeBox) gbs.get(3)).drawGlobe());*/
 	}
-	public GraticuleGUI(GraticulePlugin plug)
+	public GraticuleGUI(PluginActors pluginActors)
 	{
-		super();
-
+		this.pluginActors = pluginActors;
 		// Load presets from the central preset file
 		//gratBranch.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
 		//gratBranch.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
@@ -557,26 +613,26 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		{
 			labelsOn = latLonLabelsCheckBox.isSelected();
 		}
-		if (!Info.getMainGUI().getGridDisplayBool())
-			Info.getMainGUI().toggleGridDisplay();
+		if (!getGridDisplayBool())
+			toggleGridDisplay();
 
 		if (firstsceneRadioButton.isSelected()) {
 			gridWidth = 1.0;
-			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth),labelsOn);
+			makeGrids(makeNewGrid(gridWidth),labelsOn);
 			Info.getMainGUI().updateRenderWindow();
 			System.out.println("One degree selected");
 			
 		} else if (secondsceneRadioButton.isSelected()) {
 			gridWidth = 0.1;
-			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth),labelsOn);
+			makeGrids(makeNewGrid(gridWidth),labelsOn);
 			Info.getMainGUI().updateRenderWindow();
 			System.out.println("0.1 degree selected");
 		}
 		else if (noneRadioButton.isSelected()) {
-			if (Info.getMainGUI().getGridDisplayBool())
+			if (getGridDisplayBool())
 			{
-				Info.getMainGUI().makeGrids(makeNewGrid(gridWidth),labelsOn);
-				Info.getMainGUI().toggleGridDisplay();
+				makeGrids(makeNewGrid(gridWidth),labelsOn);
+				toggleGridDisplay();
 			}
 			System.out.println("No grid selected");
 			Info.getMainGUI().updateRenderWindow();
@@ -586,7 +642,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 				customGrid = Double.parseDouble(customTextBox.getText());
 				if (customGrid >= .05) {
 					gridWidth = customGrid;
-					Info.getMainGUI().makeGrids(makeNewGrid(gridWidth),labelsOn);
+					makeGrids(makeNewGrid(gridWidth),labelsOn);
 					Info.getMainGUI().updateRenderWindow();
 				} else {
 					throw new NumberFormatException();
@@ -614,7 +670,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 		if (latLonLabelsCheckBox.isSelected()!=labelsOn) {
 			labelsOn = latLonLabelsCheckBox.isSelected();
-			Info.getMainGUI().makeGrids(makeNewGrid(gridWidth), labelsOn);
+			makeGrids(makeNewGrid(gridWidth), labelsOn);
 			Info.getMainGUI().updateRenderWindow();
 			System.out.println("Checkbox switched from " + !labelsOn + " to " + labelsOn);
 			//globeView.getSwitchNode().removeAllChildren();
@@ -646,7 +702,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			Color tempColor = colorChooser.getColor();
 			if (tempColor != null) {
 				setGridColor(tempColor);
-				Info.getMainGUI().getGrid().GetProperty().SetColor(Info.convertColor(tempColor));	
+				getGrid().GetProperty().SetColor(Info.convertColor(tempColor));	
 				Info.getMainGUI().updateRenderWindow();
 			}
 		} else if (arg0.getSource() == this.bckgroundColorChooser) {
