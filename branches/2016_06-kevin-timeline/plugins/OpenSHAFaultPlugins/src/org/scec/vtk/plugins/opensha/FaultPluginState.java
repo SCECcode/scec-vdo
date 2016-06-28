@@ -13,9 +13,10 @@ import org.opensha.commons.exceptions.ConstraintException;
 import org.opensha.commons.exceptions.ParameterException;
 import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
+import org.opensha.commons.util.cpt.CPT;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
+import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.plugins.PluginState;
@@ -25,7 +26,6 @@ import com.google.common.base.Preconditions;
 public class FaultPluginState implements PluginState {
 	
 	private FaultPluginGUI gui;
-	private EventManager em;
 	
 	/*
 	 * state items populated on deepCopy() for fromXML() via captureState() method
@@ -36,9 +36,10 @@ public class FaultPluginState implements PluginState {
 	private Map<Object, Boolean> userDataToVisibleMap;
 	private Map<Object, Color> userDataToColorMap;
 	// colorer
-	// TODO save CPT info
 	private FaultColorer colorer;
 	private ParameterList colorerParams;
+	private CPT cpt;
+	private boolean cptLog;
 	// animation
 	private FaultAnimation anim;
 	private ParameterList animParams;
@@ -50,7 +51,6 @@ public class FaultPluginState implements PluginState {
 	
 	public FaultPluginState(FaultPluginGUI gui) {
 		this.gui = gui;
-		this.em = gui.getEventManager();
 	}
 
 	@Override
@@ -58,16 +58,35 @@ public class FaultPluginState implements PluginState {
 		// first set any builder params
 		updateParams(gui.getBuilder().getBuilderParams(), builderParams);
 		
+		// update fault params
+		updateParams(gui.getFaultParams(), faultParams);
+		
+		if (geomGen != gui.getGeomSelect().getSelectedGeomGen())
+			gui.getGeomSelect().setSelectedGeomGen(geomGen);
+		updateParams(gui.getGeomSelect().getSelectedGeomGen().getDisplayParams(), geomGenParams);
+		
+		if (anim != null && gui.getAnimPanel() != null) {
+			if (anim != gui.getAnimPanel().getSelectedAnim())
+				gui.getAnimPanel().setSelectedAnim(anim);
+			if (gui.getAnimPanel().getSelectedAnim() != null)
+				updateParams(gui.getAnimPanel().getSelectedAnim().getAnimationParameters(), animParams);
+		}
+		
 		// update colorer
 		if (colorer != gui.getColorPanel().getSelectedColorer())
 			gui.getColorPanel().setSelectedColorer(colorer);
+		if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
+			CPTBasedColorer cptColor = (CPTBasedColorer) gui.getColorPanel().getSelectedColorer();
+			if (!cpt.equals(cptColor.getCPT()) || cptLog != cptColor.isCPTLog()) {
+				cptColor.setCPT(cpt, cptLog);
+				gui.getColorPanel().cptChangedExternally();
+			}
+		}
 		updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
 		
 		// now update the tree itself
 		if (updateTree(gui.getFaultTreeTable().getTreeRoot()))
 			gui.getFaultTreeTable().refreshTreeView();
-		
-		
 	}
 	
 	private static void updateParams(ParameterList to, ParameterList from) {
@@ -103,6 +122,7 @@ public class FaultPluginState implements PluginState {
 		userDataToColorMap = null;
 		colorer = null;
 		colorerParams = null;
+		cpt = null;
 		anim = null;
 		animParams = null;
 		geomGen = null;
@@ -118,8 +138,13 @@ public class FaultPluginState implements PluginState {
 		userDataToColorMap = new HashMap<>();
 		captureTree(gui.getFaultTreeTable().getTreeRoot(), userDataToVisibleMap, userDataToColorMap);
 		colorer = gui.getColorPanel().getSelectedColorer();
-		if (colorer != null)
+		if (colorer != null) {
 			colorerParams = cloneParamList(colorer.getColorerParameters());
+			if (colorer instanceof CPTBasedColorer) {
+				cpt = (CPT)((CPTBasedColorer)colorer).getCPT().clone();
+				cptLog = ((CPTBasedColorer)colorer).isCPTLog();
+			}
+		}
 		if (gui.getAnimPanel() != null) {
 			anim = gui.getAnimPanel().getSelectedAnim();
 			if (anim != null)
@@ -197,11 +222,14 @@ public class FaultPluginState implements PluginState {
 		FaultPluginState o = new FaultPluginState(gui);
 		
 		captureState();
+		// these are never modified, just replaced so no cloning needed
 		o.builderParams = builderParams;
 		o.userDataToVisibleMap = userDataToVisibleMap;
 		o.userDataToColorMap = userDataToColorMap;
 		o.colorer = colorer;
 		o.colorerParams = colorerParams;
+		o.cpt = cpt;
+		o.cptLog = cptLog;
 		o.anim = anim;
 		o.animParams = animParams;
 		o.geomGen = geomGen;
