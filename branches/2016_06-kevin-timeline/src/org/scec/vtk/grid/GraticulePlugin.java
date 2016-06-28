@@ -1,14 +1,9 @@
 package org.scec.vtk.grid;
 
-import java.util.ArrayList;
-
 import javax.swing.JPanel;
 
-import org.jdom.Element;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.ActionPlugin;
-
-import vtk.vtkActor;
 
 
 /**
@@ -38,7 +33,13 @@ public class GraticulePlugin extends ActionPlugin {
 	}
 
 	public JPanel createGUI() {
-		this.gratPanel = new GraticuleGUI(this);
+		Info.getMainGUI().setViewRange(new ViewRange());
+		//draw Grid
+		GraticulePreset preset = GraticuleGUI.getGraticlePreset();
+		Info.getMainGUI().setViewRange(new ViewRange(preset.getLowerLatitude(), preset.getUpperLatitude(), preset.getLeftLongitude(), preset.getRightLongitude()));
+		
+		this.gratPanel = new GraticuleGUI(this.getPluginActors());
+		gratPanel.makeGrids(gratPanel.getGlobeBox(preset, 1.0),true);
 		return this.gratPanel;
 	}
 

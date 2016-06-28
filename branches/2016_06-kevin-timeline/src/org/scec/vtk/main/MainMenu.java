@@ -53,7 +53,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private JFrame timelineFrame;
 	private CheckboxMenuItem timelineItem;
 
-	Map<String, PluginInfo> availablePlugins = null;
+	static Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	// TODO why are these static?
 	static Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
 	static Map<Plugin, PluginActors> pluginActors = new HashMap<>();
@@ -394,7 +394,8 @@ public class MainMenu implements ActionListener, ItemListener{
 
 				// Update menu
 				CheckboxMenuItem mi = pluginMenuItems.get(id);
-				mi.setState(true);
+				if(mi!=null)
+					mi.setState(true);
 
 				// Activate plugin
 				Plugin plugin = loadedPlugins.get(id);

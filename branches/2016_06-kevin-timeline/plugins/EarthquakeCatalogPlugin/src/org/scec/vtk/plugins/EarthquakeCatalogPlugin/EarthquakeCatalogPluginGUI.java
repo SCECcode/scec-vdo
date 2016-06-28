@@ -54,7 +54,6 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3DPickBehavior;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogAccessor;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.CatalogTable;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.ComcatResourcesDialog;
@@ -99,7 +98,8 @@ ActionListener,
 ChangeListener,
 ListSelectionListener,
 TableModelListener,
-MouseListener {
+MouseListener
+{
 
 	/**
 	 * The primary GUI for the <code>EarthquakeCatalogPlugin</code>. This class handles most data and
@@ -286,6 +286,8 @@ MouseListener {
 	public CatalogAccessor catalogAcc;
 
 	private EQPickBehavior pickHandler;
+
+	private EarthquakeCatalogPlugin parentPlugin;
 	public static ArrayList<EQCatalog> eqCatalogs = new ArrayList<>();
 
 
@@ -318,6 +320,7 @@ MouseListener {
 
 	public  EarthquakeCatalogPluginGUI(EarthquakeCatalogPlugin plugin){
 		super();
+		this.parentPlugin = plugin;
 		pluginActors = plugin.getPluginActors();
 		pickHandler = new EQPickBehavior();
 		setLayout(new BorderLayout());
@@ -356,6 +359,9 @@ MouseListener {
 	
 	public PluginActors getPluginActors() {
 		return pluginActors;
+	}
+	public void setPluginActors(PluginActors p) {
+		pluginActors = p;
 	}
 
 	/**
@@ -1485,82 +1491,17 @@ MouseListener {
 			//earthquake magnitude scaling
 			//setPropertyChange(true, EQCatalog.CHANGE_SIZE_SLIDER);
 			int scale = dispProp_slider.getValue();
-			double[] scaleMenuItems = {0.05,0.1,0.2,0.5,1.0,2.0,3.0,4.0,5.0,6.0};
-
-			double scaleSet = 0.05;
-			switch(scale)
-			{
-			case 1:scaleSet =scaleMenuItems[0];break;
-			case 2:scaleSet =scaleMenuItems[1];break;
-			case 3:scaleSet =scaleMenuItems[2];break;
-			case 4:scaleSet =scaleMenuItems[3];break;
-			case 5:scaleSet =scaleMenuItems[4];break;
-			case 6:scaleSet =scaleMenuItems[5];break;
-			case 7:scaleSet =scaleMenuItems[6];break;
-			case 8:scaleSet =scaleMenuItems[7];break;
-			case 9:scaleSet =scaleMenuItems[8];break;
-			case 10:scaleSet =scaleMenuItems[9];break;
-			}
 			EQCatalog cat = this.catalogTable.getSelectedValue();
-
-			ArrayList<Earthquake> eqList = cat.getSelectedEqList();
-			vtkActor actorPointsOld = (vtkActor) cat.getActors().get(0);
-			vtkActor actorSpheresOld = (vtkActor) cat.getActors().get(1);
-
-			vtkDoubleArray radi = new vtkDoubleArray();
-			radi.SetName("radi");
-
-			vtkMapper mapperPoints = actorPointsOld.GetMapper();
-			vtkMapper mapperSphere = actorSpheresOld.GetMapper();
-
-			vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
-			vertexGlyphFilter=(vtkVertexGlyphFilter) actorPointsOld.GetMapper().GetInputAlgorithm();//.GetOutputDataObject(0);
-
-			vtkGlyph3D glyphPoints = new vtkGlyph3D();
-			glyphPoints = (vtkGlyph3D) actorSpheresOld.GetMapper().GetInputAlgorithm();
-
-			vtkPolyData inputData = new vtkPolyData();
-			inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
-			//int lastIndex = eqList.indexOf(eq);
-
-			new vtkPoints();
-			radi = (vtkDoubleArray) inputData.GetPointData().GetArray("radi");
-			//double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
-			for(int i =0;i<eqList.size();i++)
-			{
-				Earthquake eq = eqList.get(i);
-				radi.SetTuple1(i,eq.getEq_magnitude()*scaleSet);
-			}
-			radi.Modified();
-			inputData.GetPointData().AddArray(radi);
-			vertexGlyphFilter.SetInputData(inputData);
-			vertexGlyphFilter.Update();
-			mapperPoints.SetInputConnection(vertexGlyphFilter.GetOutputPort());
-
-
-			glyphPoints.SetInputData(inputData);
-			mapperSphere.SetInputConnection(glyphPoints.GetOutputPort());
-
-			actorPointsOld.SetMapper(mapperPoints);
-			actorSpheresOld.SetMapper(mapperSphere);
-			cat.getActors().set(0,actorPointsOld);
-			cat.getActors().set(1,actorSpheresOld);
-			updateActorsAndRender(cat);
-
+			cat.setScaling(scale);
+			setMagnitudeScale(scale,cat);
 		}
 		if(src == transparencySlider)
 		{
-			double transparency = (transparencySlider.getValue()*255/100);
-			//System.out.println(transparency);
 			EQCatalog cat = this.catalogTable.getSelectedValue();
-
-			ArrayList<Earthquake> eqList = cat.getSelectedEqList();
-			for(int i =0;i<eqList.size();i++)
-			{
-				Earthquake eq = eqList.get(i);
-				aniamteEarthquakeOpacity(i, eq, cat, (int)transparency);
-			}
-			Info.getMainGUI().updateRenderWindow();
+			int transparencyVal = (int) transparencySlider.getValue();
+			cat.setTransparency(transparencyVal);
+			//System.out.println(transparency);
+			setTransparency(cat,transparencyVal);
 		}
 		if (src == depthSlider) {
 			depthSliderValue = depthSlider.getValue();
@@ -1569,6 +1510,83 @@ MouseListener {
 
 	}
 	
+	public void setTransparency(EQCatalog cat, int transparencyVal) {
+		// TODO Auto-generated method stub
+		double transparency = (transparencyVal*255/100);
+		
+		ArrayList<Earthquake> eqList = cat.getSelectedEqList();
+		for(int i =0;i<eqList.size();i++)
+		{
+			Earthquake eq = eqList.get(i);
+			animateEarthquakeOpacity(i, eq, cat, (int)transparency);
+		}
+		Info.getMainGUI().updateRenderWindow();
+	}
+	public void setMagnitudeScale(int scale,EQCatalog cat) {
+		// TODO Auto-generated method stub
+		double[] scaleMenuItems = {0.05,0.1,0.2,0.5,1.0,2.0,3.0,4.0,5.0,6.0};
+
+		double scaleSet = 0.05;
+		switch(scale)
+		{
+		case 1:scaleSet =scaleMenuItems[0];break;
+		case 2:scaleSet =scaleMenuItems[1];break;
+		case 3:scaleSet =scaleMenuItems[2];break;
+		case 4:scaleSet =scaleMenuItems[3];break;
+		case 5:scaleSet =scaleMenuItems[4];break;
+		case 6:scaleSet =scaleMenuItems[5];break;
+		case 7:scaleSet =scaleMenuItems[6];break;
+		case 8:scaleSet =scaleMenuItems[7];break;
+		case 9:scaleSet =scaleMenuItems[8];break;
+		case 10:scaleSet =scaleMenuItems[9];break;
+		}
+		
+		
+		ArrayList<Earthquake> eqList = cat.getSelectedEqList();
+		vtkActor actorPointsOld = (vtkActor) cat.getActors().get(0);
+		vtkActor actorSpheresOld = (vtkActor) cat.getActors().get(1);
+
+		vtkDoubleArray radi = new vtkDoubleArray();
+		radi.SetName("radi");
+
+		vtkMapper mapperPoints = actorPointsOld.GetMapper();
+		vtkMapper mapperSphere = actorSpheresOld.GetMapper();
+
+		vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
+		vertexGlyphFilter=(vtkVertexGlyphFilter) actorPointsOld.GetMapper().GetInputAlgorithm();//.GetOutputDataObject(0);
+
+		vtkGlyph3D glyphPoints = new vtkGlyph3D();
+		glyphPoints = (vtkGlyph3D) actorSpheresOld.GetMapper().GetInputAlgorithm();
+
+		vtkPolyData inputData = new vtkPolyData();
+		inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
+		//int lastIndex = eqList.indexOf(eq);
+
+		new vtkPoints();
+		radi = (vtkDoubleArray) inputData.GetPointData().GetArray("radi");
+		//double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
+		for(int i =0;i<eqList.size();i++)
+		{
+			Earthquake eq = eqList.get(i);
+			radi.SetTuple1(i,eq.getEq_magnitude()*scaleSet);
+		}
+		radi.Modified();
+		inputData.GetPointData().AddArray(radi);
+		vertexGlyphFilter.SetInputData(inputData);
+		vertexGlyphFilter.Update();
+		mapperPoints.SetInputConnection(vertexGlyphFilter.GetOutputPort());
+
+
+		glyphPoints.SetInputData(inputData);
+		mapperSphere.SetInputConnection(glyphPoints.GetOutputPort());
+
+		actorPointsOld.SetMapper(mapperPoints);
+		actorSpheresOld.SetMapper(mapperSphere);
+		cat.getActors().set(0,actorPointsOld);
+		cat.getActors().set(1,actorSpheresOld);
+		updateActorsAndRender(cat);
+
+	}
 	private void updateActorsAndRender(EQCatalog cat) {
 		// TODO make this not disgusting please. it's not a branch group anymore. and it should at leass
 		for (vtkActor actor : cat.getActors())
@@ -1622,7 +1640,7 @@ MouseListener {
 	}
 
 	//if catalogs opacity has to be changed
-	public static List<vtkActor> aniamteEarthquakeOpacity(int lastIndex,Earthquake eq,EQCatalog cat,int opacity)
+	public static List<vtkActor> animateEarthquakeOpacity(int lastIndex,Earthquake eq,EQCatalog cat,int opacity)
 	{
 		//also called on every animation tick
 		ArrayList<Earthquake> eqList = cat.getSelectedEqList();
@@ -1648,8 +1666,6 @@ MouseListener {
 		vtkPolyData inputData = new vtkPolyData();
 		inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
 		//int lastIndex = eqList.indexOf(eq);
-
-		new vtkPoints();
 
 		colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
 
@@ -1702,35 +1718,30 @@ MouseListener {
 		if (src == catProp_playButton)
 		{
 			//ascending order as per the time
-			EQCatalog cat = this.catalogTable.getSelectedValue();
-			//ArrayList<Earthquake> earthquakeList = 	cat.getSelectedEqList();
-
-			Info.getMainGUI().GetScriptingPlugin().addEarthquakeListForAniamtion(cat,true);
+//			EQCatalog cat = this.catalogTable.getSelectedValue();
+//			//ArrayList<Earthquake> earthquakeList = 	cat.getSelectedEqList();
+//			if(this.parentPlugin instanceof StatefulPlugin)
+//			{
+//				PluginState state = ((StatefulPlugin)this.parentPlugin).getState().deepCopy();
+//				state.load();
+//			}
+			//Info.getMainGUI().GetScriptingPlugin().addEarthquakeListForAniamtion(cat,true);
 		}
 
 		//display panel buttons
 		if (src == this.dispProp_geomPoint) {
 			EQCatalog cat = this.catalogTable.getSelectedValue();
-			vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
-			vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
-			actorPoints.VisibilityOn();
-			actorSpheres.VisibilityOff();
-			updateActorsAndRender(cat);
-
+			cat.setGeometry(0);
+			setCatalogVisible(cat,cat.getGeometry());
 		}
 		else if (src == this.dispProp_geomSphere) {
 
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			cat.setGeometry(1);
-			vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
-			vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
-			actorPoints.VisibilityOff();
-			actorSpheres.VisibilityOn();
-			updateActorsAndRender(cat);
+			setCatalogVisible(cat,cat.getGeometry());
 		}
 		else if(src==this.dispProp_colGradientButton)
 		{
-
 			if (this.colorChooser == null) {
 				this.colorChooser = new GradientColorChooser(this);
 			}
@@ -1749,65 +1760,9 @@ MouseListener {
 					this.lowerGradientLabel.setVisible(true);
 				}
 			}
-			// Create the color map
 			EQCatalog cat = this.catalogTable.getSelectedValue();
-
-			cat.setGradColor1(newColor[0]);
-			cat.setGradColor2(newColor[1]);
-			cat.initGradientAppearance();
-			ArrayList<Earthquake> eqList = cat.getSelectedEqList();
-			vtkActor actorPointsOld = (vtkActor) cat.getActors().get(0);
-			vtkActor actorSpheresOld = (vtkActor) cat.getActors().get(1);
-
-			vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
-			colors.SetName("colors");
-			colors.SetNumberOfComponents(4);
-			colors.SetNumberOfTuples(eqList.size());
-
-			vtkMapper mapperPoints = actorPointsOld.GetMapper();
-			vtkMapper mapperSphere = actorSpheresOld.GetMapper();
-
-			vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
-			vertexGlyphFilter=(vtkVertexGlyphFilter) actorPointsOld.GetMapper().GetInputAlgorithm();//.GetOutputDataObject(0);
-
-			vtkGlyph3D glyphPoints = new vtkGlyph3D();
-			glyphPoints = (vtkGlyph3D) actorSpheresOld.GetMapper().GetInputAlgorithm();
-
-			vtkPolyData inputData = new vtkPolyData();
-			inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
-			//int lastIndex = eqList.indexOf(eq);
-
-			new vtkPoints();
-
-			colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
-
-			//double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
-			for(int i =0;i<eqList.size();i++)
-			{
-				Earthquake eq = eqList.get(i);
-				// Color based on magnitude
-				int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude()))-cat.getMinMagnitude());
-				if(ind<0)
-					ind=0;
-
-				colors.SetTuple4(i, cat.gradientColors[ind].getRed(),cat.gradientColors[ind].getGreen(),cat.gradientColors[ind].getBlue(),255);
-			}
-			colors.Modified();
-
-			inputData.GetPointData().AddArray(colors);
-			vertexGlyphFilter.SetInputData(inputData);
-			vertexGlyphFilter.Update();
-			mapperPoints.SetInputConnection(vertexGlyphFilter.GetOutputPort());
-
-
-			glyphPoints.SetInputData(inputData);
-			mapperSphere.SetInputConnection(glyphPoints.GetOutputPort());
-
-			actorPointsOld.SetMapper(mapperPoints);
-			actorSpheresOld.SetMapper(mapperSphere);
-			cat.getActors().set(0,actorPointsOld);
-			cat.getActors().set(1,actorSpheresOld);
-			updateActorsAndRender(cat);
+			setColGradient(cat,newColor);
+			
 		}
 
 		/**
@@ -1856,6 +1811,81 @@ MouseListener {
 			}
 		}}
 
+	public void setCatalogVisible(EQCatalog cat, int geometry) {
+		// TODO Auto-generated method stub
+		vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
+		vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
+		if(geometry==0)
+		{
+			actorPoints.VisibilityOn();
+			actorSpheres.VisibilityOff();
+		}
+		else
+		{
+			actorPoints.VisibilityOff();
+			actorSpheres.VisibilityOn();
+		}
+		updateActorsAndRender(cat);
+	}
+	public void setColGradient(EQCatalog cat,Color[] newColor) {
+		// TODO Auto-generated method stub
+		cat.setGradColor1(newColor[0]);
+		cat.setGradColor2(newColor[1]);
+		cat.initGradientAppearance();
+		ArrayList<Earthquake> eqList = cat.getSelectedEqList();
+		vtkActor actorPointsOld = (vtkActor) cat.getActors().get(0);
+		vtkActor actorSpheresOld = (vtkActor) cat.getActors().get(1);
+
+		vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
+		colors.SetName("colors");
+		colors.SetNumberOfComponents(4);
+		colors.SetNumberOfTuples(eqList.size());
+
+		vtkMapper mapperPoints = actorPointsOld.GetMapper();
+		vtkMapper mapperSphere = actorSpheresOld.GetMapper();
+
+		vtkVertexGlyphFilter vertexGlyphFilter =new vtkVertexGlyphFilter();
+		vertexGlyphFilter=(vtkVertexGlyphFilter) actorPointsOld.GetMapper().GetInputAlgorithm();//.GetOutputDataObject(0);
+
+		vtkGlyph3D glyphPoints = new vtkGlyph3D();
+		glyphPoints = (vtkGlyph3D) actorSpheresOld.GetMapper().GetInputAlgorithm();
+
+		vtkPolyData inputData = new vtkPolyData();
+		inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
+		//int lastIndex = eqList.indexOf(eq);
+
+		new vtkPoints();
+
+		colors = (vtkUnsignedCharArray) inputData.GetPointData().GetArray("colors");
+
+		//double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
+		for(int i =0;i<eqList.size();i++)
+		{
+			Earthquake eq = eqList.get(i);
+			// Color based on magnitude
+			int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude()))-cat.getMinMagnitude());
+			if(ind<0)
+				ind=0;
+
+			colors.SetTuple4(i, cat.gradientColors[ind].getRed(),cat.gradientColors[ind].getGreen(),cat.gradientColors[ind].getBlue(),255);
+		}
+		colors.Modified();
+
+		inputData.GetPointData().AddArray(colors);
+		vertexGlyphFilter.SetInputData(inputData);
+		vertexGlyphFilter.Update();
+		mapperPoints.SetInputConnection(vertexGlyphFilter.GetOutputPort());
+
+
+		glyphPoints.SetInputData(inputData);
+		mapperSphere.SetInputConnection(glyphPoints.GetOutputPort());
+
+		actorPointsOld.SetMapper(mapperPoints);
+		actorSpheresOld.SetMapper(mapperSphere);
+		cat.getActors().set(0,actorPointsOld);
+		cat.getActors().set(1,actorSpheresOld);
+		updateActorsAndRender(cat);
+	}
 	public void mouseClicked(MouseEvent e) {
 		Object src = e.getSource();
 
@@ -2003,5 +2033,6 @@ MouseListener {
 		// TODO Auto-generated method stub
 		return pickHandler;
 	}
+	
 
 }
