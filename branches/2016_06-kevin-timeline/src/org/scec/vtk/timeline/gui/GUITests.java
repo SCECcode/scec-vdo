@@ -153,11 +153,7 @@ public class GUITests {
 			return new DummyState();
 		}
 
-		@Override
-		public void setState(PluginState s) {
-			// TODO Auto-generated method stub
-			
-		}
+	
 		
 	}
 	

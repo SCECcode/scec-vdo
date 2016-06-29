@@ -55,9 +55,6 @@ public abstract class AbstractFaultPlugin extends ActionPlugin implements Statef
 		return state;
 	}
 
-	@Override
-	public void setState(PluginState s) {
-		// TODO Auto-generated method stub
-	}
+	
 
 }

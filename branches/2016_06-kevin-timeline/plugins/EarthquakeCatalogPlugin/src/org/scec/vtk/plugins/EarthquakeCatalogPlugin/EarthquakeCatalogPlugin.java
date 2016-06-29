@@ -61,15 +61,8 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 	@Override
 	public PluginState getState() {
 		// TODO Auto-generated method stub
-//		if(state==null)
-//			state = 
-		return new EarthquakeCatalogPluginState(this.eQGui);
-	}
-
-	@Override
-	public void setState(PluginState s) {
-		// TODO Auto-generated method stub
-		s.load();
-		
+		if(state==null)
+			state = new EarthquakeCatalogPluginState(this.eQGui);
+		return state;
 	}
 }
