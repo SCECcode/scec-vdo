@@ -15,10 +15,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -30,18 +28,14 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
-import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
-import org.scec.vtk.tools.Prefs;
-
 import com.google.common.base.Preconditions;
 
 import vtk.vtkActor;
@@ -300,6 +294,7 @@ public class MainMenu implements ActionListener, ItemListener{
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 					if (plugin instanceof StatefulPlugin) {
 						((StatefulPlugin)plugin).getState().toXML(root);
+						((StatefulPlugin)plugin).getState().load();
 					}
 				}
 				saveXMLFile(document, root, destinationData);
@@ -330,20 +325,20 @@ public class MainMenu implements ActionListener, ItemListener{
 			e.printStackTrace();
 		}
 
-		// Pretty print the document to System.out
-		OutputFormat format = OutputFormat.createPrettyPrint();
-		try {
-			writer = new XMLWriter( System.out, format );
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			writer.write( document );
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		// Pretty print the document to System.out
+//		OutputFormat format = OutputFormat.createPrettyPrint();
+//		try {
+//			writer = new XMLWriter( System.out, format );
+//		} catch (UnsupportedEncodingException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		try {
+//			writer.write( document );
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 

@@ -1811,23 +1811,7 @@ MouseListener
 			}
 		}}
 
-	public void setVisibility(EQCatalog cat, boolean visible)
-	{
-		vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
-		vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
-		if(visible)
-		{
-			actorPoints.VisibilityOn();
-			actorSpheres.VisibilityOn();
-		}
-		else
-		{
-			actorPoints.VisibilityOff();
-			actorSpheres.VisibilityOff();
-		}
-		updateActorsAndRender(cat);
-		
-	}
+	
 	public void setCatalogVisible(EQCatalog cat, int geometry,boolean visible) {
 		// TODO Auto-generated method stub
 		vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
