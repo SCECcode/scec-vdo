@@ -134,7 +134,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	private HashMap<Integer, Double> rates = new HashMap<Integer, Double>();
 	
 	private static final String HIGHLIGHT_COLOR_PARAM_NAME = "Highlight Color";
-	private static final Color HIGHLI_COLOR_DEFAULT = Color.DARK_GRAY;
+	private static final Color HIGHLI_COLOR_DEFAULT = Color.WHITE;
 	private ColorParameter highlightColorParam;
 	
 	private static final String HIDE_NAN_PARAM_NAME = "Hide NaN's?";
