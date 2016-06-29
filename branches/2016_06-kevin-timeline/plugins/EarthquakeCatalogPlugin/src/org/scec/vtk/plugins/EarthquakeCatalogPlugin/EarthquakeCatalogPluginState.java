@@ -36,11 +36,19 @@ public class EarthquakeCatalogPluginState implements PluginState {
 		transparency =new ArrayList<>();
 		visibility =new ArrayList<>();
 		geometry =new ArrayList<>();
-		copyKeyFrameDetials();
 	}
-	void copyKeyFrameDetials()
+	void copyLatestCatalogDetials()
 	{
-	
+		catalogs.clear();
+		dispName.clear();
+		filePath.clear();
+		color1.clear();
+		color2.clear();
+		scaling.clear();
+		transparency.clear();
+		visibility.clear();
+		geometry.clear();
+		
 		for (EQCatalog eqc : parent.getCatalogs())
 		{
 			EQCatalog cat;
@@ -59,7 +67,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	}
 	@Override
 	public void load() {
-		// call methods to update based on the properties captured
+		// call methods to update based on the properties captured //might also want to put swing invoke and wait
 		int i=0;
 		for (EQCatalog eqc : catalogs)
 		{
@@ -94,6 +102,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 
 	@Override
 	public void toXML(Element stateEl) {
+		copyLatestCatalogDetials();
 		createElement(stateEl);
 	}
 
@@ -111,18 +120,19 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	            geometry.add(Integer.parseInt(e.attributeValue("geometry")));
 	            visibility.add(Boolean.parseBoolean(e.attributeValue("visibility")));
 	            
-	            // read source directory filtering for catalogs
+	            // read the catalog file
 	            File file = new File(filePath.get(filePath.size()-1));
 	            System.out.println(file.exists());
 	            EQCatalog eq = new EQCatalog(parent, file, parent.getPluginActors());
 	            catalogs.add(eq);
+	            System.out.println(eq.getDisplayName());
 	        }
 	}
-
-
 	@Override
 	public PluginState deepCopy() {
-		return this;
+		EarthquakeCatalogPluginState state = new EarthquakeCatalogPluginState(parent);
+		state.copyLatestCatalogDetials();
+		return state;
 	}
 
 }
