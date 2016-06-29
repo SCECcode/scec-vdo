@@ -3,6 +3,7 @@ package org.scec.vtk.timeline;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.scec.vtk.plugins.AnimatablePlugin;
 import org.scec.vtk.plugins.PluginState;
 
 import com.google.common.base.Preconditions;
@@ -13,12 +14,13 @@ public class RangeKeyFrame extends KeyFrame {
 	
 	private double curFractionalTime;
 	
-	private List<RangeAnimationListener> listeners = new ArrayList<>();
+	private AnimatablePlugin plugin;
 
-	public RangeKeyFrame(double startTime, double endTime, PluginState state) {
+	public RangeKeyFrame(double startTime, double endTime, PluginState state, AnimatablePlugin plugin) {
 		super(startTime, state);
 		Preconditions.checkArgument(endTime >= 0);
 		this.endTime = endTime;
+		this.plugin = plugin;
 	}
 	
 	public double getEndTime() {
@@ -48,20 +50,17 @@ public class RangeKeyFrame extends KeyFrame {
 	
 	void setRangeStarted() {
 		curFractionalTime = 0d;
-		for (RangeAnimationListener l : listeners)
-			l.rangeStarted();
+		plugin.animationStarted();
 	}
 	
 	void setRangeEnded() {
 		curFractionalTime = 1d;
-		for (RangeAnimationListener l : listeners)
-			l.rangeEnded();
+		plugin.animationEnded();
 	}
 	
 	void setRangeTime(double fractionalTime) {
 		curFractionalTime = fractionalTime;
-		for (RangeAnimationListener l : listeners)
-			l.rangeTimeChanged(fractionalTime);
+		plugin.animationTimeChanged(fractionalTime);
 	}
 	
 	boolean isEnded() {
@@ -69,7 +68,7 @@ public class RangeKeyFrame extends KeyFrame {
 	}
 	
 	public RangeKeyFrame duplicate() {
-		RangeKeyFrame key = new RangeKeyFrame(getStartTime(), getEndTime(), getState());
+		RangeKeyFrame key = new RangeKeyFrame(getStartTime(), getEndTime(), getState().deepCopy(), plugin);
 		// don't copy listeners, they will be set up when added to the key frame list
 		return key;
 	}

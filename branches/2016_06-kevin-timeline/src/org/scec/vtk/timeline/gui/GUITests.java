@@ -1,24 +1,21 @@
 package org.scec.vtk.timeline.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 
 import org.dom4j.Element;
+import org.scec.vtk.plugins.AnimatableChangeListener;
+import org.scec.vtk.plugins.AnimatablePlugin;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.timeline.KeyFrame;
-import org.scec.vtk.timeline.RangeAnimationListener;
 import org.scec.vtk.timeline.RangeKeyFrame;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.VisibilityKeyFrame;
@@ -34,13 +31,18 @@ public class GUITests {
 		panel.setLayout(new BorderLayout());
 		
 		final Timeline timeline = new Timeline();
+		timeline.setLive(false);
 		
-		timeline.addPlugin(new DummyPlugin("Normal Plugin"), new PluginActors());
-		timeline.addPlugin(new DummyRangePlugin("Range Plugin"), new PluginActors());
-		timeline.addPlugin(new DummyStatefulPlugin("Stateful Plugin"), new PluginActors());
+		DummyPlugin normal = new DummyPlugin("Normal Plugin");
+		DummyAnimatablePlugin animatable = new DummyAnimatablePlugin("Animatable Plugin");
+		DummyStatefulPlugin stateful = new DummyStatefulPlugin("Stateful Plugin");
+		
+		timeline.addPlugin(normal, new PluginActors());
+		timeline.addPlugin(animatable, new PluginActors());
+		timeline.addPlugin(stateful, new PluginActors());
 		timeline.addKeyFrame(0, new VisibilityKeyFrame(0d, new PluginActors(), true));
 		timeline.addKeyFrame(0, new VisibilityKeyFrame(5d, new PluginActors(), false));
-		timeline.addKeyFrame(1, new RangeKeyFrame(0d, 3d, new DummyState()));
+		timeline.addKeyFrame(1, new RangeKeyFrame(0d, 3d, new DummyState(), animatable));
 		timeline.addKeyFrame(2, new KeyFrame(1d, new DummyState()));
 		timeline.addKeyFrame(2, new KeyFrame(4d, new DummyState()));
 		
@@ -157,26 +159,37 @@ public class GUITests {
 		
 	}
 	
-	private static class DummyRangePlugin extends DummyStatefulPlugin implements RangeAnimationListener {
+	private static class DummyAnimatablePlugin extends DummyStatefulPlugin implements AnimatablePlugin {
 
-		public DummyRangePlugin(String name) {
+		public DummyAnimatablePlugin(String name) {
 			super(name);
 		}
 
 		@Override
-		public void rangeStarted() {
+		public void animationStarted() {
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
-		public void rangeEnded() {
+		public void animationEnded() {
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
-		public void rangeTimeChanged(double fractionalTime) {
+		public void animationTimeChanged(double fractionalTime) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public boolean isAnimatable() {
+			return true;
+		}
+
+		@Override
+		public void addAnimatableChangeListener(AnimatableChangeListener l) {
 			// TODO Auto-generated method stub
 			
 		}
