@@ -4,6 +4,6 @@ public interface StepTimeCalculator {
 	
 	public int getStepForTime(int prevStep, long milis);
 	
-	public long getTimeUntil(long milis, int currentStep);
+	public long getTimeUntil(long milis, int step);
 
 }

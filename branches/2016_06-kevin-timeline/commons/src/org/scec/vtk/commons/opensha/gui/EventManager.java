@@ -247,7 +247,9 @@ AnimationListener {
 		if (actors instanceof FaultSectionBundledActorList) {
 			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actors;
 			FaultActorBundle bundle = bundleList.getBundle();
+			if (D) System.out.println("Entering bundle synchronized block (display)");
 			synchronized (bundle) {
+				if (D) System.out.println("Inside bundle synchronized block (display)");
 				vtkActor actor = bundle.getActor();
 				Preconditions.checkNotNull(actor);
 				actor.SetVisibility(1); // always visible in bundled view
@@ -256,7 +258,9 @@ AnimationListener {
 					actor.Modified();
 				else
 					pluginActors.addActor(actor);
+				if (D) System.out.println("Leaving bundle synchronized block (display)");
 			}
+			if (D) System.out.println("Left bundle synchronized block (display)");
 		}
 		if (updateViewer)
 			updateViewer();
@@ -273,6 +277,7 @@ AnimationListener {
 			synchronized (RenderRunnable.class) {
 				if (lastCompletedRender > lastRequestedRender)
 					return;
+				if (D) System.out.println("Rendering");
 				Stopwatch watch;
 				if (D) watch = Stopwatch.createStarted();
 				long myRenderTime = System.nanoTime();
@@ -286,6 +291,7 @@ AnimationListener {
 	}
 	
 	private synchronized void updateViewer() {
+		if (D) System.out.println("Update viewer called. queue? "+queue_renders);
 //		upToDate = false;
 		long curTime = System.nanoTime();
 		if (curTime > lastRequestedRender)
@@ -296,6 +302,7 @@ AnimationListener {
 			SwingUtilities.invokeLater(updateRunnable);
 		else
 			updateRunnable.run();
+		if (D) System.out.println("Update viewer done.");
 	}
 	
 	/**
@@ -334,13 +341,17 @@ AnimationListener {
 		if (actors instanceof FaultSectionBundledActorList) {
 			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actors;
 			FaultActorBundle bundle = bundleList.getBundle();
+			if (D) System.out.println("Entering bundle synchronized block (hide)");
 			synchronized (bundle) {
+				if (D) System.out.println("Inside bundle synchronized block (hide)");
 				vtkActor actor = bundle.getActor();
 				Preconditions.checkNotNull(actor);
 				actor.SetVisibility(1); // always visible in bundled view
 				setBundledOpacity(bundleList, false);
 				actor.Modified();
+				if (D) System.out.println("Leaving bundle synchronized block (hide)");
 			}
+			if (D) System.out.println("Left bundle synchronized block (hide)");
 		}
 		updateViewer();
 	}
@@ -447,7 +458,9 @@ AnimationListener {
 			// if the thread is already going, lets make sure that it has fully exited.
 			if (currentCalcThread != null && currentCalcThread.isAlive()) {
 				try {
+					if (D) System.out.println("Joining old colorer changed thread");
 					currentCalcThread.join();
+					if (D) System.out.println("DONE Joining old colorer changed thread");
 				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
@@ -463,8 +476,7 @@ AnimationListener {
 //								&& newColorer instanceof PickHandler)
 //							pickBehavior
 //									.setPickHandler((PickHandler) newColorer);
-						if (D)
-							System.out.println("Colorer changed");
+						if (D) System.out.println("Colorer changed");
 						for (FaultSectionNode node : nodes.values()) {
 							Color color = newColorer.getColor(node.getFault());
 							if (color == null || !color.equals(node.getColor()))

@@ -5,23 +5,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 
 import org.opensha.commons.util.ExceptionUtils;
+import org.scec.vtk.commons.opensha.gui.anim.MultiAnimPanel;
 import org.scec.vtk.commons.opensha.surfaces.FaultActorBundler;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.plugins.ActionPlugin;
-import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.plugins.AnimatableChangeListener;
+import org.scec.vtk.plugins.AnimatablePlugin;
 import org.scec.vtk.plugins.PluginState;
-import org.scec.vtk.plugins.StatefulPlugin;
 
-import vtk.vtkActor;
-
-public abstract class AbstractFaultPlugin extends ActionPlugin implements StatefulPlugin {
+public abstract class AbstractFaultPlugin extends ActionPlugin implements AnimatablePlugin {
 	
 //	private PluginInfo metadata;
 	private FaultPluginGUI gui;
 	private FaultPluginState state;
+	
+	private MultiAnimPanel animPanel;
 	
 	/**
 	 * Build the Fault GUI. This will only be called once, and will be called before the
@@ -41,6 +41,9 @@ public abstract class AbstractFaultPlugin extends ActionPlugin implements Statef
 		if (gui == null) {
 			try {
 				gui = buildGUI();
+				animPanel = gui.getAnimPanel();
+				if (animPanel != null)
+					animPanel.setPlugin(this);
 			} catch (Exception e) {
 				ExceptionUtils.throwAsRuntimeException(e);
 			}
@@ -53,6 +56,41 @@ public abstract class AbstractFaultPlugin extends ActionPlugin implements Statef
 		if (state == null)
 			state = new FaultPluginState(gui);
 		return state;
+	}
+
+	@Override
+	public void animationStarted() {
+		if (animPanel != null)
+			animPanel.animationStarted();
+	}
+
+	@Override
+	public void animationEnded() {
+		if (animPanel != null)
+			animPanel.animationEnded();
+	}
+
+	@Override
+	public void animationTimeChanged(double fractionalTime) {
+		if (animPanel != null)
+			animPanel.animationTimeChanged(fractionalTime);
+	}
+
+	@Override
+	public boolean isAnimatable() {
+		return animPanel != null && animPanel.isAnimatable();
+	}
+
+	@Override
+	public void addAnimatableChangeListener(AnimatableChangeListener l) {
+		if (animPanel != null)
+			animPanel.addAnimatableChangeListener(l);
+	}
+
+	@Override
+	public void removeAnimatableChangeListener(AnimatableChangeListener l) {
+		if (animPanel != null)
+			animPanel.removeAnimatableChangeListener(l);
 	}
 
 	
