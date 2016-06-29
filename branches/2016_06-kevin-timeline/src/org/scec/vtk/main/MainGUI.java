@@ -323,6 +323,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	private void addDefaultActors()
 	{
+		// render window locks up and won't repaint if there are zero actors. add a blank actor to prevent this
+		vtkActor blankActor = new vtkActor();
+		renderWindow.GetRenderer().AddActor(blankActor);
+		
 		// TODO these should be treated as plugins that are loaded by default, not hardcoded here
 		ArrayList<String> ids =new ArrayList<String>();
 		ArrayList<PluginInfo> pluginInfo = new ArrayList<PluginInfo>();
