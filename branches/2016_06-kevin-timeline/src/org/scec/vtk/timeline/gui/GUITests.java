@@ -193,6 +193,12 @@ public class GUITests {
 			// TODO Auto-generated method stub
 			
 		}
+
+		@Override
+		public void removeAnimatableChangeListener(AnimatableChangeListener l) {
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 	
