@@ -481,16 +481,22 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 		String str = "Rupture "+rupID;
 		str += " ("+rupSet.getSectionsIndicesForRup(rupID).size()+" sects).";
 		str += " Mag: "+(float)rupSet.getMagForRup(rupID);
-		str += " Area: "+(float)rupSet.getAreaForRup(rupID)+" m^2";
-		str += " Len: "+(float)rupSet.getLengthForRup(rupID)+" m";
+		try {
+			str += " Area: "+(float)rupSet.getAreaForRup(rupID)+" m^2";
+		} catch (Exception e) {};
+		try {
+			str += " Len: "+(float)rupSet.getLengthForRup(rupID)+" m";
+		} catch (Exception e) {};
 		if (sol != null) {
 			str += " Rate: "+(float)sol.getRateForRup(rupID);
 			double moRate = getMomentRate(rupID);
 			if (!Double.isNaN(moRate))
 				str += " MoRate: "+(float)moRate;
-			double aveSlip = getAveSlip(rupID);
-			if (!Double.isNaN(aveSlip))
-				str += " aveSlip: "+(float)aveSlip+" m";
+			try {
+				double aveSlip = getAveSlip(rupID);
+				if (!Double.isNaN(aveSlip))
+					str += " aveSlip: "+(float)aveSlip+" m";
+			} catch (Exception e) {};
 		}
 		return str;
 	}
