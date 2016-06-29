@@ -31,5 +31,11 @@ public interface AnimatablePlugin extends StatefulPlugin {
 	 * @param l
 	 */
 	public void addAnimatableChangeListener(AnimatableChangeListener l);
+	
+	/**
+	 * Should remove the AnimatableChangeListener to an internal listener list.
+	 * @param l
+	 */
+	public void removeAnimatableChangeListener(AnimatableChangeListener l);
 
 }

@@ -5,17 +5,18 @@ import org.scec.vtk.timeline.KeyFrame;
 import org.scec.vtk.timeline.KeyFrameChangeListener;
 import org.scec.vtk.timeline.KeyFrameList;
 import org.scec.vtk.timeline.camera.CameraAnimator.SplineElement;
+import org.scec.vtk.timeline.camera.CameraAnimator.SplineType;
 
 import com.google.common.base.Preconditions;
 
 import vtk.vtkCamera;
-import vtk.vtkCardinalSpline;
 import vtk.vtkSpline;
 
 public class CameraSplineCalculator implements KeyFrameChangeListener {
 	
 	private KeyFrameList keys;
 	private SplineElement element;
+	private SplineType type;
 	
 	// this maps real time to camera time by incorperating pauses
 	private ArbitrarilyDiscretizedFunc timeMapFunc;
@@ -24,9 +25,10 @@ public class CameraSplineCalculator implements KeyFrameChangeListener {
 	private vtkSpline splineY;
 	private vtkSpline splineZ;
 	
-	public CameraSplineCalculator(KeyFrameList keys, SplineElement element) {
+	public CameraSplineCalculator(KeyFrameList keys, SplineElement element, SplineType type) {
 		this.keys = keys;
 		this.element = element;
+		this.type = type;
 		keys.addKeyFrameChangeListener(this);
 	}
 	
@@ -51,13 +53,17 @@ public class CameraSplineCalculator implements KeyFrameChangeListener {
 		}
 	}
 	
+	public void setSplineType(SplineType type) {
+		this.type = type;
+		clearSpline();
+	}
+	
 	// synchronized externally
 	private void checkBuildSpline() {
 		if (splineX == null && !keys.isEmpty()) {
-			// TODO allow other spline types
-			splineX = new vtkCardinalSpline();
-			splineY = new vtkCardinalSpline();
-			splineZ = new vtkCardinalSpline();
+			splineX = type.instance();
+			splineY = type.instance();
+			splineZ = type.instance();
 			
 			timeMapFunc = new ArbitrarilyDiscretizedFunc();
 			

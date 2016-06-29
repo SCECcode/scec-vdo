@@ -7,10 +7,13 @@ import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.timeline.camera.CameraAnimator;
+import org.scec.vtk.timeline.camera.CameraAnimator.SplineType;
 
 import com.google.common.base.Preconditions;
 
 public class Timeline {
+	
+	private static final boolean D = false;
 	
 	private KeyFrameList cameraKeys;
 	private CameraAnimator cameraAnim;
@@ -24,12 +27,13 @@ public class Timeline {
 	private List<TimelinePluginChangeListener> pluginChangeListeners;
 	
 	private double maxTime = 15d;
+	private double fps = 30;
 	
 	private boolean isLive = true; // can be set to false for external GUI tests;
 	
 	public Timeline() {
 		cameraKeys = new KeyFrameList();
-		cameraAnim = new CameraAnimator(cameraKeys);
+		cameraAnim = new CameraAnimator(cameraKeys, SplineType.CARDINAL);
 		timeListeners = new ArrayList<>();
 		// camera will update through listener interface
 		addAnimationTimeListener(cameraAnim);
@@ -93,14 +97,25 @@ public class Timeline {
 		return cameraKeys;
 	}
 	
+	public SplineType getCameraSplineType() {
+		return cameraAnim.getSplineType();
+	}
+	
+	public synchronized void setCameraSplineType(SplineType type) {
+		cameraAnim.setSplineType(type);
+	}
+	
 	public synchronized void activateTime(double time) {
 		if (time > maxTime)
 			time = maxTime;
+		if (time < 0)
+			time = 0;
 		for (int index=0; index<plugins.size(); index++) {
 			KeyFrameList keys = pluginKeyFrameLists.get(index);
 			KeyFrame cur = currentActivatedKeys.get(index);
 			KeyFrame newKey = keys.getCurrentFrame(time);
 			if (newKey != cur) {
+				if (D) System.out.println("New KeyFrame for plugin "+index+": "+newKey);
 				if (cur instanceof RangeKeyFrame) {
 					RangeKeyFrame range = (RangeKeyFrame)cur;
 					if (!range.isEnded())
@@ -108,9 +123,12 @@ public class Timeline {
 				}
 				// need to laod new key frame, otherwise do nothing
 				if (newKey != null) {
+					if (D) System.out.println("Loading KeyFrame");
 					newKey.load();
-					if (!(newKey instanceof VisibilityKeyFrame))
+					if (!(newKey instanceof VisibilityKeyFrame)) {
+						if (D) System.out.println("Forcing visibility on");
 						pluginActors.get(index).visibilityOn();
+					}
 				}
 				currentActivatedKeys.set(index, newKey);
 			}
@@ -162,6 +180,10 @@ public class Timeline {
 		return pluginKeyFrameLists.get(index);
 	}
 	
+	public PluginActors getActorsForPlugin(Plugin plugin) {
+		return getActorsForPlugin(indexForPlugin(plugin));
+	}
+	
 	public PluginActors getActorsForPlugin(int index) {
 		return pluginActors.get(index);
 	}
@@ -200,6 +222,15 @@ public class Timeline {
 		this.maxTime = maxTime;
 		for (AnimationTimeListener l : timeListeners)
 			l.animationBoundsChanged(maxTime);
+	}
+	
+	public double getFamerate() {
+		return fps;
+	}
+	
+	public void setFramerate(double fps) {
+		Preconditions.checkState(fps > 0);
+		this.fps = fps;
 	}
 
 }

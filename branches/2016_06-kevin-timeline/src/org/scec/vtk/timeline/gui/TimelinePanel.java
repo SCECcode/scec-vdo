@@ -47,7 +47,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	// static sizes/font for the ticks/labels
 	public static final int headerHeight = 30;
 	private static final double majorTickInterval = 1d;
-	private static final double minorTickInterval = 0.1d;
+	static final double minorTickInterval = 0.1d;
 	private static final int majorTickHeight = 12;
 	private static final int minorTickHeight = 6;
 	static final DecimalFormat timeMajorLabelFormat = new DecimalFormat("0s");
@@ -57,7 +57,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	
 	private static final Color lineColor = Color.BLACK;
 	private static final Color tickColor = Color.BLACK;
-	private static final Color pluginDividerColor = Color.LIGHT_GRAY;
+	static final Color pluginDividerColor = Color.LIGHT_GRAY;
 	private static final Color tickGridColor = new Color(225, 225, 225); // null if no grid
 	private static final Color tickGridMajorColor = Color.LIGHT_GRAY; // null if no grid
 	
@@ -188,24 +188,31 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 		g.drawLine(curTimePixel, 0, curTimePixel, panelHeight);
 	}
 	
+	static final Color visibilityKeyOnColor = Color.BLUE;
+	static final Color visibilityKeyOffColor = Color.GRAY;
+	static final Color rangeKeyColor = Color.GREEN;
+	static final Color cameraKeyColor = Color.ORANGE;
+	static final Color cameraKeyPauseColor = Color.GRAY;
+	static final Color normalKeyColor = Color.RED;
+	
 	static Color fillColorForKey(KeyFrame key) {
 		if (key instanceof VisibilityKeyFrame) {
 			VisibilityKeyFrame v = (VisibilityKeyFrame)key;
 			if (v.isVisible())
-				return Color.BLUE;
+				return visibilityKeyOnColor;
 			else
-				return Color.GRAY;
+				return visibilityKeyOffColor;
 		}
 		if (key instanceof RangeKeyFrame)
-			return Color.GREEN;
+			return rangeKeyColor;
 		if (key instanceof CameraKeyFrame) {
 			CameraKeyFrame c = (CameraKeyFrame)key;
 			if (c.isPause())
-				return Color.GRAY;
+				return cameraKeyPauseColor;
 			else
-				return Color.ORANGE;
+				return cameraKeyColor;
 		}
-		return Color.RED;
+		return normalKeyColor;
 	}
 	
 	private void drawTicks(Graphics g, double interval, int tickHeight, int panelWidth, int panelHeight,
@@ -227,7 +234,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 				g.setColor(tickColor);
 			}
 			g.drawLine(x, 0, x, tickHeight);
-			if (major)
+			if (major && time < timeline.getMaxTime())
 				g.drawString(timeMajorLabelFormat.format(time), x, headerHeight-timeLabelLowerPad);
 		}
 	}
@@ -240,6 +247,10 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 		double time = x * secondsPerPixel;
 		
 		// round to tick interval
+		return getRoundedTime(time);
+	}
+	
+	double getRoundedTime(double time) {
 		return Math.round(time/minorTickInterval)*minorTickInterval;
 	}
 	
@@ -256,7 +267,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 		return cameraMaxY + (heightPerPlugin*index);
 	}
 	
-	public double getCurrentTotalTime() {
+	double getCurrentTotalTime() {
 		return getWidth()*secondsPerPixel;
 	}
 	
@@ -276,8 +287,31 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 		repaint();
 	}
 	
-	private static boolean isAnimatable(Plugin plugin) {
+	static boolean isAnimatable(Plugin plugin) {
 		return plugin instanceof AnimatablePlugin && ((AnimatablePlugin)plugin).isAnimatable();
+	}
+	
+	double showDurationDialog(boolean allowZero) {
+		String message;
+		if (allowZero)
+			message = "Duration (min: "+minorTickInterval+", 0 for standard KeyFrame)";
+		else
+			message = "Duration (min: "+minorTickInterval+")";
+		String durStr = JOptionPane.showInputDialog(this, message, "1");
+		if (durStr == null)
+			return -1;
+		try {
+			double duration = Double.parseDouble(durStr);
+			if (allowZero && duration == 0)
+				return 0d;
+			
+			Preconditions.checkState(duration > minorTickInterval);
+			return duration;
+		} catch (Exception e1) {
+			JOptionPane.showMessageDialog(this, "Could not parse duration: "+durStr,
+					"Error Parsing Duration", JOptionPane.ERROR_MESSAGE);
+			return -1;
+		}
 	}
 	
 	private void addKey(double time, int pluginIndex, boolean forceVisibilityKey) {
@@ -287,23 +321,13 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 			PluginState state = ((StatefulPlugin)plugin).getState().deepCopy();
 			if (isAnimatable(plugin)) {
 				// can add a range or regular key
-				String durStr = JOptionPane.showInputDialog(
-						this, "Duration (min: "+minorTickInterval+", 0 for standard KeyFrame)", "1");
-				if (durStr == null)
+				double duration = showDurationDialog(true);
+				if (duration < 0)
 					return;
-				try {
-					double duration = Double.parseDouble(durStr);
-					if (duration == 0) {
-						key = new KeyFrame(time, state);
-					} else {
-						Preconditions.checkState(duration > minorTickInterval);
-						key = new RangeKeyFrame(time, time+duration, state, (AnimatablePlugin)plugin);
-					}
-				} catch (Exception e1) {
-					JOptionPane.showMessageDialog(this, "Could not parse duration: "+durStr,
-							"Error Parsing Duration", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
+				if (duration == 0)
+					key = new KeyFrame(time, state);
+				else
+					key = new RangeKeyFrame(time, time+duration, state, (AnimatablePlugin)plugin);
 			} else {
 				key = new KeyFrame(time, state);
 			}
@@ -327,11 +351,16 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 		rebuildKeyLabels();
 	}
 	
-	private void addCameraKey(double time, boolean pause) {
+	void addCameraKey(double time, boolean pause) {
 		vtkCamera cam = MainGUI.getRenderWindow().GetRenderer().GetActiveCamera();
 		CameraKeyFrame key = new CameraKeyFrame(time, cam, pause);
 		
 		timeline.addCameraKeyFrame(key);
+		rebuildKeyLabels();
+	}
+	
+	void addPluginKey(Plugin plugin, KeyFrame key) {
+		timeline.addKeyFrame(plugin, key);
 		rebuildKeyLabels();
 	}
 

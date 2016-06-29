@@ -24,19 +24,22 @@ class KeyFrameLabel extends JLabel implements Icon {
 	private KeyFrame key;
 	private KeyFrameList keys;
 	
-	public KeyFrameLabel(TimelinePanel panel, KeyFrame key, KeyFrameList keys) {
-		super();
-		setIcon(this);
+	KeyFrameLabel(TimelinePanel panel, KeyFrame key, KeyFrameList keys) {
+		this(TimelinePanel.fillColorForKey(key));
 		this.panel = panel;
 		this.key = key;
 		this.keys = keys;
-		this.fillColor = TimelinePanel.fillColorForKey(key);
+	}
+	
+	KeyFrameLabel(Color fillColor) {
+		setIcon(this);
+		this.fillColor = fillColor;
 		this.normalOutlineColor = TimelinePanel.keyOutlineColor;
 		this.selectedOutlineColor = TimelinePanel.keyOutlineSelectedColor;
 		this.dragColor = saturate(fillColor);
 	}
 	
-	private static Color saturate(Color c) {
+	static Color saturate(Color c) {
 		int r = c.getRed();
 		int g = c.getGreen();
 		int b = c.getBlue();

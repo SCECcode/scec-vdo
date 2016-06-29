@@ -8,7 +8,11 @@ import org.scec.vtk.timeline.AnimationTimeListener;
 import org.scec.vtk.timeline.KeyFrameList;
 
 import vtk.vtkCamera;
+import vtk.vtkCardinalSpline;
+import vtk.vtkKochanekSpline;
 import vtk.vtkRenderer;
+import vtk.vtkSCurveSpline;
+import vtk.vtkSpline;
 
 public class CameraAnimator implements AnimationTimeListener {
 	
@@ -20,18 +24,66 @@ public class CameraAnimator implements AnimationTimeListener {
 		VIEW_UP
 	}
 	
+	public enum SplineType {
+		CARDINAL("Cardinal") {
+			@Override
+			vtkSpline instance() {
+				return new vtkCardinalSpline();
+			}
+		},
+		KOCHANEK("Kochanek") {
+			@Override
+			vtkSpline instance() {
+				return new vtkKochanekSpline();
+			}
+		},
+		S_CURVE("S Curve") {
+			@Override
+			vtkSpline instance() {
+				return new vtkSCurveSpline();
+			}
+		};
+		
+		private String name;
+		
+		private SplineType(String name) {
+			this.name = name;
+		}
+		
+		abstract vtkSpline instance();
+		
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
+	
 	private CameraSplineCalculator positionSpline;
 	private CameraSplineCalculator focalSpline;
 	private CameraSplineCalculator upSpline;
 	
+	private SplineType type;
+	
 	private vtkCamera cam;
 	
-	public CameraAnimator(KeyFrameList keys) {
+	public CameraAnimator(KeyFrameList keys, SplineType type) {
 		this.keys = keys;
+		this.type = type;
 		
-		positionSpline = new CameraSplineCalculator(keys, SplineElement.POSITION);
-		focalSpline = new CameraSplineCalculator(keys, SplineElement.FOCAL_POINT);
-		upSpline = new CameraSplineCalculator(keys, SplineElement.VIEW_UP);
+		positionSpline = new CameraSplineCalculator(keys, SplineElement.POSITION, type);
+		focalSpline = new CameraSplineCalculator(keys, SplineElement.FOCAL_POINT, type);
+		upSpline = new CameraSplineCalculator(keys, SplineElement.VIEW_UP, type);
+	}
+	
+	public void setSplineType(SplineType type) {
+		this.type = type;
+		positionSpline.setSplineType(type);
+		focalSpline.setSplineType(type);
+		upSpline.setSplineType(type);
+	}
+	
+	public SplineType getSplineType() {
+		return type;
 	}
 	
 	public void activateTime(double time) {
