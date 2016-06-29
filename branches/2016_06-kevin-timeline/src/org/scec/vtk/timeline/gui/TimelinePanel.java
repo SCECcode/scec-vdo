@@ -293,11 +293,15 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	
 	double showDurationDialog(boolean allowZero) {
 		String message;
-		if (allowZero)
+		String defaultVal;
+		if (allowZero) {
 			message = "Duration (min: "+minorTickInterval+", 0 for standard KeyFrame)";
-		else
+			defaultVal = "0";
+		} else {
 			message = "Duration (min: "+minorTickInterval+")";
-		String durStr = JOptionPane.showInputDialog(this, message, "1");
+			defaultVal = "1";
+		}
+		String durStr = JOptionPane.showInputDialog(this, message, defaultVal);
 		if (durStr == null)
 			return -1;
 		try {

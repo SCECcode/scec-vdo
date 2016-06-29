@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 
@@ -13,6 +14,8 @@ import org.opensha.commons.exceptions.ConstraintException;
 import org.opensha.commons.exceptions.ParameterException;
 import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
+import org.opensha.commons.param.impl.StringParameter;
+import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
@@ -24,6 +27,8 @@ import org.scec.vtk.plugins.PluginState;
 import com.google.common.base.Preconditions;
 
 public class FaultPluginState implements PluginState {
+	
+	private static final boolean D = true;
 	
 	private FaultPluginGUI gui;
 	
@@ -41,6 +46,7 @@ public class FaultPluginState implements PluginState {
 	private CPT cpt;
 	private boolean cptLog;
 	// animation
+	// TODO store current step
 	private FaultAnimation anim;
 	private ParameterList animParams;
 	// geometry generator
@@ -55,38 +61,62 @@ public class FaultPluginState implements PluginState {
 
 	@Override
 	public void load() {
+		if (D) System.out.println("Loading state. EDT? "+SwingUtilities.isEventDispatchThread());
 		// first set any builder params
+		if (D) System.out.println("Loading builder params");
 		updateParams(gui.getBuilder().getBuilderParams(), builderParams);
 		
 		// update fault params
+		if (D) System.out.println("Loading fault params");
 		updateParams(gui.getFaultParams(), faultParams);
 		
+		if (D) System.out.println("Loading geom gen");
 		if (geomGen != gui.getGeomSelect().getSelectedGeomGen())
 			gui.getGeomSelect().setSelectedGeomGen(geomGen);
+		if (D) System.out.println("Loading geom gen parans");
 		updateParams(gui.getGeomSelect().getSelectedGeomGen().getDisplayParams(), geomGenParams);
 		
 		if (anim != null && gui.getAnimPanel() != null) {
+			if (D) System.out.println("Loading anim");
 			if (anim != gui.getAnimPanel().getSelectedAnim())
 				gui.getAnimPanel().setSelectedAnim(anim);
+			if (D) System.out.println("Loading anim params");
 			if (gui.getAnimPanel().getSelectedAnim() != null)
 				updateParams(gui.getAnimPanel().getSelectedAnim().getAnimationParameters(), animParams);
 		}
 		
 		// update colorer
+		if (D) System.out.println("Loading colorer");
 		if (colorer != gui.getColorPanel().getSelectedColorer())
 			gui.getColorPanel().setSelectedColorer(colorer);
 		if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
+			if (D) System.out.println("Loading CPT info");
 			CPTBasedColorer cptColor = (CPTBasedColorer) gui.getColorPanel().getSelectedColorer();
 			if (!cpt.equals(cptColor.getCPT()) || cptLog != cptColor.isCPTLog()) {
+				waitOnColorerChange();
 				cptColor.setCPT(cpt, cptLog);
 				gui.getColorPanel().cptChangedExternally();
 			}
 		}
+		if (D) System.out.println("Loading colorer params");
+		waitOnColorerChange();
 		updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
 		
 		// now update the tree itself
+		waitOnColorerChange();
+		if (D) System.out.println("Updating tree itself");
 		if (updateTree(gui.getFaultTreeTable().getTreeRoot()))
 			gui.getFaultTreeTable().refreshTreeView();
+		if (D) System.out.println("DONE Loading state");
+	}
+	
+	private void waitOnColorerChange() {
+		try {
+			// first wait on any colorer change events
+			gui.getEventManager().waitOnCalcThread();
+		} catch (InterruptedException e) {
+			ExceptionUtils.throwAsRuntimeException(e);
+		}
 	}
 	
 	private static void updateParams(ParameterList to, ParameterList from) {
@@ -95,6 +125,24 @@ public class FaultPluginState implements PluginState {
 		for (Parameter fromParam : from) {
 			try {
 				Parameter toParam = to.getParameter(fromParam.getName());
+				Object fromVal = fromParam.getValue();
+				Object toVal = toParam.getValue();
+				boolean equals = Objects.equals(fromVal, toVal);
+				if (D) {
+					System.out.println("Setting param "+fromParam.getName()+". Equals? "+equals);
+					if (!equals) {
+						System.out.println("\tOrig: "+toVal);
+						System.out.println("\tNew: "+fromVal);
+					}
+				}
+				if (equals)
+					// do external equals check to avoid any spurious parameterChanged() calls for paramters
+					// that don't check equals before firing an event (even though they should)
+					continue;
+//				System.out.println("From class: "+fromParam.getClass());
+//				System.out.println("To class: "+toParam.getClass());
+//				System.out.println("From constraint: "+fromParam.getConstraint());
+//				System.out.println("To constraint: "+toParam.getConstraint());
 				try {
 					toParam.setValue(fromParam.getValue());
 				} catch (ConstraintException e) {
@@ -117,6 +165,7 @@ public class FaultPluginState implements PluginState {
 	}
 	
 	private void clearState() {
+		if (D) System.out.println("Clearing state");
 		builderParams = null;
 		userDataToVisibleMap = null;
 		userDataToColorMap = null;
@@ -132,7 +181,7 @@ public class FaultPluginState implements PluginState {
 	
 	private void captureState() {
 		clearState();
-		
+		if (D) System.out.println("Capturing state");
 		builderParams = cloneParamList(gui.getBuilder().getBuilderParams());
 		userDataToVisibleMap = new HashMap<>();
 		userDataToColorMap = new HashMap<>();
@@ -141,7 +190,9 @@ public class FaultPluginState implements PluginState {
 		if (colorer != null) {
 			colorerParams = cloneParamList(colorer.getColorerParameters());
 			if (colorer instanceof CPTBasedColorer) {
-				cpt = (CPT)((CPTBasedColorer)colorer).getCPT().clone();
+				cpt = ((CPTBasedColorer)colorer).getCPT();
+				if (cpt != null)
+					cpt = (CPT)cpt.clone();
 				cptLog = ((CPTBasedColorer)colorer).isCPTLog();
 			}
 		}
@@ -152,7 +203,8 @@ public class FaultPluginState implements PluginState {
 		}
 		geomGen = gui.getGeomSelect().getSelectedGeomGen();
 		geomGenParams = cloneParamList(geomGen.getDisplayParams());
-		faultParams = cloneParamList(geomGen.getDisplayParams());
+		faultParams = cloneParamList(gui.getFaultParams());
+		if (D) System.out.println("DONE Capturing state");
 	}
 	
 	private static ParameterList cloneParamList(ParameterList params) {
