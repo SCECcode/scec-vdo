@@ -34,7 +34,8 @@ public class CatalogTable extends JTable {
 	private static final long serialVersionUID = 1L;
 
 	/** This table's owner (GUI). */
-    protected Component tableOwner;
+	//earthquakeCatalogGUI
+    protected Component parent;
     
     // table access fields
     public CatalogTableModel tableModel;
@@ -50,7 +51,7 @@ public class CatalogTable extends JTable {
     public CatalogTable(Component owner, PluginActors actors) {
         super();
         this.actors = actors;
-        this.tableOwner = owner;
+        this.parent = owner;
         this.init();
     }
     //directory copy for permanant files people might accidently delete, feel free to make it cleaner jason armstrong
@@ -108,8 +109,8 @@ public class CatalogTable extends JTable {
         for (int i=0; i<cats.length; i++) {
         	try{
 	            EQCatalog cat;
-	            cat = new EQCatalog(this.tableOwner, cats[i], actors);
-	            cat.setGeometry(EQCatalog.GEOMETRY_POINT);
+	            cat = new EQCatalog(this.parent, cats[i], actors);
+	            cat.setGeometry(EQCatalog.GEOMETRY_SPHERE);
 	            addCatalog(cat);
         	}
         	catch (Exception e)
@@ -165,6 +166,31 @@ public class CatalogTable extends JTable {
         this.selectionModel.setValueIsAdjusting(false);
     }
 
+    public void setVisibility(CatalogTableModel libModel, EQCatalog libCat, int row)
+    {
+    	boolean show = false;
+    	  if(libModel.getObjectAtRow(row).isDisplayed())
+          {
+          	if(libCat.getActors().get(0)!=null){
+          	libCat.getActors().get(0).SetVisibility(0);
+          	libCat.getActors().get(1).SetVisibility(0);
+          	Info.getMainGUI().updateRenderWindow();
+          	show = false;
+          	}
+          }
+          else
+          {
+          	if(libCat.getActors().get(0)!=null){
+              	libCat.getActors().get(0).SetVisibility(1);
+              	libCat.getActors().get(1).SetVisibility(1);
+              	Info.getMainGUI().updateRenderWindow();
+              	show = true;
+              	}
+          }
+          
+		libModel.setVisibilityForRow(show, row);
+    }
+    
     //****************************************
     //     PRIVATE METHODS
     //****************************************
@@ -173,8 +199,8 @@ public class CatalogTable extends JTable {
     private void init() {
         
         // initialize data model
-        this.tableModel = new CatalogTableModel(this.tableOwner);
-        this.tableModel.addTableModelListener((TableModelListener)this.tableOwner);
+        this.tableModel = new CatalogTableModel(this.parent);
+        this.tableModel.addTableModelListener((TableModelListener)this.parent);
         setModel(this.tableModel);
         
         // set to monitor mouse clicks
@@ -192,34 +218,35 @@ public class CatalogTable extends JTable {
                     	if(!libModel.getLoadedStateForRow(row)){
                     		libModel.setLoadedStateForRow(true, row);
                     		EarthquakeCatalogPluginGUI gui;
-                    		gui = (EarthquakeCatalogPluginGUI)CatalogTable.this.tableOwner;
+                    		gui = (EarthquakeCatalogPluginGUI)CatalogTable.this.parent;
                     		gui.processTableSelectionChange();
                     		EQCatalog libCat = getSelectedValue();
                     		gui.setAnimationColor(libCat.getColor1(), libCat.getColor2());
                     	}
                     	EQCatalog libCat = getSelectedValue();
                     	//changing visibility of eq catalog on checkbox click
-                        if(libModel.getObjectAtRow(row).isDisplayed())
-                        {
-                        	if(libCat.getActors().get(0)!=null){
-                        	libCat.getActors().get(0).SetVisibility(0);
-                        	libCat.getActors().get(1).SetVisibility(0);
-                        	Info.getMainGUI().updateRenderWindow();
-                        	}
-                        }
-                        else
-                        {
-                        	if(libCat.getActors().get(0)!=null){
-                            	libCat.getActors().get(0).SetVisibility(1);
-                            	libCat.getActors().get(1).SetVisibility(1);
-                            	Info.getMainGUI().updateRenderWindow();
-                            	}
-                        }
-                        libModel.toggleVisibilityForRow(row);
+//                        if(libModel.getObjectAtRow(row).isDisplayed())
+//                        {
+//                        	if(libCat.getActors().get(0)!=null){
+//                        	libCat.getActors().get(0).SetVisibility(0);
+//                        	libCat.getActors().get(1).SetVisibility(0);
+//                        	Info.getMainGUI().updateRenderWindow();
+//                        	}
+//                        }
+//                        else
+//                        {
+//                        	if(libCat.getActors().get(0)!=null){
+//                            	libCat.getActors().get(0).SetVisibility(1);
+//                            	libCat.getActors().get(1).SetVisibility(1);
+//                            	Info.getMainGUI().updateRenderWindow();
+//                            	}
+//                        }
+//                        libModel.toggleVisibilityForRow(row);
+                    	setVisibility(libModel,libCat,row);
                     } 
                     else if (col == 1 || col == 2) {
                         	EarthquakeCatalogPluginGUI gui;
-                        	gui = (EarthquakeCatalogPluginGUI)CatalogTable.this.tableOwner;
+                        	gui = (EarthquakeCatalogPluginGUI)CatalogTable.this.parent;
                         	gui.switchToDisplayPanel();              
                     }
                 }
@@ -230,7 +257,7 @@ public class CatalogTable extends JTable {
         // button en/disabling.
         this.selModel = getSelectionModel();
         this.selModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.selModel.addListSelectionListener((ListSelectionListener)this.tableOwner);
+        this.selModel.addListSelectionListener((ListSelectionListener)this.parent);
         
         // visual set up
         this.setTableHeader(null);
@@ -246,7 +273,7 @@ public class CatalogTable extends JTable {
 
         TableColumn col1 = getColumnModel().getColumn(0);
         
-        if(tableOwner instanceof EarthquakeCatalogPluginGUI)
+        if(parent instanceof EarthquakeCatalogPluginGUI)
         {
         	TableColumn col2 = getColumnModel().getColumn(1);        
         	TableColumn col3 = getColumnModel().getColumn(2);
