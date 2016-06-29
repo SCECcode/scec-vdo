@@ -64,7 +64,7 @@ public class KeyFrame implements Comparable<KeyFrame> {
 	}
 	
 	public KeyFrame duplicate() {
-		KeyFrame key = new KeyFrame(getStartTime(), getState());
+		KeyFrame key = new KeyFrame(getStartTime(), getState().deepCopy());
 		// don't copy listeners, they will be set up when added to the key frame list
 		return key;
 	}

@@ -19,13 +19,13 @@ import javax.swing.SwingUtilities;
 
 import org.opensha.commons.util.ClassUtils;
 import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.AnimatablePlugin;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.timeline.AnimationTimeListener;
 import org.scec.vtk.timeline.KeyFrame;
 import org.scec.vtk.timeline.KeyFrameList;
-import org.scec.vtk.timeline.RangeAnimationListener;
 import org.scec.vtk.timeline.RangeKeyFrame;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.TimelinePluginChangeListener;
@@ -276,12 +276,16 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 		repaint();
 	}
 	
+	private static boolean isAnimatable(Plugin plugin) {
+		return plugin instanceof AnimatablePlugin && ((AnimatablePlugin)plugin).isAnimatable();
+	}
+	
 	private void addKey(double time, int pluginIndex, boolean forceVisibilityKey) {
 		Plugin plugin = timeline.getPluginAt(pluginIndex);
 		KeyFrame key;
 		if (!forceVisibilityKey && plugin instanceof StatefulPlugin) {
 			PluginState state = ((StatefulPlugin)plugin).getState().deepCopy();
-			if (plugin instanceof RangeAnimationListener) {
+			if (isAnimatable(plugin)) {
 				// can add a range or regular key
 				String durStr = JOptionPane.showInputDialog(
 						this, "Duration (min: "+minorTickInterval+", 0 for standard KeyFrame)", "1");
@@ -293,7 +297,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 						key = new KeyFrame(time, state);
 					} else {
 						Preconditions.checkState(duration > minorTickInterval);
-						key = new RangeKeyFrame(time, time+duration, state);
+						key = new RangeKeyFrame(time, time+duration, state, (AnimatablePlugin)plugin);
 					}
 				} catch (Exception e1) {
 					JOptionPane.showMessageDialog(this, "Could not parse duration: "+durStr,

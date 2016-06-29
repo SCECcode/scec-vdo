@@ -25,6 +25,8 @@ public class Timeline {
 	
 	private double maxTime = 15d;
 	
+	private boolean isLive = true; // can be set to false for external GUI tests;
+	
 	public Timeline() {
 		cameraKeys = new KeyFrameList();
 		cameraAnim = new CameraAnimator(cameraKeys);
@@ -99,6 +101,11 @@ public class Timeline {
 			KeyFrame cur = currentActivatedKeys.get(index);
 			KeyFrame newKey = keys.getCurrentFrame(time);
 			if (newKey != cur) {
+				if (cur instanceof RangeKeyFrame) {
+					RangeKeyFrame range = (RangeKeyFrame)cur;
+					if (!range.isEnded())
+						range.setRangeEnded();
+				}
 				// need to laod new key frame, otherwise do nothing
 				if (newKey != null) {
 					newKey.load();
@@ -109,7 +116,7 @@ public class Timeline {
 			}
 			if (newKey instanceof RangeKeyFrame) {
 				RangeKeyFrame range = (RangeKeyFrame)newKey;
-				double f = (range.getEndTime() - time)/range.getStartTime();
+				double f = (time - range.getStartTime())/range.getDuration();
 				if (newKey != cur) {
 					// just loaded
 					range.setRangeStarted();
@@ -131,7 +138,16 @@ public class Timeline {
 		fireAnimationTimeChanged(time);
 		
 		// finally update the render window
-		MainGUI.updateRenderWindow();
+		if (isLive)
+			MainGUI.updateRenderWindow();
+	}
+	
+	/**
+	 * Can be used to disable rendering for use debuging/testing GUI components outside of SCEC-VDO
+	 * @param isLive
+	 */
+	public void setLive(boolean isLive) {
+		this.isLive = isLive;
 	}
 	
 	public int getNumPlugins() {
