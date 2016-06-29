@@ -87,7 +87,7 @@ public class CueAnimator {
 					
 					rendering = true;
 					scene.SetModeToSequence();
-					scene.SetFrameRate(30); // TODO make selectable
+					scene.SetFrameRate(timeline.getFamerate());
 					
 					int[] renderSize = MainGUI.getRenderWindow().GetRenderWindow().GetSize();
 					renderWidth =  renderSize[0];
