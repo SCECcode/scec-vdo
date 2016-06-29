@@ -108,7 +108,6 @@ public class EarthquakeCatalogPluginState implements PluginState {
 
 	@Override
 	public void fromXML(Element stateEl) {
-		
 		 for ( Iterator i = stateEl.elementIterator( "EarthquakeCatalog" ); i.hasNext(); ) {
 	            Element e = (Element) i.next();
 	            dispName.add(e.attributeValue("dispName"));
@@ -122,10 +121,20 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	            
 	            // read the catalog file
 	            File file = new File(filePath.get(filePath.size()-1));
-	            System.out.println(file.exists());
 	            EQCatalog eq = new EQCatalog(parent, file, parent.getPluginActors());
-	            catalogs.add(eq);
-	            System.out.println(eq.getDisplayName());
+	            
+	            //add to table
+	            parent.getCatalogTable().addCatalog(eq);
+	            
+	            parent.getCatalogTable().setSelected(eq);
+	            int row = parent.getCatalogTable().tableModel.indexOf(eq);
+	            //parent.getCatalogTable().tableModel.setVisibilityForRow(true, row);
+	            if(!parent.getCatalogTable().tableModel.getLoadedStateForRow(row)){
+	            	parent.getCatalogTable().tableModel.setLoadedStateForRow(true, row);
+            		parent.processTableSelectionChange();
+            	}
+	            catalogs.add((EQCatalog) parent.getCatalogTable().tableModel.getObjectAtRow(row));
+	            //parent.getCatalogTable().setVisibility(parent.getCatalogTable().tableModel, (EQCatalog) parent.getCatalogTable().tableModel.getObjectAtRow(row), row);
 	        }
 	}
 	@Override
