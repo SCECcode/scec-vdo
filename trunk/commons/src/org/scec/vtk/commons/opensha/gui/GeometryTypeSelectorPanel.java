@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -21,6 +22,8 @@ import org.scec.vtk.commons.opensha.surfaces.events.GeometryGeneratorChangeListe
 import org.scec.vtk.commons.opensha.surfaces.events.GeometrySettingsChangeListener;
 import org.scec.vtk.commons.opensha.surfaces.events.GeometrySettingsChangedEvent;
 
+import com.google.common.base.Preconditions;
+
 public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 	
 	/**
@@ -33,7 +36,7 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 	private CardLayout cl = new CardLayout();
 	private JPanel cards = new JPanel(cl);
 	
-	private JComboBox selector;
+	private JComboBox<GeometryGenerator> selector;
 	
 	private ArrayList<GeometryGenerator> geomGens;
 	
@@ -42,7 +45,7 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 		
 		this.geomGens = geomGens;
 		
-		selector = new JComboBox(geomGens.toArray());
+		selector = new JComboBox<>(geomGens.toArray(new GeometryGenerator[0]));
 		
 		selector.addItemListener(this);
 		
@@ -58,7 +61,8 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 		this.add(topPanel, BorderLayout.NORTH);
 		
 		for (GeometryGenerator geomGen : geomGens) {
-			cards.add(new GriddedParameterListEditor(geomGen.getDisplayParams()), geomGen.toString());
+			String name = geomGen.toString();
+			cards.add(new GriddedParameterListEditor(geomGen.getDisplayParams()), name);
 		}
 		
 		cl.show(cards, selector.getSelectedItem().toString());
@@ -76,6 +80,11 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 	
 	public GeometryGenerator getSelectedGeomGen() {
 		return (GeometryGenerator)selector.getSelectedItem();
+	}
+	
+	public void setSelectedGeomGen(GeometryGenerator geomGen) {
+		Preconditions.checkState(geomGens.contains(geomGen));
+		selector.setSelectedItem(geomGen);
 	}
 	
 	public ArrayList<GeometryGenerator> getAllGeomGens() {

@@ -18,7 +18,7 @@ import javax.media.format.VideoFormat;
  */
 public class JpegImagesToMovie implements ControllerListener, DataSinkListener {
 
-	public boolean doIt(int width, int height, int frameRate, List<File> inFiles, MediaLocator outML) {
+	public boolean doIt(int width, int height, float frameRate, List<File> inFiles, MediaLocator outML) {
 		ImageDataSource ids = new ImageDataSource(width, height, frameRate, inFiles);
 
 		Processor p;
@@ -322,7 +322,7 @@ public class JpegImagesToMovie implements ControllerListener, DataSinkListener {
 
 		ImageSourceStream streams[];
 
-		ImageDataSource(int width, int height, int frameRate, List<File> images) {
+		ImageDataSource(int width, int height, float frameRate, List<File> images) {
 			streams = new ImageSourceStream[1];
 			streams[0] = new ImageSourceStream(width, height, frameRate, images);
 		}
@@ -392,7 +392,7 @@ public class JpegImagesToMovie implements ControllerListener, DataSinkListener {
 		int nextImage = 0;	// index of the next image to be read.
 		boolean ended = false;
 
-		public ImageSourceStream(int width, int height, int frameRate, List<File> images) {
+		public ImageSourceStream(int width, int height, float frameRate, List<File> images) {
 			this.width = width;
 			this.height = height;
 			this.images = images;

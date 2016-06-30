@@ -6,6 +6,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -16,8 +17,12 @@ import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.gui.ColorerPanel;
+import org.scec.vtk.plugins.AnimatableChangeListener;
+import org.scec.vtk.plugins.AnimatablePlugin;
 
-public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChangeListener {
+import com.google.common.base.Preconditions;
+
+public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChangeListener, AnimationListener {
 	
 	/**
 	 * 
@@ -29,10 +34,16 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 	private JPanel mainPanel;
 	
 	private HashMap<String, FaultAnimation> animMap;
+	private HashMap<String, AnimationPanel> animPanelMap;
 	
-	private JComboBox combo;
+	private JComboBox<String> combo;
 	
 	private ColorerPanel cp;
+	
+	private List<AnimatableChangeListener> animChangeListeners = new ArrayList<>();
+	
+	private AnimationPanel animPanel;
+	private AnimatablePlugin plugin;
 	
 	public MultiAnimPanel(ArrayList<FaultAnimation> anims, AnimationListener l, ColorerPanel cp) {
 		super(new BorderLayout());
@@ -43,24 +54,32 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 		mainPanel = new JPanel();
 		mainPanel.setLayout(cl);
 		
-		animMap = new HashMap<String, FaultAnimation>();
+		animMap = new HashMap<>();
+		animPanelMap = new HashMap<>();
 		
 		boolean isAnimColorerSelected = false;
 		for (FaultAnimation anim : anims) {
 			animMap.put(anim.getName(), anim);
-			mainPanel.add(new AnimationPanel(anim, l), anim.getName());
+			AnimationPanel animPanel = new AnimationPanel(anim);
+			animPanelMap.put(anim.getName(), animPanel);
+			animPanel.addAnimationListener(l);
+			animPanel.addAnimationListener(this);
+			mainPanel.add(animPanel, anim.getName());
 			if (anim.getFaultColorer() != null && cp.getSelectedColorer() == anim.getFaultColorer())
 				isAnimColorerSelected = true;
 		}
 		
-		combo = new JComboBox(animMap.keySet().toArray());
+		combo = new JComboBox<String>((animMap.keySet().toArray(new String[0])));
+		updateSelectedAnimPanel();
 		
-		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
-		topPanel.add(new JLabel("Animation: "));
-		topPanel.add(combo);
+		if (anims.size() > 1) {
+			JPanel topPanel = new JPanel();
+			topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+			topPanel.add(new JLabel("Animation: "));
+			topPanel.add(combo);
+			super.add(topPanel, BorderLayout.NORTH);
+		}
 		
-		super.add(topPanel, BorderLayout.NORTH);
 		super.add(mainPanel, BorderLayout.CENTER);
 		
 		combo.addItemListener(this);
@@ -80,11 +99,23 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 			cp.setSelectedColorer(anim.getFaultColorer());
 			anim.fireRangeChangeEvent();
 		}
+		updateSelectedAnimPanel();
 	}
 	
-	private FaultAnimation getSelectedAnim() {
+	public FaultAnimation getSelectedAnim() {
 		String name = (String)combo.getSelectedItem();
 		return animMap.get(name);
+	}
+	
+	private void updateSelectedAnimPanel() {
+		String name = (String)combo.getSelectedItem();
+		animPanel = animPanelMap.get(name);
+	}
+	
+	public void setSelectedAnim(FaultAnimation anim) {
+		Preconditions.checkState(animMap.containsKey(anim.getName()));
+		combo.setSelectedItem(anim.getName());
+		updateSelectedAnimPanel();
 	}
 
 	@Override
@@ -103,6 +134,58 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 				}
 			}
 		}
+	}
+	
+	private FractionalTimeAnimator animator;
+	
+	public void animationStarted() {
+		FaultAnimation anim = getSelectedAnim();
+		if (anim.getFaultColorer() != null) {
+			cp.setSelectedColorer(anim.getFaultColorer());
+			anim.fireRangeChangeEvent();
+		}
+		animator = new FractionalTimeAnimator(animPanel.getSlider(), animPanel.getTimeCalc());
+	}
+
+	public void animationEnded() {
+		animator = null;
+	}
+
+	public void animationTimeChanged(double fractionalTime) {
+		Preconditions.checkNotNull(animator,
+				"Animator is null! animationStarted() not called? Or animationEnded() called prematurely.");
+		animator.goToTime(fractionalTime);
+	}
+
+	public boolean isAnimatable() {
+		return getSelectedAnim().getNumSteps() > 0;
+	}
+	
+	public void addAnimatableChangeListener(AnimatableChangeListener l) {
+		animChangeListeners.add(l);
+	}
+
+	public void removeAnimatableChangeListener(AnimatableChangeListener l) {
+		animChangeListeners.remove(l);
+	}
+	
+	public void setPlugin(AnimatablePlugin plugin) {
+		this.plugin = plugin;
+	}
+
+	@Override
+	public void animationRangeChanged(FaultAnimation anim) {
+		animator = null;
+		
+		// fire animatable change event
+		boolean isAnimatable = isAnimatable();
+		for (AnimatableChangeListener l : animChangeListeners)
+			l.animatableChanged(plugin, isAnimatable);
+	}
+
+	@Override
+	public void animationStepChanged(FaultAnimation anim) {
+		// do nothing
 	}
 
 }
