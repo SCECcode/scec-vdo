@@ -30,6 +30,7 @@ import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.plugins.utils.components.FreezeButton;
 import org.scec.vtk.plugins.utils.components.PauseButton;
 import org.scec.vtk.plugins.utils.components.PlayButton;
+import org.scec.vtk.plugins.utils.components.RemoveKeyFramesButton;
 import org.scec.vtk.plugins.utils.components.RenderButton;
 import org.scec.vtk.plugins.utils.components.ShowButton;
 import org.scec.vtk.plugins.utils.components.StopButton;
@@ -414,6 +415,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 				"Create new camera position KeyFrame");
 		private KeyFrameButton camPauseKeyButton = new KeyFrameButton(TimelinePanel.cameraKeyPauseColor,
 				"Create new camera pause KeyFrame");
+		private RemoveKeyFramesButton removeButton;
 		
 		public CameraPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -423,6 +425,11 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			
 			camPauseKeyButton.addActionListener(this);
 			add(camPauseKeyButton);
+			
+			removeButton = new RemoveKeyFramesButton(this, "Remove All KeyFrames");
+			removeButton.setEnabled(true);
+			setButtonSize(removeButton, iconButtonSize);
+			add(removeButton);
 			
 			JLabel label = new JLabel("  Camera");
 			add(label);
@@ -435,6 +442,8 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 				tp.addCameraKey(time, false);
 			} else if (e.getSource() == camPauseKeyButton) {
 				tp.addCameraKey(time, true);
+			} else if (e.getSource() == removeButton) {
+				tp.clearCameraKeys();
 			}
 		}
 		
@@ -451,6 +460,8 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		private FreezeButton freezeButton;
 		private Icon frozenIcon;
 		private Icon unfrozenIcon;
+		
+		private RemoveKeyFramesButton removeButton;
 		
 		private KeyFrameButton visiblityOnButton = new KeyFrameButton(TimelinePanel.visibilityKeyOnColor,
 				"Create new visibility on KeyFrame");
@@ -481,6 +492,11 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			freezeButton.setIcon(unfrozenIcon);
 			setButtonSize(freezeButton, iconButtonSize);
 			add(freezeButton);
+			
+			removeButton = new RemoveKeyFramesButton(this, "Remove All KeyFrames");
+			removeButton.setEnabled(true);
+			setButtonSize(removeButton, iconButtonSize);
+			add(removeButton);
 			
 			normalKeyButton.addActionListener(this);
 			normalKeyButton.setEnabled(false);
@@ -549,6 +565,8 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 					freezeButton.setIcon(unfrozenIcon);
 				timeline.setFrozen(plugin, frozen);
 				tp.repaint();
+			} else if (e.getSource() == removeButton) {
+				tp.clearPluginKeys(plugin);
 			}
 		}
 
