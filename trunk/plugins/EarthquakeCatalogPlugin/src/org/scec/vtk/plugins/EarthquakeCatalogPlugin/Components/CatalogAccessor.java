@@ -181,7 +181,6 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
         }
         catch (Exception e) {
             log.debug("problem reading XML");
-            EarthquakeCatalogPluginGUI.status.setText(DataImport.ERROR_OBJECT_LOAD);
             return false;
         }
         return true;        
@@ -222,7 +221,6 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
         }
         catch (Exception e) {
             log.debug("problem reading binary data file");
-            EarthquakeCatalogPluginGUI.status.setText(DataImport.ERROR_OBJECT_LOAD);
             return false;
         }
         return true;
@@ -261,7 +259,6 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
         }
         catch (Exception e) {
             log.debug("problem writing binary data file");
-            EarthquakeCatalogPluginGUI.status.setText(DataImport.ERROR_FILE_WRITE);
             return false;
         }
         return true;
@@ -348,15 +345,7 @@ public abstract class CatalogAccessor extends AbstractDataAccessor {
         this.eq_nodal	    = null;
         this.eq_probability = null;
     }
-    
-    /**
-     * Sets the status message in this plugin's GUI.
-     * 
-     * @param message to set
-     */
-    protected void setStatus(String message) {
-    	EarthquakeCatalogPluginGUI.status.setText(message);
-    }
+
 
     /**
      * Copies events at given indices from a given catalog.

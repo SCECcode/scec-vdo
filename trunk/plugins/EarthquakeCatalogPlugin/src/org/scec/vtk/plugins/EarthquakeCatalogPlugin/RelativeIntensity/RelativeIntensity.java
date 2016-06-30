@@ -8,7 +8,6 @@ package org.scec.vtk.plugins.EarthquakeCatalogPlugin.RelativeIntensity;
 import java.awt.Component;
 
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
-import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.ShowGrid;
 
 
 public class RelativeIntensity {
@@ -25,7 +24,6 @@ public class RelativeIntensity {
 	private MolchanTools mt;
 	private boolean useMarginOfError;
 	//private double sMinMag, tMinMag;
-	private ShowGrid gridDisplay;
 	private boolean gridExists=false;
 	private boolean gridIsOn=false;
 	//private TarImage ti;
@@ -181,14 +179,6 @@ public class RelativeIntensity {
 			//gridDisplay.detach();
 			gridIsOn=false;
 		}
-	}
-
-	/**
-	 * Checks if the grid already exists
-	 * 
-	 */
-	public boolean gridExists() {
-		return (gridDisplay != null);
 	}
 	
 	/**
