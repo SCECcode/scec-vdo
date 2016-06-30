@@ -68,6 +68,14 @@ public class KeyFrameList implements Iterable<KeyFrame>, KeyFrameChangeListener 
 		fireKeyChanged(null);
 	}
 	
+	public synchronized void clear() {
+		startTimes = null;
+		keys.clear();
+		for (KeyFrame key : keys)
+			key.removeKeyFrameChangeListener(this);
+		fireKeyChanged(null);
+	}
+	
 	private void checkBuildStartTimes() {
 		if (startTimes == null) {
 			startTimes = new ArrayList<>();
