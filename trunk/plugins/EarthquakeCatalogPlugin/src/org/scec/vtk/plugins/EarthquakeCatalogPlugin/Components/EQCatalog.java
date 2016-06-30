@@ -192,7 +192,7 @@ public class EQCatalog extends CatalogAccessor {
 		this.color1        = Color.BLUE;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_1"));
 		this.color2        = Color.RED;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_2"));
 		transparency=100;
-		this.displayName="_New Comcat Catalog-"+ parent.getCatalogTable().getRowCount();
+		
 		setCrd(new ComcatResourcesDialog());
 		
 		//this.setMasterCatBranchGroup();
@@ -269,7 +269,6 @@ public class EQCatalog extends CatalogAccessor {
 		if (this.objectAttributes.getChild("display") != null) {
 			this.displayAttributes = this.objectAttributes.getChild("display");
 			if (!readDisplayAttributes()) {
-				EarthquakeCatalogPluginGUI.status.setText(DataImport.ERROR_OBJECT_LOAD);
 				return false;
 			}
 		}
@@ -555,10 +554,8 @@ public class EQCatalog extends CatalogAccessor {
 	 * status.
 	 */
 	public void updateDisplay() {
-		EarthquakeCatalogPluginGUI.status.setText("Updating catalog display...");
 		// kill and reinitialize branch group
 		load();
-		EarthquakeCatalogPluginGUI.status.setText("Status");
 	}
 
 	/**
@@ -588,14 +585,11 @@ public class EQCatalog extends CatalogAccessor {
 	 */
 	public void setInMemory(boolean load) {
 		if (load) {
-			EarthquakeCatalogPluginGUI.status.setText("Loading catalog...");
 			// importers may have already loaded data arrays; bypass by checking one
 			if (this.eq_id == null) {
 				readDataFile();
 			}
-			//initDisplay();
 			load();
-			EarthquakeCatalogPluginGUI.status.setText("Status");
 		} else {
 			if (isDisplayed()) {
 				unload();

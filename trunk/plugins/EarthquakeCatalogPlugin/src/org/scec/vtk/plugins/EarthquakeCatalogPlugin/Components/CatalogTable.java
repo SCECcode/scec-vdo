@@ -411,13 +411,8 @@ public class CatalogTable extends JTable {
             
             EQCatalog c = (EQCatalog)catalog;
             setEnabled(c.isInMemory());
-            
-            if (c.getGeometry() == EQCatalog.GEOMETRY_SPHERE &&
-                    c.getFocalDisplay() == EQCatalog.FOCAL_BALL) {
-                this.setIcon(FocalMechIcons.getSmallIcon(c.getFocalMech()));
-                this.setDisabledIcon(FocalMechIcons.getSmallIconDisabled(c.getFocalMech()));
-            } 
-            else if (c.getGeometry() == EQCatalog.GEOMETRY_SPHERE && 
+             
+           if (c.getGeometry() == EQCatalog.GEOMETRY_SPHERE && 
             		 c.getFocalDisplay() == EQCatalog.FOCAL_DISC){
             	this.colorDiscIcon.setColor(c.getDiscCompColor(),c.getDiscExtColor());
             	setIcon(this.colorDiscIcon);

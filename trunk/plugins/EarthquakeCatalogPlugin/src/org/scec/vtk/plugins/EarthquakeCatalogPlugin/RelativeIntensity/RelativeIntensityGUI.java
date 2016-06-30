@@ -305,11 +305,6 @@ public class RelativeIntensityGUI extends JPanel implements ActionListener, Focu
 	 */
 	private void makeRIMap(){
 
-		//If the grid exists, remove it so a new one can be made
-		if(parent.gridExists()){
-			parent.hideGrid();
-		}
-
 		//Assign EQ catalogs
 		EQCatalog source = getSourceCatalog();
 		EQCatalog target = getTargetCatalog();

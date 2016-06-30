@@ -585,111 +585,6 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		if (magMinSet && magMaxSet)
 			requestString += " -mag " + magMin + " " + magMax;
 
-		/*if (sourceNetPulldown.getSelectedIndex() == 0) {
-				if (eventTypePulldown.getSelectedIndex() != 0) {
-					requestString += " -type "; //default to all events
-					switch (eventTypePulldown.getSelectedIndex()) {
-					case 1: // Local
-						requestString += "le";
-						break;
-					case 2: // Regional
-						requestString += "re";
-						break;
-					case 3: // Teleseism
-						requestString += "ts";
-						break;
-					case 4: // Quarry Blast
-						requestString += "qb";
-						break;
-					case 5: // Nuclear Blast
-						requestString += "nt";
-						break;
-					case 6: // Sonic Boom
-						requestString += "sn";
-						break;
-					case 7: // Uknown Event
-						requestString += "uk";
-						break;
-					}
-				}
-			}*/
-
-		/*requestString += "";
-			switch (sourceNetPulldown.getSelectedIndex()) {
-			case 0: // SCSN (default)
-				requestString = "EVENT" +  requestString;
-				break;
-			case 1: // DS2000
-				requestString = "ALTLOC" +  requestString + " -source DS2000";
-				break;
-			case 2: // SHLK2003
-				requestString = "ALTLOC" +  requestString + " -source SHLK2003";
-				break;
-			case 3: // HAUK2003
-				requestString = "ALTLOC" +  requestString + " -source HAUK2003";
-				break;
-			case 4: // HAUK2004
-				requestString = "ALTLOC" +  requestString + " -source HAUK2004";
-				break;
-			}
-
-			requestString += " \n";
-
-			System.out.println(requestString);*/
-
-		/*File tempFile = null;
-			try {
-				tempFile = File.createTempFile("net_cat_temp", ".dat");
-
-				NetSourceParser parser;
-
-				if (sourceNetPulldown.getSelectedIndex() == 0)
-					parser = new STPParserEVENT();
-				else
-					parser = new STPParserALTLOC();
-
-				client.setMaxEvents(maxEvents);
-				client.setRequest(requestString);
-
-				NetSource eqdb = new NetSource(client, parser);
-
-				eqdb.writeToFile(tempFile);
-
-				if (tempFile != null) {
-					SourceCatalog newSource = new SourceCatalog(parent);
-					newSource.setName(defaultName);
-					if (newSource.processFile(tempFile, false)) {
-						ListModel list = parent.getSourceList().getModel();
-						SourceCatalog srcCat = (SourceCatalog)list.getElementAt(list.getSize()-1);
-						parent.generateNewCatalog(srcCat, false);
-						parent.getSourceList().deleteCatalog(srcCat, false);
-					}
-					tempFile.delete();
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-
-				//System.out.println(e.getClass());
-
-				if (e.getClass() == NullPointerException.class) {
-					String newTimeoutString = JOptionPane.showInputDialog(this,
-							"Your request timed out after " + client.getTimeoutSeconds() + " seconds.\n\n" +
-							"You may enter a longer timeout below, or enter\n" +
-							"'0' for no timeout (at your own risk, SCEC-VDO\n" + 
-							"may stop responding) or click cancel to use the\n" +
-							"existing timeout value.\n",
-						    "Timeout Error",
-						    JOptionPane.PLAIN_MESSAGE);
-					int newTimeout = -1;
-					try {
-						newTimeout = Integer.parseInt(newTimeoutString);
-						client.setTimeoutSeconds(newTimeout);
-					} catch (Exception e1) {
-					}
-				}
-				return false;
-			}*/
 		return true;
 	}
 
@@ -793,6 +688,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	public void getComcatData(double minDepth,double maxDepth,double minMagnitude,double maxMagnitude,double minLat,double maxLat,double minLon,double maxLon,String startTime,String endTime,int limit)
 	{
 		EventWebService service = null;
+		
 		//masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
 		try {
 			//call usgs service to obtain earthquake catalog
@@ -856,6 +752,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		EQCatalog cat = new EQCatalog(parent);
 		int index=0;
 		cat.initializeArrays(events.size());
+		cat.setDisplayName("_New-Comcat-Catalog-"+ parent.getCatalogTable().getRowCount());
 		for (JsonEvent event : events) {
 			//plot the earthquakes as spheres with radius as magnitude
 			//				double[] xForm = new double[3];
@@ -893,9 +790,9 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		obj.put(cat.getDisplayName(), catalogList);
 		writeToJSONFile(cat,obj);
 
-
+		
 		parent.getCatalogTable().addCatalog(cat);
-
+		
 		//setting minimas and maximas
 		if(events.size()!=0)
 		{
@@ -921,8 +818,9 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	private void writeToJSONFile(EQCatalog cat,JSONObject obj) {
 		//save in user's local directory
 		String destinationData = Prefs.getLibLoc() + File.separator + EarthquakeCatalogPlugin.dataStoreDir +
-				File.separator + "display" + File.separator + "data"+File.pathSeparator+
+				File.separator + "display" + File.separator + "data"+File.separator+
 				cat.getDisplayName()+"-"+(new Timestamp(System.currentTimeMillis())).getDateTime()+".json";
+		//System.out.println("dd:"+destinationData);
 		try (FileWriter file = new FileWriter(destinationData)) {
 			file.write(obj.toJSONString());
 			System.out.println("Successfully Copied JSON Object to File...");

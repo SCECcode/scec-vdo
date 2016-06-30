@@ -51,12 +51,12 @@ public class EarthquakeCatalogPluginState implements PluginState {
 		transparency.clear();
 		visibility.clear();
 		geometry.clear();
-		
+		catalogTypeIsComcat.clear();
 		for (EQCatalog eqc : parent.getCatalogs())
 		{
 			EQCatalog cat;
 			cat = eqc;
-			dispName.add(eqc.getSourceFile());
+			dispName.add(eqc.getDisplayName());
 			if(!eqc.getCatalogTypeIsComcat())
 				{
 				filePath.add( eqc.getAttributeFile().getPath());
@@ -145,7 +145,9 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	            else
 	            	{
 	            		eq = new EQCatalog(parent);
+	            		eq.setDisplayName(dispName.get(dispName.size()-1));
 	            		System.out.println(file.getPath());
+	            		System.out.println(eq.getDisplayName());
 	            		eq.getCrd().readFromComcatDataFile(eq, file.getPath());
 	            		
 	            	}
@@ -157,7 +159,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	            //parent.getCatalogTable().tableModel.setVisibilityForRow(true, row);
 	            if(!parent.getCatalogTable().tableModel.getLoadedStateForRow(row)){
 	            	parent.getCatalogTable().tableModel.setLoadedStateForRow(true, row);
-            		parent.processTableSelectionChange();
+            		//parent.processTableSelectionChange();
             	}
 	            eq=(EQCatalog) parent.getCatalogTable().tableModel.getObjectAtRow(row);
 	            catalogs.add(eq);
