@@ -654,6 +654,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				int i = pane.indexOfTabComponent(ButtonTabComponent.this);
 				if (i != -1 && loadedPlugins.containsKey(pluginID)) {
 					//System.out.println("*******PluginID to be removed: " + pluginID);
+					timeline.removePlugin(loadedPlugins.get(pluginID));
 					pane.remove(i);
 					mainMenu.updateMenu(pluginID);
 				}

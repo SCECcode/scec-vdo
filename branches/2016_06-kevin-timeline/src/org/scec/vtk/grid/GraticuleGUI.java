@@ -324,7 +324,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		cellMapper.SetInputConnection(pointSetToLabelHierarchyFilter.GetOutputPort());
 
 		ArrayList<GlobeBox> gbs = new ArrayList<GlobeBox>(4);
-		Color tempColor3f = new Color(255,255,255);
+		Color tempColor3f = new Color(102,102,102);
 		GlobeLayout gl = new GlobeLayout(upperLat, lowerLat, leftLong, rightLong, spacing);
 		gbs.add(new GlobeBox(gl, tempColor3f, true));
 		gbs.get(0).globeScene = globeMapper;
@@ -434,7 +434,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		this.displayPanel.add(this.firstsceneRadioButton);
 		this.displayPanel.add(this.secondsceneRadioButton);
 
-		this.colorChooser = new ColorWellButton(Color.WHITE, 16, 16);
+		this.colorChooser = new ColorWellButton(Color.DARK_GRAY, 16, 16);
 		colorChooser.setEnabled(true);
 		colorChooser.addActionListener(this);
 
