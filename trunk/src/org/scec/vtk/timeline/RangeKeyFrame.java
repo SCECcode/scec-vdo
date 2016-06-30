@@ -72,5 +72,10 @@ public class RangeKeyFrame extends KeyFrame {
 		// don't copy listeners, they will be set up when added to the key frame list
 		return key;
 	}
+	
+	@Override
+	public String toString() {
+		return "RangeKeyFrame("+getStartTime()+"-"+getEndTime()+"s)";
+	}
 
 }

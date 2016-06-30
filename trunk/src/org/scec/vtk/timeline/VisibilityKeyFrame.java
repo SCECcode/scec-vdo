@@ -31,5 +31,10 @@ public class VisibilityKeyFrame extends KeyFrame {
 		// don't copy listeners, they will be set up when added to the key frame list
 		return key;
 	}
+	
+	@Override
+	public String toString() {
+		return "VisibilityKeyFrame("+getStartTime()+"s, v="+isVisible()+")";
+	}
 
 }
