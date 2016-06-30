@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -117,6 +119,31 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		JPanel displayPanel = new JPanel();
 		displayPanel.setLayout(new BoxLayout(displayPanel,BoxLayout.Y_AXIS));
 		displayPanel.setBorder(BorderFactory.createEmptyBorder(0,10,0,10));
+		
+		this.drawingToolTable.addMouseListener(new MouseAdapter(){ 
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 1){
+					
+				}
+			    if (e.getClickCount() == 2) { //double click text in table to highlight it
+			      DrawingToolsTable target = (DrawingToolsTable)e.getSource();
+			      int i = target.getSelectedRow();
+			      vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+				  vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+				  
+				  double rbg[] = ((vtkActor) actorPin).GetProperty().GetColor();
+				  if(rbg[0] == 1.0 && rbg[1] == 1.0 && rbg[2] == 0.0){
+					  //make text back to white
+					  ((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,1.0); //sets color to white
+					  ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,1.0);
+				  }else{
+					  ((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,0.0); //sets color to yellow
+					  ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,0.0);
+				  }
+				  MainGUI.updateRenderWindow();
+			    }
+			  }
+		});
 
 		this.drawingToolSubPanelLowest = new JPanel(new BorderLayout(0,0));
 		this.drawingToolSubPanelLowest.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));    
