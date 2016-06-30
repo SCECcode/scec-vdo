@@ -96,10 +96,23 @@ public class Timeline {
 		pluginKeyFrameLists.get(index).removeKeyFrame(key);
 	}
 	
+	public synchronized void clearKeys(Plugin plugin) {
+		int index = indexForPlugin(plugin);
+		Preconditions.checkState(index >= 0 && index < plugins.size());
+		KeyFrameList keys = pluginKeyFrameLists.get(index);
+		keys.clear();
+	}
+	
+	public synchronized void clearCameraKeys() {
+		if (cameraKeys == null)
+			return;
+		cameraKeys.clear();
+	}
+	
 	public synchronized void addCameraKeyFrame(KeyFrame key) {
 		cameraKeys.addKeyFrame(key);
 	}
-	
+	       
 	public synchronized void removeCameraKeyFrame(KeyFrame key) {
 		cameraKeys.removeKeyFrame(key);
 	}

@@ -129,6 +129,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 				label.updateSize();
 			}
 		}
+		repaint();
 	}
 	
 	private Dimension calculateSize() {
@@ -375,6 +376,16 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	
 	void addPluginKey(Plugin plugin, KeyFrame key) {
 		timeline.addKeyFrame(plugin, key);
+		rebuildKeyLabels();
+	}
+	
+	void clearPluginKeys(Plugin plugin) {
+		timeline.clearKeys(plugin);
+		rebuildKeyLabels();
+	}
+	
+	void clearCameraKeys() {
+		timeline.clearCameraKeys();
 		rebuildKeyLabels();
 	}
 
