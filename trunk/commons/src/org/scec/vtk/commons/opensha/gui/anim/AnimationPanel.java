@@ -5,13 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -25,18 +21,14 @@ import javax.swing.event.ChangeListener;
 
 import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
+import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
-import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.StringParameter;
-import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
-import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.commons.util.ExceptionUtils;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
-import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
-import org.scec.vtk.commons.opensha.gui.EventManager;
-import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 
 public class AnimationPanel extends JPanel implements ChangeListener, ActionListener, FocusListener
 //, RenderStepListener // TODO RenderStepListener
@@ -102,17 +94,14 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 
 	private JTextField idField = new JTextField(6);
 
-	private AnimationListener l;
-	
-	
+	private List<AnimationListener> listeners = new ArrayList<>();
 
-	public AnimationPanel(FaultAnimation faultAnim, AnimationListener l) {
+	public AnimationPanel(FaultAnimation faultAnim) {
 		super.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
 //		Geo3dInfo.getRenderEnabledCanvas().addRenderStepListener(this); // TODO
 
 		this.faultAnim = faultAnim;
-		this.l = l;
 		faultAnim.addRangeChangeListener(this);
 
 		// anim params
@@ -192,6 +181,24 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			this.add(edit);
 		}
 	}
+	
+	public void addAnimationListener(AnimationListener l) {
+		listeners.add(l);
+	}
+	
+	public void removeAnimationListener(AnimationListener l) {
+		listeners.remove(l);
+	}
+	
+	private void fireAnimationRangeChanged(FaultAnimation anim) {
+		for (AnimationListener l : listeners)
+			l.animationRangeChanged(anim);
+	}
+	
+	private void fireAnimationStepChanged(FaultAnimation anim) {
+		for (AnimationListener l : listeners)
+			l.animationStepChanged(anim);
+	}
 
 	private void updateSliderRange() {
 		//		System.out.println("Updating slider range!");
@@ -202,7 +209,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		} else {
 			min = 0;
 		}
-		l.animationRangeChanged(faultAnim);
+		fireAnimationRangeChanged(faultAnim);
 		slider.setMinimum(min);
 		int val = slider.getValue();
 		slider.setMaximum(max);
@@ -251,7 +258,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 //			labelStr = labelStr.substring(0, 67)+"...";
 		label.setText(labelStr);
 		if (faultAnim.getNumSteps()>0)
-			l.animationStepChanged(faultAnim);
+			fireAnimationStepChanged(faultAnim);
 		enableAnimControls();
 	}
 
@@ -303,8 +310,12 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		nextButton.setEnabled(!playing && !isLast);
 		prevButton.setEnabled(!playing && !isFirst);
 	}
+	
+	JSlider getSlider() {
+		return slider;
+	}
 
-	private StepTimeCalculator getTimeCalc() {
+	StepTimeCalculator getTimeCalc() {
 		return getTimeCalc(durationParam.getValue());
 	}
 	

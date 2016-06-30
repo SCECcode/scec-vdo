@@ -1,7 +1,5 @@
 package org.scec.vtk.politicalBoundaries;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
@@ -17,29 +15,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.plaf.basic.BasicTabbedPaneUI.TabbedPaneLayout;
-import javax.swing.text.Segment;
-
 import org.scec.vtk.main.Info;
-import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 
-import javafx.scene.control.TabPane;
 import vtk.vtkActor;
 import vtk.vtkCellArray;
 import vtk.vtkDoubleArray;
-import vtk.vtkGeoAssignCoordinates;
-import vtk.vtkGraphMapper;
-import vtk.vtkGraphToPolyData;
 import vtk.vtkLine;
-import vtk.vtkMutableDirectedGraph;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
-import vtk.vtkPolyLine;
-import vtk.vtkSphericalTransform;
-import vtk.vtkTransformPolyDataFilter;
 
 public class PoliticalBoundariesGUI {
 	private JPanel politicalBoundaryMainPanel;
@@ -52,7 +39,9 @@ public class PoliticalBoundariesGUI {
 	private ArrayList<JCheckBox> upperCheckBoxButtons;
 	Dimension dMainPanel,dSubPanel;
 	public static vtkActor mainFocusReginActor = new vtkActor();
-	public PoliticalBoundariesGUI(){
+	PluginActors pluginActors = new PluginActors();
+	public PoliticalBoundariesGUI(PluginActors pluginActors){
+		this.pluginActors = pluginActors;
 		this.politicalBoundaryMainPanel = new JPanel(new GridLayout(0,1));
 
 		this.politicalBoundaryMainPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
@@ -109,7 +98,24 @@ public class PoliticalBoundariesGUI {
 
 	}
 
+	public void addPoliticalBoundaryActors()
+	{
+		ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
+		actorPoliticalBoundariesSegments = getPoliticalBoundaries();
 
+		if(actorPoliticalBoundariesSegments.size()>0){
+
+		for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
+			{
+				vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
+				pluginActors.addActor(pbActor);
+				//renderWindow.GetRenderer().AddActor(pbActor);
+				//if(j==4)
+				//updateRenderWindow(pbActor);
+			}
+
+		}
+	}
 
 	public void addPanelToMainPanel(JPanel panel)
 	{

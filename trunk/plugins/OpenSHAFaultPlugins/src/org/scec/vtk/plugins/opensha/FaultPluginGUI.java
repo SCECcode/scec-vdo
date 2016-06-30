@@ -53,10 +53,14 @@ public class FaultPluginGUI extends JSplitPane {
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	private FaultTreeBuilder builder;
 	private FaultTreeTable table;
 	private ColorerPanel colorPanel;         
+	private MultiAnimPanel animPanel;
 	private GeometryTypeSelectorPanel geomPanel;
 	private GriddedParameterListEditor faultParamEditor;
+	
+	private FaultPluginState state;
 	
 	public static ArrayList<GeometryGenerator> createDefaultGeomGens() {
 		ArrayList<GeometryGenerator> geomGens = new ArrayList<GeometryGenerator>();
@@ -141,6 +145,7 @@ public class FaultPluginGUI extends JSplitPane {
 		else
 			infoViewer = null;
 		
+		this.builder = builder;
 		table = new FaultTreeTable(builder, infoViewer);
 		if (faultAnims != null && faultAnims.size() > 0 && hasAnimColorer(faultAnims)) {
 			if (colorers == null)
@@ -200,16 +205,16 @@ public class FaultPluginGUI extends JSplitPane {
 				builder.getFaultParams(), defaultColor, pickhandler, lockUI, pickhandler);
 
 		if (faultAnims != null && faultAnims.size() > 0) {
-			if (faultAnims.size() == 1) {
-				FaultAnimation faultAnim = faultAnims.get(0);
-				AnimationPanel animPanel = new AnimationPanel(faultAnim, em);
-				settingsPanel.addTab("Animation", null,
-						wrapInScrollPane(animPanel), "Animate by "+faultAnim.getName());
-			} else {
-				MultiAnimPanel animPanel = new MultiAnimPanel(faultAnims, em, colorPanel);
+//			if (faultAnims.size() == 1) {
+//				FaultAnimation faultAnim = faultAnims.get(0);
+//				AnimationPanel animPanel = new AnimationPanel(faultAnim, em);
+//				settingsPanel.addTab("Animation", null,
+//						wrapInScrollPane(animPanel), "Animate by "+faultAnim.getName());
+//			} else {
+				animPanel = new MultiAnimPanel(faultAnims, em, colorPanel);
 				settingsPanel.addTab("Animation", null,
 						wrapInScrollPane(animPanel), "Fault Animations");
-			}
+//			}
 		}
 	}
 	
@@ -245,6 +250,35 @@ public class FaultPluginGUI extends JSplitPane {
 	
 	public GeometryTypeSelectorPanel getGeomSelect() {
 		return geomPanel;
+	}
+	
+	public FaultPluginState getState() {
+		if (state == null) {
+			state = new FaultPluginState(this);
+		}
+		return state;
+	}
+	
+	FaultTreeBuilder getBuilder() {
+		return builder;
+	}
+	
+	FaultTreeTable getFaultTreeTable() {
+		return table;
+	}
+	
+	ColorerPanel getColorPanel() {
+		return colorPanel;
+	}
+	
+	MultiAnimPanel getAnimPanel() {
+		return animPanel;
+	}
+	
+	ParameterList getFaultParams() {
+		if (faultParamEditor == null)
+			return null;
+		return faultParamEditor.getParameterList();
 	}
 
 }

@@ -1,6 +1,7 @@
 package org.scec.vtk.commons.opensha.tree;
 
 import java.awt.Color;
+import java.util.Objects;
 
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.tree.events.ColorChangeListener;
@@ -49,7 +50,7 @@ public class FaultSectionNode extends AbstractFaultNode {
 	@Override
 	public void setColor(Color color) {
 		super.setColor(color);
-		if (visibilityChangeListener != null)
+		if (visibilityChangeListener != null && Objects.equals(color, this.getColor()))
 			colorChangeListener.colorChanged(fault, color);
 	}
 

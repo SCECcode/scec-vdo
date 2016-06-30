@@ -53,7 +53,10 @@ import org.scec.vtk.grid.ViewRange;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginActorsChangeListener;
+import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
+import org.scec.vtk.timeline.Timeline;
+import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.plugins.Plugins;
@@ -124,6 +127,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private DrawingToolsPlugin drawingToolPlugin;
 	private double[] pointerPosition;
 	private ScriptingPlugin scriptingPluginObj;
+	
+	private Timeline timeline;
+	private TimelineGUI timelineGUI;
 
 	//default starting cam coordinates
 	double[] camCord = {7513.266063258975,
@@ -174,15 +180,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		renderWindow.setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 
-
-		renderWindow.GetRenderer().AddActor(tempGlobeScene);
-		renderWindow.GetRenderer().AddActor(pointActor);
-		renderWindow.GetRenderer().AddActor(labelActor);
-		//renderWindow.GetRenderWindow().SetPointSmoothing(35);
-		//renderWindow.GetRenderWindow().PointSmoothingOn();
+		timeline = new Timeline();
+		timelineGUI = new TimelineGUI(timeline);
+		mainMenu.setupTimeline(timeline, timelineGUI);
+		
 		addDefaultActors();
 
-		vtkCamera tmpCam = new vtkCamera();//.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera();
+		vtkCamera tmpCam = new vtkCamera();
 
 		tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
 		tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
@@ -233,7 +237,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 						tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
 						renderWindow.GetRenderer().SetActiveCamera(tmpCam);
 						renderWindow.GetRenderer().ResetCameraClippingRange();
-						//renderWindow.GetRenderer().Render();
 						renderWindow.repaint();				    		
 					}
 				}
@@ -285,6 +288,16 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		} catch (IOException ioe) {
 			throw new RuntimeException("Unable to get available plugins", ioe);
 		}
+		
+		
+	}
+	
+	public TimelineGUI getTimelineGUI() {
+		return timelineGUI;
+	}
+	
+	public Timeline getTimeline() {
+		return timeline;
 	}
 
 	public void setPointerPosition(double[] ds)
@@ -310,75 +323,45 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	private void addDefaultActors()
 	{
+		// render window locks up and won't repaint if there are zero actors. add a blank actor to prevent this
+		vtkActor blankActor = new vtkActor();
+		renderWindow.GetRenderer().AddActor(blankActor);
+		
 		// TODO these should be treated as plugins that are loaded by default, not hardcoded here
-		pbGUI = new PoliticalBoundariesGUI();
-
-		addPluginGUI("org.scec.vdo.politicalBoundaries","Political Boundaries",pbGUI.loadAllRegions());
-		ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-		actorPoliticalBoundariesSegments = pbGUI.getPoliticalBoundaries();
-
-		if(actorPoliticalBoundariesSegments.size()>0){
-
-		for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
-			{
-				vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
-				renderWindow.GetRenderer().AddActor(pbActor);
-				//if(j==4)
-				//updateRenderWindow(pbActor);
-			}
-
-		}
-
-		setViewRange(new ViewRange());
-		//draw Grid
-		GraticulePreset preset = GraticuleGUI.getGraticlePreset();
-		setViewRange(new ViewRange(preset.getLowerLatitude(), preset.getUpperLatitude(), preset.getLeftLongitude(), preset.getRightLongitude()));
-		gridGUI = new GraticuleGUI(gridPlugin);
-		addPluginGUI("org.scec.vdo.graticulePlugin","Graticule",gridGUI);
-		makeGrids(gridGUI.getGlobeBox(preset, 1.0),true); //Labels default to on
-
+		ArrayList<String> ids =new ArrayList<String>();
+		ArrayList<PluginInfo> pluginInfo = new ArrayList<PluginInfo>();
+		//politicalBoundaries
+		ids.add("org.scec.vdo.politicalBoundaries");
+		pluginInfo.add(new PluginInfo());
+		pluginInfo.get(0).setId(ids.get(0));
+		pluginInfo.get(0).setName("Political Boundaries");
+		pluginInfo.get(0).setShortName("Political Boundaries");
+		pluginInfo.get(0).setPluginClass("org.scec.vtk.politicalBoundaries.PoliticalBoundariesPlugin");	
+		mainMenu.availablePlugins.put(ids.get(0), pluginInfo.get(0));
+		mainMenu.activatePlugin(ids.get(0));
+		
+		//graticule
+		ids.add("org.scec.vdo.graticulePlugin");
+		pluginInfo.add(new PluginInfo());
+		pluginInfo.get(1).setId(ids.get(1));
+		pluginInfo.get(1).setName("Graticule");
+		pluginInfo.get(1).setShortName("Graticule");
+		pluginInfo.get(1).setPluginClass("org.scec.vtk.grid.GraticulePlugin");	
+		mainMenu.availablePlugins.put(ids.get(1), pluginInfo.get(1));
+		mainMenu.activatePlugin(ids.get(1));
 
 		//draw DrawingTools
-		PluginActors drawingActors = new PluginActors();
-		drawingActors.addActorsChangeListener(this);
-		drawingTool = new DrawingToolsGUI(drawingActors);
-		addPluginGUI("org.scec.vdo.drawingToolsPlugin","Drawing Tools",drawingTool);
-
+		ids.add("org.scec.vdo.drawingToolsPlugin");
+		pluginInfo.add(new PluginInfo());
+		pluginInfo.get(2).setId(ids.get(2));
+		pluginInfo.get(2).setName("Drawing Tools");
+		pluginInfo.get(2).setShortName("Drawing Tools");
+		pluginInfo.get(2).setPluginClass("org.scec.vtk.drawingTools.DrawingToolsPlugin");	
+		mainMenu.availablePlugins.put(ids.get(2), pluginInfo.get(2));
+		mainMenu.activatePlugin(ids.get(2));
 	}
 
-	public void makeGrids(ArrayList<GlobeBox> gbs, boolean labelsOn)
-	{
-
-		vtkPolyDataMapper tempMapper = (vtkPolyDataMapper) (gbs.get(0)).globeScene; 
-		tempGlobeScene.SetMapper(tempMapper);
-		if(gbs.get(0).getLineColor() != null)
-			tempGlobeScene.GetProperty().SetColor(Info.convertColor(gbs.get(0).getLineColor()));
-		else
-			tempGlobeScene.GetProperty().SetColor(1,1,1);
-		tempGlobeScene.Modified();
-		//renderWindow.GetRenderer().Render();
-
-		tempMapper.GetInput();
-
-
-		pointActor.SetMapper(gbs.get(0).ptMapper);
-		pointActor.Modified();
-		if(labelsOn)
-			labelActor.SetMapper(gbs.get(0).labelMapperLat);
-		else
-			labelActor.SetMapper(null);
-		labelActor.Modified();
-		renderWindow.GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
-	}
-	public void toggleGridDisplay() {
-		if (!this.gridDisplay) {
-			tempGlobeScene.VisibilityOn();
-			gridDisplay = true;
-		} else {
-			tempGlobeScene.VisibilityOff();
-			gridDisplay = false;
-		}
-	}
+	
 	public boolean getGridDisplayBool() {
 		return this.gridDisplay;
 	}
@@ -415,7 +398,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		return mainPanel;
 	}
 	//viewRange
-	private void setViewRange(ViewRange viewRange) {
+	public void setViewRange(ViewRange viewRange) {
 		this.viewRange = viewRange;
 	}
 
@@ -671,6 +654,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				int i = pane.indexOfTabComponent(ButtonTabComponent.this);
 				if (i != -1 && loadedPlugins.containsKey(pluginID)) {
 					//System.out.println("*******PluginID to be removed: " + pluginID);
+					timeline.removePlugin(loadedPlugins.get(pluginID));
 					pane.remove(i);
 					mainMenu.updateMenu(pluginID);
 				}
