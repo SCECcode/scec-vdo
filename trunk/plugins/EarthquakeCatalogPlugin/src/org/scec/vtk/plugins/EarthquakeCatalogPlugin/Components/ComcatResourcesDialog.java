@@ -7,6 +7,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,8 +29,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.opensha.commons.util.ExceptionUtils;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
+import org.scec.vtk.tools.Prefs;
+
+import com.sun.jmx.snmp.Timestamp;
+
 import gov.usgs.earthquake.event.EventQuery;
 import gov.usgs.earthquake.event.EventWebService;
 import gov.usgs.earthquake.event.Format;
@@ -65,6 +78,9 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	private JTextField dateEndField   = new JTextField("2016/04/02");
 	private JTextField maxEventsField = new JTextField();
 	private JButton importButton = new JButton("Import");
+
+	JSONObject obj = new JSONObject();
+	JSONArray catalogList = new JSONArray();
 	//explanations and references for each source catalog
 	//private JTextArea srcExplainText = new JTextArea();
 	//		private JLabel srcSCSNLabel = new JLabel();
@@ -98,7 +114,9 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 
 	//private ArrayList<vtkActor> masterEarthquakeCatalogBranchGroup; //to keep actors
 	private ArrayList<Earthquake> masterEarthquakeCatalogsList = new ArrayList<>(); //to keep earthquakeInfo in memory
-
+	public  ComcatResourcesDialog() {
+		
+	}
 
 	public  ComcatResourcesDialog(JPanel parent) {
 
@@ -674,6 +692,104 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			}*/
 		return true;
 	}
+
+	public void readFromComcatDataFile(EQCatalog cat, String filePath)
+	{
+		JSONParser parser = new JSONParser();
+		JSONArray jsonArray = null;
+		try {
+			JSONObject jsonObj = (JSONObject) parser.parse(new FileReader(
+					filePath));
+			jsonArray = (JSONArray) jsonObj.get(cat.getDisplayName());
+		} catch (IOException | org.json.simple.parser.ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(jsonArray!=null){
+		float min_dep =    5.0f;
+		float max_dep = -600.0f;
+		float min_mag =   10.0f;
+		float max_mag =    0.0f;
+		int index=0;
+		cat.initializeArrays(jsonArray.size());
+
+		Date startDate;
+		Date endDate;
+
+		JsonEvent je = new JsonEvent((JSONObject) jsonArray.get(0));
+		
+		startDate=je.getTime();
+		endDate=je.getTime();
+		double maxLat=je.getLatitude().doubleValue();
+		double minLat=je.getLatitude().doubleValue();
+		double maxLon=je.getLongitude().doubleValue();
+		double minLon=je.getLongitude().doubleValue();
+		for (Object o : jsonArray) {
+			JsonEvent event  = new JsonEvent((JSONObject) o);
+			double depth=0,mag=0,lon=0,lat=0;
+			if(event.getMag()!=null)
+				mag= event.getMag().doubleValue();
+			if(event.getDepth()!=null)
+				depth= -event.getDepth().doubleValue();
+			if(event.getLatitude()!=null)
+				lat= event.getLatitude().doubleValue();
+			if(event.getLongitude()!=null)
+				lon= event.getLongitude().doubleValue();
+			if(event.getDepth()!=null){
+				if (depth <= min_dep) min_dep = (float) depth;
+				if (depth >= max_dep) max_dep = (float) depth;
+			}
+			if(event.getMag()!=null){
+
+				if (mag <= min_mag) min_mag = (float) mag;
+				if (mag >= max_mag) max_mag = (float) mag;
+			}
+			
+			if (lat <= minLat) minLat = (float) lat;
+			if (lat >= maxLat) maxLat = (float) lat;
+			
+			if (lon <= minLon) minLon = (float) lon;
+			if (lon >= maxLon) maxLon = (float) lon;
+			
+			cat.setEq_depth(index++, (float)depth);
+			if(event.getTime().before(startDate))
+				startDate = event.getTime();
+
+			if(event.getTime().after(endDate))
+				endDate = event.getTime();
+			Earthquake eq = new Earthquake(-depth,mag,lat,lon, event.getTime(),jsonArray.size());
+			
+			if(!masterEarthquakeCatalogsList.contains(eq))
+				masterEarthquakeCatalogsList.add(eq);
+		}
+		//parent.getCatalogTable().addCatalog(cat);
+
+		//setting minimas and maximas
+		if(jsonArray.size()!=0)
+		{
+			//cat.setComcatQuery(query);
+			cat.setMaxMagnitude((float)max_mag);
+			cat.setMinMagnitude((float)min_mag);
+			cat.setMinDepth((float)min_dep);
+			cat.setMaxDepth((float)max_dep);
+			cat.setMinDate(startDate);
+			cat.setMaxDate(endDate);
+			cat.setNumEvents(jsonArray.size());
+			cat.setMaxLatitude((float)maxLat);
+			cat.setMinLatitude((float)minLat);
+			cat.setMaxLongitude((float)maxLon);
+			cat.setMinLongitude((float)minLon);
+			cat.addComcatEqList();
+		}
+		else{
+			System.out.println("no events found");
+		}
+		}
+		else{
+			System.out.println("no events found");
+		}
+	}
+
 	public void getComcatData(double minDepth,double maxDepth,double minMagnitude,double maxMagnitude,double minLat,double maxLat,double minLon,double maxLon,String startTime,String endTime,int limit)
 	{
 		EventWebService service = null;
@@ -754,42 +870,65 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			if(event.getLongitude()!=null)
 				lon= event.getLongitude().doubleValue();
 			if(event.getDepth()!=null){
-			if (depth <= min_dep) min_dep = (float) depth;
-			if (depth >= max_dep) max_dep = (float) depth;
+				if (depth <= min_dep) min_dep = (float) depth;
+				if (depth >= max_dep) max_dep = (float) depth;
 			}
 			if(event.getMag()!=null){
-				
-			if (mag <= min_mag) min_mag = (float) mag;
-			if (mag >= max_mag) max_mag = (float) mag;
+
+				if (mag <= min_mag) min_mag = (float) mag;
+				if (mag >= max_mag) max_mag = (float) mag;
 			}
-			
+
 			cat.setEq_depth(index++, (float)depth);
-			Earthquake eq = new Earthquake(-depth,mag,lat,lon, startTime, endTime,limit);
+
+			Earthquake eq = new Earthquake(-depth,mag,lat,lon, event.getTime(),limit);
 			if(!masterEarthquakeCatalogsList.contains(eq))
 				masterEarthquakeCatalogsList.add(eq);
+
+			//create a json object
+			catalogList.add(event);
+
 		}
+		//write json object to file
+		obj.put(cat.getDisplayName(), catalogList);
+		writeToJSONFile(cat,obj);
+
 
 		parent.getCatalogTable().addCatalog(cat);
 
 		//setting minimas and maximas
 		if(events.size()!=0)
 		{
-		cat.setComcatQuery(query);
-		cat.setMaxMagnitude((float)max_mag);
-		cat.setMinMagnitude((float)min_mag);
-		cat.setMinDepth((float)min_dep);
-		cat.setMaxDepth((float)max_dep);
-		cat.setMinDate(startDate);
-		cat.setMaxDate(endDate);
-		cat.setNumEvents(events.size());
-		cat.setMaxLatitude((float)maxLat);
-		cat.setMinLatitude((float)minLat);
-		cat.setMaxLongitude((float)maxLon);
-		cat.setMinLongitude((float)minLon);
-		cat.addComcatEqList();
+			cat.setComcatQuery(query);
+			cat.setMaxMagnitude((float)max_mag);
+			cat.setMinMagnitude((float)min_mag);
+			cat.setMinDepth((float)min_dep);
+			cat.setMaxDepth((float)max_dep);
+			cat.setMinDate(startDate);
+			cat.setMaxDate(endDate);
+			cat.setNumEvents(events.size());
+			cat.setMaxLatitude((float)maxLat);
+			cat.setMinLatitude((float)minLat);
+			cat.setMaxLongitude((float)maxLon);
+			cat.setMinLongitude((float)minLon);
+			cat.addComcatEqList();
 		}
 		else{
 			System.out.println("no events found. Please change your query");
+		}
+	}
+
+	private void writeToJSONFile(EQCatalog cat,JSONObject obj) {
+		//save in user's local directory
+		String destinationData = Prefs.getLibLoc() + File.separator + EarthquakeCatalogPlugin.dataStoreDir +
+				File.separator + "display" + File.separator + "data"+File.pathSeparator+
+				cat.getDisplayName()+"-"+(new Timestamp(System.currentTimeMillis())).getDateTime()+".json";
+		try (FileWriter file = new FileWriter(destinationData)) {
+			file.write(obj.toJSONString());
+			System.out.println("Successfully Copied JSON Object to File...");
+			cat.setComcatFilePathString(destinationData);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

@@ -1493,6 +1493,7 @@ MouseListener
 			int scale = dispProp_slider.getValue();
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			cat.setScaling(scale);
+			System.out.println(scale);
 			setMagnitudeScale(cat,scale);
 		}
 		if(src == transparencySlider)

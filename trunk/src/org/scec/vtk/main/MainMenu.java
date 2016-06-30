@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -265,9 +266,17 @@ public class MainMenu implements ActionListener, ItemListener{
 							availablePlugins.values());
 					for(PluginInfo pluginDescriptor:pluginDescriptors)
 					{
-						Plugin plugin = activePlugins.get(pluginDescriptor.getId());
-						if (plugin instanceof StatefulPlugin) {
-							((StatefulPlugin)plugin).getState().fromXML(root);
+
+						//System.out.println(pluginDescriptor.getName());
+						for ( Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
+							Element pluginNameElement = (Element) i.next();
+							activatePlugin(pluginDescriptor.getId());
+							Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+							if (plugin instanceof StatefulPlugin) {
+								((StatefulPlugin)plugin).getState().fromXML(pluginNameElement);
+
+								((StatefulPlugin)plugin).getState().load();
+							}
 						}
 					}
 				} catch (DocumentException e1) {
@@ -291,10 +300,12 @@ public class MainMenu implements ActionListener, ItemListener{
 						availablePlugins.values());
 				for(PluginInfo pluginDescriptor:pluginDescriptors)
 				{
+
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 					if (plugin instanceof StatefulPlugin) {
-						((StatefulPlugin)plugin).getState().toXML(root);
-						((StatefulPlugin)plugin).getState().load();
+						Element pluginNameElement = root.addElement(pluginDescriptor.getName().replace(' ','-'));
+						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
+
 					}
 				}
 				saveXMLFile(document, root, destinationData);
@@ -325,20 +336,20 @@ public class MainMenu implements ActionListener, ItemListener{
 			e.printStackTrace();
 		}
 
-//		// Pretty print the document to System.out
-//		OutputFormat format = OutputFormat.createPrettyPrint();
-//		try {
-//			writer = new XMLWriter( System.out, format );
-//		} catch (UnsupportedEncodingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		try {
-//			writer.write( document );
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		//		// Pretty print the document to System.out
+		//		OutputFormat format = OutputFormat.createPrettyPrint();
+		//		try {
+		//			writer = new XMLWriter( System.out, format );
+		//		} catch (UnsupportedEncodingException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
+		//		try {
+		//			writer.write( document );
+		//		} catch (IOException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
 	}
 
 
