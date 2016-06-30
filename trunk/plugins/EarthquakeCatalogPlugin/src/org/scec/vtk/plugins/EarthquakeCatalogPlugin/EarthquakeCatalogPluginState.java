@@ -8,6 +8,7 @@ import java.util.Iterator;
 import org.dom4j.Element;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.ComcatResourcesDialog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 
 public class EarthquakeCatalogPluginState implements PluginState {
@@ -21,6 +22,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	ArrayList<Integer> geometry;
 	private ArrayList<String> dispName;
 	private ArrayList<String> filePath;
+	private ArrayList<Boolean> catalogTypeIsComcat;
 
 
 	EarthquakeCatalogPluginState(EarthquakeCatalogPluginGUI parent)
@@ -36,6 +38,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 		transparency =new ArrayList<>();
 		visibility =new ArrayList<>();
 		geometry =new ArrayList<>();
+		catalogTypeIsComcat = new ArrayList<>();
 	}
 	void copyLatestCatalogDetials()
 	{
@@ -54,11 +57,21 @@ public class EarthquakeCatalogPluginState implements PluginState {
 			EQCatalog cat;
 			cat = eqc;
 			dispName.add(eqc.getSourceFile());
-			filePath.add( eqc.getAttributeFile().getPath());
+			if(!eqc.getCatalogTypeIsComcat())
+				{
+				filePath.add( eqc.getAttributeFile().getPath());
+				catalogTypeIsComcat.add(false);
+				}
+			else
+				{
+				filePath.add( eqc.getComcatFilePathString());
+				catalogTypeIsComcat.add(true);
+				}
 			//create local copies of display attributes
 			color1.add( cat.getColor1());
 			color2.add(cat.getColor2());
 			scaling.add(cat.getScaling());
+			System.out.println("scaling:"+cat.getScaling());
 			transparency.add(cat.getTransparency());
 			visibility.add(eqc.isDisplayed());
 			geometry.add(eqc.getGeometry());
@@ -95,7 +108,10 @@ public class EarthquakeCatalogPluginState implements PluginState {
 					.addAttribute( "scaling", Integer.toString(scaling.get(i)))
 					.addAttribute( "transparency", Integer.toString(transparency.get(i)))
 					.addAttribute( "geometry",Integer.toString(geometry.get(i)))
+					.addAttribute( "comcat",Boolean.toString(catalogTypeIsComcat.get(i)))
 					.addAttribute( "visibility",(visibility.get(i).toString()));
+			System.out.println(eqc.getColor1());
+    		System.out.println(eqc.getColor2());
 			i++;
 		}
 	}
@@ -118,11 +134,21 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	            transparency.add(Integer.parseInt(e.attributeValue("transparency")));
 	            geometry.add(Integer.parseInt(e.attributeValue("geometry")));
 	            visibility.add(Boolean.parseBoolean(e.attributeValue("visibility")));
+	            catalogTypeIsComcat.add(Boolean.parseBoolean(e.attributeValue("comcat")));
 	            
+	            System.out.println(e.attributeValue("filePath"));
 	            // read the catalog file
 	            File file = new File(filePath.get(filePath.size()-1));
-	            EQCatalog eq = new EQCatalog(parent, file, parent.getPluginActors());
-	            
+	            EQCatalog eq;
+	            if(!catalogTypeIsComcat.get(catalogTypeIsComcat.size()-1))
+	            	eq = new EQCatalog(parent, file, parent.getPluginActors());
+	            else
+	            	{
+	            		eq = new EQCatalog(parent);
+	            		System.out.println(file.getPath());
+	            		eq.getCrd().readFromComcatDataFile(eq, file.getPath());
+	            		
+	            	}
 	            //add to table
 	            parent.getCatalogTable().addCatalog(eq);
 	            
@@ -133,8 +159,10 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	            	parent.getCatalogTable().tableModel.setLoadedStateForRow(true, row);
             		parent.processTableSelectionChange();
             	}
-	            catalogs.add((EQCatalog) parent.getCatalogTable().tableModel.getObjectAtRow(row));
-	            //parent.getCatalogTable().setVisibility(parent.getCatalogTable().tableModel, (EQCatalog) parent.getCatalogTable().tableModel.getObjectAtRow(row), row);
+	            eq=(EQCatalog) parent.getCatalogTable().tableModel.getObjectAtRow(row);
+	            catalogs.add(eq);
+	            eq.setDisplayed(false);
+	            parent.getCatalogTable().setVisibility(parent.getCatalogTable().tableModel, eq, row);
 	        }
 	}
 	@Override

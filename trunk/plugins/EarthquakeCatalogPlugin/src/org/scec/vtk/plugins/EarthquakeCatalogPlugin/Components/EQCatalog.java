@@ -154,10 +154,13 @@ public class EQCatalog extends CatalogAccessor {
 
 	private boolean catalogTypeIsComcat = false;
 
-	private String comcatQueryString;
-
 	private EventQuery comcatQuery;
 
+	private String comcatFilePathString;
+
+	private ComcatResourcesDialog crd;
+	
+	
 
 	/**
 	 * Reconstructs an <code>EQCatalog</code> (display catalog) with a given parent
@@ -184,16 +187,14 @@ public class EQCatalog extends CatalogAccessor {
 		this.pluginActors = parent.getPluginActors();
 		this.parent = parent;
 		//initializing default values
-		this.geometry      = 0;//this.displayAttributes.getChild("geometry").getAttribute("value").getIntValue();
-		this.scaling       = 1;//this.displayAttributes.getChild("scaling").getAttribute("value").getIntValue();
-		//try { this.recentEQcoloring = this.displayAttributes.getChild("recentEQcoloring").getAttribute("value").getIntValue();} catch (Exception e) {/*System.out.println("Error reading RecentEQColor property");*/}
-		//this.focalMech     = this.displayAttributes.getChild("focal_mech").getAttribute("value").getIntValue();
-		//this.applyGradient = this.displayAttributes.getChild("colors").getAttribute("apply_gradient").getIntValue();
+		this.geometry      = 1;//this.displayAttributes.getChild("geometry").getAttribute("value").getIntValue();
+		this.scaling       = 4;//this.displayAttributes.getChild("scaling").getAttribute("value").getIntValue();
 		this.color1        = Color.BLUE;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_1"));
 		this.color2        = Color.RED;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_2"));
 		transparency=100;
 		this.displayName="_New Comcat Catalog-"+ parent.getCatalogTable().getRowCount();
-
+		setCrd(new ComcatResourcesDialog());
+		
 		//this.setMasterCatBranchGroup();
 	}
 
@@ -350,8 +351,13 @@ public class EQCatalog extends CatalogAccessor {
 	public void addComcatEqList()
 	{
 
-		eqList = ((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog().getAllEarthquakes();
-
+		if(((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog()!=null)
+			eqList = ((EarthquakeCatalogPluginGUI) parent).getComcatResourceDialog().getAllEarthquakes();
+		else
+		{
+			//loaded form json file
+			eqList = getCrd().getAllEarthquakes();
+		}
 		catalogTypeIsComcat = true;
 		geometry=0;
 		addPointsToBranchGroup(false,eqList);
@@ -521,7 +527,7 @@ public class EQCatalog extends CatalogAccessor {
 	private boolean readDisplayAttributes() {
 		try {
 			this.geometry      = this.displayAttributes.getChild("geometry").getAttribute("value").getIntValue();
-			this.scaling       = this.displayAttributes.getChild("scaling").getAttribute("value").getIntValue();
+			this.scaling       = 4;//this.displayAttributes.getChild("scaling").getAttribute("value").getIntValue();
 			try { this.recentEQcoloring = this.displayAttributes.getChild("recentEQcoloring").getAttribute("value").getIntValue();} catch (Exception e) {/*System.out.println("Error reading RecentEQColor property");*/}
 			this.focalMech     = this.displayAttributes.getChild("focal_mech").getAttribute("value").getIntValue();
 			this.applyGradient = this.displayAttributes.getChild("colors").getAttribute("apply_gradient").getIntValue();
@@ -791,7 +797,7 @@ public class EQCatalog extends CatalogAccessor {
 		if (scale >= 0)
 		{
 			this.scaling = scale;
-			this.displayAttributes.getChild("scaling").getAttribute("value").setValue(String.valueOf(scale));
+			//this.displayAttributes.getChild("scaling").getAttribute("value").setValue(String.valueOf(scale));
 			return true;
 		}
 		else
@@ -881,14 +887,13 @@ public class EQCatalog extends CatalogAccessor {
 
 	public void setComcatQuery(EventQuery query) {
 		// TODO Auto-generated method stub
-		comcatQueryString = query.toString();
 		comcatQuery = query;
 	}
 	public EventQuery getComcatQuery() {
 		// TODO Auto-generated method stub
 		return comcatQuery;
 	}
-	public boolean getCatalogType()
+	public boolean getCatalogTypeIsComcat()
 	{
 		//true then comcat else from cat file
 		return catalogTypeIsComcat;
@@ -897,6 +902,22 @@ public class EQCatalog extends CatalogAccessor {
 	public boolean isSphere() {
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	public String getComcatFilePathString() {
+		return comcatFilePathString;
+	}
+
+	public void setComcatFilePathString(String comcatFilePathString) {
+		this.comcatFilePathString = comcatFilePathString;
+	}
+
+	public ComcatResourcesDialog getCrd() {
+		return crd;
+	}
+
+	public void setCrd(ComcatResourcesDialog crd) {
+		this.crd = crd;
 	}
 }
 
