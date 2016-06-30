@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -26,9 +27,11 @@ import org.scec.vtk.plugins.AnimatablePlugin;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.StatefulPlugin;
+import org.scec.vtk.plugins.utils.components.FreezeButton;
 import org.scec.vtk.plugins.utils.components.PauseButton;
 import org.scec.vtk.plugins.utils.components.PlayButton;
 import org.scec.vtk.plugins.utils.components.RenderButton;
+import org.scec.vtk.plugins.utils.components.ShowButton;
 import org.scec.vtk.plugins.utils.components.StopButton;
 import org.scec.vtk.timeline.AnimationTimeListener;
 import org.scec.vtk.timeline.CueAnimator;
@@ -138,6 +141,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		button.setPreferredSize(size);
 		button.setSize(size);
 		button.setMaximumSize(size);
+		button.setMinimumSize(size);
 	}
 	
 	private static Dimension iconButtonSize = new Dimension(25, 25);
@@ -440,6 +444,14 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		
 		private Plugin plugin;
 		
+		private ShowButton displayButton;
+		private Icon displayedIcon;
+		private Icon hiddenIcon;
+		
+		private FreezeButton freezeButton;
+		private Icon frozenIcon;
+		private Icon unfrozenIcon;
+		
 		private KeyFrameButton visiblityOnButton = new KeyFrameButton(TimelinePanel.visibilityKeyOnColor,
 				"Create new visibility on KeyFrame");
 		private KeyFrameButton visiblityOffButton = new KeyFrameButton(TimelinePanel.visibilityKeyOffColor,
@@ -454,6 +466,21 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			
 			this.plugin = plugin;
+			
+			displayButton = new ShowButton(this, "Show/Hide entire plugin");
+			displayButton.setEnabled(true);
+			displayedIcon = displayButton.getIcon();
+			hiddenIcon = displayButton.getDisabledIcon();
+			setButtonSize(displayButton, iconButtonSize);
+			add(displayButton);
+			
+			freezeButton = new FreezeButton(this, "Freeze plugin to ignore KeyFrames until unfrozen");
+			freezeButton.setEnabled(true);
+			frozenIcon = freezeButton.getIcon();
+			unfrozenIcon = freezeButton.getDisabledIcon();
+			freezeButton.setIcon(unfrozenIcon);
+			setButtonSize(freezeButton, iconButtonSize);
+			add(freezeButton);
 			
 			normalKeyButton.addActionListener(this);
 			normalKeyButton.setEnabled(false);
@@ -486,7 +513,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		}
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public synchronized void actionPerformed(ActionEvent e) {
 			double time = tp.getRoundedTime(curTime);
 			if (e.getSource() == visiblityOnButton) {
 				tp.addPluginKey(plugin, new VisibilityKeyFrame(time, timeline.getActorsForPlugin(plugin), true));
@@ -504,6 +531,24 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 				double duration = tp.showDurationDialog(false);
 				if (duration > 0)
 					tp.addPluginKey(plugin, new RangeKeyFrame(time, time+duration, state, animPlugin));
+			} else if (e.getSource() == displayButton) {
+				// toggle
+				boolean displayed = !timeline.isDisplayed(plugin);
+				if (displayed)
+					displayButton.setIcon(displayedIcon);
+				else
+					displayButton.setIcon(hiddenIcon);
+				timeline.setDisplayed(plugin, displayed);
+				tp.repaint();
+			} else if (e.getSource() == freezeButton) {
+				// toggle
+				boolean frozen = !timeline.isFrozen(plugin);
+				if (frozen)
+					freezeButton.setIcon(frozenIcon);
+				else
+					freezeButton.setIcon(unfrozenIcon);
+				timeline.setFrozen(plugin, frozen);
+				tp.repaint();
 			}
 		}
 

@@ -19,6 +19,10 @@ public class Timeline {
 	private CameraAnimator cameraAnim;
 	
 	private List<Plugin> plugins;
+	// used to hide a plugin completely regardless of keyframes
+	private List<Boolean> pluginsDisplayed;
+	// used to freeze a plugin at it's current state, never activating another keyframe until unfrozen
+	private List<Boolean> pluginsFrozen;
 	private List<PluginActors> pluginActors;
 	private List<KeyFrameList> pluginKeyFrameLists;
 	private List<KeyFrame> currentActivatedKeys;
@@ -39,6 +43,8 @@ public class Timeline {
 		addAnimationTimeListener(cameraAnim);
 		
 		plugins = new ArrayList<>();
+		pluginsDisplayed = new ArrayList<>();
+		pluginsFrozen = new ArrayList<>();
 		pluginActors = new ArrayList<>();
 		pluginKeyFrameLists = new ArrayList<>();
 		currentActivatedKeys = new ArrayList<>();
@@ -50,6 +56,8 @@ public class Timeline {
 		Preconditions.checkNotNull(p);
 		Preconditions.checkNotNull(actors);
 		plugins.add(p);
+		pluginsDisplayed.add(true);
+		pluginsFrozen.add(false);
 		pluginActors.add(actors);
 		pluginKeyFrameLists.add(new KeyFrameList());
 		currentActivatedKeys.add(null);
@@ -60,6 +68,8 @@ public class Timeline {
 		int index = indexForPlugin(p);
 		Preconditions.checkState(index >= 0, "Plugin not found in timeline!");
 		plugins.remove(index);
+		pluginsDisplayed.remove(index);
+		pluginsFrozen.remove(index);
 		pluginActors.remove(index);
 		pluginKeyFrameLists.remove(index);
 		currentActivatedKeys.remove(index);
@@ -111,6 +121,9 @@ public class Timeline {
 		if (time < 0)
 			time = 0;
 		for (int index=0; index<plugins.size(); index++) {
+			if (pluginsFrozen.get(index) || !pluginsDisplayed.get(index))
+				// frozen or not currently displayed, skip
+				continue;
 			KeyFrameList keys = pluginKeyFrameLists.get(index);
 			KeyFrame cur = currentActivatedKeys.get(index);
 			KeyFrame newKey = keys.getCurrentFrame(time);
@@ -158,6 +171,48 @@ public class Timeline {
 		// finally update the render window
 		if (isLive)
 			MainGUI.updateRenderWindow();
+	}
+	
+	public void setDisplayed(Plugin plugin, boolean displayed) {
+		setDisplayed(indexForPlugin(plugin), displayed);
+	}
+	
+	public synchronized void setDisplayed(int index, boolean displayed) {
+		Preconditions.checkState(index >= 0 && index < plugins.size());
+		pluginsDisplayed.set(index, displayed);
+		currentActivatedKeys.set(index, null);
+		if (displayed)
+			pluginActors.get(index).visibilityOn();
+		else
+			pluginActors.get(index).visibilityOff();
+		MainGUI.updateRenderWindow();
+	}
+	
+	public boolean isDisplayed(Plugin plugin) {
+		return isDisplayed(indexForPlugin(plugin));
+	}
+	
+	public boolean isDisplayed(int index) {
+		Preconditions.checkState(index >= 0 && index < plugins.size());
+		return pluginsDisplayed.get(index);
+	}
+	
+	public void setFrozen(Plugin plugin, boolean frozen) {
+		setFrozen(indexForPlugin(plugin), frozen);
+	}
+	
+	public synchronized void setFrozen(int index, boolean frozen) {
+		Preconditions.checkState(index >= 0 && index < plugins.size());
+		pluginsFrozen.set(index, frozen);
+	}
+	
+	public boolean isFrozen(Plugin plugin) {
+		return isFrozen(indexForPlugin(plugin));
+	}
+	
+	public boolean isFrozen(int index) {
+		Preconditions.checkState(index >= 0 && index < plugins.size());
+		return pluginsFrozen.get(index);
 	}
 	
 	/**
