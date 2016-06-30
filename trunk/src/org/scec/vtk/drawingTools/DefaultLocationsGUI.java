@@ -1,6 +1,8 @@
  package org.scec.vtk.drawingTools;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,27 +12,30 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 import org.scec.vtk.main.Info;
-import org.scec.vtk.tools.actors.AppendActors;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.DBFReaderJGeom;
 import oracle.spatial.util.ShapefileReaderJGeom;
-import vtk.vtkActor;
-import vtk.vtkActor2D;
-import vtk.vtkObject;
-import vtk.vtkProp;
 
 
 
@@ -59,12 +64,14 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	
 	private DisplayAttributes displayAttributes;
 	private JPanel centerPanel = new JPanel();
+	private JFrame frame = new JFrame();
 	private JScrollPane defaultScrollPane = new JScrollPane(centerPanel);
 
 	private DrawingToolsTable drawingToolTable;
 	private DrawingToolsTableModel drawingTooltablemodel;
 	private int defaultLocationsStartIndex = 0;
 	private int popSize = 0;
+	private ArrayList<String> ccount = new ArrayList<String>();
 	
 	
 	public DefaultLocationsGUI(DrawingToolsGUI guiparent) {
@@ -132,17 +139,13 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		defaultLocationsStartIndex = this.drawingToolTable.getRowCount();
 		for (int i = 0; i < locations.size(); i++) {
 			DrawingTool tempLocation = locations.get(i);
-			//TODO: Some method that generates a list of acceptable cities to be drawn based on population
 			this.guiparent.addDrawingTool(tempLocation);//.addDrawingTool(tempLocation);
-			//ArrayList<DrawingTool> newObjects = new ArrayList<>();
-			//newObjects.add(tempLocation);
 			this.drawingToolTable.addDrawingTool(tempLocation);//newObjects);
 		}
 		Info.getMainGUI().updateRenderWindow();
 	}
 
 	private void removeBuiltInFiles(Vector<DrawingTool> locations) {
-		//System.out.println(defaultLocationsStartIndex);
 		if(locations!=null){
 			for(int i =0;i<this.drawingToolTable.getRowCount();i++)
 			{
@@ -260,10 +263,41 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		}
 		this.repaint();
 	}
-	
+	public void showPopUp()
+	{
+		MyDialogBox mdb = new MyDialogBox();
+		//mdb.toFront();
+		final JDialog frame = new JDialog(this.frame, "City Filter", true);
+		mdb.d = frame;
+		frame.getContentPane().add(mdb);
+		frame.pack();
+		frame.setVisible(true);
+		//frame.setSize(320, 100);
+		//frame.setLocation(200, 200);
+		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+		    @Override
+		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+		    	popSize = -1;
+		    }
+		});
+		mdb.d.setLocationRelativeTo(frame);
+		
+		
+	}
+	public void readPopInput(String input)
+	{
+		try{
+			popSize = Integer.parseInt(input);
+		}catch(NumberFormatException ex)
+		{
+			JOptionPane.showMessageDialog(null,
+				    "Please enter a number",
+				    "Number Format Exception",
+				    JOptionPane.ERROR_MESSAGE);
+		}
+	}
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
-		
 //		if(src == searchButton){
 //			searchCities(searchCity.getText());
 //		}
@@ -276,40 +310,21 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 						selectedInputFile = tempGroup.file.getAbsolutePath();
 						if(tempGroup.name.equals("CA Cities"))
 						{
-							String s = "";
-							int cancel = -1;
-							while(s.equals(""))
+							popSize = -1;
+							ccount.clear();
+							showPopUp();	
+							if(popSize != -1)
 							{
-								s = (String)JOptionPane.showInputDialog(
-	                                null,
-	                                "Enter Population Size to filter by:\n"
-	                                + "Default: 0",
-	                                "Population Filter",JOptionPane.PLAIN_MESSAGE,null,null, "0");
-							 	//Check if a string was returned
-								
-				            	if ((s != null) && (s.length() > 0)) {
-				            		try{
-				            			popSize = Integer.parseInt(s);
-				            			//TODO: there should be a method to filter locations
-				            		}catch(NumberFormatException ex)
-				            		{
-				            			JOptionPane.showMessageDialog(null,
-				            				    "Please enter a number",
-				            				    "Number Format Exception",
-				            				    JOptionPane.ERROR_MESSAGE);
-				            			s= "";
-				            		}
-				            		tempGroup.locations = loadBuiltInFiles();
-			            			String p = dataPath + "CA_Cities_population.txt";
-			            			//System.out.println(p);
-									//addBuiltInFiles(tempGroup.locations);
-			            			addFilteredFiles(tempGroup.locations,filterCitiesByPopulation(p,popSize));
-				            	}
-				            	else
-				            	{
-				            		tempGroup.checkbox.setSelected(false);
-				            		break;
-				            	}
+								tempGroup.locations = loadBuiltInFiles();
+		            			String p = dataPath + "CA_Cities_population.txt";
+		            			String c = dataPath + "CA_Cities_counties.txt";
+		            			ArrayList<String> temp = filterCitiesByCounty(c,ccount);
+		            			addFilteredFiles(tempGroup.locations,filterCitiesByPopulation(p,popSize,temp));
+							}
+							else
+							{
+								tempGroup.checkbox.setSelected(false);
+								popSize = -1;
 							}
 						}
 						else
@@ -317,14 +332,65 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							tempGroup.locations = loadBuiltInFiles();
 							addBuiltInFiles(tempGroup.locations);
 						}
-				//		System.out.println(tempGroup.name );
-					//	System.out.println(selectedInputFile );
 						
 					} else {
 						removeBuiltInFiles(tempGroup.locations);
 					}
 				}
 			}
+	}
+	private ArrayList<String> getCounties(String countyFile)
+	{
+		ArrayList<String> counties = new ArrayList<String>();
+		ArrayList<String> buff = new ArrayList<String>();
+		try {
+			Charset charset = Charset.forName("Cp1252");
+			buff = (ArrayList<String>)Files.readAllLines(Paths.get(countyFile), charset);
+			for(String s: buff)
+			{
+				if(s.substring(0, 1).contains("-"))
+				{
+					counties.add(s.substring(1));
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return counties;
+	}
+	private ArrayList<String> filterCitiesByCounty(String countyFile, ArrayList<String> counties)
+	{
+		ArrayList<String> filteredCities = new ArrayList<String>();
+		ArrayList<String> buff = new ArrayList<String>();
+		try {
+			Charset charset = Charset.forName("Cp1252");
+			buff = (ArrayList<String>)Files.readAllLines(Paths.get(countyFile), charset);
+			for(String s: counties)
+			{
+				String search = "-"+s;
+				boolean append = false;
+				for(String j: buff)
+				{
+					if(search.equals(j))
+					{
+						append = true;
+					}
+					if(j.contains("-") && !(search.equals(j)) && append)
+					{
+						break;
+					}
+					if(append && !(search.equals(j) && !j.contains("-")))
+					{
+						filteredCities.add(j);
+					}
+						
+				}
+				
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return filteredCities;
 	}
 	private void addFilteredFiles(Vector<DrawingTool> locations,ArrayList<String> cities) {
 		defaultLocationsStartIndex = this.drawingToolTable.getRowCount();
@@ -336,7 +402,6 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 				{
 					//System.out.println(cities.get(j) + " added");
 					DrawingTool tempLocation = locations.get(i);
-					//TODO: Some method that generates a list of acceptable cities to be drawn based on population
 					this.guiparent.addDrawingTool(tempLocation);//.addDrawingTool(tempLocation);
 					//ArrayList<DrawingTool> newObjects = new ArrayList<>();
 					//newObjects.add(tempLocation);
@@ -346,22 +411,25 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		}
 		Info.getMainGUI().updateRenderWindow();
 	}
-	private ArrayList<String> filterCitiesByPopulation(String popFile, int desiredPop)
+	private ArrayList<String> filterCitiesByPopulation(String popFile, int desiredPop, ArrayList<String> cities)
 	{
 		ArrayList<String> filteredCities = new ArrayList<String>();
 		ArrayList<String> buff = new ArrayList<String>();
 		try {
 			Charset charset = Charset.forName("Cp1252");
 			buff = (ArrayList<String>)Files.readAllLines(Paths.get(popFile), charset);
-			for(int i = 0; i < buff.size(); i+=2)
+			for(String s: cities)
 			{
-				if(Integer.parseInt(buff.get(i+1)) >= desiredPop)
+				for(int i = 0; i < buff.size(); i+=2)
 				{
-					filteredCities.add(buff.get(i).trim());
+					if(Integer.parseInt(buff.get(i+1)) >= desiredPop && buff.get(i).trim().equals(s))
+					{
+						filteredCities.add(buff.get(i).trim());
+					}
 				}
 			}
+			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -373,5 +441,98 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		public String name			= null;
 		public File file			= null;
 		public JCheckBox checkbox	= null;
+	}
+	class MyDialogBox extends JPanel {
+		private DefaultListModel dlm;
+		private JList jl;
+		private JDialog d; //reference to parent dialog
+		private ArrayList<String> counties = new ArrayList<String>();
+		MyDialogBox() {
+			counties = getCounties(dataPath + "CA_Cities_counties.txt");
+			Collections.sort(counties);
+			//super("");
+			//setSize(320, 200);
+			//setLocation(200, 200);
+			JPanel jp = new JPanel();
+			jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+			
+			// fist row
+			JPanel aPanel = new JPanel();
+			aPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+			JLabel sizeLabel = new JLabel("Show all cities with pop. > than:");
+			aPanel.add(sizeLabel);
+			final JTextField sizeText= new JTextField("0", 12);
+			aPanel.add(sizeText);
+			
+			// second row
+			JPanel bPanel = new JPanel();
+			bPanel.setLayout(new BoxLayout(bPanel, BoxLayout.PAGE_AXIS));
+			JLabel filterLabel = new JLabel("Counties: Default = All Counties");
+			bPanel.add(filterLabel);
+			
+			dlm = new DefaultListModel();
+			for(String s: counties)
+			{
+				dlm.addElement(s);
+			}
+			jl = new JList(dlm);
+			JScrollPane scroll = new JScrollPane(jl);
+			scroll.setPreferredSize(new Dimension(250,250));
+			bPanel.add(scroll);
+			
+			// third row
+			JButton okButton = new  JButton("Ok");
+			okButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent ae){
+					try{
+						readPopInput(sizeText.getText());
+						ListSelectionModel lsm = jl.getSelectionModel();
+						int minIndex = lsm.getMinSelectionIndex();
+				        int maxIndex = lsm.getMaxSelectionIndex();
+				        boolean atLeastOne = false;
+				        for (int i = minIndex; i <= maxIndex; i++) {
+				            if (lsm.isSelectedIndex(i)) {
+				            	atLeastOne = true;
+				            	ccount.add(counties.get(i));
+				                //System.out.println(counties.get(i) + " selected");
+				            }
+				        }
+				        if(!atLeastOne)
+				        {
+				        	for(String s: counties)
+				        		ccount.add(s);
+				        }
+						d.dispose();
+					}
+					catch(NumberFormatException e){
+						JOptionPane.showMessageDialog(null,
+            				    "Please enter a number",
+            				    "Number Format Exception",
+            				    JOptionPane.ERROR_MESSAGE);
+						sizeText.setText("");
+					}
+				}		
+			});
+			
+			JButton cancelButton = new  JButton("Cancel");
+			cancelButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent aa){
+					popSize = -1;
+					d.dispose();
+				}
+			});
+
+			JPanel okPanel = new JPanel();
+			okPanel.setLayout(new FlowLayout(FlowLayout.CENTER));		
+			okPanel.add(okButton);
+			okPanel.add(cancelButton);
+
+			//add add add 
+			jp.add(aPanel);
+			jp.add(bPanel);
+			jp.add(okPanel);
+			add(jp);
+			setVisible(true);
+		}
 	}
 }

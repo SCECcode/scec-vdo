@@ -1,0 +1,539 @@
+-Contra Costa County
+Antioch
+Brentwood
+Clayton
+Concord
+Danville
+El Cerrito
+Hercules
+Lafayette
+Martinez
+Moraga
+Oakley
+Orinda
+Pinole
+Pittsburg
+Pleasant Hill
+Richmond
+San Pablo
+San Ramon
+Walnut Creek
+-San Bernardino County
+Adelanto
+Apple Valley
+Barstow
+Big Bear Lake
+Chino
+Chino Hills
+Colton
+Fontana
+Grand Terrace
+Hesperia
+Highland
+Loma Linda
+Montclair
+Needles
+Ontario
+Rancho Cucamonga
+Redlands
+Rialto
+San Bernardino
+Twentynine Palms
+Upland
+Victorville
+Yucaipa
+Yucca Valley
+-San Diego County
+Carlsbad
+Chula Vista
+Coronado
+Del Mar
+El Cajon
+Encinitas
+Escondido
+Imperial Beach
+La Mesa
+Lemon Grove
+National City
+Oceanside
+Poway
+San Diego
+San Marcos
+Santee
+Solana Beach
+Vista
+-Colusa County
+Colusa
+Williams
+-Yuba County
+Marysville
+Wheatland
+-Tuolumne County
+Sonora
+-Trinity County
+-Imperial County
+Brawley
+Calexico
+Calipatria
+El Centro
+Holtville
+Imperial
+Westmorland
+-Calaveras County
+Angels Camp
+-Nevada County
+Grass Valley
+Nevada City
+Truckee
+-Plumas County
+Portola
+-Alpine County
+-Madera County
+Chowchilla
+Madera
+-Butte County
+Biggs
+Chico
+Gridley
+Oroville
+Paradise
+-Del Norte County
+Crescent City
+-Lake County
+Clearlake
+Lakeport
+-Marin County
+Belvedere
+Corte Madera
+Fairfax
+Larkspur
+Mill Valley
+Novato
+Ross
+San Anselmo
+San Rafael
+Sausalito
+Tiburon
+-Sierra County
+Loyalton
+-San Francisco County
+San Francisco
+-Napa County
+American Canyon
+Calistoga
+Napa
+St Helena
+Yountville
+-Fresno County
+Clovis
+Coalinga
+Firebaugh
+Fowler
+Fresno
+Huron
+Kerman
+Kingsburg
+Mendota
+Orange Cove
+Parlier
+Reedley
+Sanger
+Selma
+-Mariposa County
+-Modoc County
+Alturas
+-Santa Cruz County
+Capitola
+Santa Cruz
+Scotts Valley
+Watsonville
+-Alameda County
+Alameda
+Albany
+Berkeley
+Dublin
+Emeryville
+Fremont
+Hayward
+Livermore
+Newark
+Oakland
+Piedmont
+Pleasanton
+San Leandro
+Union City
+-Lassen County
+Susanville
+-Glenn County
+Orland
+Willows
+-Sonoma County
+Cloverdale
+Cotati
+Healdsburg
+Petaluma
+Rohnert Park
+Santa Rosa
+Sebastopol
+Sonoma 
+Windsor
+-Mono County
+Mammoth Lakes
+-Yolo County
+Davis
+West Sacramento
+Winters
+Woodland
+-Kern County
+Arvin
+Bakersfield
+California City
+Delano
+Maricopa
+Mcfarland
+Ridgecrest
+Shafter
+Taft
+Tehachapi
+Wasco
+-Orange County
+Aliso Viejo
+Anaheim
+Brea
+Buena Park
+Costa Mesa
+Cypress
+Dana Point
+Fountain Valley
+Fullerton
+Garden Grove
+Huntington Beach
+Irvine
+Laguna Beach
+Laguna Hills
+Laguna Niguel
+Laguna Woods
+La Habra
+Lake Forest
+La Palma
+Los Alamitos
+Mission Viejo
+Newport Beach
+Orange
+Placentia
+Rancho Santa Margarita
+San Clemente
+San Juan Capistrano
+Santa Ana
+Seal Beach
+Stanton
+Tustin
+Villa Park
+Westminster
+Yorba Linda
+-Humboldt County
+Arcata
+Blue Lake
+Eureka
+Ferndale
+Fortuna
+Rio Dell
+Trinidad
+-Tehama County
+Corning
+Red Bluff
+Tehama
+-Placer County
+Auburn
+Colfax
+Lincoln
+Loomis
+Rocklin
+Roseville
+-Sutter County
+Live Oak
+Yuba City
+-San Mateo County
+Atherton
+Belmont
+Brisbane
+Burlingame
+Colma
+Daly City
+East Palo Alto
+Foster City
+Half Moon Bay
+Hillsborough
+Menlo Park
+Millbrae
+Pacifica
+Portola Valley
+Redwood City
+San Bruno
+San Carlos
+San Mateo
+South San Francisco
+Woodside
+-Inyo County
+Bishop
+-Shasta County
+Anderson
+Redding
+Shasta Lake
+-Santa Clara County
+Campbell
+Cupertino
+Gilroy
+Los Altos
+Los Altos Hills
+Los Gatos
+Milpitas
+Monte Sereno
+Morgan Hill
+Mountain View
+Palo Alto
+San Jose
+Santa Clara
+Saratoga
+Sunnyvale
+-Mendocino County
+Fort Bragg
+Point Arena
+Ukiah
+Willits
+-Amador County
+Amador
+Ione
+Jackson
+Plymouth
+Sutter Creek
+-Monterey County
+Carmel-By-The-Sea
+Del Rey Oaks
+Gonzales
+Greenfield
+King City
+Marina
+Monterey
+Pacific Grove
+Salinas
+Sand City
+Seaside
+Soledad
+-Kings County
+Avenal
+Corcoran
+Hanford
+Lemoore
+-Siskiyou County
+Dorris
+Dunsmuir
+Etna
+Fort Jones
+Montague
+Mount Shasta
+Tulelake
+Weed
+Yreka
+-Solano County
+Benicia
+Dixon
+Fairfield
+Rio Vista
+Suisun City
+Vacaville
+Vallejo
+-San Joaquin County
+Escalon
+Lathrop
+Lodi
+Manteca
+Ripon
+Stockton
+Tracy
+-El Dorado County
+Placerville
+South Lake Tahoe
+-Santa Barbara County
+Buellton
+Carpinteria
+Goleta
+Guadalupe
+Lompoc
+Santa Barbara
+Santa Maria
+Solvang
+-Riverside County
+Banning
+Beaumont
+Blythe
+Calimesa
+Canyon Lake
+Cathedral City
+Coachella
+Corona
+Desert Hot Springs
+Eastvale
+Hemet
+Indian Wells
+Indio
+Jurupa Valley
+Lake Elsinore
+La Quinta
+Menifee
+Moreno Valley
+Murrieta
+Norco
+Palm Desert
+Palm Springs
+Perris
+Rancho Mirage
+Riverside
+San Jacinto
+Temecula
+Wildomar
+-Ventura County
+Camarillo
+Fillmore
+Moorpark
+Ojai
+Oxnard
+Port Hueneme
+Santa Paula
+Simi Valley
+Thousand Oaks
+Ventura
+-Sacramento County
+Citrus Heights
+Elk Grove
+Folsom
+Galt
+Isleton
+Rancho Cordova
+Sacramento
+-Merced County
+Atwater
+Dos Palos
+Gustine
+Livingston
+Los Banos
+Merced
+-San Luis Obispo County
+Arroyo Grande
+Atascadero
+El Paso De Robles
+Grover Beach
+Morro Bay
+Pismo Beach
+San Luis Obispo
+-Stanislaus County
+Ceres
+Hughson
+Modesto
+Newman
+Oakdale
+Patterson
+Riverbank
+Turlock
+Waterford
+-San Benito County
+Hollister
+San Juan Bautista
+-Tulare County
+Dinuba
+Exeter
+Farmersville
+Lindsay
+Porterville
+Tulare 
+Visalia
+Woodlake
+-Los Angeles County
+Agoura Hills
+Alhambra
+Arcadia
+Artesia
+Avalon
+Azusa
+Baldwin Park
+Bell
+Bellflower
+Bell Gardens
+Beverly Hills
+Bradbury
+Burbank
+Calabasas
+Carson
+Cerritos
+Claremont
+Commerce
+Compton
+Covina
+Cudahy
+Culver City
+Diamond Bar
+Downey
+Duarte
+El Monte
+El Segundo
+Gardena
+Glendale
+Glendora
+Hawaiian Gardens
+Hawthorne
+Hermosa Beach
+Hidden Hills
+Huntington Park
+Industry
+Inglewood
+Irwindale
+La Canada Flintridge
+La Habra Heights
+Lakewood
+La Mirada
+Lancaster
+La Puente
+La Verne
+Lawndale
+Lomita
+Long Beach
+Los Angeles
+Lynwood
+Malibu
+Manhattan Beach
+Maywood
+Monrovia
+Montebello
+Monterey Park
+Norwalk
+Palmdale
+Palos Verdes Estates
+Paramount
+Pasadena
+Pico Rivera
+Pomona
+Rancho Palos Verdes
+Redondo Beach
+Rolling Hills
+Rolling Hills Estates
+Rosemead
+San Dimas
+San Fernando
+San Gabriel
+San Marino
+Santa Clarita
+Santa Fe Springs
+Santa Monica
+Sierra Madre
+Signal Hill
+South El Monte
+South Gate
+South Pasadena
+Temple City
+Torrance
+Vernon
+Walnut
+West Covina
+West Hollywood
+Westlake Village
+Whittier
