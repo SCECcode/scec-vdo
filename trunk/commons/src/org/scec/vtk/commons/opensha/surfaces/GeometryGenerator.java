@@ -81,7 +81,9 @@ public abstract class GeometryGenerator implements Named {
 		if (actorList instanceof FaultSectionBundledActorList) {
 			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actorList;
 			FaultActorBundle bundle = bundleList.getBundle();
+//			System.out.println("Entering bundle synchronized block (updateColor)");
 			synchronized (bundle) {
+//				System.out.println("Inside bundle synchronized block (updateColor)");
 				vtkUnsignedCharArray colors = bundle.getColorArray();
 				int firstIndex = bundleList.getMyFirstPointIndex();
 				int lastIndex = firstIndex + bundleList.getMyNumPointsForColoring() - 1;
@@ -94,7 +96,9 @@ public abstract class GeometryGenerator implements Named {
 				}
 				colors.Modified();
 				bundle.getActor().Modified();
+//				System.out.println("Leaving bundle synchronized block (updateColor)");
 			}
+//			System.out.println("Left bundle synchronized block (updateColor)");
 			return true;
 		} else {
 			for (vtkActor actor : actorList)

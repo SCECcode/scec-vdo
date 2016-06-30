@@ -2,12 +2,14 @@ package org.scec.vtk.commons.opensha.surfaces;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.opensha.commons.data.Container2DImpl;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
@@ -36,28 +38,34 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 
 	private static final String LINE_SIZE_PARAM_NAME = "Line Size";
 	private DiscreteSizeParam lineSizeParam = new DiscreteSizeParam(LINE_SIZE_PARAM_NAME, 1d, 10d, 1d);
+	
+	private enum SurfaceType {
+		SOLID("All Lines"),
+		OUTLINE_ONLY("Outline Only"),
+		TRACE_ONLY("Trace Only");
+		
+		private String name;
+		private SurfaceType(String name) {
+			this.name = name;
+		}
+		
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
 
 	private static final String SURFACE_TYPE_PARAM_NAME = "Surface Type";
-	private static final String SURFACE_TYPE_SOLID = "All Lines";
-	private static final String SURFACE_TYPE_OUTLINE_ONLY = "Outline Only";
-	private static final String SURFACE_TYPE_TRACE_ONLY = "Trace Only";
-	private static final String SURFACE_TYPE_DEFAULT = SURFACE_TYPE_SOLID;
-	private StringParameter surfaceTypeParam;
-
-	private static ArrayList<String> getAllSurfaceTypes() {
-		ArrayList<String> surfaceTypes = new ArrayList<String>();
-		surfaceTypes.add(SURFACE_TYPE_SOLID);
-		surfaceTypes.add(SURFACE_TYPE_OUTLINE_ONLY);
-		surfaceTypes.add(SURFACE_TYPE_TRACE_ONLY);
-		return surfaceTypes;
-	}
+	private static final SurfaceType SURFACE_TYPE_DEFAULT = SurfaceType.SOLID;
+	private EnumParameter<SurfaceType> surfaceTypeParam;
 
 	public LineSurfaceGenerator() {
 		super(NAME);
 		
 		faultDisplayParams = new ParameterList();
 
-		surfaceTypeParam = new StringParameter(SURFACE_TYPE_PARAM_NAME, getAllSurfaceTypes(), SURFACE_TYPE_DEFAULT);
+		surfaceTypeParam = new EnumParameter<SurfaceType>(
+				SURFACE_TYPE_PARAM_NAME, EnumSet.allOf(SurfaceType.class), SURFACE_TYPE_DEFAULT, null);
 		faultDisplayParams.addParameter(surfaceTypeParam);
 		surfaceTypeParam.addParameterChangeListener(this);
 
@@ -108,9 +116,9 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		int cols = surface.getNumCols();
 		int rows = surface.getNumRows();
 		
-		String surfaceType = surfaceTypeParam.getValue();
-		boolean outlineOnly = surfaceType.equals(SURFACE_TYPE_OUTLINE_ONLY);
-		boolean traceOnly = surfaceType.equals(SURFACE_TYPE_TRACE_ONLY);
+		SurfaceType surfaceType = surfaceTypeParam.getValue();
+		boolean outlineOnly = surfaceType == SurfaceType.OUTLINE_ONLY;
+		boolean traceOnly = surfaceType == SurfaceType.TRACE_ONLY;
 		
 		List<double[]> points = new ArrayList<double[]>();
 

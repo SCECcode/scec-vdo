@@ -17,21 +17,21 @@ import org.scec.vtk.commons.opensha.tree.events.CustomColorSelectionListener;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 
 public class FaultTableRowModel implements RowModel, MouseListener {
-	
+
 	private static final String[] colNames = { "Color", "Visible" };
 	private static final Class<?>[] colClasses = { Color.class, Boolean.class };
-	
+
 	private CustomColorSelectionListener customColorListener;
-	
+
 	private FaultTreeTable table;
-	
+
 	private JFrame infoFrame;
 	private FaultSectionInfoViewier infoViewer;
-	
+
 	public FaultTableRowModel(FaultTreeTable table) {
 		this(table, null);
 	}
-	
+
 	public FaultTableRowModel(FaultTreeTable table, FaultSectionInfoViewier infoViewer) {
 		this.table = table;
 		this.infoViewer = infoViewer;
@@ -51,7 +51,7 @@ public class FaultTableRowModel implements RowModel, MouseListener {
 	public String getColumnName(int col) {
 		return colNames[col];
 	}
-	
+
 	public void setCustomColorListener(CustomColorSelectionListener customColorListener) {
 		this.customColorListener = customColorListener;
 	}
@@ -70,9 +70,9 @@ public class FaultTableRowModel implements RowModel, MouseListener {
 
 	@Override
 	public boolean isCellEditable(Object node, int col) {
-//		if (col == 1)
-			return true;
-//		return false;
+		//		if (col == 1)
+		return true;
+		//		return false;
 	}
 
 	@Override
@@ -88,10 +88,10 @@ public class FaultTableRowModel implements RowModel, MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent mouseevent) {
 		int col = table.columnAtPoint(mouseevent.getPoint());
-		
+
 		if (infoViewer != null && col == 0 && mouseevent.getClickCount() == 2) {
 			// double clicked on a fault
-			
+
 			int row = table.rowAtPoint(mouseevent.getPoint());
 			AbstractFaultNode node = table.nodeForRow(row);
 			if (node instanceof FaultSectionNode) {
@@ -110,7 +110,7 @@ public class FaultTableRowModel implements RowModel, MouseListener {
 					infoFrame.toFront();
 				}
 			}
-			
+
 		} else if (col == 1) { // color is col 1 now because it's with the table's numbering system
 			int LastRow = table.rowAtPoint(mouseevent.getPoint());
 			int rowCount = table.getSelectedRowCount();
@@ -119,22 +119,22 @@ public class FaultTableRowModel implements RowModel, MouseListener {
 			/*System.out.println("LastROW: "+LastRow);
 			System.out.println("rowCount: "+rowCount);
 			System.out.println("SelectedRow: "+selectedRow);*/
-			
+
 			SingleColorChooser chooser = new SingleColorChooser(table);
-			
+
 			Color newColor = chooser.getColor();
 			if (newColor != null) {
 				for(int i = selectedRow; i<=LastRow; i++)
 				{
-				AbstractFaultNode node = table.nodeForRow(i);
-				fireCustomColorSelectedEvent();
-				table.setValueAt(newColor, i, col);
-				node.setVisible((Boolean)true);
+					AbstractFaultNode node = table.nodeForRow(i);
+					fireCustomColorSelectedEvent();
+					table.setValueAt(newColor, i, col);
+					node.setVisible((Boolean)true);
 				}
 			}
 		}
 	}
-	
+
 	private void fireCustomColorSelectedEvent() {
 		if (customColorListener != null)
 			customColorListener.customColorSelected();

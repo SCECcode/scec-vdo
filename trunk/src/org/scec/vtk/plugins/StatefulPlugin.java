@@ -18,11 +18,5 @@ public interface StatefulPlugin extends Plugin
      */
     public PluginState getState();
     
-    /**
-     * Set the state of the plugin
-     * 
-     * setState() will always be called after Plugin.load()
-     */
-    public void setState(PluginState s);
 }
 

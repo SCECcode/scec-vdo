@@ -774,6 +774,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		//setting minimas and maximas
 		if(events.size()!=0)
 		{
+		cat.setComcatQuery(query);
 		cat.setMaxMagnitude((float)max_mag);
 		cat.setMinMagnitude((float)min_mag);
 		cat.setMinDepth((float)min_dep);
