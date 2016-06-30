@@ -3,6 +3,7 @@ package org.scec.vtk.timeline;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opensha.commons.util.ClassUtils;
 import org.scec.vtk.plugins.PluginState;
 
 import com.google.common.base.Preconditions;
@@ -67,6 +68,11 @@ public class KeyFrame implements Comparable<KeyFrame> {
 		KeyFrame key = new KeyFrame(getStartTime(), getState().deepCopy());
 		// don't copy listeners, they will be set up when added to the key frame list
 		return key;
+	}
+	
+	@Override
+	public String toString() {
+		return ClassUtils.getClassNameWithoutPackage(getClass())+"("+getStartTime()+"s)";
 	}
 
 }

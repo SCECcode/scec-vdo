@@ -36,5 +36,10 @@ public class CameraKeyFrame extends KeyFrame {
 	public KeyFrame duplicate() {
 		return new CameraKeyFrame(getStartTime(), getCam(), isPause());
 	}
+	
+	@Override
+	public String toString() {
+		return "CameraKeyFrame("+getStartTime()+"s, pause="+isPause()+")";
+	}
 
 }

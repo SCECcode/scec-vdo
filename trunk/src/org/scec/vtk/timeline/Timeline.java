@@ -3,6 +3,7 @@ package org.scec.vtk.timeline;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opensha.commons.util.ClassUtils;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
@@ -127,44 +128,50 @@ public class Timeline {
 			KeyFrameList keys = pluginKeyFrameLists.get(index);
 			KeyFrame cur = currentActivatedKeys.get(index);
 			KeyFrame newKey = keys.getCurrentFrame(time);
-			if (newKey != cur) {
-				if (D) System.out.println("New KeyFrame for plugin "+index+": "+newKey);
-				if (cur instanceof RangeKeyFrame) {
-					RangeKeyFrame range = (RangeKeyFrame)cur;
-					if (!range.isEnded())
-						range.setRangeEnded();
-				}
-				// need to laod new key frame, otherwise do nothing
-				if (newKey != null) {
-					if (D) System.out.println("Loading KeyFrame");
-					newKey.load();
-					if (!(newKey instanceof VisibilityKeyFrame)) {
-						if (D) System.out.println("Forcing visibility on");
-						pluginActors.get(index).visibilityOn();
+			try {
+				if (newKey != cur) {
+					if (D) System.out.println("New KeyFrame for plugin "+index+": "+newKey);
+					if (cur instanceof RangeKeyFrame) {
+						RangeKeyFrame range = (RangeKeyFrame)cur;
+						if (!range.isEnded())
+							range.setRangeEnded();
 					}
+					// need to laod new key frame, otherwise do nothing
+					if (newKey != null) {
+						if (D) System.out.println("Loading KeyFrame");
+						newKey.load();
+						if (!(newKey instanceof VisibilityKeyFrame)) {
+							if (D) System.out.println("Forcing visibility on");
+							pluginActors.get(index).visibilityOn();
+						}
+					}
+					currentActivatedKeys.set(index, newKey);
 				}
-				currentActivatedKeys.set(index, newKey);
-			}
-			if (newKey instanceof RangeKeyFrame) {
-				RangeKeyFrame range = (RangeKeyFrame)newKey;
-				double f = (time - range.getStartTime())/range.getDuration();
-				boolean previouslyEnded = range.isEnded();
-				boolean justLoaded = newKey != cur;
-				boolean currentlyDone = f >= 1;
-				if (justLoaded || (!currentlyDone && previouslyEnded)) {
-					// just loaded, or finished previously and we're restarting
-					range.setRangeStarted();
-				}
-				if (currentlyDone) {
-					// we're done
-					if (!previouslyEnded) {
-						// only fire new time if done previously
+				if (newKey instanceof RangeKeyFrame) {
+					RangeKeyFrame range = (RangeKeyFrame)newKey;
+					double f = (time - range.getStartTime())/range.getDuration();
+					boolean previouslyEnded = range.isEnded();
+					boolean justLoaded = newKey != cur;
+					boolean currentlyDone = f >= 1;
+					if (justLoaded || (!currentlyDone && previouslyEnded)) {
+						// just loaded, or finished previously and we're restarting
+						range.setRangeStarted();
+					}
+					if (currentlyDone) {
+						// we're done
+						if (!previouslyEnded) {
+							// only fire new time if done previously
+							range.setRangeTime(f);
+							range.setRangeEnded();
+						}
+					} else {
 						range.setRangeTime(f);
-						range.setRangeEnded();
 					}
-				} else {
-					range.setRangeTime(f);
 				}
+			} catch (Exception e) {
+				// don't die on an exception from an individual plugin, continue
+				System.err.println("WARNING: Error activating KeyFrame (new: "+newKey+", prev: "+cur+")");
+				e.printStackTrace();
 			}
 		}
 		// notify any listeners of time change
