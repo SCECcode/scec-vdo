@@ -69,6 +69,9 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	static final int halfKeyHeight = keyHeight/2;
 	static final int halfPluginHeight = heightPerPlugin/2;
 	
+	private static final Color pluginHiddenColor = KeyFrameLabel.saturate(Color.LIGHT_GRAY);
+	private static final Color pluginFrozenColor = KeyFrameLabel.saturate(KeyFrameLabel.saturate(Color.CYAN));
+	
 	static final Color keyOutlineColor = Color.BLACK;
 	static final Color keyOutlineSelectedColor = Color.BLACK;
 	
@@ -160,12 +163,6 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 		int panelHeight = getHeight();
 		int panelWidth = getWidth();
 		
-		double curMaxTime = getCurrentTotalTime();
-		
-		// draw header
-		drawTicks(g, minorTickInterval, minorTickHeight, panelWidth, panelHeight, curMaxTime, false);
-		drawTicks(g, majorTickInterval, majorTickHeight, panelWidth, panelHeight, curMaxTime, true);
-		
 		int y = headerHeight;
 		
 		g.setColor(pluginDividerColor);
@@ -176,10 +173,23 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 		g.drawLine(0, y, panelWidth, y);
 		
 		for (int index=0; index < timeline.getNumPlugins(); index++) {
-			
+			if (!timeline.isDisplayed(index)) {
+				g.setColor(pluginHiddenColor);
+				g.fillRect(0, y+1, panelWidth, heightPerPlugin-1);
+				g.setColor(pluginDividerColor);
+			} else if (timeline.isFrozen(index)) {
+				g.setColor(pluginFrozenColor);
+				g.fillRect(0, y+1, panelWidth, heightPerPlugin-1);
+				g.setColor(pluginDividerColor);
+			}
 			y += heightPerPlugin;
 			g.drawLine(0, y, panelWidth, y);
 		}
+		
+		// draw header
+		double curMaxTime = getCurrentTotalTime();
+		drawTicks(g, minorTickInterval, minorTickHeight, panelWidth, panelHeight, curMaxTime, false);
+		drawTicks(g, majorTickInterval, majorTickHeight, panelWidth, panelHeight, curMaxTime, true);
 		
 		// draw line at current time
 		g.setColor(lineColor);
