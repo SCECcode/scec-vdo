@@ -14,8 +14,6 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 
 
 	EarthquakeCatalogPluginGUI eQGui;
-	private boolean guidisplayed = false;
-	private PluginInfo metadata;
 	private PluginState state;
 
 
@@ -40,7 +38,6 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 
 		eQGui = new EarthquakeCatalogPluginGUI(this);
 
-		guidisplayed = true;
 		setActors();
 		return eQGui;
 	}
