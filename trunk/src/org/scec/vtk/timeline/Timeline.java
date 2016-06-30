@@ -148,14 +148,17 @@ public class Timeline {
 			if (newKey instanceof RangeKeyFrame) {
 				RangeKeyFrame range = (RangeKeyFrame)newKey;
 				double f = (time - range.getStartTime())/range.getDuration();
-				if (newKey != cur) {
-					// just loaded
+				boolean previouslyEnded = range.isEnded();
+				boolean justLoaded = newKey != cur;
+				boolean currentlyDone = f >= 1;
+				if (justLoaded || (!currentlyDone && previouslyEnded)) {
+					// just loaded, or finished previously and we're restarting
 					range.setRangeStarted();
 				}
-				if (f >= 1) {
+				if (currentlyDone) {
 					// we're done
-					// only fire new time if done previously
-					if (!range.isEnded()) {
+					if (!previouslyEnded) {
+						// only fire new time if done previously
 						range.setRangeTime(f);
 						range.setRangeEnded();
 					}
