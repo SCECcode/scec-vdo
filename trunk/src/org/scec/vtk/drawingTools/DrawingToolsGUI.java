@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -69,6 +71,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	private EditButton editDrawingToolsButton;
 
 	private DisplayAttributes displayAttributes;
+	ArrayList<HashMap<String, String>> AttributesData; //will contain a list of attributes(lat, log, cone height, cone width, etc)
 	private DefaultLocationsGUI defaultLocations;
 	private static String[] columnNames = {"Show","",
 			"Label",
@@ -115,15 +118,34 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		displayAttributes.coneBaseRadiusField.addActionListener(this);
 		//displayAttributes.rotateZField.addActionListener(this);
 		displayAttributes.fontSizeField.addActionListener(this);
+		
+		AttributesData = new ArrayList<HashMap<String, String>>(); 
 
 		JPanel displayPanel = new JPanel();
 		displayPanel.setLayout(new BoxLayout(displayPanel,BoxLayout.Y_AXIS));
 		displayPanel.setBorder(BorderFactory.createEmptyBorder(0,10,0,10));
+
+		this.drawingToolSubPanelLowest = new JPanel(new BorderLayout(0,0));
+		this.drawingToolSubPanelLowest.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));    
+		this.drawingToolSubPanelLowest.add(displayAttributes);
+		displayPanel.add(drawingToolSubPanelUpper);//upper level
+		displayPanel.add(getDrawingToolLibraryPanel());//mid level
+		displayPanel.add(this.drawingToolSubPanelLowest);//lowest level
+		add(displayPanel);
+		drawingToolsArray  = new ArrayList<>();
+		//labels.SetName("labels");
 		
 		this.drawingToolTable.addMouseListener(new MouseAdapter(){ 
+			
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 1){
+//					displayAttributes.latField.getText();
+//					displayAttributes.lonField.getText(); //set text to the index
 					
+					DrawingToolsTable target = (DrawingToolsTable)e.getSource();
+				    int i = target.getSelectedRow();
+				    displayAttributes.latField.setText(AttributesData.get(i).get("Lat"));
+				    displayAttributes.lonField.setText(AttributesData.get(i).get("Lon"));
 				}
 			    if (e.getClickCount() == 2) { //double click text in table to highlight it
 			      DrawingToolsTable target = (DrawingToolsTable)e.getSource();
@@ -144,16 +166,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			    }
 			  }
 		});
-
-		this.drawingToolSubPanelLowest = new JPanel(new BorderLayout(0,0));
-		this.drawingToolSubPanelLowest.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));    
-		this.drawingToolSubPanelLowest.add(displayAttributes);
-		displayPanel.add(drawingToolSubPanelUpper);//upper level
-		displayPanel.add(getDrawingToolLibraryPanel());//mid level
-		displayPanel.add(this.drawingToolSubPanelLowest);//lowest level
-		add(displayPanel);
-		drawingToolsArray  = new ArrayList<>();
-		//labels.SetName("labels");
 
 	}
 	public DrawingToolsTable getTable()
@@ -289,6 +301,11 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		//first pin then label
 		appendActors.addToAppendedPolyData(actorPin);
 		appendActors.addToAppendedPolyData(actor);
+		
+		HashMap<String,String> locData = new HashMap<String, String>();
+		locData.put("Lat", String.format("%.2f", pt[1])); 
+		locData.put("Lon", String.format("%.2f", pt[2]));
+		AttributesData.add(locData);
 
 		return drawingTool;
 
@@ -323,6 +340,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			//ArrayList<DrawingTool> newObjects = new ArrayList<>();
 			//newObjects.add(drawingToolObj);
 			this.drawingToolTable.addDrawingTool(drawingToolObj);
+			
+			HashMap<String,String> defaultData = new HashMap<String, String>();
+			defaultData.put("Lat", "37"); 
+			defaultData.put("Lon", "-120");
+			AttributesData.add(defaultData);
+			
 			MainGUI.updateRenderWindow();
 		}
 		if (src == this.remDrawingToolsButton) {
@@ -347,6 +370,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				vtkGlyph3D glyphPoints = new vtkGlyph3D();
 				glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
 				glyphPoints.SetInputData(temp);
+				
+				AttributesData.get(i).put("Lat", this.displayAttributes.latField.getText());
+				AttributesData.get(i).put("Lon", this.displayAttributes.lonField.getText());
+//				System.out.println(AttributesData);
 
 			}
 			MainGUI.updateRenderWindow();
@@ -422,6 +449,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
        		appendActors.getAppendedActor().RemovePart(actorPin);
        		appendActors.getAppendedActor().RemovePart(actor);
        		drawingTooltablemodel.removeRow(row);
+       		
+       		AttributesData.remove(row);
  		}
  		Info.getMainGUI().updateRenderWindow();
 		ArrayList<vtkObject> removedActors = new ArrayList<>();
