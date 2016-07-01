@@ -19,6 +19,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -27,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -263,9 +265,9 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		}
 		this.repaint();
 	}
-	public void showPopUp()
+	private void showPopUp()
 	{
-		MyDialogBox mdb = new MyDialogBox();
+		CitiesDialogBox mdb = new CitiesDialogBox();
 		//mdb.toFront();
 		final JDialog frame = new JDialog(this.frame, "City Filter", true);
 		mdb.d = frame;
@@ -284,6 +286,25 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		
 		
 	}
+	private boolean showSchoolsPopUp()
+	{
+		SchoolsDialogBox mdb = new SchoolsDialogBox();
+		//mdb.toFront();
+		final JDialog frame = new JDialog(this.frame, "School Filter", true);
+		mdb.d = frame;
+		frame.getContentPane().add(mdb);
+		frame.pack();
+		frame.setVisible(true);
+		//frame.setSize(320, 100);
+		//frame.setLocation(200, 200);
+		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+		    @Override
+		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+		    	//popSize = -1;
+		    }
+		});
+		return mdb.success;
+	}
 	public void readPopInput(String input)
 	{
 		try{
@@ -298,10 +319,6 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	}
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
-//		if(src == searchButton){
-//			searchCities(searchCity.getText());
-//		}
-//		else {
 			for (int i = 0; i < presetLocationGroups.size(); i++) {
 				PresetLocationGroup tempGroup = presetLocationGroups.get(i);
 				
@@ -326,6 +343,11 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 								tempGroup.checkbox.setSelected(false);
 								popSize = -1;
 							}
+						}
+						else if(tempGroup.name.equals("CA Schools"))
+						{
+							if(showSchoolsPopUp());
+								tempGroup.checkbox.setSelected(false);
 						}
 						else
 						{
@@ -433,8 +455,39 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			e.printStackTrace();
 		}
 		
-		
 		return filteredCities;
+	}
+	private Vector<DrawingTool> filterSchools(String key, boolean elem, boolean middle, boolean high, boolean other)
+	{
+		Vector<DrawingTool> result = new Vector<DrawingTool>();
+		for(DrawingTool d : loadBuiltInFiles())
+		{
+			if(d.getTextString().contains(key.toUpperCase()))
+			{
+				if(elem)
+				{
+					if(d.getTextString().contains("ELEMENTARY"))
+						result.add(d);
+				}
+				if(middle)
+				{
+					if(d.getTextString().contains("MIDDLE") || d.getTextString().contains("JUNIOR HIGH"))
+						result.add(d);
+				}
+				if(high)
+				{
+					if(d.getTextString().contains("HIGH") && !d.getTextString().contains("JUNIOR HIGH"))
+						result.add(d);
+				}
+				if(other)
+				{
+					result.add(d);
+				}
+				if(!other && !elem && !middle && !high)
+					result.add(d);
+			}
+		}
+		return result;
 	}
 	public class PresetLocationGroup {
 		public Vector<DrawingTool> locations = null;
@@ -442,12 +495,16 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		public File file			= null;
 		public JCheckBox checkbox	= null;
 	}
-	class MyDialogBox extends JPanel {
-		private DefaultListModel dlm;
-		private JList jl;
+	class CitiesDialogBox extends JPanel {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private DefaultListModel<String> dlm;
+		private JList<String> jl;
 		private JDialog d; //reference to parent dialog
 		private ArrayList<String> counties = new ArrayList<String>();
-		MyDialogBox() {
+		CitiesDialogBox() {
 			counties = getCounties(dataPath + "CA_Cities_counties.txt");
 			Collections.sort(counties);
 			//super("");
@@ -470,12 +527,12 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			JLabel filterLabel = new JLabel("Counties: Default = All Counties");
 			bPanel.add(filterLabel);
 			
-			dlm = new DefaultListModel();
-			for(String s: counties)
+			dlm = new DefaultListModel<String>();
+			for(String s:counties)
 			{
 				dlm.addElement(s);
 			}
-			jl = new JList(dlm);
+			jl = new JList<String>(dlm);
 			JScrollPane scroll = new JScrollPane(jl);
 			scroll.setPreferredSize(new Dimension(250,250));
 			bPanel.add(scroll);
@@ -535,4 +592,163 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			setVisible(true);
 		}
 	}
+	class DisabledItemSelectionModel extends DefaultListSelectionModel {
+
+	    @Override
+	    public void setSelectionInterval(int index0, int index1) {
+	        super.setSelectionInterval(-1, -1);
+	    }
+	}
+	class SchoolsDialogBox extends JPanel {
+		//private static final long serialVersionUID = 1L;
+		private JDialog d; //reference to parent dialog
+		private DefaultListModel<String> dlm,tbd;
+		private JList<String> jl,tba;
+		private boolean success = false;
+		private Vector<DrawingTool> results = new Vector<DrawingTool>();
+		private Vector<DrawingTool> search = new Vector<DrawingTool>();
+		SchoolsDialogBox()
+		{
+			//super("");
+			//setSize(320, 200);
+			//setLocation(200, 200);
+			JPanel jp = new JPanel();
+			jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+			
+			// first row
+			JPanel aPanel = new JPanel();
+			aPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+			JLabel sizeLabel = new JLabel("Name of the school:");
+			aPanel.add(sizeLabel);
+			final JTextField schoolName= new JTextField("", 16);
+			aPanel.add(schoolName);
+			
+			// 2nd row
+			JPanel bPanel = new JPanel();
+			bPanel.setLayout(new BoxLayout(bPanel, BoxLayout.LINE_AXIS));
+			final JCheckBox elementary = new JCheckBox("Elementary School");
+			final JCheckBox otherRadio = new JCheckBox("Other");
+			final JCheckBox middleRadio = new JCheckBox("Middle School");
+			final JCheckBox highRadio = new JCheckBox("High School");
+			bPanel.add(elementary);
+			bPanel.add(middleRadio);
+			bPanel.add(highRadio);
+			bPanel.add(otherRadio);
+			
+			// 3rd row
+			JPanel cPanel = new JPanel();
+			cPanel.setLayout(new BoxLayout(cPanel, BoxLayout.PAGE_AXIS));
+			JLabel filterLabel = new JLabel("Search Results:");
+			cPanel.add(filterLabel);
+			dlm = new DefaultListModel<String>();
+			search = filterSchools("",false,false,false,false);
+			for(DrawingTool s: search)
+				dlm.addElement(s.getTextString());
+			jl = new JList<String>(dlm);
+			JScrollPane scroll = new JScrollPane(jl);
+			scroll.setPreferredSize(new Dimension(250,250));
+			cPanel.add(scroll);
+			
+			
+			// 4th row
+			JButton okButton = new  JButton("Search");
+			okButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent ae){
+					dlm.removeAllElements();
+					search = filterSchools(schoolName.getText(),elementary.isSelected(),middleRadio.isSelected(),highRadio.isSelected(),otherRadio.isSelected());
+					for(DrawingTool s: search )
+						dlm.addElement(s.getTextString());
+				}		
+			});
+			
+			JButton cancelButton = new  JButton("Cancel");
+			cancelButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent aa){
+					success = true;
+					d.dispose();
+				}
+			});
+			
+			final JButton displayButton = new  JButton("Display");
+			displayButton.setEnabled(false);
+			displayButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent aa){
+					addBuiltInFiles(results);
+					d.dispose();
+				}
+			});
+			
+			JButton addButton = new  JButton("Add");
+			addButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent aa){
+					//System.out.println(search.size());
+					ListSelectionModel lsm = jl.getSelectionModel();
+					int minIndex = lsm.getMinSelectionIndex();
+			        int maxIndex = lsm.getMaxSelectionIndex();
+			        for (int i = minIndex; i <= maxIndex; i++) {
+			            if (lsm.isSelectedIndex(i)) {
+			            	tbd.addElement(search.get(i).getTextString());
+			            	results.add(search.get(i));
+			            }
+			        }
+			        if(results.size() > 0)
+						displayButton.setEnabled(true);
+					else
+						displayButton.setEnabled(false);
+				
+				}
+			});
+			
+			JButton removeButton = new  JButton("Remove");
+			addButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent aa){
+					if(results.size() > 0)
+						displayButton.setEnabled(true);
+					else
+						displayButton.setEnabled(false);
+					ListSelectionModel lsm = tba.getSelectionModel();
+					int minIndex = lsm.getMinSelectionIndex();
+			        int maxIndex = lsm.getMaxSelectionIndex();
+			        for (int i = minIndex; i <= maxIndex; i++) {
+			            if (lsm.isSelectedIndex(i)) {
+			            	results.remove(i);
+			            	tbd.removeElement(i);
+			            }
+			        }
+				
+				}
+			});
+
+			JPanel okPanel = new JPanel();
+			okPanel.setLayout(new FlowLayout(FlowLayout.CENTER));		
+			okPanel.add(okButton);
+			okPanel.add(addButton);
+			okPanel.add(removeButton);
+			okPanel.add(cancelButton);
+			okPanel.add(displayButton);
+			
+			// 5th row
+			JPanel dPanel = new JPanel();
+			dPanel.setLayout(new BoxLayout(dPanel, BoxLayout.PAGE_AXIS));
+			JLabel selectLabel = new JLabel("Your Selection");
+			dPanel.add(selectLabel);
+			tbd = new DefaultListModel<String>();
+			tba = new JList<String>(tbd);
+			tba.setSelectionModel(new DisabledItemSelectionModel());
+			JScrollPane scroll2 = new JScrollPane(tba);
+			scroll2.setPreferredSize(new Dimension(250,250));
+			dPanel.add(scroll2);
+
+			//add add add 
+			jp.add(aPanel);
+			jp.add(bPanel);
+			jp.add(cPanel);
+			jp.add(okPanel);
+			jp.add(dPanel);
+			add(jp);
+			setVisible(true);
+		}
+		
+	}
+
 }
