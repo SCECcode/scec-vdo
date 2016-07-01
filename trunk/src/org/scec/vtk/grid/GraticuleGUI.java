@@ -106,7 +106,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	upperLongitude = 0;
 
 	protected double gridWidth = 1.0;
-	private Color curColor = Color.WHITE;
+	private Color curColor = Color.DARK_GRAY;
 	private GraticulePresetModel presetModel;
 	private ArrayList<GlobeBox> grids;
 
@@ -434,9 +434,10 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		this.displayPanel.add(this.firstsceneRadioButton);
 		this.displayPanel.add(this.secondsceneRadioButton);
 
-		this.colorChooser = new ColorWellButton(Color.DARK_GRAY, 16, 16);
+		this.colorChooser = new ColorWellButton(Color.GREEN, 16, 16);
 		colorChooser.setEnabled(true);
 		colorChooser.addActionListener(this);
+		colorChooser.setColor(Color.GRAY);
 
 		this.bckgroundColorChooser = new ColorWellButton(Color.BLACK, 16, 16);
 		bckgroundColorChooser.setEnabled(true);
