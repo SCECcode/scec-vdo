@@ -261,6 +261,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 				if (animator == null)
 					animator = new CueAnimator(timeline, this);
 				animator.play(curTime);
+				pauseButton.requestFocus();
 			} else if (e.getSource() == pauseButton) {
 				Preconditions.checkNotNull(animator);
 				animator.pause();
@@ -271,6 +272,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 						setButtonsEnabled();
 					}
 				});
+				playButton.requestFocus();
 			} else if (e.getSource() == stopButton) {
 				if (animator != null) {
 					animator.pause();
@@ -287,6 +289,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 					timeline.activateTime(0d);
 					setButtonsEnabled();
 				}
+				playButton.requestFocus();
 				
 			} else if (e.getSource() == settingsButton) {
 				if (settingsPanel == null)
