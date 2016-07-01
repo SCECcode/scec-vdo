@@ -63,6 +63,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private TimelineGUI timelineGUI;
 	private JFrame timelineFrame;
 	private CheckboxMenuItem timelineItem;
+	private MenuItem saveItemVTK;
 
 	static Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	// TODO why are these static?
@@ -119,16 +120,19 @@ public class MainMenu implements ActionListener, ItemListener{
 		//File menu - save and open a scene.
 		fileMenu = new Menu("File");
 		fileOpen = new MenuItem("Open...");
-		saveItem = new MenuItem("Save As...");
+		saveItem = new MenuItem("Save state...");
+		saveItemVTK = new MenuItem("Save as VTK...");
 		appExit = new MenuItem("Quit");
 
 		fileMenu.addActionListener(this);
 		this.saveItem.addActionListener(this);
+		this.saveItemVTK.addActionListener(this);
 		this.appExit.addActionListener(this);
 		this.fileOpen.addActionListener(this);
 
 		this.fileMenu.add(fileOpen);
 		this.fileMenu.add(saveItem);
+		this.fileMenu.add(saveItemVTK);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(appExit);
 
@@ -139,75 +143,41 @@ public class MainMenu implements ActionListener, ItemListener{
 		System.exit(0);
 	}
 
-	public void saveVTKObj()
+	public void saveVTKObj(File file)
 	{
-		//vtkOBJExporter objExporter = new vtkOBJExporter();
-		//vtkXMLPolyDataWriter objExporter = new vtkXMLPolyDataWriter()
-		vtkPanel renderWindow = MainGUI.getRenderWindow();
-		//MainGUI.updateRenderWindow();
+
+		vtkPanel renderWindow = Info.getMainGUI().getRenderWindow();
+
 		vtkRenderWindow renWin = renderWindow.GetRenderWindow();
-		/*objExporter.SetFilePrefix("testScene");
-		objExporter.SetInput(renWin);
-		objExporter.Update();
-		objExporter.Write();
-		 */
+
 		vtkActorCollection actorlist = renderWindow.GetRenderer().GetActors();
 		if(actorlist.GetNumberOfItems()>0){
 			System.out.println(actorlist.GetNumberOfItems());
 			vtkPolyDataWriter objExporter = new vtkPolyDataWriter();
-			objExporter.SetFileName("testAll.vtk"); 
+			objExporter.SetFileName(file.getPath()+".vtk"); 
 			vtkAppendPolyData  mainData = new vtkAppendPolyData ();
-			//vtkPolyDataMapper maingMapper = new vtkPolyDataMapper();
-			//vtkActor maingActor = new vtkActor();
+
 			for(int i = 0; i <actorlist.GetNumberOfItems();i++)
 			{
 				vtkActor pbActor = (vtkActor) actorlist.GetItemAsObject(i);
-				//double[] c = pbActor.GetProperty().GetColor();
-				//vtkDoubleArray dc = new vtkDoubleArray();
+
 				if(pbActor.GetVisibility() == 1)
 				{
 					vtkPolyDataMapper gmapper = (vtkPolyDataMapper) pbActor.GetMapper();
-					//dc.SetNumberOfComponents(3);
-					//dc.SetName("Colors");
-					//for(int j = 0;j<3;j++)
-					//{
-					//dc.InsertNextTuple3(c[0]*Info.rgbMax, c[1]*Info.rgbMax, c[2]*Info.rgbMax);
-					// }
-					/*if(c[0]==0)
-				 {
-					 System.out.println("here");
-				 }*/
+					if(gmapper!=null){
 					vtkPolyData pd  = new vtkPolyData();
-					//vtkPolyData pd = gmapper.GetInput();
 					pd.SetPoints(gmapper.GetInput().GetPoints());
 					pd.SetLines(gmapper.GetInput().GetLines());
 					pd.SetPolys(gmapper.GetInput().GetPolys());
-					//pd.GetPointData().SetScalars(dc);
 					mainData.AddInputData(pd);
 					mainData.Update();
+					}
 				}
 			}
 			objExporter.SetInputConnection(mainData.GetOutputPort());
 			objExporter.Write();
 			System.out.println("done");
 		}
-		/*ArrayList<ArrayList> actorPoliticalBoundariesMain = new ArrayList<ArrayList>();
-		 ArrayList<vtkActor> actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-		actorPoliticalBoundariesSegments = MainGUI.pbGUI.getPoliticalBoundaries();
-
-		 if(actorPoliticalBoundariesSegments.size()>0){
-			 for(int j =4;j<5;j++)
-			 {
-				 vtkActor pbActor = actorPoliticalBoundariesSegments.get(j);
-				 vtkPolyDataMapper gmapper = (vtkPolyDataMapper) pbActor.GetMapper();
-
-
-				 objExporter.SetInputData(gmapper.GetInput());
-				 //objExporter.Update();
-				 objExporter.Write();
-			 }
-		 }*/
-
 	}
 	public void openVTKObj()
 	{
@@ -271,7 +241,7 @@ public class MainMenu implements ActionListener, ItemListener{
 						for ( Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
 							Element pluginNameElement = (Element) i.next();
 							if(!activePlugins.containsKey(pluginDescriptor.getId()))
-									activatePlugin(pluginDescriptor.getId());
+								activatePlugin(pluginDescriptor.getId());
 							Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 							if (plugin instanceof StatefulPlugin) {
 								((StatefulPlugin)plugin).getState().fromXML(pluginNameElement);
@@ -286,6 +256,15 @@ public class MainMenu implements ActionListener, ItemListener{
 				}
 			}
 			//	openVTKObj();
+		}
+		else if(eventSource == saveItemVTK)
+		{
+			JFileChooser chooser = new JFileChooser();
+			int ret = chooser.showSaveDialog(Info.getMainGUI());
+			if (ret == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				saveVTKObj(file);
+			}
 		}
 		else if(eventSource == saveItem)
 		{
