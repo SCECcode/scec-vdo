@@ -53,9 +53,9 @@ public class Transform {
 
 	}
 
-	public static double[] WorldPointToLatLon(double[] x){
+	public static double[] WorldPointToLatLonHeight(double[] x){
 
-		double[] latLon= new double[2];
+		double[] latLon= new double[3];
 		double rho = Math.sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
 		double S = Math.sqrt(x[0]*x[0] + x[1]*x[1]);
 		double phi = Math.acos(x[2] / rho);
@@ -72,6 +72,9 @@ public class Transform {
 		theta =  Math.toDegrees( theta - Math.PI/2.0 );
 		latLon[0]=  Math.round(phi);
 		latLon[1] =  Math.round(theta);
+		double radius = Transform.calcRadius(latLon[0]);
+		double height =  rho - radius;
+		latLon[2] = height;
 		return latLon;
 	}
 }
