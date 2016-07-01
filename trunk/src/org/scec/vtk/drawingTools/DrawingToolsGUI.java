@@ -146,6 +146,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				    int i = target.getSelectedRow();
 				    displayAttributes.latField.setText(AttributesData.get(i).get("Lat"));
 				    displayAttributes.lonField.setText(AttributesData.get(i).get("Lon"));
+				    displayAttributes.altField.setText(AttributesData.get(i).get("Alt"));
+				    displayAttributes.coneHeightField.setText(AttributesData.get(i).get("pinH"));
+				    displayAttributes.coneBaseRadiusField.setText(AttributesData.get(i).get("pinR"));
+				    displayAttributes.fontSizeField.setText(AttributesData.get(i).get("fontSize"));
 				}
 			    if (e.getClickCount() == 2) { //double click text in table to highlight it
 			      DrawingToolsTable target = (DrawingToolsTable)e.getSource();
@@ -305,6 +309,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		HashMap<String,String> locData = new HashMap<String, String>();
 		locData.put("Lat", String.format("%.2f", pt[1])); 
 		locData.put("Lon", String.format("%.2f", pt[2]));
+		locData.put("Alt", "0");
+		locData.put("pinH", "10");
+		locData.put("pinR", "5");
+		locData.put("fontSize", "21");
 		AttributesData.add(locData);
 
 		return drawingTool;
@@ -344,6 +352,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			HashMap<String,String> defaultData = new HashMap<String, String>();
 			defaultData.put("Lat", "37"); 
 			defaultData.put("Lon", "-120");
+			defaultData.put("Alt", "0");
+			defaultData.put("pinH", "10");
+			defaultData.put("pinR", "5");
+			defaultData.put("fontSize", "21");
 			AttributesData.add(defaultData);
 			
 			MainGUI.updateRenderWindow();
@@ -373,8 +385,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				
 				AttributesData.get(i).put("Lat", this.displayAttributes.latField.getText());
 				AttributesData.get(i).put("Lon", this.displayAttributes.lonField.getText());
-//				System.out.println(AttributesData);
-
+				AttributesData.get(i).put("Alt", this.displayAttributes.altField.getText());
 			}
 			MainGUI.updateRenderWindow();
 		}
@@ -398,6 +409,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				conePin.SetResolution(10);
 				
 				glyphPoints.SetSourceConnection(conePin.GetOutputPort());
+				
+				AttributesData.get(i).put("pinH", this.displayAttributes.coneHeightField.getText());
+				AttributesData.get(i).put("pinR", this.displayAttributes.coneBaseRadiusField.getText());
 			}
 			MainGUI.updateRenderWindow();
 		}
@@ -410,6 +424,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
 				
 				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
+				
+				AttributesData.get(i).put("fontSize", this.displayAttributes.fontSizeField.getText());
 			}
 			MainGUI.updateRenderWindow();
 		}
