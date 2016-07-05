@@ -2,7 +2,9 @@ package org.scec.vtk.commons.opensha.surfaces;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.opensha.commons.data.Container2DImpl;
 import org.opensha.commons.data.Named;
@@ -15,11 +17,19 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.surfaces.events.GeometrySettingsChangeListener;
 import org.scec.vtk.commons.opensha.surfaces.events.GeometrySettingsChangedEvent;
 import org.scec.vtk.tools.Transform;
+import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
+import org.scec.vtk.tools.picking.PointPickEnabledActor;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
 import vtk.vtkActor;
+import vtk.vtkCellArray;
+import vtk.vtkLine;
+import vtk.vtkPoints;
+import vtk.vtkPolyData;
+import vtk.vtkPolyDataMapper;
 import vtk.vtkUnsignedCharArray;
 
 /**
@@ -188,6 +198,213 @@ public abstract class GeometryGenerator implements Named {
 	
 	public PickHandler<AbstractFaultSection> getPickHandler() {
 		return pickHandler;
+	}
+	
+	protected class PointArray {
+		
+		private double[][] points;
+		
+		public PointArray(double[]... points) {
+			this.points = points;
+		}
+		
+		public int size() {
+			return points.length;
+		}
+		
+		public double[][] get() {
+			return points;
+		}
+		
+		public double[] get(int index) {
+			return points[index];
+		}
+	}
+	
+	protected enum GeometryType {
+		LINE,
+		POLYGON;
+	}
+	
+	/**
+	 * Dynamically adds points to the vtkPoints as needed without duplicating points used in multiple lines/polygons for a single fault
+	 * 
+	 * Note - multiple faults can have duplicate points, those are kept separate
+	 * @author kevin
+	 *
+	 */
+	private class PointOrganizer {
+		
+		private vtkPoints points;
+		private vtkUnsignedCharArray colorsArray;
+		private Map<double[], Integer> pointsIndexMap;
+		
+		double r, g, b, a;
+		
+		public PointOrganizer(vtkPoints points, vtkUnsignedCharArray colorsArray, Color color) {
+			this.points = points;
+			this.colorsArray = colorsArray;
+			pointsIndexMap = Maps.newHashMap();
+			if (colorsArray != null) {
+				r = color.getRed();
+				g = color.getGreen();
+				b = color.getBlue();
+				a = 0d; // always starts as invisible for bundles, set visible when displayed
+			}
+		}
+		
+		public int getIndex(double[] point) {
+			Integer index = pointsIndexMap.get(point);
+			if (index == null) {
+				// new point
+				index = points.GetNumberOfPoints();
+				points.InsertNextPoint(point);
+				if (colorsArray != null)
+					colorsArray.InsertNextTuple4(r, g, b, a);
+				pointsIndexMap.put(point, index);
+			}
+			return index;
+		}
+	}
+	
+	protected synchronized FaultSectionActorList createFaultActors(
+			GeometryType type, List<PointArray> cellDatas, Color color, double opacity, AbstractFaultSection fault) {
+		int myOpacity = (int)(255d*opacity);
+		FaultActorBundle currentBundle;
+		if (bundler != null)
+			currentBundle = bundler.getBundle(fault);
+		else
+			currentBundle = null;
+		
+		boolean bundle = currentBundle != null;
+		
+		vtkPolyData polyData;
+		vtkPoints pts;
+		vtkUnsignedCharArray colors;
+		vtkCellArray cells;
+		PickEnabledActor<AbstractFaultSection> actor;
+		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
+		Object synchOn = this;
+		if (newBundle) {
+			polyData = new vtkPolyData();
+			pts = new vtkPoints();
+			if (bundle) {
+				colors = new vtkUnsignedCharArray();
+				colors.SetNumberOfComponents(4);
+				colors.SetName("Colors");
+			} else {
+				colors = null;
+			}
+			cells = new vtkCellArray();
+			
+			if (bundle) {
+				PointPickEnabledActor<AbstractFaultSection> myActor =
+						new PointPickEnabledActor<AbstractFaultSection>(getPickHandler());
+				actor = myActor;
+				currentBundle.initialize(myActor, polyData, pts, colors, cells);
+				synchOn = currentBundle;
+			} else {
+				actor = new PickEnabledActor<AbstractFaultSection>(getPickHandler(), fault);
+			}
+		} else {
+			polyData = currentBundle.getPolyData();
+			pts = currentBundle.getPoints();
+			colors = currentBundle.getColorArray();
+			Preconditions.checkState(colors.GetNumberOfComponents() == 4);
+			cells = currentBundle.getCellArray();
+			
+			actor = currentBundle.getActor();
+		}
+		int firstIndex;
+		synchronized (synchOn) {
+			firstIndex = pts.GetNumberOfPoints();
+			PointOrganizer organizer = new PointOrganizer(pts, colors, color);
+			for (PointArray cell : cellDatas) {
+				switch (type) {
+				case LINE:
+					vtkLine line = new vtkLine();
+					for (int i=0; i<cell.size(); i++)
+						line.GetPointIds().SetId(i, organizer.getIndex(cell.get(i)));
+					cells.InsertNextCell(line);
+					break;
+				case POLYGON:
+					vtkLine polygon = new vtkLine();
+					int size = cell.size();
+					boolean closed = Arrays.equals(cell.get(0), cell.get(size-1));
+					if (closed)
+						// vtk polygons are not supposed to be closed
+						size--;
+					Preconditions.checkState(size >= 3);
+					polygon.GetPointIds().SetNumberOfIds(size);
+					for (int i=0; i<size; i++)
+						polygon.GetPointIds().SetId(i, organizer.getIndex(cell.get(i)));
+					cells.InsertNextCell(polygon);
+					break;
+
+				default:
+					throw new IllegalStateException("Unknkown GeometryType");
+				}
+			}
+			
+			if (newBundle) {
+				// new bundle
+				polyData.SetPoints(pts);
+				switch (type) {
+				case LINE:
+					polyData.SetLines(cells);
+					break;
+				case POLYGON:
+					polyData.SetPolys(cells);
+					break;
+
+				default:
+					throw new IllegalStateException("Unknkown GeometryType");
+				}
+				if (bundle)
+					polyData.GetPointData().AddArray(colors);
+				
+				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+				mapper.SetInputData(polyData);
+				if (bundle) {
+					mapper.ScalarVisibilityOn();
+					mapper.SetScalarModeToUsePointFieldData();
+					mapper.SelectColorArray("Colors");
+				}
+				
+				actor.SetMapper(mapper);
+				setActorProperties(actor, bundle, color, myOpacity);
+			} else {
+				if (currentBundle != null)
+					currentBundle.modified();
+			}
+		}
+		
+		FaultSectionActorList list;
+		if (bundle) {
+			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
+			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, pts.GetNumberOfPoints()-firstIndex, myOpacity);
+		} else {
+			list = new FaultSectionActorList(fault);
+			list.add(actor);
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * Sets common actor properties. Can be extended for custom actor properties when using createFaultActors above
+	 * @param actor
+	 * @param bundle
+	 * @param color
+	 * @param opacity
+	 */
+	protected void setActorProperties(vtkActor actor, boolean bundle, Color color, double opacity) {
+		if (bundle) {
+			actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparency enabled renderer
+		} else {
+			actor.GetProperty().SetColor(getColorDoubleArray(color));
+			actor.GetProperty().SetOpacity(opacity);
+		}
 	}
 
 }

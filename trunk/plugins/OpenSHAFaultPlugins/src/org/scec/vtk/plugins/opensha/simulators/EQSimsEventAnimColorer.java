@@ -74,6 +74,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	private Map<String, Integer> faultNamesMap;
 	private Map<String, Integer> sectNamesMap;
 	
+	private List<SimulatorElement> elements;
 	private General_EQSIM_Tools tools;
 	
 	private ParameterList animParams = new ParameterList();
@@ -310,8 +311,12 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 //					System.out.println("Filtered by fault and it failed!");
 					continue;
 				}
-				if (supraSeis && !tools.isEventSupraSeismogenic(event, Double.NaN))
-					continue;
+				if (supraSeis) {
+					if (tools == null)
+						tools = new General_EQSIM_Tools(elements);
+					if (!tools.isEventSupraSeismogenic(event, Double.NaN))
+						continue;
+				}
 				filterIndexes.add(i);
 			}
 			System.out.println("Filtered out "+(unfilteredevents.size()-filterIndexes.size())+"/"+unfilteredevents.size());
@@ -422,11 +427,12 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	}
 
 	@Override
-	public void setGeometry(General_EQSIM_Tools tools, List<SimulatorElement> elements) {
+	public void setGeometry(List<SimulatorElement> elements) {
 		faultMappings = null;
 		faultNamesMap = null;
 		sectNamesMap = null;
-		this.tools = tools;
+		this.tools = null;
+		this.elements = elements;
 		if (elements != null) {
 			faultMappings = Maps.newHashMap();
 			faultNamesMap = Maps.newHashMap();

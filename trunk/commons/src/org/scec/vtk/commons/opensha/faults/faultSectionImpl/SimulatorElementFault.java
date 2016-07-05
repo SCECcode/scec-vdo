@@ -1,27 +1,26 @@
 package org.scec.vtk.commons.opensha.faults.faultSectionImpl;
 
 import org.opensha.commons.param.ParameterList;
-import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
-import org.opensha.sha.faultSurface.FourPointEvenlyGriddedSurface;
-import org.opensha.sha.simulators.RectangularElement;
+import org.opensha.sha.faultSurface.RuptureSurface;
+import org.opensha.sha.simulators.SimulatorElement;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 
-public class RectangularElementFault extends AbstractFaultSection {
+public class SimulatorElementFault extends AbstractFaultSection {
 	
-	private RectangularElement element;
+	private SimulatorElement element;
 	
-	public RectangularElementFault(RectangularElement element) {
+	public SimulatorElementFault(SimulatorElement element) {
 		super(element.getSectionName() + " ("+element.getID()+")", element.getID());
 		this.element = element;
 	}
 
 	@Override
-	public EvenlyGriddedSurface createSurface(
+	public RuptureSurface createSurface(
 			ParameterList faultRepresentationParams) {
 		return getSurface();
 	}
 	
-	public FourPointEvenlyGriddedSurface getSurface() {
+	public RuptureSurface getSurface() {
 		return element.getSurface();
 	}
 	

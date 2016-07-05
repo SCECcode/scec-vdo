@@ -175,6 +175,6 @@ public class EQSlipRateColorer extends CPTBasedColorer implements EQSimsEventLis
 	}
 
 	@Override
-	public void setGeometry(General_EQSIM_Tools tools, List<SimulatorElement> elements) {}
+	public void setGeometry(List<SimulatorElement> elements) {}
 
 }
