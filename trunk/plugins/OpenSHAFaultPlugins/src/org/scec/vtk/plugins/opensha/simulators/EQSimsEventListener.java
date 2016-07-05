@@ -10,6 +10,6 @@ public interface EQSimsEventListener {
 
 	public abstract void setEvents(List<EQSIM_Event> events);
 	
-	public abstract void setGeometry(General_EQSIM_Tools tools, List<SimulatorElement> elements);
+	public abstract void setGeometry(List<SimulatorElement> elements);
 
 }

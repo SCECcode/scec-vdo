@@ -31,11 +31,12 @@ import org.opensha.sha.simulators.EQSIM_Event;
 import org.opensha.sha.simulators.RectangularElement;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.parsers.EQSIMv06FileReader;
+import org.opensha.sha.simulators.parsers.RSQSimFileReader;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultIDComparator;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
-import org.scec.vtk.commons.opensha.faults.faultSectionImpl.RectangularElementFault;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
@@ -69,8 +70,6 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	
 	private JFileChooser chooser;
 	
-	private General_EQSIM_Tools simTools;
-	
 	private TreeChangeListener l;
 	
 	private EQSimsEventAnimColorer faultAnim;
@@ -79,6 +78,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private ArrayList<EQSimsEventListener> eventListeners = new ArrayList<EQSimsEventListener>();
 	
 	private File dataDir;
+	
+	private List<SimulatorElement> elements;
 	
 	public EQSimsBuilder() {
 		dataDir = new File(Prefs.getDefaultLocation() + File.separator + "data" + File.separator + "EQSims");
@@ -164,7 +165,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	public void buildTree(DefaultMutableTreeNode root) {
 		String input = inputParam.getValue();
 		
-		simTools = null;
+		elements = null;
 		File file;
 		
 		if (input.equals(INPUT_SELECTOR_FROM_FILE)) {
@@ -179,18 +180,17 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			}
 		}
 		try {
-			simTools = new General_EQSIM_Tools(file.toURI().toURL());
+			elements = loadGeometry(file);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		outputParam.setValue(null);
-		List<SimulatorElement> elements = simTools.getElementsList();
 		
 		// this is a mapping of all fault IDs to category node for the fault
 		HashMap<Integer, FaultCategoryNode> faultNodesMap = new HashMap<Integer, FaultCategoryNode>();
 		// this is a mapping of all fault nodes to a list of section nodes;
-		HashMap<FaultCategoryNode, ArrayList<RectangularElementFault>> sectionsMap =
-			new HashMap<FaultCategoryNode, ArrayList<RectangularElementFault>>();
+		HashMap<FaultCategoryNode, ArrayList<SimulatorElementFault>> sectionsMap =
+			new HashMap<FaultCategoryNode, ArrayList<SimulatorElementFault>>();
 		
 		// this list is for sorting;
 		ArrayList<FaultCategoryNode> faultNodes = new ArrayList<FaultCategoryNode>();
@@ -205,11 +205,10 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			FaultCategoryNode faultNode = faultNodesMap.get(secID);
 			
 			if (!sectionsMap.containsKey(faultNode)) {
-				sectionsMap.put(faultNode, new ArrayList<RectangularElementFault>());
+				sectionsMap.put(faultNode, new ArrayList<SimulatorElementFault>());
 			}
-			ArrayList<RectangularElementFault> secsForFault = sectionsMap.get(faultNode);
-			Preconditions.checkState(element instanceof RectangularElement, "Only rectangular for now");
-			RectangularElementFault secNode = new RectangularElementFault((RectangularElement)element);
+			ArrayList<SimulatorElementFault> secsForFault = sectionsMap.get(faultNode);
+			SimulatorElementFault secNode = new SimulatorElementFault(element);
 			secsForFault.add(secNode);
 		}
 		
@@ -219,9 +218,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		FaultCategoryNode faultRoot = new FaultCategoryNode(file.getName());
 		
 		for (FaultCategoryNode faultNode : faultNodes) {
-			ArrayList<RectangularElementFault> sections = sectionsMap.get(faultNode);
+			ArrayList<SimulatorElementFault> sections = sectionsMap.get(faultNode);
 			Collections.sort(sections, new AbstractFaultIDComparator());
-			for (RectangularElementFault section : sections) {
+			for (SimulatorElementFault section : sections) {
 				faultNode.add(new FaultSectionNode(section));
 			}
 			faultRoot.add(faultNode);
@@ -256,7 +255,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	
 	private void fireNewGeometry(List<SimulatorElement> elements) {
 		for (EQSimsEventListener l : eventListeners)
-			l.setGeometry(simTools, elements);
+			l.setGeometry(elements);
 	}
 	
 	private void fireNewEvents(List<EQSIM_Event> events) {
@@ -271,12 +270,11 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		} else if (event.getSource() == outputParam) {
 			// TODO
 			File outFile = outputParam.getValue();
-			if (outFile == null || simTools == null) {
+			if (outFile == null || elements == null) {
 				fireNewEvents(null);
-			} else if (simTools != null) {
+			} else if (elements != null) {
 				try {
-					List<EQSIM_Event> events = EQSIMv06FileReader.readEventsFile(outFile, simTools.getElementsList());
-					simTools.setEvents(events);
+					List<EQSIM_Event> events = EQSIMv06FileReader.readEventsFile(outFile, elements);
 					System.out.println("Done reading events file!");
 					fireNewEvents(events);
 				} catch (Exception e) {
@@ -284,6 +282,13 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 				}
 			}
 		}
+	}
+	
+	private List<SimulatorElement> loadGeometry(File file) throws IOException {
+		String name = file.getName();
+		if (name.endsWith(".flt"))
+			return RSQSimFileReader.readGeometryFile(file, 11, 'S');
+		return EQSIMv06FileReader.readGeometryFile(file);
 	}
 	
 }
