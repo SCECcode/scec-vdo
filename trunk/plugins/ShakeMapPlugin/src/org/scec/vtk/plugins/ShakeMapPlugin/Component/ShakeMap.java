@@ -18,7 +18,7 @@ import org.opensha.commons.geo.Location;
 import org.opensha.commons.geo.LocationList;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.sha.imr.ScalarIMR;
-import org.scec.vtk.commons.opensha.colorpalette.AbstractXYZToColorPalette;
+import org.scec.vtk.commons.opensha.geoDataSet.AbstractXYZToColorPalette;
 import org.scec.vtk.tools.Transform;
 
 import vtk.vtkCellArray;
