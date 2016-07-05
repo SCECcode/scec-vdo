@@ -6,38 +6,36 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.opensha.commons.data.Container2DImpl;
+import org.opensha.commons.geo.LocationList;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.EnumParameter;
-import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.surfaces.params.DiscreteSizeParam;
-import org.scec.vtk.tools.picking.PickEnabledActor;
-import org.scec.vtk.tools.picking.PointPickEnabledActor;
 
 import com.google.common.base.Preconditions;
 
-import vtk.vtkCellArray;
-import vtk.vtkLine;
-import vtk.vtkPoints;
-import vtk.vtkPolyData;
-import vtk.vtkPolyDataMapper;
-import vtk.vtkUnsignedCharArray;
+import vtk.vtkActor;
 
 public class LineSurfaceGenerator extends GeometryGenerator implements ParameterChangeListener {
 
 	public static final String NAME = "Lines";
 	
 	private ParameterList faultDisplayParams;
-	
-	private boolean bundle = true;
 
 	private static final String LINE_SIZE_PARAM_NAME = "Line Size";
 	private DiscreteSizeParam lineSizeParam = new DiscreteSizeParam(LINE_SIZE_PARAM_NAME, 1d, 10d, 1d);
+	
+	public static final String OPACITY_PARAM_NAME = "Line Opacity";
+	private static final double OPACITY_DEFAULT = 1d;
+	private static final double OPACITY_MIN = 0d;
+	private static final double OPACITY_MAX = 1d;
+	private DoubleParameter opacityParam;
 	
 	private enum SurfaceType {
 		SOLID("All Lines"),
@@ -71,6 +69,13 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 
 		faultDisplayParams.addParameter(lineSizeParam);
 		lineSizeParam.addParameterChangeListener(this);
+		
+		opacityParam = new DoubleParameter(OPACITY_PARAM_NAME, OPACITY_MIN, OPACITY_MAX);
+		opacityParam.setDefaultValue(OPACITY_DEFAULT);
+		opacityParam.setValue(OPACITY_DEFAULT);
+		
+		faultDisplayParams.addParameter(opacityParam);
+		opacityParam.addParameterChangeListener(this);
 	}
 
 	@Override
@@ -80,39 +85,28 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		if (surface instanceof EvenlyGriddedSurface) {
 			return createFaultActors((EvenlyGriddedSurface)surface, color, fault);
 		}
-		// TODO
-		throw new UnsupportedOperationException("Not yet implemented for non evenly gridded surfaces");
 		
-//		// this just draws the outline
-//		LocationList outline = surface.getPerimeter();
-//		
-//		Preconditions.checkState(!outline.isEmpty());
-//		
-//		Point3f[] pts = new Point3f[outline.size()+1];
-//		for (int i=0; i<outline.size(); i++) {
-//			pts[i] = getPointForLoc(outline.get(i));
-//		}
-//		pts[pts.length-1] = pts[0];
-//		
-//		// +1 to connect it at the end
-//		LineArray la = new LineArray(pts.length, LineArray.COORDINATES);
-//		for (int i=0; i<pts.length; i++) {
-//			la.setCoordinate(i, pts[i]);
-//		}
-//		
-//		BranchGroup bg = createBranchGroup();
-//		
-//		Appearance lapp = buildApp(color);
-//		
-//		FaultSectionShape3D shape = new FaultSectionShape3D(la,lapp, fault);
-//		bg.addChild(shape);
-//		
-//		return bg;
+		// this just draws the outline
+		LocationList outline = surface.getPerimeter();
+		
+		Preconditions.checkState(!outline.isEmpty());
+		
+		List<PointArray> points = new ArrayList<PointArray>();
+		for (int i=0; i<outline.size(); i++) {
+			double[] pt1 = getPointForLoc(outline.get(i));
+			double[] pt2;
+			if (i+1 == outline.size())
+				// wrap around to first
+				pt2 = points.get(0).get(0);
+			else
+				pt2 = getPointForLoc(outline.get(i+1));
+			points.add(new PointArray(pt1, pt2));
+		}
+		
+		return createFaultActors(points, color, fault);
 	}
 		
-	public synchronized FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface, Color color, AbstractFaultSection fault) {
-		// TODO Auto-generated method stub
-
+	public FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface, Color color, AbstractFaultSection fault) {
 		int cols = surface.getNumCols();
 		int rows = surface.getNumRows();
 		
@@ -120,7 +114,7 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		boolean outlineOnly = surfaceType == SurfaceType.OUTLINE_ONLY;
 		boolean traceOnly = surfaceType == SurfaceType.TRACE_ONLY;
 		
-		List<double[]> points = new ArrayList<double[]>();
+		List<PointArray> points = new ArrayList<PointArray>();
 
 		Container2DImpl<double[]> pointSurface = cacheSurfacePoints(surface);
 		
@@ -130,12 +124,8 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		if (rows == 0) {
 			return null;
 		} else if (rows == 1) {
-			for (int col=0; col<lastLoopCol; col++) {
-				double[] pt0 = pointSurface.get(0,	col);		// top left
-				double[] pt3 = pointSurface.get(0,	col+1);	// top right
-				points.add(pt0);
-				points.add(pt3);
-			}
+			for (int col=0; col<pointSurface.getNumCols()-1; col++)
+				points.add(new PointArray(pointSurface.get(0, col), pointSurface.get(0, col+1)));
 		} else {
 			for (int row=0; row<=lastLoopRow; row++) {
 				if (traceOnly && row>0)
@@ -149,142 +139,34 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 					double[] pt3 = pointSurface.get(row,	col+1);	// top right
 
 					// left edge...only if it's not a trace and it's either the left col, or not an outline
-					if (!traceOnly && (!outlineOnly || col == 0)) {
-						points.add(pt0);
-						points.add(pt1);
-					}
+					if (!traceOnly && (!outlineOnly || col == 0))
+						points.add(new PointArray(pt0, pt1));
 					// bottom edge...only if it's not a trace and it's either the bottom row, or not an outline
-					if (!traceOnly && (!outlineOnly || row == lastLoopRow)) {
-						points.add(pt1);
-						points.add(pt2);
-					}
+					if (!traceOnly && (!outlineOnly || row == lastLoopRow))
+						points.add(new PointArray(pt1, pt2));
 					// right edge...only if it's not a trace and it's either the right col, or not an outline
-					if (!traceOnly && (!outlineOnly || col == lastLoopCol)) {
-						points.add(pt2);
-						points.add(pt3);
-					}
+					if (!traceOnly && (!outlineOnly || col == lastLoopCol))
+						points.add(new PointArray(pt2, pt3));
 					// top edge...always included
-					if (row == 0 || (!outlineOnly || (col == 0 && row == 0))) {
-						points.add(pt3);
-						points.add(pt0);
-					}
+					if (row == 0 || (!outlineOnly || (col == 0 && row == 0)))
+						points.add(new PointArray(pt3, pt0));
 				}
 			}
 		}
 		
-		double initialOpacity;
-		FaultActorBundle currentBundle;
-		if (bundle && bundler != null) {
-			// initialized to transparent, will get updated when displayed
-			initialOpacity = 0;
-			currentBundle = bundler.getBundle(fault);
-		} else {
-			initialOpacity = 255;
-			currentBundle = null;
-		}
+		return createFaultActors(points, color, fault);
+	}
+	
+	private synchronized FaultSectionActorList createFaultActors(
+			List<PointArray> points, Color color, AbstractFaultSection fault) {
 		
-		boolean bundle = this.bundle && currentBundle != null;
-		
-//		System.out.println("rows: " + rows + ", cols:" + cols + ", pnts: " + points.size());
-		vtkPolyData linesPolyData;
-		vtkPoints pts;
-		vtkUnsignedCharArray colors;
-		vtkCellArray lines;
-		PickEnabledActor<AbstractFaultSection> actor;
-		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
-		Object synchOn = this;
-		if (newBundle) {
-			linesPolyData = new vtkPolyData();
-			pts = new vtkPoints();
-			if (bundle) {
-				colors = new vtkUnsignedCharArray();
-				colors.SetNumberOfComponents(4);
-				colors.SetName("Colors");
-			} else {
-				colors = null;
-			}
-			lines = new vtkCellArray();
-			
-			if (bundle) {
-				PointPickEnabledActor<AbstractFaultSection> myActor =
-						new PointPickEnabledActor<AbstractFaultSection>(getPickHandler());
-				actor = myActor;
-				currentBundle.initialize(myActor, linesPolyData, pts, colors, lines);
-				synchOn = currentBundle;
-			} else {
-				actor = new PickEnabledActor<AbstractFaultSection>(getPickHandler(), fault);
-			}
-		} else {
-			linesPolyData = currentBundle.getPolyData();
-			pts = currentBundle.getPoints();
-			colors = currentBundle.getColorArray();
-			Preconditions.checkState(colors.GetNumberOfComponents() == 4);
-			lines = currentBundle.getCellArray();
-			
-			actor = currentBundle.getActor();
-		}
-		int firstIndex;
-		synchronized (synchOn) {
-			firstIndex = pts.GetNumberOfPoints();
-			for (double[] point : points) {
-				pts.InsertNextPoint(point);
-				if (bundle)
-					colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
-			}
-			
-			Preconditions.checkState(points.size() % 2 == 0, "Must be even number of points");
-			
-			for (int li=0; li<points.size()/2; li++) {
-				int index1 = firstIndex + li*2;
-				int index2 = index1+1;
-				
-				vtkLine line = new vtkLine();
-				line.GetPointIds().SetId(0, index1);
-				line.GetPointIds().SetId(1, index2);
-				
-				lines.InsertNextCell(line);
-			}
-			
-			if (newBundle) {
-				// new bundle
-				linesPolyData.SetPoints(pts);
-				linesPolyData.SetLines(lines);
-				if (bundle)
-					linesPolyData.GetPointData().AddArray(colors);
-				
-				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-				mapper.SetInputData(linesPolyData);
-				if (bundle) {
-					mapper.ScalarVisibilityOn();
-					mapper.SetScalarModeToUsePointFieldData();
-					mapper.SelectColorArray("Colors");
-				}
-				
-				actor.SetMapper(mapper);
-				actor.GetProperty().SetLineWidth(lineSizeParam.getValue());
-				if (bundle)
-					actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparancey enabled renderer
-				else
-					actor.GetProperty().SetColor(getColorDoubleArray(color));
-				
-//				System.out.println("Created new bundle. Currently has "+pts.GetNumberOfPoints()+" points, "
-//						+lines.GetNumberOfCells()+" lines");
-			} else {
-				if (currentBundle != null)
-					currentBundle.modified();
-			}
-		}
-		
-		FaultSectionActorList list;
-		if (bundle) {
-			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
-			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, points.size(), 255);
-		} else {
-			list = new FaultSectionActorList(fault);
-			list.add(actor);
-		}
-		
-		return list;
+		return createFaultActors(GeometryType.LINE, points, color, opacityParam.getValue(), fault);
+	}
+	
+	@Override
+	protected void setActorProperties(vtkActor actor, boolean bundle, Color color, double opacity) {
+		super.setActorProperties(actor, bundle, color, opacity);
+		actor.GetProperty().SetLineWidth(lineSizeParam.getValue());
 	}
 	
 	public void setSize(double size) {
