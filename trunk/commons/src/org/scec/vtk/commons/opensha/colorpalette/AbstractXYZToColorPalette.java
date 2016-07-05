@@ -31,32 +31,28 @@ public abstract class AbstractXYZToColorPalette implements GeoDataSet{
 	//gridded geo data set
 	GriddedGeoDataSet griddedGeoDataSet;
 	public AbstractXYZToColorPalette(CPT cpt,GriddedRegion region, boolean latitudeX) {
-		
+
 		this.cpt=cpt;
 		this.region = region;
 		this.latitudeX = latitudeX;
 		griddedGeoDataSet = new GriddedGeoDataSet(region, latitudeX);
 	}
-	
+
 	public GriddedGeoDataSet getGriddedGeoDataSet()
 	{
 		return griddedGeoDataSet;
 	}
-	
+
 	public AbstractXYZToColorPalette(CPT cpt,String filePath) {
-		
+
 		this.cpt=cpt;
-		try {
-			this.cpt = CPT.loadFromFile(new File(filePath));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+		//get the colors file to be used as CPT
+		loadCPTFromFile((filePath));
+
 	}
 
+	//loading existing catalog file
 	public CPT loadCPTFromFile(String dataPath)
 	{
 		try {
@@ -70,14 +66,15 @@ public abstract class AbstractXYZToColorPalette implements GeoDataSet{
 		}
 		return cpt;
 	}
+	//calculates color based on CPT
 	public Color calcColor(double value) {
 		Color pointColor = cpt.getColor((float) value);
 		return pointColor;
 	}
-	
+
 	abstract public void loadFromGeoDataSet(GeoDataSet ds, ScalarIMR imr);
 	abstract public void loadFromFile(String dP,String type);
 	abstract public void drawPolygonMap();
-	
+
 	//TODO load gridded geo data set which also extends geodataset
 }
