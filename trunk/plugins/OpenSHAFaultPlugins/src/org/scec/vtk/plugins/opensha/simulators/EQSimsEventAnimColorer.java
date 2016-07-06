@@ -17,6 +17,7 @@ import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
+import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
@@ -69,6 +70,12 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	
 	private static final String SUPRA_SEISMOGENIC_FILTER_PARAM_NAME = "Only Supra-Seismogenic";
 	private BooleanParameter supraSeismogenicFilterParam;
+	
+	private static final String START_ID_PARAM_NAME = "Start Event ID";
+	private IntegerParameter startIDParam;
+	
+	private static final String DURATION_YEARS_PARAM_NAME = "Cat Duration To Animate (years)";
+	private DoubleParameter durationYearsParam;
 	
 	private Map<Integer, HashSet<Integer>> faultMappings;
 	private Map<String, Integer> faultNamesMap;
@@ -127,6 +134,14 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		supraSeismogenicFilterParam = new BooleanParameter(SUPRA_SEISMOGENIC_FILTER_PARAM_NAME, false);
 		animParams.addParameter(supraSeismogenicFilterParam);
 		supraSeismogenicFilterParam.addParameterChangeListener(this);
+		
+		startIDParam = new IntegerParameter(START_ID_PARAM_NAME, -1);
+		animParams.addParameter(startIDParam);
+		startIDParam.addParameterChangeListener(this);
+		
+		durationYearsParam = new DoubleParameter(DURATION_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
+		animParams.addParameter(durationYearsParam);
+		durationYearsParam.addParameterChangeListener(this);
 	}
 	
 	@Override
@@ -279,20 +294,37 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	
 	private void filterEvents() {
 		double magThresh = magFilterParam.getValue();
+		
 		String sectFilterName = sectFilterParam.getValue();
 		int filterSectionID;
 		if (!sectFilterName.equals(SECT_FILTER_PARAM_DEFAULT))
 			filterSectionID = sectNamesMap.get(sectFilterName);
 		else
 			filterSectionID = -1;
+		
 		String faultFilterName = faultFilterParam.getValue();
 		HashSet<Integer> filterFault;
 		if (!faultFilterName.equals(FAULT_FILTER_PARAM_DEFAULT))
 			filterFault = faultMappings.get(faultNamesMap.get(faultFilterName));
 		else
 			filterFault = null;
+		
 		boolean supraSeis = supraSeismogenicFilterParam.getValue();
-		if (magThresh > 0.0 || filterSectionID >= 0 || filterFault != null || supraSeis) {
+		
+		double startTime = Double.NaN;
+		double endTime = Double.NaN;
+		if (startIDParam.getValue() >= 0) {
+			Integer startStep = idToUnfilteredStepMap.get(startIDParam.getValue());
+			if (startStep == null) {
+				System.out.println("Warning: no event found with ID="+startIDParam.getValue());
+			} else {
+				double duration = durationYearsParam.getValue();
+				startTime = unfilteredevents.get(startStep).getTime();
+				endTime = startTime + duration*General_EQSIM_Tools.SECONDS_PER_YEAR;
+			}
+		}
+		
+		if (magThresh > 0.0 || filterSectionID >= 0 || filterFault != null || supraSeis || !Double.isNaN(startTime)) {
 			filterIndexes = new ArrayList<Integer>();
 			for (int i=0; i<unfilteredevents.size(); i++) {
 				EQSIM_Event event = unfilteredevents.get(i);
@@ -317,6 +349,12 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 					if (!tools.isEventSupraSeismogenic(event, Double.NaN))
 						continue;
 				}
+				if (!Double.isNaN(startTime)) {
+					if (event.getTime() < startTime)
+						continue;
+					if (event.getTime() > endTime)
+						break;
+				}
 				filterIndexes.add(i);
 			}
 			System.out.println("Filtered out "+(unfilteredevents.size()-filterIndexes.size())+"/"+unfilteredevents.size());
@@ -335,6 +373,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		} else if (event.getSource() == faultFilterParam) {
 			filterEvents();
 		} else if (event.getSource() == supraSeismogenicFilterParam) {
+			filterEvents();
+		} else if (event.getSource() == startIDParam || event.getSource() == durationYearsParam) {
 			filterEvents();
 		}
 	}
