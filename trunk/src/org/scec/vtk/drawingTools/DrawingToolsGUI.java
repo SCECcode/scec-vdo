@@ -307,8 +307,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		appendActors.addToAppendedPolyData(actor);
 		
 		HashMap<String,String> locData = new HashMap<String, String>();
-		locData.put("Lat", String.format("%.2f", pt[1])); 
-		locData.put("Lon", String.format("%.2f", pt[2]));
+		locData.put("Lat", String.format("%.1f", pt[1])); 
+		locData.put("Lon", String.format("%.1f", pt[2]));
 		locData.put("Alt", "0");
 		locData.put("pinH", "10");
 		locData.put("pinR", "5");
@@ -348,15 +348,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			//ArrayList<DrawingTool> newObjects = new ArrayList<>();
 			//newObjects.add(drawingToolObj);
 			this.drawingToolTable.addDrawingTool(drawingToolObj);
-			
-			HashMap<String,String> defaultData = new HashMap<String, String>();
-			defaultData.put("Lat", "37"); 
-			defaultData.put("Lon", "-120");
-			defaultData.put("Alt", "0");
-			defaultData.put("pinH", "10");
-			defaultData.put("pinR", "5");
-			defaultData.put("fontSize", "21");
-			AttributesData.add(defaultData);
 			
 			MainGUI.updateRenderWindow();
 		}
