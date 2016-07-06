@@ -83,7 +83,7 @@ public abstract class GeometryGenerator implements Named {
 	 * cannot be updated, in which case the geometry will be rebuilt with the new color using
 	 * <code>createFaultBranchGroup</code>.
 	 * 
-	 * @param actor
+	 * @param shakeaMapActor
 	 * @param color
 	 * @return success
 	 */

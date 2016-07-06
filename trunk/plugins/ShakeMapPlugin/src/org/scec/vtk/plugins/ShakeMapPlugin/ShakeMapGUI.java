@@ -1,6 +1,5 @@
 package org.scec.vtk.plugins.ShakeMapPlugin;
 
-import java.awt.Container;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
-import org.opensha.commons.util.cpt.CPT;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.ShakeMapPlugin.Component.ShakeMap;
@@ -27,8 +25,9 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	JCheckBox checkBox;
 	ArrayList<ShakeMap> shakeMapsList;
 	PluginActors pluginActors;
-
+	ShakeMap shakeMap;
 	private ArrayList<vtkActor> actorList;
+	
 	public ShakeMapGUI(PluginActors pluginActors) {
 		shakeMapLibraryPanel = new JPanel();
 		checkBox = new JCheckBox("Chino Hills");
@@ -38,6 +37,9 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		this.add(shakeMapLibraryPanel);
 		shakeMapsList = new ArrayList<ShakeMap>();
 		actorList = new ArrayList<>();
+		
+		shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
+		
 	}
 
 
@@ -56,20 +58,24 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		if(src == checkBox)
 		{
 			if (e.getStateChange()==ItemEvent.SELECTED) {
-				ShakeMap shakeMap = new ShakeMap(new CPT(), Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
 				if(!shakeMapsList.contains(shakeMap))
 				{
-					shakeMap.loadFromFile(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Chino_Hills.txt","shake");
+					shakeMap.loadFromFileToGriddedGeoDataSet(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Chino_Hills.txt");
 					shakeMapsList.add(shakeMap);
-					shakeMap.drawPolygonMap();
-					vtkActor actor = new vtkActor();
-					actor.SetMapper(shakeMap.getMapper());
-					actorList.add(actor);
-					pluginActors.addActor(actor);
-					Info.getMainGUI().updateRenderWindow();
+					shakeMap.setActor(shakeMap.builtPolygonSurface());
+					actorList.add(shakeMap.getActor());
+					pluginActors.addActor(shakeMap.getActor());
+				}
+				else
+				{
+					shakeMapsList.get(0).getActor().SetVisibility(1);
 				}
 			}
-
+			else
+			{
+				shakeMapsList.get(0).getActor().SetVisibility(0);
+			}
+			Info.getMainGUI().updateRenderWindow();
 		}
 	}
 

@@ -20,7 +20,6 @@ public class ShakeMapPlugin  extends ActionPlugin{
 		gui.unloadPlugin();
 	}
 
-
 }
 
 
