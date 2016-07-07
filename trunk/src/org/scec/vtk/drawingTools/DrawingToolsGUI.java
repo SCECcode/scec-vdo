@@ -25,7 +25,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-
+import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
@@ -165,6 +165,18 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				  }else{
 					  ((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,0.0); //sets color to yellow
 					  ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,0.0);
+					 // System.out.println("asdas" +  defaultLocations.presetLocationGroups.size());
+					  for(int i1 = 0; i1 < defaultLocations.presetLocationGroups.size(); i1++)
+					  { 
+						  PresetLocationGroup tempGroup = defaultLocations.presetLocationGroups.get(i1);
+						  //System.out.println(tempGroup.name);
+						  if (tempGroup != null && tempGroup.name.equals("CA Cities") && tempGroup.checkbox.isSelected())
+						  {
+							  JOptionPane.showMessageDialog(defaultLocations.frame,"City Name: " + (String)target.getValueAt(i,target.getSelectedColumn()) + "\n"
+									    +"City Population: "  + defaultLocations.getPopulation((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "County: " +
+									  defaultLocations.getCounty((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" );
+						  }
+					  }
 				  }
 				  MainGUI.updateRenderWindow();
 			    }

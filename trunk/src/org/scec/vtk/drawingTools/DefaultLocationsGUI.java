@@ -61,13 +61,14 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 //	private JButton searchButton = new JButton("Go!");
 //	private JTextField searchCity = new JTextField();
 	
-	private ArrayList<PresetLocationGroup> presetLocationGroups = new ArrayList<PresetLocationGroup>();
+	ArrayList<PresetLocationGroup> presetLocationGroups = new ArrayList<PresetLocationGroup>();
 	private String selectedInputFile;
 	
 	private DisplayAttributes displayAttributes;
 	private JPanel centerPanel = new JPanel();
-	private JFrame frame = new JFrame();
+	JFrame frame = new JFrame();
 	private JScrollPane defaultScrollPane = new JScrollPane(centerPanel);
+	ArrayList<String> citypop = new ArrayList<String>();
 
 	private DrawingToolsTable drawingToolTable;
 	private DrawingToolsTableModel drawingTooltablemodel;
@@ -217,6 +218,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							textStr,
 							displayAttributes);
 					locations.addElement(tempLocation);
+					System.out.println(index);
 				}
 				return locations;
 			} catch (Exception e) {
@@ -337,6 +339,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		            			String c = dataPath + "CA_Cities_counties.txt";
 		            			ArrayList<String> temp = filterCitiesByCounty(c,ccount);
 		            			addFilteredFiles(tempGroup.locations,filterCitiesByPopulation(p,popSize,temp));
+		            			citypop = filterCitiesByPopulation(p,popSize,temp);
 							}
 							else
 							{
@@ -352,6 +355,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 						else
 						{
 							tempGroup.locations = loadBuiltInFiles();
+							System.out.println("Size:" + tempGroup.locations.size());
 							addBuiltInFiles(tempGroup.locations);
 						}
 						
@@ -379,6 +383,49 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			e.printStackTrace();
 		}
 		return counties;
+	}
+	public int getPopulation(String cityName)
+	{
+		int counties = -1;
+		ArrayList<String> buff = new ArrayList<String>();
+		try {
+			Charset charset = Charset.forName("Cp1252");
+			buff = (ArrayList<String>)Files.readAllLines(Paths.get(dataPath + "CA_Cities_population.txt"), charset);
+			for(int i = 0; i < buff.size(); i+=2)
+			{
+			//	System.out.println(buff.get(i) + "," + cityName);
+				if(buff.get(i).trim().equals(cityName))
+				{
+					return Integer.parseInt(buff.get(i+1));
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return counties;
+	}
+	public String getCounty(String cityName)
+	{
+		ArrayList<String> buff = new ArrayList<String>();
+		String county = "";
+		try {
+			Charset charset = Charset.forName("Cp1252");
+			buff = (ArrayList<String>)Files.readAllLines(Paths.get(dataPath + "CA_Cities_counties.txt"), charset);
+			for(String search : buff)
+			{
+				if(search.contains("-"))
+					county = search.substring(1);
+				else
+				{
+					if(search.trim().equals(cityName))
+						break;
+				}
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return county;
 	}
 	private ArrayList<String> filterCitiesByCounty(String countyFile, ArrayList<String> counties)
 	{
