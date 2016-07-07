@@ -7,6 +7,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -24,6 +25,7 @@ import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
+import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
@@ -57,10 +59,21 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 	private static final Double DURATION_DEFAULT = 30d;
 	private DoubleParameter durationParam;
 
+	private enum AnimType {
+		TIME_BASED("Time Based"),
+		EVENLY_SPACED("Evenly Spaced");
+		
+		private String name;
+		private AnimType(String name) {
+			this.name = name;
+		}
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
 	private static final String ANIM_TYPE_PARAM_NAME = "Animation Type";
-	private static final String ANIM_TYPE_TIME_BASED = "Time Based";
-	private static final String ANIM_TYPE_EVEN = "Evely Spaced";
-	private StringParameter animTypeParam;
+	private EnumParameter<AnimType> animTypeParam;
 
 	private static final String LOOP_PARAM_NAME = "Loop Animation";
 	private static boolean LOOP_PARAM_DEFAULT = false;
@@ -107,16 +120,16 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		// anim params
 		durationParam = new DoubleParameter(DURATION_PARAM_NAME, DURATION_MIN, DURATION_MAX, DURATION_DEFAULT);
 
-		ArrayList<String> strings = new ArrayList<String>();
-		strings.add(ANIM_TYPE_EVEN);
-		String defaultAnimType;
+		EnumSet<AnimType> animTypes;
+		AnimType defaultAnimType;
 		if (faultAnim instanceof TimeBasedFaultAnimation) {
-			strings.add(ANIM_TYPE_TIME_BASED);
-			defaultAnimType = ANIM_TYPE_TIME_BASED;
+			animTypes = EnumSet.allOf(AnimType.class);
+			defaultAnimType = AnimType.TIME_BASED;
 		} else {
-			defaultAnimType = ANIM_TYPE_EVEN;
+			animTypes = EnumSet.of(AnimType.EVENLY_SPACED);
+			defaultAnimType = AnimType.EVENLY_SPACED;
 		}
-		animTypeParam = new StringParameter(ANIM_TYPE_PARAM_NAME, strings, defaultAnimType);
+		animTypeParam = new EnumParameter<AnimationPanel.AnimType>(ANIM_TYPE_PARAM_NAME, animTypes, defaultAnimType, null);
 
 		loopParam = new BooleanParameter(LOOP_PARAM_NAME, LOOP_PARAM_DEFAULT);
 		
@@ -125,7 +138,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 
 		generalAnimParams = new ParameterList();
 		generalAnimParams.addParameter(durationParam);
-		if (strings.size() > 1)
+		if (animTypes.size() > 1)
 			generalAnimParams.addParameter(animTypeParam);
 		generalAnimParams.addParameter(loopParam);
 //		generalAnimParams.addParameter(renderParam);
@@ -321,13 +334,15 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 	
 	private StepTimeCalculator getTimeCalc(double duration) {
 		int maxStep = slider.getMaximum();
-		String selectedType = animTypeParam.getValue();
-		if (selectedType.equals(ANIM_TYPE_TIME_BASED)) {
+		AnimType type = animTypeParam.getValue();
+		switch (type) {
+		case TIME_BASED:
 			return new TimeBasedCalc((TimeBasedFaultAnimation)faultAnim, maxStep, duration);
-		} else if (selectedType.equals(ANIM_TYPE_EVEN)) {
+		case EVENLY_SPACED:
 			return new EvenlySpacedCalc(maxStep, duration);
+		default:
+			throw new IllegalStateException("Unknown anim type: "+type);
 		}
-		throw new RuntimeException("Unknown anim type: " + selectedType);
 	}
 
 	@Override
