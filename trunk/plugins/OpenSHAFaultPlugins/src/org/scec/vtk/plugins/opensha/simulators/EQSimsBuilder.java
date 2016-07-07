@@ -23,6 +23,7 @@ import org.opensha.commons.data.NamedComparator;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
@@ -30,6 +31,8 @@ import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.sha.simulators.EQSIM_Event;
 import org.opensha.sha.simulators.RectangularElement;
 import org.opensha.sha.simulators.SimulatorElement;
+import org.opensha.sha.simulators.iden.MagRangeRuptureIdentifier;
+import org.opensha.sha.simulators.iden.RuptureIdentifier;
 import org.opensha.sha.simulators.parsers.EQSIMv06FileReader;
 import org.opensha.sha.simulators.parsers.RSQSimFileReader;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
@@ -63,8 +66,11 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private static final String INPUT_SELECTOR_FROM_FILE = "(Select File)";
 	private StringParameter inputParam;
 	
-	private static final String OUTPUT_SELECTOR_PARAM_NAME = "Simulator Output File";
-	private FileParameter outputParam = new FileParameter(OUTPUT_SELECTOR_PARAM_NAME);
+	private static final String EVENT_SELECTOR_PARAM_NAME = "Simulator Event File";
+	private FileParameter eventFileParam = new FileParameter(EVENT_SELECTOR_PARAM_NAME);
+	
+	private static final String EVENT_MIN_MAG_PARAM_NAME = "Min Event Mag To Load";
+	private DoubleParameter eventMinMagParam;
 	
 	private ParameterList builderParams = new ParameterList();
 	
@@ -95,8 +101,10 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		inputParam = new StringParameter(INPUT_SELECTOR_PARAM_NAME, strings, strings.get(0));
 		inputParam.addParameterChangeListener(this);
 		builderParams.addParameter(inputParam);
-		outputParam.addParameterChangeListener(this);
-		builderParams.addParameter(outputParam);
+		eventFileParam.addParameterChangeListener(this);
+		builderParams.addParameter(eventFileParam);
+		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(5d));
+		builderParams.addParameter(eventMinMagParam);
 		
 		colorers = new ArrayList<FaultColorer>();
 		EQSlipRateColorer slipColorer = new EQSlipRateColorer();
@@ -172,6 +180,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			file = getCustomFile();
 			if (file == null)
 				return;
+			// set directory for loading events file
+			if (eventFileParam.getValue() == null)
+				eventFileParam.setDefaultInitialDir(file.getParentFile());
 		} else {
 			try {
 				file = getCacheFile(input);
@@ -184,7 +195,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		outputParam.setValue(null);
+		eventFileParam.setValue(null);
 		
 		// this is a mapping of all fault IDs to category node for the fault
 		HashMap<Integer, FaultCategoryNode> faultNodesMap = new HashMap<Integer, FaultCategoryNode>();
@@ -267,14 +278,22 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	public void parameterChange(ParameterChangeEvent event) {
 		if (event.getSource() == inputParam) {
 			fireTreeChangeEvent();
-		} else if (event.getSource() == outputParam) {
+		} else if (event.getSource() == eventFileParam) {
 			// TODO
-			File outFile = outputParam.getValue();
+			File outFile = eventFileParam.getValue();
 			if (outFile == null || elements == null) {
 				fireNewEvents(null);
 			} else if (elements != null) {
 				try {
-					List<EQSIM_Event> events = EQSIMv06FileReader.readEventsFile(outFile, elements);
+					List<RuptureIdentifier> rupIdens = new ArrayList<>();
+					rupIdens.add(new MagRangeRuptureIdentifier(eventMinMagParam.getValue(), 10d));
+					List<EQSIM_Event> events;
+					if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
+						System.out.println("Detected RSQSim output file/dir");
+						events = RSQSimFileReader.readEventsFile(outFile, elements, rupIdens);
+					} else {
+						events = EQSIMv06FileReader.readEventsFile(outFile, elements, rupIdens);
+					}
 					System.out.println("Done reading events file!");
 					fireNewEvents(events);
 				} catch (Exception e) {
@@ -287,7 +306,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private List<SimulatorElement> loadGeometry(File file) throws IOException {
 		String name = file.getName();
 		if (name.endsWith(".flt"))
-			return RSQSimFileReader.readGeometryFile(file, 11, 'S');
+			return RSQSimFileReader.readGeometryFile(file, 11, 'S'); // TODO make selectable
 		return EQSIMv06FileReader.readGeometryFile(file);
 	}
 	
