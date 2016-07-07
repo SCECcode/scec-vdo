@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -19,6 +20,7 @@ import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
+import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.sha.simulators.EQSIM_Event;
@@ -31,6 +33,9 @@ import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 
 import com.google.common.base.Joiner;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -48,8 +53,9 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	
 	private List<EQSIM_Event> unfilteredevents;
 	private Map<Integer, Integer> idToUnfilteredStepMap;
-	private ArrayList<Integer> filterIndexes;
-	private HashMap<Integer, Color>[] eventColorCache;
+	private List<Integer> filterIndexes;
+//	private HashMap<Integer, Color>[] eventColorCache;
+	private LoadingCache<Integer, Map<Integer, Color>> eventColorCache;
 	
 	private int currentStep = -1;
 	
@@ -142,6 +148,28 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		durationYearsParam = new DoubleParameter(DURATION_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
 		animParams.addParameter(durationYearsParam);
 		durationYearsParam.addParameterChangeListener(this);
+		
+		// cache for event colors for faster loading
+		// PreloadThread below will actively try to preload this cache with the next steps 
+		eventColorCache = CacheBuilder.newBuilder().maximumSize(10000).build(new CacheLoader<Integer, Map<Integer, Color>>() {
+
+			@Override
+			public Map<Integer, Color> load(Integer index) throws Exception {
+				EQSIM_Event event = unfilteredevents.get(index);
+				int[] ids = event.getAllElementIDs();
+				double[] slips = event.getAllElementSlips();
+				Map<Integer, Color> slipMap = new HashMap<>();
+				
+				for (int j=0; ids != null && j<ids.length; j++) {
+					int id = ids[j];
+					double slip = slips[j];
+					Color c = getColorForValue(slip);
+					slipMap.put(id, c);
+				}
+				return slipMap;
+			}
+			
+		});
 	}
 	
 	@Override
@@ -181,15 +209,20 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	@Override
 	public void setCurrentStep(int step) {
 		this.currentStep = step;
+		checkStartPreloadThread();
 	}
 	
-	private HashMap<Integer, Color> getColorCacheForStep(int step) {
+	private Map<Integer, Color> getColorCacheForStep(int step) {
 		if (unfilteredevents == null)
 			return null;
-		if (filterIndexes == null)
-			return eventColorCache[step];
-		else
-			return eventColorCache[filterIndexes.get(step)];
+		try {
+			if (filterIndexes == null)
+				return eventColorCache.get(step);
+			else
+				return eventColorCache.get(filterIndexes.get(step));
+		} catch (ExecutionException e) {
+			throw ExceptionUtils.asRuntimeException(e);
+		}
 	}
 	
 	private EQSIM_Event getEventForStep(int step) {
@@ -204,35 +237,69 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	@Override
 	public void setCPT(CPT cpt) {
 		super.setCPT(cpt);
-		cacheEvents();
+		clearCache();
 	}
 
 	@SuppressWarnings("unchecked")
-	private void cacheEvents() {
-		if (unfilteredevents == null || unfilteredevents.size() == 0) {
-			eventColorCache = null;
-			return;
-		}
-		eventColorCache = new HashMap[unfilteredevents.size()];
-		for (int i=0; i<unfilteredevents.size(); i++) {
-			EQSIM_Event event = unfilteredevents.get(i);
-			int[] ids = event.getAllElementIDs();
-			double[] slips = event.getAllElementSlips();
-			eventColorCache[i] = new HashMap<Integer, Color>();
-			
-			for (int j=0; ids != null && j<ids.length; j++) {
-				int id = ids[j];
-				double slip = slips[j];
-				Color c = getColorForValue(slip);
-				eventColorCache[i].put(id, c);
+	private void clearCache() {
+		eventColorCache.invalidateAll();
+	}
+	
+	private PreloadThread preloadThread;
+	
+	/**
+	 * If the PreloadThread is not started it will be started. Otherwise it's counter will be reset
+	 */
+	private synchronized void checkStartPreloadThread() {
+		if (preloadThread == null) {
+			preloadThread = new PreloadThread();
+			preloadThread.start();
+		} else {
+			if (preloadThread.isAlive()) {
+				preloadThread.currentIteration = 0;
+			}
+			if (!preloadThread.isAlive()) {
+				preloadThread = new PreloadThread();
+				preloadThread.start();
 			}
 		}
+	}
+	
+	private class PreloadThread extends Thread {
+		
+		// number of steps ahead to preload
+		final int preload_num = 100;
+		final long sleep_time_millis = 500;
+		final int max_iterations = 200;
+		private int currentIteration = 0;
+
+		@Override
+		public void run() {
+			while (currentIteration < max_iterations) {
+//				currentStep;
+				if (currentStep >= 0) {
+					if (unfilteredevents == null)
+						continue;
+					for (int i=0; i<preload_num; i++) {
+						int step = currentStep + i;
+						if (!isStepValid(step))
+							break;
+						getColorCacheForStep(step);
+					}
+				}
+				try {
+					Thread.sleep(sleep_time_millis);
+				} catch (InterruptedException e) {}
+				currentIteration++;
+			}
+		}
+		
 	}
 	
 	@Override
 	public void setCPTLog(boolean cptLog) {
 		super.setCPTLog(cptLog);
-		cacheEvents();
+		clearCache();
 	}
 
 	/* (non-Javadoc)
@@ -240,17 +307,13 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	 */
 	@Override
 	public void setEvents(List<EQSIM_Event> events) {
-		if (events != null && events.size() > 600000) {
-			System.out.println("Only animating first 600000 events!");
-			events = events.subList(0, 600000);
-		}
 		this.unfilteredevents = events;
 		idToUnfilteredStepMap = Maps.newHashMap();
 		if (events != null) {
 			for (int step=0; step<events.size(); step++)
 				idToUnfilteredStepMap.put(events.get(step).getID(), step);
 		}
-		cacheEvents();
+		clearCache();
 		filterEvents();
 	}
 
@@ -358,9 +421,14 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 				filterIndexes.add(i);
 			}
 			System.out.println("Filtered out "+(unfilteredevents.size()-filterIndexes.size())+"/"+unfilteredevents.size());
+			if (filterIndexes != null && filterIndexes.size() > 600000) {
+				System.out.println("Only animating first 600000 events!");
+				filterIndexes = filterIndexes.subList(0, 600000);
+			}
 		} else {
 			filterIndexes = null;
 		}
+		checkStartPreloadThread();
 		fireRangeChangeEvent();
 	}
 
