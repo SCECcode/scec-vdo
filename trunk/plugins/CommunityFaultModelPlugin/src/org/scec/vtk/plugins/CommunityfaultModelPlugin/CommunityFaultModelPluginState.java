@@ -129,7 +129,6 @@ public class CommunityFaultModelPluginState implements PluginState
 			Fault3D fault = (Fault3D) parent.faultTable.getModel().getValueAt(row,0);
 			faults.add(fault);
 		}
-		load();
 	}
 
 	@Override
