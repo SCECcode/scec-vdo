@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.scec.vtk.main.Info;
+
 import vtk.vtkActor;
 import vtk.vtkProp;
 
@@ -73,6 +75,44 @@ public class PluginActors {
 		for (vtkProp actor : actors)
 			for (PluginActorsChangeListener l : listeners)
 				l.actorAdded(actor);
+	}
+	
+	/**
+	 * Creates a deep copy of an actor
+	 */
+	public void deepCopy(PluginActors source) {
+		
+		for (vtkProp actor : source.getActors())
+		{
+			if (actor instanceof vtkActor)
+			{
+				vtkActor copy = new vtkActor();
+				copy.SetVisibility(actor.GetVisibility());
+				copy.SetPickable(actor.GetPickable());
+				copy.SetDragable(actor.GetDragable());
+				copy.SetUseBounds(actor.GetUseBounds());
+				copy.SetAllocatedRenderTime(actor.GetAllocatedRenderTime(), null);
+				copy.SetEstimatedRenderTime(actor.GetEstimatedRenderTime());
+				copy.SetRenderTimeMultiplier(actor.GetRenderTimeMultiplier());
+			
+				for (int i=0; i<actor.GetNumberOfConsumers(); i++)
+				{
+					copy.AddConsumer(actor.GetConsumer(i));
+				}
+				copy.SetPropertyKeys(actor.GetPropertyKeys());
+				copy.SetDebug(actor.GetDebug());
+				copy.SetReferenceCount(actor.GetReferenceCount());
+				copy.SetMapper(((vtkActor) actor).GetMapper());
+				copy.GetProperty().SetColor(((vtkActor) actor).GetProperty().GetColor());
+				copy.GetProperty().SetOpacity(((vtkActor) actor).GetProperty().GetOpacity());
+				copy.GetProperty().SetTexture(0,((vtkActor) actor).GetProperty().GetTexture(0));
+				copy.SetPosition(((vtkActor) actor).GetPosition());
+				System.out.println(copy.GetProperty().GetColor()[0]);
+				addActor(copy);
+			}
+		}
+		
+		Info.getMainGUI().updateRenderWindow();
 	}
 
 }

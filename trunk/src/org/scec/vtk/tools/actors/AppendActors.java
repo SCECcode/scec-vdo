@@ -28,4 +28,8 @@ public class AppendActors {
 	{
 		return assembleData;
 	}
+	public void removeFromAppendedPolyData(vtkProp polydata)
+	{
+		assembleData.RemovePart(polydata);
+	}
 }
