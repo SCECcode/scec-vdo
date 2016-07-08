@@ -2,7 +2,6 @@ package org.scec.vtk.plugins.CommunityfaultModelPlugin;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,8 +31,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
-import org.scec.vtk.commons.opensha.surfaces.pickBehavior.FaultSectionPickBehavior;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.utils.DataAccessor;
@@ -49,10 +46,7 @@ import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
-import org.scec.vtk.tools.picking.PointPickEnabledActor;
-
 import vtk.vtkActor;
-
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3DPickBehavior;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
@@ -115,7 +109,8 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 	}
 
 	//branch group connection to core branch group
-	private PluginActors actors;
+	private PluginActors pluginActors;
+	private ArrayList<vtkActor> allFaultActors;
 	private PickHandler<Fault3D> pickHandler;
 
 
@@ -146,7 +141,8 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 	}
 
 	private void initialize(PluginActors actors) {
-		this.actors = actors;
+		this.pluginActors = actors;
+		allFaultActors = new ArrayList<>();
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(
 				Prefs.getPluginWidth(), Prefs.getPluginHeight()));
@@ -524,19 +520,27 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 			//libModel.toggleVisibilityForRows(this.faultTable.getSelectedRows());
 			ArrayList<Fault3D> selectedFaults = faultTable.getSelected();
 			for (Fault3D fault : selectedFaults) {
-				vtkActor actor = fault.getFaultActor();
-				int visisble = actor.GetVisibility();
-				if (visisble == 0) {
-					actor.VisibilityOn();
-				}
-				else {
-					actor.VisibilityOff();
-				}
+				if(fault.getFaultActor().GetVisibility()==0)
+					setVisibility(fault, 1);
+				else
+					setVisibility(fault,0);
 			}
 			Info.getMainGUI().updateRenderWindow();
-		} else if (src == this.meshFaultsButton) {
+		} 
+		else if (src == this.meshFaultsButton) {
 			libModel.toggleMeshStateForRows(this.faultTable.getSelectedRows());
-		} else if (src == this.colorFaultsButton) {
+			
+			int[] selectedRows = this.faultTable.getSelectedRows();
+			int row =0;
+			ArrayList<Fault3D> selectedFaults = faultTable.getSelected();
+			for (Fault3D fault : selectedFaults) {
+				int meshstate = libModel.getMeshStateForRow(selectedRows[row++]);
+				setMeshState(fault,meshstate);
+			}
+			
+			MainGUI.updateRenderWindow();
+		} 
+		else if (src == this.colorFaultsButton) {
 			if (this.colorChooser == null) {
 				this.colorChooser = new SingleColorChooser(this);
 			}
@@ -546,41 +550,23 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 				this.faultTable.getSelectedRows();
 				ArrayList<Fault3D> selectedFaults = faultTable.getSelected();
 				for (Fault3D fault : selectedFaults) {
-					vtkActor actor = fault.getFaultActor();
-					//only between 0 and 1;
-					double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
-					actor.GetProperty().SetColor(color);
+					setColor(fault, newColor);
 				}
 				MainGUI.updateRenderWindow();
 			}
-		} else if (src == this.editFaultsButton) {
+		} 
+		else if (src == this.editFaultsButton) {
 			runObjectInfoDialog(this.faultTable.getSelected());
-		} else if (src == this.addFaultsButton) {
+		} 
+		else if (src == this.addFaultsButton) {
 			if (this.fileChooser == null) {
 				this.fileChooser = new DataFileChooser(this, "Import Fault Files", true,new File(MainGUI.getRootPluginDir() + File.separator + "Faults"));
 			}
 			this.fileChooser.setCurrentFilter("ts", "GoCAD (*.ts)");
 			File[] f = this.fileChooser.getFiles();
-			if (f != null) {
-				TSurfImport tsImport = new TSurfImport(this, f);
-				ArrayList newObjects = tsImport.processFiles();
-				if (newObjects.size() > 0) {
-					this.faultTable.addFaults(newObjects);
-					this.faultTable.getRowCount();
-					//reloading as the faults are sorted alphabetically 
-					List loadedRows = this.faultTable.getLibraryModel().getAllObjects();
-					for(int i = 0; i < loadedRows.size(); i++)
-					{
-						Fault3D  fault =(Fault3D) loadedRows.get(i);
-						System.out.println("Adding "+fault.getDisplayName());
-						PickEnabledActor<Fault3D> actor = new PickEnabledActor<Fault3D>(getPickHandler(), fault);
-						actor.SetMapper(fault.getFaultActor().GetMapper());
-						actors.addActor(actor);
-					}
-					MainGUI.updateRenderWindow();
-				}
-			}
-		} else if (src == this.remFaultsButton) {
+			addFaultsFromFile(f);
+		} 
+		else if (src == this.remFaultsButton) {
 			int[] selectedRows = this.faultTable.getSelectedRows();
 			ArrayList<Fault3D> selectedFaults = faultTable.getSelected();
 			new ArrayList<vtkActor>();
@@ -591,7 +577,7 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 				//remove actors
 				for (Fault3D fault : selectedFaults) {
 					vtkActor actor = fault.getFaultActor();
-					actors.removeActor(actor);
+					pluginActors.removeActor(actor);
 				}
 			}
 			MainGUI.updateRenderWindow();
@@ -622,11 +608,84 @@ public class CommunityFaultModelGUI  extends JPanel implements ActionListener, L
 
 	}
 
+	public void addFaultsFromFile(File[] f) {
+		// TODO Auto-generated method stub
+		if (f != null) {
+			TSurfImport tsImport = new TSurfImport(this, f);
+			ArrayList<Fault3D> newObjects = tsImport.processFiles();
+			if (newObjects.size() > 0) {
+				this.faultTable.addFaults(newObjects);
+				this.faultTable.getRowCount();
+				//reloading as the faults are sorted alphabetically 
+				List loadedRows = this.faultTable.getLibraryModel().getAllObjects();
+				for(int i = 0; i < loadedRows.size(); i++)
+				{
+					Fault3D  fault =(Fault3D) loadedRows.get(i);
+					System.out.println("Adding "+fault.getDisplayName());
+					PickEnabledActor<Fault3D> actor = new PickEnabledActor<Fault3D>(getPickHandler(), fault);
+					actor.SetMapper(fault.getFaultMapper());//.GetMapper());
+					fault.setFaultActor(actor);
+					actor.GetProperty().SetRepresentationToWireframe();
+					pluginActors.addActor(actor);
+				}
+				MainGUI.updateRenderWindow();
+			}
+		}
+	}
 
+	public void setColor(Fault3D fault, Color newColor) {
+		// TODO Auto-generated method stub
+		vtkActor actor = fault.getFaultActor();
+		double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
+		actor.GetProperty().SetColor(color);
+	}
 
-	/*public void setPickable(boolean enable) {
-	pickBehavior.setEnable(enable);
-}*/
+	public void setMeshState(Fault3D fault, Integer meshstate) {
+		// TODO Auto-generated method stub
+		vtkActor actor = fault.getFaultActor();
+		switch(meshstate)
+		{
+			case 0: {
+				actor.GetProperty().SetRepresentationToSurface();
+				actor.GetProperty().SetRepresentationToWireframe();
+				break;
+			}
+			case 1: {
+				actor.GetProperty().SetRepresentationToSurface();
+				actor.GetProperty().EdgeVisibilityOn();
+				break;
+			}
+			case 2: {
+				actor.GetProperty().EdgeVisibilityOff();
+				actor.GetProperty().SetRepresentationToSurface();
+				break;
+			}
+		}
+	}
+
+	public void setVisibility(Fault3D fault, Integer visisble) {
+		vtkActor actor = fault.getFaultActor();
+		if (visisble == 0) {
+			actor.VisibilityOff();
+		}
+		else {
+			actor.VisibilityOn();
+		}
+	}
+
+	public void unload() {
+		// TODO Auto-generated method stub
+		//remove actors
+		System.out.println(
+				pluginActors.getActors().size());
+		for (int row =0;row < faultTable.getRowCount();row++)
+		{
+			Fault3D fault = (Fault3D) faultTable.getModel().getValueAt(row,0);
+			vtkActor actor = fault.getFaultActor();
+			pluginActors.removeActor(actor);
+		}
+		Info.getMainGUI().updateRenderWindow();
+	}
 
 }
 

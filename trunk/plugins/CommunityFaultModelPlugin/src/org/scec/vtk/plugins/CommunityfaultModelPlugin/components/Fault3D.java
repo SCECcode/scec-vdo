@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.tools.picking.PickEnabledActor;
 
 import vtk.vtkActor;
 
@@ -27,6 +28,8 @@ public class Fault3D extends FaultAccessor {
         super();
         newDocument();
     }
+
+
         
 }
 

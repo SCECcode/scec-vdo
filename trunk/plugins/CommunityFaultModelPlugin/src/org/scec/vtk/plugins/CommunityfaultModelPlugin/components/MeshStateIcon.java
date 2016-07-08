@@ -28,14 +28,14 @@ public class MeshStateIcon implements Icon {
     
     /** Specifies mesh-only fault appearance */
     public static final int MESH_NO_FILL = 0;
-    /** Specifies mesh with transparant fill fault appearance */
-    public static final int MESH_TRANS_FILL = 1;
+//    /** Specifies mesh with transparant fill fault appearance */
+//    public static final int MESH_TRANS_FILL = 1;
     /** Specifies mesh with solid fill fault appearance */
-    public static final int MESH_SOLID_FILL = 2;
-    /** Specifies transparant fill only fault appearance */
-    public static final int NO_MESH_TRANS_FILL = 3;
+    public static final int MESH_SOLID_FILL = 1;
+//    /** Specifies transparant fill only fault appearance */
+//    public static final int NO_MESH_TRANS_FILL = 3;
     /** Specifies solid fill only fault appearance */
-    public static final int NO_MESH_SOLID_FILL = 4;
+    public static final int NO_MESH_SOLID_FILL = 2;
     
     private int mesh;
     
@@ -134,16 +134,18 @@ public class MeshStateIcon implements Icon {
         // set background for option combinations
         if (this.mesh == MESH_NO_FILL) {
             g.setColor(bgLight);
-        } else if (this.mesh == MESH_TRANS_FILL || this.mesh == NO_MESH_TRANS_FILL){
-            g.setColor(bgMid);
-        } else {
+        } 
+//            else if (this.mesh == MESH_TRANS_FILL ){//|| this.mesh == NO_MESH_TRANS_FILL){
+//            g.setColor(bgMid);
+//        }
+        else {
             g.setColor(bgDark);
         }
         
         g.fillRect(x+1, y+1, getIconWidth()-1, getIconHeight()-1);
         
         // set mesh for option combinations
-        if (this.mesh == MESH_NO_FILL || this.mesh == MESH_TRANS_FILL || this.mesh == MESH_SOLID_FILL) {
+        if (this.mesh == MESH_NO_FILL || this.mesh == MESH_SOLID_FILL) {
             int evenWidth = 1;
             if (getIconWidth() % 2 == 1) evenWidth = 1;
             int middle = (getIconWidth() / 2);
