@@ -1,6 +1,5 @@
 package org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 import vtk.vtkActor;
@@ -32,7 +31,8 @@ public class Earthquake {
 		this.magMinField = eq_magnitude;
 		this.latMinField = eq_latitude;
 		this.lonMinField = eq_longitude;
-		this.dateStartField = eq_time.toString();
+		//this.dateStartField = eq_time.toString();
+		this.time = eq_time;
 		// this.earthquakeActor = earthquakeActor;
 	}
 
@@ -64,5 +64,9 @@ public class Earthquake {
 	public double getEq_magnitude() {
 		// TODO Auto-generated method stub
 		return magMinField;
+	}
+	public Date getEq_time() {
+		// TODO Auto-generated method stub
+		return time;
 	}
 }
