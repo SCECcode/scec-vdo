@@ -114,7 +114,7 @@ public class FaultTableModel extends AbstractLibraryModel {
      */
     public void toggleMeshStateForRow(int row) {
         int meshState = ((FaultAccessor)getObjectAtRow(row)).getMeshState();
-        setMeshStateForRow((meshState+1)%5, row);
+        setMeshStateForRow((meshState+1)%3, row);
     }
     
     /**
@@ -133,7 +133,7 @@ public class FaultTableModel extends AbstractLibraryModel {
             }
         }
         for (int i=0; i<rows.length; i++) {
-            setMeshStateForRow((meshState+1)%5, rows[i]);
+            setMeshStateForRow((meshState+1)%3, rows[i]);
         }
     }
     
@@ -155,7 +155,7 @@ public class FaultTableModel extends AbstractLibraryModel {
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount() {
-        return 4;
+        return 3;
     }
     
 }

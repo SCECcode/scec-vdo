@@ -255,7 +255,6 @@ public class FaultTable extends JTable implements ChangeListener {
         col3.setMinWidth(20);
         col3.setMaxWidth(20);
         
- 
     }
     
     private static boolean deleteDir(File dir) {
