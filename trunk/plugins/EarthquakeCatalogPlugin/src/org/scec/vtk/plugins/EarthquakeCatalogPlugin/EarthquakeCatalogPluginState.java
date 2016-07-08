@@ -8,7 +8,6 @@ import java.util.Iterator;
 import org.dom4j.Element;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginState;
-import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.ComcatResourcesDialog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 
 public class EarthquakeCatalogPluginState implements PluginState {
@@ -23,6 +22,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	private ArrayList<String> dispName;
 	private ArrayList<String> filePath;
 	private ArrayList<Boolean> catalogTypeIsComcat;
+	private ArrayList<String> valuesBy;
 
 
 	EarthquakeCatalogPluginState(EarthquakeCatalogPluginGUI parent)
@@ -38,6 +38,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 		transparency =new ArrayList<>();
 		visibility =new ArrayList<>();
 		geometry =new ArrayList<>();
+		valuesBy =new ArrayList<>();
 		catalogTypeIsComcat = new ArrayList<>();
 	}
 	void copyLatestCatalogDetials()
@@ -75,6 +76,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 			transparency.add(cat.getTransparency());
 			visibility.add(eqc.isDisplayed());
 			geometry.add(eqc.getGeometry());
+			valuesBy.add(eqc.getValuesBy());
 			catalogs.add(cat);
 		}
 	}
@@ -84,11 +86,13 @@ public class EarthquakeCatalogPluginState implements PluginState {
 		int i=0;
 		for (EQCatalog eqc : catalogs)
 		{
+			eqc.setValuesBy(valuesBy.get(i));
 			Color[] newColor =  {color1.get(i),color2.get(i)};
 			parent.setColGradient(eqc, newColor);
 			parent.setMagnitudeScale(eqc,scaling.get(i));
 			parent.setTransparency(eqc, transparency.get(i));
 			eqc.setDisplayed(visibility.get(i));
+			
 			//sphere or points and visibility
 			parent.setCatalogVisible(eqc,geometry.get(i),visibility.get(i));
 			Info.getMainGUI().updateRenderWindow();
@@ -109,6 +113,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 					.addAttribute( "transparency", Integer.toString(transparency.get(i)))
 					.addAttribute( "geometry",Integer.toString(geometry.get(i)))
 					.addAttribute( "comcat",Boolean.toString(catalogTypeIsComcat.get(i)))
+					.addAttribute( "valuesBy",(valuesBy.get(i)))
 					.addAttribute( "visibility",(visibility.get(i).toString()));
 			System.out.println(eqc.getColor1());
     		System.out.println(eqc.getColor2());
@@ -134,6 +139,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	            transparency.add(Integer.parseInt(e.attributeValue("transparency")));
 	            geometry.add(Integer.parseInt(e.attributeValue("geometry")));
 	            visibility.add(Boolean.parseBoolean(e.attributeValue("visibility")));
+	            valuesBy.add((e.attributeValue("valuesBy")));
 	            catalogTypeIsComcat.add(Boolean.parseBoolean(e.attributeValue("comcat")));
 	            
 	            System.out.println(e.attributeValue("filePath"));
@@ -159,7 +165,7 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	            //parent.getCatalogTable().tableModel.setVisibilityForRow(true, row);
 	            if(!parent.getCatalogTable().tableModel.getLoadedStateForRow(row)){
 	            	parent.getCatalogTable().tableModel.setLoadedStateForRow(true, row);
-            		//parent.processTableSelectionChange();
+            		parent.processTableSelectionChange();
             	}
 	            eq=(EQCatalog) parent.getCatalogTable().tableModel.getObjectAtRow(row);
 	            catalogs.add(eq);

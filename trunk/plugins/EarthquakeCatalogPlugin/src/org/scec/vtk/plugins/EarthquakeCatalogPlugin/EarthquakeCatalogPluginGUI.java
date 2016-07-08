@@ -56,14 +56,9 @@ import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.SourceCatalog;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
-import org.scec.vtk.plugins.utils.components.EditButton;
 import org.scec.vtk.plugins.utils.components.GradientColorChooser;
 import org.scec.vtk.plugins.utils.components.HelpButton;
-import org.scec.vtk.plugins.utils.components.NewObjButton;
 import org.scec.vtk.plugins.utils.components.ObjectInfoDialog;
-import org.scec.vtk.plugins.utils.components.ReferenceButton;
-import org.scec.vtk.plugins.utils.components.RemoveButton;
-import org.scec.vtk.plugins.utils.components.SaveButton;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickHandler;
 
@@ -73,7 +68,6 @@ import vtk.vtkCellArray;
 import vtk.vtkDoubleArray;
 import vtk.vtkGlyph3D;
 import vtk.vtkMapper;
-import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkUnsignedCharArray;
 import vtk.vtkVertexGlyphFilter;
@@ -585,7 +579,7 @@ MouseListener
 		//dispProp_geomButGrp.add(this.dispProp_geomCow);
 
 		// MAGNITUDE SCALING
-		this.dispProp_scaling = new JLabel("Magnitude scaling:");
+		this.dispProp_scaling = new JLabel("Scaling:");
 
 
 		//SCALING
@@ -620,7 +614,7 @@ MouseListener
 		this.lowerGradientLabel.setVisible(false);
 		
 		// GRADIENT
-		this.dispProp_gradient = new JLabel("Apply gradient to:");
+		this.dispProp_gradient = new JLabel("Apply gradient/scale to:");
 
 		this.dispProp_gradDepth = new JRadioButton("Depth");
 		this.dispProp_gradDepth.addActionListener(this);
@@ -648,7 +642,7 @@ MouseListener
 		this.propsDisplayPanel.removeAll();
 		this.propsDisplayPanel.add(this.dispProp_geometry,		new GridBagConstraints( 0, 0, 1, 1, 0.3, 0.0, a_r, f, new Insets( 0, 0,0,0), 0, 0 ));
 
-		// had to hack this up to get it to display correctly on Mac OS X
+		
 		JPanel geometryPanel = new JPanel();
 		geometryPanel.setLayout(new BoxLayout(geometryPanel, BoxLayout.X_AXIS));
 		geometryPanel.add(this.dispProp_geomPoint);
@@ -656,35 +650,31 @@ MouseListener
 		geometryPanel.add(this.dispProp_geomSphere);
 		this.propsDisplayPanel.add(geometryPanel,		new GridBagConstraints( 1, 0, 1, 1, 0.7, 0.0, a_l, f, new Insets( 0,10,0,0), 0, 0 ));
 	
-		int offset = 0;
 	
-		this.propsDisplayPanel.add(this.dispProp_scaling,		new GridBagConstraints( 0, 2+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
-		//this.propsDisplayPanel.add(this.dispProp_scaleMenu,		new GridBagConstraints( 1, 2+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,0,0), 0, 0 ));
-		this.propsDisplayPanel.add(this.dispProp_slider,		new GridBagConstraints( 1, 2+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10,20,0,10), 0, 0 ));
-
-		if (Prefs.getOS() == Prefs.OSX) {
-		} else if (Prefs.getOS() == Prefs.WINDOWS) {
-		} else {
-		}
-
-		//Add new transparency slider here
-		this.propsDisplayPanel.add(transLabel,new GridBagConstraints( 0, 4+offset, 1, 1, 0.0, 0.0, a_c, f, new Insets(0, 0,0,0), 0, 0 ));
-		this.propsDisplayPanel.add(this.transparencySlider,		new GridBagConstraints( 1, 4+offset, 2, 1, 0.0, 0.0, a_c, f, new Insets(0, 0,0,0), 0, 0 ));
-		offset++;
-
-		this.propsDisplayPanel.add(this.dispProp_color,			new GridBagConstraints( 0, 8+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10, 10,0,0), 0, 0 ));
-		this.propsDisplayPanel.add(this.dispProp_colGradientButton,		new GridBagConstraints( 1, 8+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,0,0,0), 0, 0 ));
-		this.propsDisplayPanel.add(this.lowerGradientLabel,       new GridBagConstraints(1, 9+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(0,0,0,0), 0, 0));
-		this.propsDisplayPanel.add(this.higherGradientLabel,      new GridBagConstraints(1, 9+ offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(0, 0, 0, 0), 103, 0));
-
-		// had to hack this up to get it to display correctly on Mac OS X
-		this.propsDisplayPanel.add(this.dispProp_gradient,		new GridBagConstraints( 0, 10+offset, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));// had to hack this up to get it to display correctly on Mac OS X
+		this.propsDisplayPanel.add(this.dispProp_gradient,		new GridBagConstraints( 0, 2, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
 		JPanel gradientPanel = new JPanel();
 		gradientPanel.setLayout(new BoxLayout(gradientPanel, BoxLayout.X_AXIS));
 		gradientPanel.add(this.dispProp_gradMag);
 		gradientPanel.add(Box.createHorizontalStrut(10));
 		gradientPanel.add(this.dispProp_gradDepth);
-		this.propsDisplayPanel.add(gradientPanel,		new GridBagConstraints( 1, 10+offset, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,0,0), 0, 0 ));
+		this.propsDisplayPanel.add(gradientPanel,		new GridBagConstraints( 1, 2, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,10,0,0), 0, 0 ));
+		
+	
+		this.propsDisplayPanel.add(this.dispProp_scaling,		new GridBagConstraints( 0, 4, 1, 1, 0.0, 0.0, a_r, f, new Insets(10, 0,0,0), 0, 0 ));
+		this.propsDisplayPanel.add(this.dispProp_slider,		new GridBagConstraints( 1, 4, 1, 1, 0.0, 0.0, a_r, f, new Insets(10,20,0,10), 0, 0 ));
+
+
+		//Add new transparency slider here
+		this.propsDisplayPanel.add(transLabel,new GridBagConstraints( 0, 12, 1, 1, 0.0, 0.0, a_c, f, new Insets(0, 0,0,0), 0, 0 ));
+		this.propsDisplayPanel.add(this.transparencySlider,		new GridBagConstraints( 1, 12, 2, 1, 0.0, 0.0, a_c, f, new Insets(0, 0,0,0), 0, 0 ));
+
+		this.propsDisplayPanel.add(this.dispProp_color,			new GridBagConstraints( 0, 6, 1, 1, 0.0, 0.0, a_l, f, new Insets(10, 10,0,0), 0, 0 ));
+		this.propsDisplayPanel.add(this.dispProp_colGradientButton,		new GridBagConstraints( 1, 6, 1, 1, 0.0, 0.0, a_l, f, new Insets(10,0,0,0), 0, 0 ));
+		this.propsDisplayPanel.add(this.lowerGradientLabel,       new GridBagConstraints(1, 7, 1, 1, 0.0, 0.0, a_l, f, new Insets(0,0,0,0), 0, 0));
+		this.propsDisplayPanel.add(this.higherGradientLabel,      new GridBagConstraints(1, 7, 1, 1, 0.0, 0.0, a_r, f, new Insets(0, 0, 0, 0), 103, 0));
+
+	
+		
 		this.propsDisplayPanel.repaint();
 	}
 
@@ -692,7 +682,7 @@ MouseListener
 		setGeometryEnabled(true);
 		setMagScaleEnabled(true);
 		setColorEnabled(true);
-		setGradApplyEnabled(false);
+		setGradApplyEnabled(true);
 
 	}
 
@@ -930,15 +920,20 @@ MouseListener
 
 		vtkPolyData inputData = new vtkPolyData();
 		inputData = (vtkPolyData) vertexGlyphFilter.GetInput();
-		//int lastIndex = eqList.indexOf(eq);
 
-		new vtkPoints();
 		radi = (vtkDoubleArray) inputData.GetPointData().GetArray("radi");
 		//double stepSize = (cat.getMaxMagnitude()-cat.getMinMagnitude())/cat.gradientDivisions;
 		for(int i =0;i<eqList.size();i++)
 		{
 			Earthquake eq = eqList.get(i);
-			radi.SetTuple1(i,eq.getEq_magnitude()*scaleSet);
+			if(cat.getValuesBy()=="Magnitude")
+			{
+				radi.SetTuple1(i,eq.getEq_magnitude()*scaleSet);
+			}
+			else{
+				radi.SetTuple1(i,eq.getEq_depth()*scaleSet);
+			}
+			
 		}
 		radi.Modified();
 		inputData.GetPointData().AddArray(radi);
@@ -976,7 +971,7 @@ MouseListener
 	}
 
 	//if catalogs opacity has to be changed
-	public static List<vtkActor> animateEarthquakeOpacity(int lastIndex,Earthquake eq,EQCatalog cat,int opacity)
+	public List<vtkActor> animateEarthquakeOpacity(int lastIndex,Earthquake eq,EQCatalog cat,int opacity)
 	{
 		//also called on every animation tick
 		ArrayList<Earthquake> eqList = cat.getSelectedEqList();
@@ -1052,16 +1047,7 @@ MouseListener
 
 		}
 	
-			//ascending order as per the time
-//			EQCatalog cat = this.catalogTable.getSelectedValue();
-//			//ArrayList<Earthquake> earthquakeList = 	cat.getSelectedEqList();
-//			if(this.parentPlugin instanceof StatefulPlugin)
-//			{
-//				PluginState state = ((StatefulPlugin)this.parentPlugin).getState().deepCopy();
-//				state.load();
-//			}
-			//Info.getMainGUI().GetScriptingPlugin().addEarthquakeListForAniamtion(cat,true);
-		
+
 		//display panel buttons
 		if (src == this.dispProp_geomPoint) {
 			EQCatalog cat = this.catalogTable.getSelectedValue();
@@ -1073,6 +1059,21 @@ MouseListener
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			cat.setGeometry(1);
 			setCatalogVisible(cat,cat.getGeometry(),true);
+		}
+		if (src == this.dispProp_gradMag) {
+			EQCatalog cat = this.catalogTable.getSelectedValue();
+			cat.setValuesBy("Magnitude");
+			Color[] newColor = {cat.getColor1(),cat.getColor2()};
+			setColGradient(cat,newColor);
+			setMagnitudeScale(cat, cat.getScaling());
+		}
+		else if (src == this.dispProp_gradDepth) {
+
+			EQCatalog cat = this.catalogTable.getSelectedValue();
+			cat.setValuesBy("Depth");
+			Color[] newColor = {cat.getColor1(),cat.getColor2()};
+			setColGradient(cat,newColor);
+			setMagnitudeScale(cat, cat.getScaling());
 		}
 		else if(src==this.dispProp_colGradientButton)
 		{
@@ -1209,8 +1210,16 @@ MouseListener
 		for(int i =0;i<eqList.size();i++)
 		{
 			Earthquake eq = eqList.get(i);
-			// Color based on magnitude
-			int ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude()))-cat.getMinMagnitude());
+			int ind;
+			if(cat.getValuesBy()=="Magnitude")
+			{
+				// Color based on magnitude
+				ind= (int) ( Math.floor( Math.floor(eq.getEq_magnitude()))-cat.getMinMagnitude());
+			}
+			else
+			{
+				ind= (int) ( Math.floor( Math.floor(eq.getEq_depth()))-(cat.getMinDepth()))-1;
+			}
 			if(ind<0)
 				ind=0;
 
@@ -1234,6 +1243,7 @@ MouseListener
 		updateActorsAndRender(cat);
 		}
 	}
+	
 	public void mouseClicked(MouseEvent e) {
 	}
 	public void mousePressed(MouseEvent arg0) {

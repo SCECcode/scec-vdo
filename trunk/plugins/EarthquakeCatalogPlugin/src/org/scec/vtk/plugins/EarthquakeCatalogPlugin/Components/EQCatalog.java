@@ -19,7 +19,6 @@ import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
-import org.scec.vtk.plugins.utils.DataImport;
 import org.scec.vtk.plugins.utils.components.ObjectInfoDialog;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
@@ -143,7 +142,7 @@ public class EQCatalog extends CatalogAccessor {
 	ArrayList<Earthquake> eqList= new ArrayList<>();
 	private ArrayList<vtkActor> myActors = new ArrayList<vtkActor>();
 	Component parent;
-	
+
 	private PluginActors pluginActors;
 
 	private double[][] eventCoords;
@@ -159,8 +158,10 @@ public class EQCatalog extends CatalogAccessor {
 	private String comcatFilePathString;
 
 	private ComcatResourcesDialog crd;
-	
-	
+
+	private String valuesBy;
+
+
 
 	/**
 	 * Reconstructs an <code>EQCatalog</code> (display catalog) with a given parent
@@ -178,6 +179,7 @@ public class EQCatalog extends CatalogAccessor {
 		if (readAttributeFile(sourcefile)) {
 			this.initialized = true;
 		}
+		this.valuesBy ="Magnitude";
 		//this.setMasterCatBranchGroup();
 	}
 
@@ -192,9 +194,9 @@ public class EQCatalog extends CatalogAccessor {
 		this.color1        = Color.BLUE;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_1"));
 		this.color2        = Color.RED;//readColorElement(this.displayAttributes.getChild("colors").getChild("color_2"));
 		transparency=100;
-		
+
 		setCrd(new ComcatResourcesDialog());
-		
+		this.valuesBy ="Magnitude";
 		//this.setMasterCatBranchGroup();
 	}
 
@@ -301,33 +303,11 @@ public class EQCatalog extends CatalogAccessor {
 	}
 
 	private void load() {
-
-		// detach children (remove any previously attached earthquakes)
-		/*if (this.catBranchGroup != null) {
-            this.masterCatBranchGroup.removeChild(catBranchGroup);
-        }
-
-        // (re)initialize branch group
-        this.catBranchGroup = new BranchGroup();
-        this.catBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
-		 */
 		makePoints();
-
-
-
-		// POINTS:
-		// TODO Create Earthquake Objects for Points
-		// For now objects have been created for spheres
-
-		//        System.out.println("LOAD...geom? " + getGeometry());
-
 		if(parent instanceof EarthquakeCatalogPluginGUI)
 		{
-
 			addEqList();
-
 		}
-		
 	}
 
 	public ArrayList<Earthquake> getSelectedEqList(){
@@ -435,14 +415,6 @@ public class EQCatalog extends CatalogAccessor {
 		mapperEQCatalog.SetScalarModeToUsePointFieldData();
 		//mapperEQCatalog.colorve
 		mapperEQCatalog.SelectColorArray("colors");
-
-		//actorEQCatalog.SetMapper(mapperEQCatalog);
-		//if uncommented this code helps to check the correct gradient
-		//		vtkScalarBarActor scalarBar = new vtkScalarBarActor();
-		//			  scalarBar.SetLookupTable(lut);
-		//			  scalarBar.SetTitle("Title");
-		//			  scalarBar.SetNumberOfLabels(4);
-		//			  Info.getMainGUI().getRenderWindow().GetRenderer().AddActor2D(scalarBar);
 		
 		PickEnabledActor<EQCatalog> actorEQCatalog = new PickEnabledActor<EQCatalog>(((EarthquakeCatalogPluginGUI) parent).getPickHandler(), this);
 		actorEQCatalog.SetMapper(mapperEQCatalog);
@@ -457,7 +429,7 @@ public class EQCatalog extends CatalogAccessor {
 	}
 
 
-	
+
 
 	// clears data arrays and j3d component references
 	private void unload() {
@@ -466,13 +438,19 @@ public class EQCatalog extends CatalogAccessor {
 		Info.getMainGUI().updateRenderWindow();
 	}
 
-	
-	
+
+
 	// sets the appearance array for gradient representations
 	public void initGradientAppearance() {
+		int magDivs ;
 		// calc mag divisions
-		int magDivs = (int)Math.ceil(getMaxMagnitude()) - (int)Math.floor(getMinMagnitude());
-
+		if(this.valuesBy=="Magnitude")
+		{ 
+			magDivs= (int)Math.ceil(getMaxMagnitude()) - (int)Math.floor(getMinMagnitude());
+		}else
+		{
+			magDivs= (int)Math.ceil(getMaxDepth()) - (int)Math.floor(getMinDepth());
+		}
 		// find number of increments/divisions:
 		//    -- depth gradient is always 3km intervals from 0-18km
 		//    -- magnitude gradient spans the min and max mags for the catalog
@@ -503,7 +481,7 @@ public class EQCatalog extends CatalogAccessor {
 					colorStart[2] + (colorIntervals[2]*i));
 		}     
 	}
-		// generates a random catalog name
+	// generates a random catalog name
 	private String generateNewCatName() {
 		String dataLib = Prefs.getLibLoc() + 
 				File.separator + EarthquakeCatalogPlugin.dataStoreDir +
@@ -574,7 +552,7 @@ public class EQCatalog extends CatalogAccessor {
 	 * @see org.scec.geo3d.plugins.utils.DataAccessor#setDisplayed(boolean)
 	 */
 	public void setDisplayed(boolean show) {
-        super.setDisplayed(show);
+		super.setDisplayed(show);
 	}
 
 	/**
@@ -595,7 +573,7 @@ public class EQCatalog extends CatalogAccessor {
 				unload();
 				setDisplayed(false);
 			}
-			
+
 		}
 		super.setInMemory(load);
 	}
@@ -912,6 +890,15 @@ public class EQCatalog extends CatalogAccessor {
 
 	public void setCrd(ComcatResourcesDialog crd) {
 		this.crd = crd;
+	}
+
+	public void setValuesBy(String string) {
+		// TODO Auto-generated method stub
+		this.valuesBy=string;
+	}
+	public String getValuesBy() {
+		// TODO Auto-generated method stub
+		return this.valuesBy;
 	}
 }
 

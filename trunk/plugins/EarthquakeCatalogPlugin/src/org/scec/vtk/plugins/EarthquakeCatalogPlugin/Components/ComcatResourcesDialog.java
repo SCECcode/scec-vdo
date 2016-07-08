@@ -665,8 +665,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			//cat.setComcatQuery(query);
 			cat.setMaxMagnitude((float)max_mag);
 			cat.setMinMagnitude((float)min_mag);
-			cat.setMinDepth((float)min_dep);
-			cat.setMaxDepth((float)max_dep);
+			cat.setMinDepth((float)-max_dep);
+			cat.setMaxDepth((float)-min_dep);
 			cat.setMinDate(startDate);
 			cat.setMaxDate(endDate);
 			cat.setNumEvents(jsonArray.size());
@@ -799,8 +799,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			cat.setComcatQuery(query);
 			cat.setMaxMagnitude((float)max_mag);
 			cat.setMinMagnitude((float)min_mag);
-			cat.setMinDepth((float)min_dep);
-			cat.setMaxDepth((float)max_dep);
+			cat.setMinDepth((float)-max_dep);
+			cat.setMaxDepth((float)-min_dep);
 			cat.setMinDate(startDate);
 			cat.setMaxDate(endDate);
 			cat.setNumEvents(events.size());
