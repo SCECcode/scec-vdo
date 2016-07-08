@@ -216,7 +216,7 @@ public class CueAnimator  {
 							for(int i=TimerCount;i<earthquakeList.size();i++)
 							{
 								eq = earthquakeList.get(i);
-								EarthquakeCatalogPluginGUI.animateEarthquakeOpacity(i,eq,cat.get(j),0);
+								//EarthquakeCatalogPluginGUI.animateEarthquakeOpacity(i,eq,cat.get(j),0);
 							}
 						}
 					}
@@ -247,7 +247,7 @@ public class CueAnimator  {
 				for(int i=0;i<=TimerCount;i++)
 				{
 					eq = earthquakeList.get(i);
-					EarthquakeCatalogPluginGUI.animateEarthquakeOpacity(i,eq,cat.get(j),255);
+					//EarthquakeCatalogPluginGUI.animateEarthquakeOpacity(i,eq,cat.get(j),255);
 				}
 				//if(this.TimerCount<earthquakeList.size()-1)
 				//{
@@ -300,7 +300,7 @@ public class CueAnimator  {
 				for(int i=0;i<earthquakeList.size()-1;i++)
 				{
 					eq = earthquakeList.get(i);
-					EarthquakeCatalogPluginGUI.animateEarthquakeOpacity(i,eq,cat.get(j),255);
+					//EarthquakeCatalogPluginGUI.animateEarthquakeOpacity(i,eq,cat.get(j),255);
 				}
 				try {
 					SwingUtilities.invokeAndWait(new Runnable() {
