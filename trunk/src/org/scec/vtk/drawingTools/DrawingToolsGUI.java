@@ -174,7 +174,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 						  {
 							  JOptionPane.showMessageDialog(defaultLocations.frame,"City Name: " + (String)target.getValueAt(i,target.getSelectedColumn()) + "\n"
 									    +"City Population: "  + defaultLocations.getPopulation((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "County: " +
-									  defaultLocations.getCounty((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" );
+									  defaultLocations.getCounty((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "Population Density: " + defaultLocations.getPopulationDensity((String)target.getValueAt(i,target.getSelectedColumn())) + "people/sq. mile\n",
+									  "City Information",JOptionPane.DEFAULT_OPTION);
 						  }
 					  }
 				  }
