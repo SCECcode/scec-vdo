@@ -86,6 +86,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private int popSize = 0;
 	private ArrayList<String> ccount = new ArrayList<String>();
 	private vtkActor highwayActor = new vtkActor();
+	private Vector<DrawingTool> highwayList = new Vector<DrawingTool>();
 	
 	public DefaultLocationsGUI(DrawingToolsGUI guiparent) {
 		this.guiparent = guiparent;
@@ -111,7 +112,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			// List files in the directory and process each
 			File files[] = dataDirectory.listFiles();
 			for (int i = 0; i < files.length; i++) {
-				if (files[i].isFile() && files[i].getName().endsWith(".shp") || files[i].getName().endsWith(".txt")) {
+				if (files[i].isFile() && files[i].getName().endsWith(".shp") || files[i].getName().equals("highways_sorted.txt")) {
 					PresetLocationGroup tempGroup = new PresetLocationGroup();
 					
 					tempGroup.file = files[i];
@@ -215,8 +216,8 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					JGeometry point = ShapefileReaderJGeom.getGeometry(geometryBytes, index);
 
 					//gets the coordinates of all the vertices of the shape
-//					double[] coordinates = point.getPoint();
-					double[] coordinates = point.getOrdinatesArray();
+					double[] coordinates = point.getPoint();
+					//double[] coordinates = point.getOrdinatesArray();
 					
 					//gets the name of the point
 					byte[] record = dbfFile.getRecord(index);
@@ -229,7 +230,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							textStr,
 							displayAttributes);
 					locations.addElement(tempLocation);
-					System.out.println(index);
+					//System.out.println(index);
 				}
 				return locations;
 			} catch (Exception e) {
@@ -291,6 +292,13 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			}
 			else
 				System.out.println("File does not start with \"segment\", see expected format");
+			DrawingTool tempLocation = new DrawingTool(
+					34.05,
+					-118.24,
+					0.0d,
+					temp[1],
+					displayAttributes);
+			highwayList.add(tempLocation);
 			/* finished with first line */
 			line = inStream.readLine();
 			vtkPoints linePts =new vtkPoints();
@@ -424,12 +432,13 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					{
 						highwayActor = loadHighways();
 						this.guiparent.appendActors.addToAppendedPolyData(highwayActor);
+						addBuiltInFiles(highwayList);
 						Info.getMainGUI().updateRenderWindow();
 					}
 					else
 					{
 						tempGroup.locations = loadBuiltInFiles();
-						System.out.println("Size:" + tempGroup.locations.size());
+						//System.out.println("Size:" + tempGroup.locations.size());
 						addBuiltInFiles(tempGroup.locations);
 					}
 					
@@ -503,6 +512,24 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			e.printStackTrace();
 		}
 		return county;
+	}
+	public String getPopulationDensity(String cityName)
+	{
+		String county = getCounty(cityName);
+		ArrayList<String> buff = new ArrayList<String>();
+		try {
+			Charset charset = Charset.forName("Cp1252");
+			buff = (ArrayList<String>)Files.readAllLines(Paths.get(dataPath + "popdensity.txt"), charset);
+			for(int i = 0; i < buff.size();i+=2)
+			{
+				if(buff.get(i).equals(county))
+					return buff.get(i+1);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	private ArrayList<String> filterCitiesByCounty(String countyFile, ArrayList<String> counties)
 	{
