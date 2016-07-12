@@ -23,6 +23,7 @@ import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
+import org.opensha.commons.util.cpt.LinearBlender;
 import org.opensha.sha.simulators.EQSIM_Event;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
@@ -82,6 +83,10 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	
 	private static final String DURATION_YEARS_PARAM_NAME = "Cat Duration To Animate (years)";
 	private DoubleParameter durationYearsParam;
+	
+	private static final String FADE_YEARS_PARAM_NAME = "Fade Out Time (years)";
+	private DoubleParameter fadeYearsParam;
+	private Map<Integer, Color> fadeColors;
 	
 	private Map<Integer, HashSet<Integer>> faultMappings;
 	private Map<String, Integer> faultNamesMap;
@@ -149,6 +154,10 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		animParams.addParameter(durationYearsParam);
 		durationYearsParam.addParameterChangeListener(this);
 		
+		fadeYearsParam = new DoubleParameter(FADE_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
+		animParams.addParameter(fadeYearsParam);
+		fadeYearsParam.addParameterChangeListener(this);
+		
 		// cache for event colors for faster loading
 		// PreloadThread below will actively try to preload this cache with the next steps 
 		eventColorCache = CacheBuilder.newBuilder().maximumSize(10000).build(new CacheLoader<Integer, Map<Integer, Color>>() {
@@ -182,7 +191,11 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		if (!isStepValid(currentStep))
 			return getCPT().getNaNColor();
 		else {
-			Color c = getColorCacheForStep(currentStep).get(fault.getId());
+			Color c;
+			if (fadeColors != null)
+				c = fadeColors.get(fault.getId());
+			else
+				c = getColorCacheForStep(currentStep).get(fault.getId());
 			if (c == null)
 				return getCPT().getNaNColor();
 			else
@@ -376,14 +389,14 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		
 		double startTime = Double.NaN;
 		double endTime = Double.NaN;
-		if (startIDParam.getValue() >= 0) {
+		if (startIDParam.getValue() != null && startIDParam.getValue() >= 0) {
 			Integer startStep = idToUnfilteredStepMap.get(startIDParam.getValue());
 			if (startStep == null) {
 				System.out.println("Warning: no event found with ID="+startIDParam.getValue());
 			} else {
-				double duration = durationYearsParam.getValue();
+				double duration = getCurrentDuration();
 				startTime = unfilteredevents.get(startStep).getTime();
-				endTime = startTime + duration*General_EQSIM_Tools.SECONDS_PER_YEAR;
+				endTime = startTime + duration;
 			}
 		}
 		
@@ -444,6 +457,9 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			filterEvents();
 		} else if (event.getSource() == startIDParam || event.getSource() == durationYearsParam) {
 			filterEvents();
+		} else if (event.getSource() == fadeYearsParam) {
+			fadeColors = null;
+			fireRangeChangeEvent();
 		}
 	}
 
@@ -530,7 +546,6 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 
 	@Override
 	public int getPreferredInitialStep() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
@@ -598,6 +613,61 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		
 		updateSectionNames();
 		updateFaultNames();
+	}
+
+	@Override
+	public double getCurrentDuration() {
+		// if fixed duration, use that
+		if (startIDParam.getValue() != null && startIDParam.getValue() >= 0) {
+			if (durationYearsParam.getValue() > 0d)
+				return durationYearsParam.getValue()*General_EQSIM_Tools.SECONDS_PER_YEAR;
+			// duration not specified, go from given event to end
+			Integer startStep = idToUnfilteredStepMap.get(startIDParam.getValue());
+			if (startStep != null) {
+				return getTimeForStep(getNumSteps()-1) - unfilteredevents.get(startStep).getTime();
+			}
+		}
+		if (unfilteredevents != null)
+			return getTimeForStep(getNumSteps()-1) - getTimeForStep(0);
+		return 0d;
+	}
+	
+	private LinearBlender colorBlender;
+
+	@Override
+	public boolean timeChanged(double time) {
+		Double fadeYears = fadeYearsParam.getValue();
+		if (fadeYears == null || fadeYears == 0d || unfilteredevents == null)
+			return false;
+		if (colorBlender == null)
+			colorBlender = new LinearBlender();
+		Color nanColor = getCPT().getNaNColor();
+//		System.out.println("Time changed: "+time);
+		Map<Integer, Color> fadeColors = Maps.newHashMap();
+		for (int step=currentStep; step >= 0; step--) {
+			EQSIM_Event event = getEventForStep(step);
+			double stepTime = event.getTime();
+			Map<Integer, Color> eventColors = getColorCacheForStep(step);
+			double timeSinceYears = (time - stepTime)/General_EQSIM_Tools.SECONDS_PER_YEAR;
+			if (timeSinceYears < 0) {
+//				System.out.println("Negative time since! "+timeSinceYears);
+				timeSinceYears = 0;
+			}
+			if (timeSinceYears > fadeYears)
+				break;
+			// 1: nanColor, 0: event color
+			double fade = timeSinceYears/fadeYears;
+			for (Integer patchID : eventColors.keySet()) {
+				if (fadeColors.containsKey(patchID))
+					// patch already present in more recent event, skip
+					continue;
+				Color eventColor = eventColors.get(patchID);
+				Color faded = colorBlender.blend(eventColor, nanColor, (float)fade);
+				fadeColors.put(patchID, faded);
+			}
+		}
+		this.fadeColors = fadeColors;
+		return true;
 	}
 
 }

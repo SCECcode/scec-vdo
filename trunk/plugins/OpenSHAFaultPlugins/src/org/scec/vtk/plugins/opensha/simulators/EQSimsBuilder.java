@@ -28,6 +28,7 @@ import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
+import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.opensha.sha.simulators.EQSIM_Event;
 import org.opensha.sha.simulators.RectangularElement;
 import org.opensha.sha.simulators.SimulatorElement;
@@ -288,6 +289,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 					List<RuptureIdentifier> rupIdens = new ArrayList<>();
 					rupIdens.add(new MagRangeRuptureIdentifier(eventMinMagParam.getValue(), 10d));
 					List<EQSIM_Event> events;
+					CalcProgressBar progress = new CalcProgressBar("Reading Events File", "Loading events...");
+					progress.setIndeterminate(true);
 					if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
 						System.out.println("Detected RSQSim output file/dir");
 						events = RSQSimFileReader.readEventsFile(outFile, elements, rupIdens);
@@ -296,6 +299,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 					}
 					System.out.println("Done reading events file!");
 					fireNewEvents(events);
+					progress.setVisible(false);
+					progress.dispose();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
