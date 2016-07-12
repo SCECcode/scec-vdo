@@ -1,6 +1,7 @@
 package org.scec.vtk.commons.opensha.gui;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -529,7 +530,7 @@ AnimationListener {
 		// this is called when the entire tree is rebuilt
 		
 		if (D) System.out.println("Tree changed!");
-		for (AbstractFaultSection fault : actorsMap.keySet())
+		for (AbstractFaultSection fault : new ArrayList<>(actorsMap.keySet()))
 			unCacheBranch(fault);
 		if (geomGen != null)
 			geomGen.clearBundles();
