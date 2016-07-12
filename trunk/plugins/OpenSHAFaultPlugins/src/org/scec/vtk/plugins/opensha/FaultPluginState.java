@@ -28,7 +28,7 @@ import com.google.common.base.Preconditions;
 
 public class FaultPluginState implements PluginState {
 	
-	private static final boolean D = true;
+	private static final boolean D = false;
 	
 	private FaultPluginGUI gui;
 	

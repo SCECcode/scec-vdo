@@ -377,6 +377,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			filterSectionID = sectNamesMap.get(sectFilterName);
 		else
 			filterSectionID = -1;
+		if (filterSectionID >= 0)
+			System.out.println("Filtering on sect id="+filterSectionID);
 		
 		String faultFilterName = faultFilterParam.getValue();
 		HashSet<Integer> filterFault;
@@ -562,11 +564,13 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			sectNamesMap = Maps.newHashMap();
 			Map<Integer, HashSet<String>> faultNames = Maps.newHashMap();
 			for (SimulatorElement e : elements) {
+				Integer sectID = e.getSectionID();
+				String sectName = e.getSectionName();
+				if (!sectNamesMap.containsKey(sectName))
+					sectNamesMap.put(sectName, sectID);
 				Integer faultID = e.getFaultID();
 				if (faultID < 0)
 					continue;
-				Integer sectID = e.getSectionID();
-				String sectName = e.getSectionName();
 				HashSet<Integer> sectsForFault = faultMappings.get(faultID);
 				if (sectsForFault == null) {
 					sectsForFault = new HashSet<Integer>();
@@ -575,8 +579,6 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 				}
 				sectsForFault.add(sectID);
 				faultNames.get(faultID).add(sectName);
-				if (!sectNamesMap.containsKey(sectName))
-					sectNamesMap.put(sectName, sectID);
 			}
 			
 			int maxFaultID = 0;
