@@ -1,22 +1,34 @@
 package org.scec.vtk.commons.opensha.gui.anim;
 
-import javax.swing.JSlider;
-
+import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.gui.EventManager;
+
+import com.google.common.base.Preconditions;
 
 public class AnimThread extends Thread {
 	
 	private static final boolean D = false;
+	
+	private static final long max_sleep_millis_time_based = 1000l/30l; // appox 30 fps when playing back time based
 
-	private JSlider slider;
+	private final AnimationPanel animPanel;
+	private final FaultAnimation anim;
 	private boolean pause = false;
 	private boolean loop = false;
+	private final boolean timeBased;
+	private final double durationSeconds;
 	
-	private StepTimeCalculator timeCalc;
+	private final StepTimeCalculator timeCalc;
 	
-	public AnimThread(JSlider slider, StepTimeCalculator timeCalc) {
-		this.slider = slider;
+	public AnimThread(AnimationPanel animPanel, FaultAnimation anim, StepTimeCalculator timeCalc, double durationSeconds) {
+		Preconditions.checkNotNull(animPanel);
+		this.animPanel = animPanel;
+		Preconditions.checkNotNull(anim);
+		this.anim = anim;
+		Preconditions.checkNotNull(timeCalc);
 		this.timeCalc = timeCalc;
+		timeBased = animPanel.isTimeBasedEnabled();
+		this.durationSeconds = durationSeconds;
 	}
 	
 	protected void pause() {
@@ -34,23 +46,47 @@ public class AnimThread extends Thread {
 	@Override
 	public void run() {
 		pause = false;
-		if (slider.getValue() == slider.getMaximum())
-			slider.setValue(slider.getMinimum());
-		int currentStep = slider.getValue();
+		if (animPanel.getCurrentStep() == (anim.getNumSteps()-1))
+			animPanel.setCurrentStep(0);
+		int currentStep = animPanel.getCurrentStep();
 		long start = System.currentTimeMillis();
-		if (currentStep > 1)
-			start -= timeCalc.getTimeUntil(0l, currentStep);
+		if (currentStep > 0)
+			start -= timeCalc.getAnimTimeUntil(0l, currentStep);
+		
+		long millisEnd;
+		if (timeBased)
+			millisEnd = (long)(durationSeconds*1000l+0.5);
+		else
+			millisEnd = timeCalc.getAnimTimeUntil(0l, anim.getNumSteps()-1);
 		
 		int newStep;
-		long milis;
-		while (!pause && currentStep < slider.getMaximum()) {
-			milis = System.currentTimeMillis() - start;
-			if (D) System.out.println("curStep = "+currentStep+". it's been " + milis + " milis!");
-			newStep = timeCalc.getStepForTime(currentStep, milis);
-			if (D) System.out.println("newStep = " + newStep);
+		boolean stepsLeft;
+		long millis;
+		while (!pause) {
+			millis = System.currentTimeMillis() - start;
+			// check to see if we're done
+			stepsLeft = currentStep < (anim.getNumSteps()-1);
+			if (timeBased) {
+				// check duration
+				if (!stepsLeft && millis > millisEnd)
+					break;
+			} else {
+				if (!stepsLeft)
+					break;
+			}
+			if (D) System.out.println("curStep = "+currentStep+". it's been " + millis + " milis (end = "+millisEnd+")!");
+			newStep = timeCalc.getStepForAnimTime(currentStep, millis);
+			if (D) System.out.println("newStep = " + newStep+", numSteps = "+anim.getNumSteps());
 			if (newStep <= currentStep) {
-				long sleepTime = timeCalc.getTimeUntil(milis, currentStep+1);
-				if (sleepTime > 0) {
+				if (timeBased) {
+					// set current time
+					animPanel.setCurrentAnimTime(millis/1000d);
+					EventManager.flushRenders();
+				}
+				long sleepTime = timeCalc.getAnimTimeUntil(millis, currentStep+1);
+				if (timeBased && sleepTime > max_sleep_millis_time_based)
+					sleepTime = max_sleep_millis_time_based;
+				if (sleepTime > 1) {
 					if (D) System.out.println("Sleeping for " + sleepTime + " milis");
 					try {
 						Thread.sleep(sleepTime);
@@ -58,22 +94,20 @@ public class AnimThread extends Thread {
 				}
 			} else {
 				currentStep = newStep;
-				slider.setValue(currentStep);
+				animPanel.setCurrentStep(currentStep);
 				EventManager.flushRenders();
 			}
-			if (loop && currentStep >= slider.getMaximum()) {
-				slider.setValue(slider.getMinimum());
+			if (loop && currentStep >= anim.getNumSteps()-1) {
+				animPanel.setCurrentStep(0);
 				EventManager.flushRenders();
-				currentStep = slider.getValue();
+				currentStep = 0;
 				start = System.currentTimeMillis();
-				if (currentStep > 1)
-					start -= timeCalc.getTimeUntil(0l, currentStep);
+				if (currentStep > 0)
+					start -= timeCalc.getAnimTimeUntil(0l, currentStep);
 			}
 		}
-		
-//		for (int i=slider.getValue(); !pause && i<=slider.getMaximum(); i++) {
-//			slider.setValue(i);
-//		}
+		if (D) System.out.println("ending anim loop");
+		animPanel.enableAnimControlsAfterAnimThread();
 	}
 
 }

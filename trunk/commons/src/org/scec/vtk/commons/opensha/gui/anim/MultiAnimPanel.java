@@ -144,7 +144,7 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 			cp.setSelectedColorer(anim.getFaultColorer());
 			anim.fireRangeChangeEvent();
 		}
-		animator = new FractionalTimeAnimator(animPanel.getSlider(), animPanel.getTimeCalc());
+		animator = new FractionalTimeAnimator(animPanel, getSelectedAnim(), animPanel.getTimeCalc());
 	}
 
 	public void animationEnded() {

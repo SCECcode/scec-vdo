@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -23,6 +24,8 @@ import javax.swing.event.ChangeListener;
 import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
+import org.opensha.commons.param.event.ParameterChangeEvent;
+import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.EnumParameter;
@@ -32,17 +35,23 @@ import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 
-public class AnimationPanel extends JPanel implements ChangeListener, ActionListener, FocusListener
-//, RenderStepListener // TODO RenderStepListener
-{
+import com.google.common.base.Preconditions;
+
+public class AnimationPanel extends JPanel implements ChangeListener, ActionListener, FocusListener, ParameterChangeListener {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private static final boolean D = false;
 
 	private FaultAnimation faultAnim;
 
+	/**
+	 * The number of slider ticks for a time based animation
+	 */
+	private static final int SLIDER_NUM_TIME_BASED = 10000;
 	private JSlider slider = new JSlider();
 
 	private JLabel label = new JLabel();
@@ -100,7 +109,24 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 //	private static RenderOptions RENDER_PARAM_DEFAULT = RenderOptions.DO_NOTHING;
 //	private EnumParameter<RenderOptions> renderParam;
 	
-	private StepTimeCalculator renderTimeCalc;
+	private StepTimeCalculator timeCalc;
+	/**
+	 * this is the current step, 0-based and less then faultAnim.getNumSteps()
+	 */
+	private int curStep;
+	/**
+	 * this is the current slider value, 1-based
+	 */
+	private int curSliderVal;
+	/**
+	 * this is the current animation time in seconds, up to the playback duration
+	 */
+	private double curAnimTime;
+	/**
+	 * this is the current absolute time in seconds if we have a time based animation, which is somewhere between the time of
+	 * the first step and that time + the duration. This time windows doesn't need to start at zero and can be negative. 
+	 */
+	private double curAbsTime;
 
 	private ParameterList generalAnimParams;
 	private ParameterList faultAnimParams;
@@ -119,6 +145,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 
 		// anim params
 		durationParam = new DoubleParameter(DURATION_PARAM_NAME, DURATION_MIN, DURATION_MAX, DURATION_DEFAULT);
+		durationParam.addParameterChangeListener(this);
 
 		EnumSet<AnimType> animTypes;
 		AnimType defaultAnimType;
@@ -130,6 +157,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			defaultAnimType = AnimType.EVENLY_SPACED;
 		}
 		animTypeParam = new EnumParameter<AnimationPanel.AnimType>(ANIM_TYPE_PARAM_NAME, animTypes, defaultAnimType, null);
+		animTypeParam.addParameterChangeListener(this);
 
 		loopParam = new BooleanParameter(LOOP_PARAM_NAME, LOOP_PARAM_DEFAULT);
 		
@@ -212,10 +240,19 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		for (AnimationListener l : listeners)
 			l.animationStepChanged(anim);
 	}
+	
+	boolean isTimeBasedEnabled() {
+		return faultAnim instanceof TimeBasedFaultAnimation && animTypeParam.getValue() == AnimType.TIME_BASED
+				&& ((TimeBasedFaultAnimation)faultAnim).getCurrentDuration() > 0d;
+	}
 
 	private void updateSliderRange() {
-		//		System.out.println("Updating slider range!");
+		if (D) System.out.println("Updating slider range!");
+		timeCalc = null;
 		int max = faultAnim.getNumSteps();
+		if (isTimeBasedEnabled()) {
+			max = SLIDER_NUM_TIME_BASED;
+		}
 		int min;
 		if (max > 0) {
 			min = 1;
@@ -224,27 +261,22 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		}
 		fireAnimationRangeChanged(faultAnim);
 		slider.setMinimum(min);
-		int val = slider.getValue();
 		slider.setMaximum(max);
 		
-		int preferred = faultAnim.getPreferredInitialStep();
-		slider.setValue(preferred);
-		if (val == preferred) {
-			// setValue isn't goint to fire an event, so we do it manually
-			updateStep();
-		}
+		setCurrentStep(faultAnim.getPreferredInitialStep());
 	}
 
 	private void updateStep(){
-		int step = slider.getValue()-1;
-		faultAnim.setCurrentStep(step);
+		if (D) System.out.println("Updating step!");
+		faultAnim.setCurrentStep(curStep);
+		if (D) System.out.println("Step: "+curStep+"\tSlider: "+curSliderVal
+				+"\tAnimTime: "+curAnimTime+"\tAbsTime: "+getLabel(curAbsTime));
 		String labelStr = "";
 		if (faultAnim.includeStepInLabel())
-			labelStr += "Frame "+slider.getValue()+"/"+slider.getMaximum();
+			labelStr += "Frame "+(curStep+1)+"/"+faultAnim.getNumSteps();
 		if (faultAnim instanceof TimeBasedFaultAnimation) {
-			Double stepTime = ((TimeBasedFaultAnimation)faultAnim).getTimeForStep(step);
-			if (!stepTime.isNaN() && stepTime >= 0)
-				labelStr += ": " + getLabel(stepTime);
+			if (!Double.isNaN(curAbsTime) && curAbsTime >= 0)
+				labelStr += ": " + getLabel(curAbsTime);
 		}
 		String custom = faultAnim.getCurrentLabel();
 		if (custom != null && custom.length() > 0) {
@@ -253,10 +285,11 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			labelStr += custom;
 		}
 		if (faultAnim instanceof IDBasedFaultAnimation) {
-			int id = ((IDBasedFaultAnimation)faultAnim).getIDForStep(step);
+			int id = ((IDBasedFaultAnimation)faultAnim).getIDForStep(curStep);
 			idField.setText(""+id);
 			labelStr += " (ID: " + id + ")";
 		}
+		if (D) System.out.println("Label: "+labelStr);
 		
 //		Geo3dInfo.getMainWindow().setMessage(labelStr); // TODO label support
 		labelStr = wrapText(labelStr, 60);
@@ -270,9 +303,19 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 //		if (labelStr.length() > 70)
 //			labelStr = labelStr.substring(0, 67)+"...";
 		label.setText(labelStr);
+		if (D) System.out.println("Firing step changed");
 		if (faultAnim.getNumSteps()>0)
 			fireAnimationStepChanged(faultAnim);
+		if (D) System.out.println("DONE Firing step changed");
 		enableAnimControls();
+	}
+	
+	private void updateTime() {
+		if (isTimeBasedEnabled()) {
+			boolean fire = ((TimeBasedFaultAnimation)faultAnim).timeChanged(curAbsTime);
+			if (fire)
+				fireAnimationStepChanged(faultAnim);
+		}
 	}
 
 	private static final DecimalFormat df = new DecimalFormat("0.00");
@@ -298,57 +341,252 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		if (e.getSource() == faultAnim) {
 			updateSliderRange();
 		} else if (e.getSource() == slider) {
-			updateStep();
+			if (D) System.out.println("Slider changed!");
+			if (slider.getValue() != curSliderVal)
+				updateStepFromSlider();
 		}
-	}
-
-	private synchronized void enableAnimControls() {
-		boolean isFirst = slider.getValue() == slider.getMinimum();
-		boolean isLast = slider.getValue() == slider.getMaximum();
-		boolean playing = animThread != null && animThread.isAlive() && !isLast;
-		slider.setEnabled(!playing);
-		playButton.setEnabled(!playing);
-		pauseButton.setEnabled(playing);
-		if (generalAnimParams != null) {
-			for (Parameter<?> param : generalAnimParams) {
-				param.getEditor().setEnabled(!playing);
-			}
-		}
-		if (faultAnimParams != null) {
-			for (Parameter<?> param : faultAnimParams) {
-				param.getEditor().setEnabled(!playing);
-			}
-		}
-		idField.setEnabled(!playing);
-		nextButton.setEnabled(!playing && !isLast);
-		prevButton.setEnabled(!playing && !isFirst);
 	}
 	
-	JSlider getSlider() {
-		return slider;
+	private synchronized void updateStepFromSlider() {
+		curSliderVal = slider.getValue();
+		if (D) System.out.println("Updating state from sliderVal="+curSliderVal);
+		
+		if (slider.getMinimum() == 0) {
+			// no current animation
+			Preconditions.checkState(slider.getMaximum() == 0);
+			curStep = -1;
+			curAnimTime = 0d;
+			curAbsTime = Double.NaN;
+			return;
+		}
+		
+		if (D) Preconditions.checkState(slider.getMinimum() == 1);
+		// calculate animation time
+		curAnimTime = durationParam.getValue()*(curSliderVal-1d)/(slider.getMaximum()-1d);
+		if (D) System.out.println("Calculated animTime="+curAnimTime);
+		if (Double.isNaN(curAnimTime))
+			curAnimTime = 0d;
+		
+		// calculate step
+		if (isTimeBasedEnabled()) {
+			curStep = getTimeCalc().getStepForAnimTime(curAnimTime);
+			curAbsTime = getTimeCalc().getAbsoluteTime(curAnimTime);
+		} else {
+			curStep = curSliderVal - 1;
+			curAbsTime = Double.NaN;
+		}
+		
+		updateStep();
+		updateTime();
+	}
+	
+	private Runnable sliderUpdate = new Runnable() {
+		@Override
+		public void run() {
+			if (D) System.out.println("Slider update runable. setting value: "+curSliderVal);
+			slider.setValue(curSliderVal);
+			if (D) System.out.println("Slider update runable. DONE setting value");
+		}
+	};
+	
+	synchronized void setCurrentAnimTime(double animTime) {
+		if (D) System.out.println("setCurrentAnimTime called with time="+animTime);
+		
+		int calcStep;
+		if (faultAnim.getNumSteps() == 0) {
+			// no current animation
+			Preconditions.checkState(slider.getMaximum() == 0);
+			curStep = -1;
+			curAnimTime = 0d;
+			curAbsTime = Double.NaN;
+			curSliderVal = 0;
+			calcStep = -1;
+		} else {
+			// calculate step
+			calcStep = getTimeCalc().getStepForAnimTime(curStep, animTime);
+			this.curAnimTime = animTime;
+			
+			// calculate animation time
+			StepTimeCalculator timeCalc = getTimeCalc();
+			
+			// calculate slider value for step
+			if (isTimeBasedEnabled()) {
+				double fractionalAnimTime = curAnimTime/durationParam.getValue();
+				Preconditions.checkState(slider.getMaximum() == SLIDER_NUM_TIME_BASED);
+				curSliderVal = 1 + (int)(fractionalAnimTime*(SLIDER_NUM_TIME_BASED-1d));
+				curAbsTime = timeCalc.getAbsoluteTime(curAnimTime);
+			} else {
+				// evenly spaced
+				curSliderVal = calcStep+1;
+				curAbsTime = Double.NaN;
+			}
+		}
+		
+		if (D) System.out.println("Updating slider for animTime="+animTime+", sliderVal="+curSliderVal
+				+". EDT? "+SwingUtilities.isEventDispatchThread());
+		// make sure to run this in the EDT
+		if (SwingUtilities.isEventDispatchThread()) {
+			sliderUpdate.run();
+		} else {
+			try {
+				SwingUtilities.invokeAndWait(sliderUpdate);
+			} catch (Exception e) {
+				throw ExceptionUtils.asRuntimeException(e);
+			}
+		}
+		
+		if (curStep >= 0) {
+			if (calcStep != curStep) {
+				if (D) System.out.println("Updating step itself");
+				curStep = calcStep;
+				updateStep();
+			}
+			updateTime();
+		}
+		
+		if (D) System.out.println("End setCurrentSetp");
+	}
+	
+	double getAnimDuration() {
+		return durationParam.getValue();
+	}
+	
+	synchronized void setCurrentStep(int step) {
+		if (D) System.out.println("setCurrentStep called with step="+step);
+		curStep = step;
+		
+		if (faultAnim.getNumSteps() == 0) {
+			// no current animation
+			Preconditions.checkState(slider.getMaximum() == 0);
+			curStep = -1;
+			curAnimTime = 0d;
+			curAbsTime = Double.NaN;
+			curSliderVal = 0;
+		} else {
+			// calculate animation time
+			StepTimeCalculator timeCalc = getTimeCalc();
+			long millis = timeCalc.getAnimTimeUntil(0l, step);
+			// anim time in secs for this step
+			curAnimTime = millis/1000d;
+			
+			// calculate slider value for step
+			if (isTimeBasedEnabled()) {
+				double fractionalAnimTime = curAnimTime/durationParam.getValue();
+				Preconditions.checkState(slider.getMaximum() == SLIDER_NUM_TIME_BASED);
+				curSliderVal = 1 + (int)(fractionalAnimTime*(SLIDER_NUM_TIME_BASED-1d));
+				curAbsTime = timeCalc.getAbsoluteTime(curAnimTime);
+			} else {
+				// evenly spaced
+				curSliderVal = step+1;
+				curAbsTime = Double.NaN;
+			}
+		}
+		
+		if (D) System.out.println("Updating slider for step="+step+", sliderVal="+curSliderVal
+				+". EDT? "+SwingUtilities.isEventDispatchThread());
+		// make sure to run this in the EDT
+		if (SwingUtilities.isEventDispatchThread()) {
+			sliderUpdate.run();
+		} else {
+			try {
+				SwingUtilities.invokeAndWait(sliderUpdate);
+			} catch (Exception e) {
+				throw ExceptionUtils.asRuntimeException(e);
+			}
+		}
+		
+		if (curStep >= 0) {
+			if (D) System.out.println("Updating step itself");
+			updateStep();
+			updateTime();
+		}
+		
+		if (D) System.out.println("End setCurrentSetp");
+	}
+	
+	int getCurrentStep() {
+		return curStep;
+	}
+	
+	private Runnable enableAnimControlsRunnable = new Runnable() {
+
+		@Override
+		public void run() {
+			boolean isFirst = curStep == 0;
+			boolean isLast = curStep == faultAnim.getNumSteps()-1;
+//			boolean isFirst = slider.getValue() == slider.getMinimum();
+//			boolean isLast = slider.getValue() == slider.getMaximum();
+			boolean playing = animThread != null && animThread.isAlive();
+			if (isTimeBasedEnabled())
+				// re-enable if slider is at a maximum
+				playing = playing && slider.getValue() < slider.getMaximum();
+			else
+				// re-enable if we're at the last step
+				playing = playing && !isLast;
+			slider.setEnabled(!playing);
+			playButton.setEnabled(!playing);
+			pauseButton.setEnabled(playing);
+			if (generalAnimParams != null) {
+				for (Parameter<?> param : generalAnimParams) {
+					param.getEditor().setEnabled(!playing);
+				}
+			}
+			if (faultAnimParams != null) {
+				for (Parameter<?> param : faultAnimParams) {
+					param.getEditor().setEnabled(!playing);
+				}
+			}
+			idField.setEnabled(!playing);
+			nextButton.setEnabled(!playing && !isLast);
+			prevButton.setEnabled(!playing && !isFirst);
+		}
+		
+	};
+
+	private void enableAnimControls() {
+		if (SwingUtilities.isEventDispatchThread())
+			enableAnimControlsRunnable.run();
+		else
+			SwingUtilities.invokeLater(enableAnimControlsRunnable);
 	}
 
 	StepTimeCalculator getTimeCalc() {
-		return getTimeCalc(durationParam.getValue());
+		if (timeCalc == null) {
+			timeCalc = getTimeCalc(durationParam.getValue());
+		}
+		return timeCalc;
 	}
 	
 	private StepTimeCalculator getTimeCalc(double duration) {
-		int maxStep = slider.getMaximum();
+		int maxStep = faultAnim.getNumSteps()-1;
 		AnimType type = animTypeParam.getValue();
 		switch (type) {
 		case TIME_BASED:
 			return new TimeBasedCalc((TimeBasedFaultAnimation)faultAnim, maxStep, duration);
 		case EVENLY_SPACED:
-			return new EvenlySpacedCalc(maxStep, duration);
+			return new EvenlySpacedCalc(faultAnim, maxStep, duration);
 		default:
 			throw new IllegalStateException("Unknown anim type: "+type);
 		}
+	}
+	
+	void enableAnimControlsAfterAnimThread() {
+		// wait until anim thread is done to enable animation controls
+		// must do so in a separate thread as anim thread can wait on EDT events to flush renders
+		// and this method is part of an EDT thread. So waiting on it in this thread causes deadlock
+		new Thread() {
+			@Override
+			public void run() {
+				while (animThread != null && animThread.isAlive());
+				enableAnimControls(); // now checks if it's in the EDT
+			}
+		}.start();
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(playButton)) {
-			animThread = new AnimThread(slider, getTimeCalc());
+			animThread = new AnimThread(this, faultAnim, getTimeCalc(), durationParam.getValue());
 			animThread.setLoop(loopParam.getValue());
 			animThread.start();
 			enableAnimControls();
@@ -356,29 +594,13 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			if (animThread != null) {
 				animThread.pause();
 			}
-			// wait until anim thread is done to enable animation controls
-			// must do so in a separate thread as anim thread can wait on EDT events to flush renders
-			// and this method is part of an EDT thread. So waiting on it in this thread causes deadlock
-			new Thread() {
-				@Override
-				public void run() {
-					while (animThread.isAlive());
-					SwingUtilities.invokeLater(new Runnable() {
-						
-						@Override
-						public void run() {
-							// must be called in EDT
-							enableAnimControls();
-						}
-					});
-				}
-			}.start();
+			enableAnimControlsAfterAnimThread();
 		} else if (e.getSource().equals(nextButton)) {
-			slider.setValue(slider.getValue()+1);
+			setCurrentStep(curStep+1);
 		} else if (e.getSource().equals(prevButton)) {
-			slider.setValue(slider.getValue()-1);
+			setCurrentStep(curStep-1);
 		} else if (e.getSource().equals(idField)) {
-			//			System.out.println("idField: action performed");
+			if (D) System.out.println("idField: action performed");
 			idFieldUpdated();
 		}
 	}
@@ -388,7 +610,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 
 	@Override
 	public void focusLost(FocusEvent focusevent) {
-		//		System.out.println("idField: focus lost");
+		if (D) System.out.println("idField: focus lost");
 		idFieldUpdated();
 	}
 
@@ -396,16 +618,15 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		String idFieldVal = idField.getText();
 		try {
 			int id = Integer.parseInt(idFieldVal);
-			int step = ((IDBasedFaultAnimation)faultAnim).getStepForID(id)+1; // +1 because colorer steps are 0-based
-			slider.setValue(step);
+			int step = ((IDBasedFaultAnimation)faultAnim).getStepForID(id);
+			setCurrentStep(step);
 		} catch (Exception e) {
 			// couldn't parse, reset it to the current ID
-			idField.setText(((IDBasedFaultAnimation)faultAnim).getIDForStep(slider.getValue()-1)+"");
+			idField.setText(((IDBasedFaultAnimation)faultAnim).getIDForStep(curStep)+"");
 		}
 	}
 
-	private static String wrapText (String text, int len)
-	{
+	private static String wrapText(String text, int len) {
 		// return empty string for null text
 		if (text == null)
 			return "";
@@ -462,68 +683,11 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		return ret;
 	}
 
-//	@Override
-//	public void renderStarted() {
-//		if (renderParam.getValue() != RenderOptions.DO_NOTHING) {
-//			// slider is 1-based
-//			slider.setValue(1);
-//			renderTimeCalc = null;
-//		}
-//	}
-//
-//	@Override
-//	public void renderStopped() {
-//		renderTimeCalc = null;
-//	}
-//
-//	@Override
-//	public void renderFrameToBeProcessed(long frameIndex, long totalNumFrames,
-//			double fps) {
-//		double animationDuration = (double)totalNumFrames/fps;
-//		
-//		int startFrame;
-//		double playbackDuration;
-//		
-//		switch (renderParam.getValue()) {
-//		case DO_NOTHING:
-//			// do nothing
-//			return;
-//		case PLAY_START:
-//			startFrame = 0;
-//			playbackDuration = durationParam.getValue();
-//			break;
-//		case PLAY_END:
-//			playbackDuration = durationParam.getValue();
-//			double durationDelta = animationDuration - playbackDuration;
-//			startFrame = (int)(durationDelta*fps);
-//			break;
-//		case PLAY_MATCH_DURATION:
-//			startFrame = 0;
-//			playbackDuration = animationDuration;
-//			break;
-//
-//		default:
-//			throw new IllegalStateException("Unknown render type: "+renderParam.getValue());
-//		}
-//		
-//		if (renderTimeCalc == null)
-//			renderTimeCalc = getTimeCalc(playbackDuration);
-//		
-//		int stepToSet;
-//		if (frameIndex < startFrame) {
-//			stepToSet = 1;
-//		} else {
-//			long numFramesIn = frameIndex - startFrame;
-//			double curTimeSec = (double)numFramesIn/fps;
-//			long curMillis = (long)(curTimeSec * 1000d);
-//			stepToSet = renderTimeCalc.getStepForTime(slider.getValue(), curMillis);
-//		}
-//		if (stepToSet < slider.getMinimum())
-//			stepToSet = slider.getMinimum();
-//		if (stepToSet > slider.getMaximum())
-//			stepToSet = slider.getMaximum();
-//		slider.setValue(stepToSet);
-//		EventManager.flushRenders();
-//	}
+	@Override
+	public void parameterChange(ParameterChangeEvent event) {
+		if (event.getSource() == durationParam || event.getSource() == animTypeParam) {
+			timeCalc = null;
+		}
+	}
 
 }
