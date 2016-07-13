@@ -85,7 +85,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private int defaultLocationsStartIndex = 0;
 	private int popSize = 0;
 	private ArrayList<String> ccount = new ArrayList<String>();
-	private vtkActor highwayActor = new vtkActor();
+	private ArrayList<vtkActor> highwayActors = new ArrayList<vtkActor>();
 	private vtkActor countyActor = new vtkActor();
 	private Vector<DrawingTool> highwayList = new Vector<DrawingTool>();
 	
@@ -113,7 +113,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			// List files in the directory and process each
 			File files[] = dataDirectory.listFiles();
 			for (int i = 0; i < files.length; i++) {
-				if (files[i].isFile() && files[i].getName().endsWith(".shp") || files[i].getName().equals("highways_sorted.txt")) {
+				if (files[i].isFile() && files[i].getName().endsWith(".shp") || files[i].getName().endsWith(".txt")) {
 					PresetLocationGroup tempGroup = new PresetLocationGroup();
 					
 					tempGroup.file = files[i];
@@ -366,89 +366,106 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		
 		return actor;
 	}
-	private vtkActor loadHighways()
-    {
-            String selectedFile = selectedInputFile;
-            File highwaysFile = new File(selectedFile);
-            ArrayList<vtkPoints> points = new ArrayList<vtkPoints>();
-            String temp[] = new String[2];
-            String nameOfSegment="";
-            vtkCellArray cells = new vtkCellArray();
-            int ptCount=0;
-           
-            try {
-                    BufferedReader inStream = new BufferedReader(new FileReader(highwaysFile));
-                    String line = inStream.readLine();
-                    StringTokenizer dataLine = new StringTokenizer(line);
-                    temp[0] = dataLine.nextToken();
-                    temp[1] = dataLine.nextToken();
-                    /*process first line */
-                    if (temp[0].equals("segment")) {
-                            if(temp[1] == null)
-                                    System.out.println("first highway name missing");
-                    }
-                    else
-                            System.out.println("File does not start with \"segment\", see expected format");
-                    /* finished with first line */
-                    line = inStream.readLine();
-                    vtkPoints linePts =new vtkPoints();
-                    while (line!=null){
-                            dataLine = new StringTokenizer(line); 
-                            temp[0] = dataLine.nextToken(); temp[1] = dataLine.nextToken();
-                           
-                            if (!temp[0].equals("segment"))
-                            {
-                                    double [] p = Transform.transformLatLon(Double.parseDouble(temp[0]), Double.parseDouble(temp[1]));
-                                    linePts.InsertNextPoint(p);
-                            }
-                            else
-                            {
-                                    if(linePts.GetNumberOfPoints()>0)
-                                    {
-                                            points.add(linePts);
-                                            linePts = new vtkPoints();
-                                    }
-                            }
-                            line = inStream.readLine();                                             
-                    }
-                    inStream.close();
-            } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-            } catch (IOException e) {
-                    e.printStackTrace();
-            }               
-            vtkPoints glbPoints = new vtkPoints();
-            for(int i = 0;i<points.size();i++)
-            {
-                    vtkPolyLine plyLine = new vtkPolyLine();
-                    plyLine.GetPointIds().SetNumberOfIds(points.get(i).GetNumberOfPoints());
-                    for(int j = 0;j<points.get(i).GetNumberOfPoints();j++)
-                            {
-                                    glbPoints.InsertNextPoint(points.get(i).GetPoint(j));
-                                    plyLine.GetPointIds().SetId(j,ptCount);
-                                    ptCount++;
-                            }
-                    cells.InsertNextCell(plyLine);
-            }
-            vtkPolyData polyData = new vtkPolyData();
-            polyData.SetPoints(glbPoints);
-            polyData.SetLines(cells);
-            vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-            mapper.SetInputData(polyData);
-            vtkActor actor = new vtkActor();
-            actor.SetMapper(mapper);
-           
-            return actor;
-    }
+	private void loadHighways()
+	{
+		String selectedFile = selectedInputFile;
+		File highwaysFile = new File(selectedFile);
+		String temp[] = new String[2];
+		String nameOfSegment="";
+		vtkPoints linePts;
+		vtkCellArray cells = new vtkCellArray();
+		vtkPolyData polyData;
+		vtkPolyDataMapper mapper;
+		vtkActor actor = new vtkActor();
+		double [] p = null;
+		ArrayList<vtkPoints> segmentPoints = new ArrayList<vtkPoints>();
+		int pointCount;
+		
+		try {
+			BufferedReader inStream = new BufferedReader(new FileReader(highwaysFile));
+			String line = inStream.readLine();
+			StringTokenizer dataLine = new StringTokenizer(line);
+			temp[0] = dataLine.nextToken();	
+			temp[1] = dataLine.nextToken();
+			nameOfSegment = temp[1];
+			linePts = new vtkPoints();
+
+			while (line!=null){
+				dataLine = new StringTokenizer(line);  
+				temp[0] = dataLine.nextToken();	temp[1] = dataLine.nextToken();
+				if (!temp[0].equals("segment"))
+				{
+					p = Transform.transformLatLon(Double.parseDouble(temp[0]), Double.parseDouble(temp[1]));
+					linePts.InsertNextPoint(p);
+				}
+				else if (temp[1].equals(nameOfSegment))
+				{
+					if (linePts.GetNumberOfPoints() > 0)
+					{
+						segmentPoints.add(linePts);
+						linePts = new vtkPoints();
+					}
+				}
+				else // new segment name
+				{
+					if (linePts.GetNumberOfPoints() > 0)
+					{
+						segmentPoints.add(linePts);
+						linePts = new vtkPoints();
+					}
+					vtkPoints globalPoints = new vtkPoints();
+					cells = new vtkCellArray();
+					pointCount = 0;
+					for (int i=0; i<segmentPoints.size(); i++)
+					{
+						vtkPolyLine interstateLine = new vtkPolyLine();
+						interstateLine.GetPointIds().SetNumberOfIds(segmentPoints.get(i).GetNumberOfPoints());
+						for (int j=0; j<segmentPoints.get(i).GetNumberOfPoints(); j++)
+						{
+							globalPoints.InsertNextPoint(segmentPoints.get(i).GetPoint(j));
+							interstateLine.GetPointIds().SetId(j, pointCount++);							
+						}
+						cells.InsertNextCell(interstateLine);
+					}
+					
+					polyData = new vtkPolyData();
+					polyData.SetPoints(globalPoints);
+					polyData.SetLines(cells);
+					mapper = new vtkPolyDataMapper();
+					mapper.SetInputData(polyData);
+					actor = new vtkActor();
+					actor.SetMapper(mapper);
+					highwayActors.add(actor);
+					segmentPoints = new ArrayList<vtkPoints>();
+					this.guiparent.appendActors.addToAppendedPolyData(actor);
+					
+					defaultLocationsStartIndex = this.drawingToolTable.getRowCount();
+					DrawingTool highway = new DrawingTool(
+						p[0],
+						p[1],
+						0.0d,
+						nameOfSegment,
+						displayAttributes
+					);
+					highway.setDisplayName(nameOfSegment);
+					this.guiparent.addHighway(highway);
+					this.drawingToolTable.addDrawingTool(highway);
+					nameOfSegment = temp[1];
+				}
+				line = inStream.readLine();						
+			}
+			inStream.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 		
+	}
 	
 	public void removeHighways()
-	{
-		this.guiparent.appendActors.removeFromAppendedPolyData(highwayActor);		
-		Info.getMainGUI().updateRenderWindow();
-	}
-	public void removeCounties()
-	{
-		this.guiparent.appendActors.removeFromAppendedPolyData(countyActor);		
+	{	
+		this.guiparent.removeHighways();
+		highwayActors.clear();
 		Info.getMainGUI().updateRenderWindow();
 	}
 	
@@ -522,20 +539,10 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							popSize = -1;
 						}
 					}
-					else if (tempGroup.name.equals("highways sorted"))
+					else if (tempGroup.name.equals("California Highways") || tempGroup.name.equals("California Interstates"))
 					{
-						highwayActor = loadHighways();
-						this.guiparent.appendActors.addToAppendedPolyData(highwayActor);
-						//addBuiltInFiles(highwayList);
-						Info.getMainGUI().updateRenderWindow();
-					}
-					else if(tempGroup.name.equals("CA Counties"))
-					{
-						countyActor = loadCounties();
-						
-						tempGroup.locations = loadBuiltInFiles();
-						addBuiltInFiles(tempGroup.locations);
-						this.guiparent.appendActors.addToAppendedPolyData(countyActor);
+						loadHighways();
+						addBuiltInFiles(highwayList);
 						Info.getMainGUI().updateRenderWindow();
 					}
 					else
@@ -547,11 +554,8 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					
 				} else {
 					removeBuiltInFiles(tempGroup.locations);
-					if (tempGroup.name.equals("highways sorted")) {
+					if (tempGroup.name.equals("California Highways") || tempGroup.name.equals("California Interstates")) {
 						removeHighways();
-					}
-					else if(tempGroup.name.equals("CA Counties")){
-						removeCounties();
 					}
 				}
 			}
@@ -813,5 +817,9 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			add(jp);
 			setVisible(true);
 		}
+	}
+	public ArrayList<vtkActor> getHighwayActors()
+	{
+		return this.highwayActors;
 	}
 }

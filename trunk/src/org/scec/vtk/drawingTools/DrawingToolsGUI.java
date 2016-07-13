@@ -43,8 +43,6 @@ import org.scec.vtk.tools.actors.AppendActors;
 import vtk.vtkActor;
 import vtk.vtkActor2D;
 import vtk.vtkProp;
-import vtk.vtkSphere;
-import vtk.vtkSphereSource;
 import vtk.vtkConeSource;
 import vtk.vtkGlyph3D;
 import vtk.vtkLabelPlacementMapper;
@@ -97,7 +95,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	public DrawingToolsGUI(PluginActors pluginActors){
 		this.pluginActors = pluginActors;
 		pluginActors.addActor(appendActors.getAppendedActor());
-
+		
 		//setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()));
 		setName("Drawing Tools");
@@ -144,6 +142,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 					
 					DrawingToolsTable target = (DrawingToolsTable)e.getSource();
 				    int i = target.getSelectedRow();
+				    vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+					vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+					
+					
 				    displayAttributes.latField.setText(AttributesData.get(i).get("Lat"));
 				    displayAttributes.lonField.setText(AttributesData.get(i).get("Lon"));
 				    displayAttributes.altField.setText(AttributesData.get(i).get("Alt"));
@@ -331,6 +333,19 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		return drawingTool;
 
 	}
+	public void addHighway(DrawingTool drawingTool) {
+		double[] pt= {Transform.calcRadius(37),37,-120};
+		drawingTool.setDisplayName(drawingTool.getTextString());
+		pt[0]= pt[0]+drawingTool.getaltitude();
+		pt[1]= drawingTool.getLatitude();
+		pt[2]= drawingTool.getLongitude();
+		
+		HashMap<String,String> locData = new HashMap<String, String>();
+		locData.put("Lat", String.format("%.1f", pt[1])); 
+		locData.put("Lon", String.format("%.1f", pt[2]));
+		locData.put("Alt", "0");
+		AttributesData.add(locData);
+	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
@@ -339,13 +354,32 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 	 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 	 			//int row = model.getMinSelectionIndex();
-				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-				vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-				if(actor.GetVisibility() == 1 && actorPin.GetVisibility() == 1)
-				{actor.SetVisibility(0); actorPin.SetVisibility(0);}
-				else
-				{actor.SetVisibility(1); actorPin.SetVisibility(1);}
-				
+	 			
+	 			vtkProp actor = null;
+	 			vtkProp actorPin = null;
+	 			
+	 			if (defaultLocations.getHighwayActors().size() > 0)
+	 			{
+	 				actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i);
+	 			}
+	 			else
+	 			{
+	 				actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+	 				actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+	 			}
+	 			
+				if (actor != null && actorPin != null) {
+					if(actor.GetVisibility() == 1 && actorPin.GetVisibility() == 1)
+					{actor.SetVisibility(0); actorPin.SetVisibility(0);}
+					else
+					{actor.SetVisibility(1); actorPin.SetVisibility(1);}
+				}
+				else if (actor != null) {
+					if(actor.GetVisibility() == 1)
+						actor.SetVisibility(0);
+					else
+						actor.SetVisibility(1);
+				}
 	 		}
 	 		appendActors.getAppendedActor().Modified();
 	 		Info.getMainGUI().updateRenderWindow();
@@ -361,7 +395,14 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			//ArrayList<DrawingTool> newObjects = new ArrayList<>();
 			//newObjects.add(drawingToolObj);
 			this.drawingToolTable.addDrawingTool(drawingToolObj);
-			
+		
+			HashMap<String,String> defaultData = new HashMap<String, String>();
+			defaultData.put("Lat", "37"); 
+			defaultData.put("Lon", "-120");
+			defaultData.put("Alt", "0");
+			defaultData.put("fontSize", "21");
+			AttributesData.add(defaultData);
+
 			MainGUI.updateRenderWindow();
 		}
 		if (src == this.remDrawingToolsButton) {
@@ -419,7 +460,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			}
 			MainGUI.updateRenderWindow();
 		}
-		
 		if (src == this.displayAttributes.fontSizeField ) {
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 	 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
@@ -443,11 +483,26 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 		 		for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 		 			//int row = model.getMinSelectionIndex();
-					vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-					vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+		 			vtkProp actor = null;
+		 			vtkProp actorPin = null;
+		 			
+		 			if (defaultLocations.getHighwayActors().size() > 0)
+		 			{
+		 				actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i);
+		 				((vtkActor) actor).GetProperty().SetColor(color);
+//		 				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
+		 			}
+		 			else
+		 			{
+		 				actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+		 				actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+		 			}
+					if (actorPin != null)
+					{
+						((vtkActor) actorPin).GetProperty().SetColor(color);
+						((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
+					}
 					
-					((vtkActor) actorPin).GetProperty().SetColor(color);
-					((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
 
 				}
 				MainGUI.updateRenderWindow();
@@ -475,6 +530,18 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
  		Info.getMainGUI().updateRenderWindow();
 		ArrayList<vtkObject> removedActors = new ArrayList<>();
 
+	}
+	public void removeHighways() {
+		DrawingToolsTableModel drawingTooltablemodel = this.drawingToolTable.getLibraryModel();
+		ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+ 		while (drawingToolTable.getRowCount() > 0)
+ 		{
+ 			vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(drawingToolTable.getRowCount()-1);
+ 			appendActors.getAppendedActor().RemovePart(actor);
+       		drawingTooltablemodel.removeRow(drawingToolTable.getRowCount()-1);
+       		AttributesData.remove(drawingToolTable.getRowCount());
+ 		}
+		Info.getMainGUI().updateRenderWindow();
 	}
 	private void runObjectInfoDialog() {
 		String displayTextInput = JOptionPane.showInputDialog(
@@ -504,7 +571,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				MainGUI.updateRenderWindow();
 	 		}
 		}
-		}
+	}
 
 
 	@Override
