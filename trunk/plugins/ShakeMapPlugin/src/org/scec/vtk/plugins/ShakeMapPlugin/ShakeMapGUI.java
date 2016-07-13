@@ -68,7 +68,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	private ButtonGroup calChooser = new ButtonGroup();
 	private JRadioButton nc = new JRadioButton("NorCal");
 	private JRadioButton sc = new JRadioButton("SoCal");
-	JTextField eventIdBox = new JTextField();
+	JTextField eventIdBox = new JTextField("Insert Earthquake ID");
 	JButton downloadUSGS = new JButton("Download USGS Shake Map");
 	
 	
@@ -113,7 +113,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		calChooser.add(sc);
 		USGSPanel.add(nc);
 		USGSPanel.add(sc);
-		USGSPanel.add(new JLabel("Enter earthquake id:"));
+//		USGSPanel.add(new JLabel("Enter earthquake id:"));
 		USGSPanel.add(eventIdBox);
 		USGSPanel.add(downloadUSGS);
 		
@@ -137,6 +137,13 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 							System.out.println("Failure");
 						}else{
 							System.out.println("Loaded!");
+							try {
+								Files.copy(Paths.get(dataPath+"/"+"usgsMap.txt"), Paths.get(dataPath+"/"+"USGS_Maps/"+id+".txt"));
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+//							 FileUtils.copyFile(dataPath+"/"+"usgsMap.txt", dataPath+"/"+"USGS_Maps/"+id+".txt");
 							showNewUSGSMap();
 						}
 					}else{
@@ -154,6 +161,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		shakeMapLibraryPanel.add(USGSPanel);
 //		shakeMapLibraryPanel.add(new JButton("Download from OpenSHA"));
 		this.add(shakeMapLibraryPanel);
+
 	}
 
 
