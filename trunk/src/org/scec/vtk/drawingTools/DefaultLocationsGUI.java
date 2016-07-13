@@ -329,12 +329,6 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 				}
 				
 				line = inStream.readLine();
-				if(line != null)
-				{
-					if(line.contains(":"))
-						System.out.println(line);
-				}
-				
 			}
 			inStream.close();
 		} catch (FileNotFoundException e) {
@@ -468,7 +462,11 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		highwayActors.clear();
 		Info.getMainGUI().updateRenderWindow();
 	}
-	
+	public void removeCounties()
+	{
+		this.guiparent.appendActors.removeFromAppendedPolyData(countyActor);
+		Info.getMainGUI().updateRenderWindow();
+	}
 	public void clearCheckBoxes() {
 		for (int i = 0; i < presetLocationGroups.size(); i++) {
 			PresetLocationGroup tempGroup = presetLocationGroups.get(i);
@@ -545,6 +543,14 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 						addBuiltInFiles(highwayList);
 						Info.getMainGUI().updateRenderWindow();
 					}
+					else if(tempGroup.name.equals("CA Counties"))
+					{
+						countyActor = loadCounties();
+						tempGroup.locations = loadBuiltInFiles();
+						addBuiltInFiles(tempGroup.locations);
+						this.guiparent.appendActors.addToAppendedPolyData(countyActor);
+						Info.getMainGUI().updateRenderWindow();
+					}
 					else
 					{
 						tempGroup.locations = loadBuiltInFiles();
@@ -556,6 +562,10 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					removeBuiltInFiles(tempGroup.locations);
 					if (tempGroup.name.equals("California Highways") || tempGroup.name.equals("California Interstates")) {
 						removeHighways();
+					}
+					if(tempGroup.name.equals("CA Counties"))
+					{
+						removeCounties();
 					}
 				}
 			}
