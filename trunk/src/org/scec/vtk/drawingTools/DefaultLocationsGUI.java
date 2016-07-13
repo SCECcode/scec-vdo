@@ -86,6 +86,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private int popSize = 0;
 	private ArrayList<String> ccount = new ArrayList<String>();
 	private vtkActor highwayActor = new vtkActor();
+	private vtkActor countyActor = new vtkActor();
 	private Vector<DrawingTool> highwayList = new Vector<DrawingTool>();
 	
 	public DefaultLocationsGUI(DrawingToolsGUI guiparent) {
@@ -269,13 +270,12 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		}
 		return null;
 	}
-	private vtkActor loadHighways()
+	private vtkActor loadCounties()
 	{
-		String selectedFile = selectedInputFile;
+		String selectedFile = dataPath + "CA_Counties.txt";
 		File highwaysFile = new File(selectedFile);
 		ArrayList<vtkPoints> points = new ArrayList<vtkPoints>();
-		String temp[] = new String[2];
-		String nameOfSegment="";
+		String name = "";
 		vtkCellArray cells = new vtkCellArray();
 		int ptCount=0;
 		
@@ -283,43 +283,58 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			BufferedReader inStream = new BufferedReader(new FileReader(highwaysFile));
 			String line = inStream.readLine();
 			StringTokenizer dataLine = new StringTokenizer(line);
-			temp[0] = dataLine.nextToken();	
-			temp[1] = dataLine.nextToken();
+			name = dataLine.nextToken(":");
 			/*process first line */
-			if (temp[0].equals("segment")) {
-				if(temp[1] == null)
-					System.out.println("first highway name missing");
-			}
-			else
-				System.out.println("File does not start with \"segment\", see expected format");
-			DrawingTool tempLocation = new DrawingTool(
+			
+			/*DrawingTool tempLocation = new DrawingTool(
 					34.05,
 					-118.24,
 					0.0d,
-					temp[1],
-					displayAttributes);
-			highwayList.add(tempLocation);
+					name,
+					displayAttributes);*/
+			//highwayList.add(tempLocation);
 			/* finished with first line */
 			line = inStream.readLine();
 			vtkPoints linePts =new vtkPoints();
 			while (line!=null){
-				dataLine = new StringTokenizer(line);  
-				temp[0] = dataLine.nextToken();	temp[1] = dataLine.nextToken();
-				
-				if (!temp[0].equals("segment"))
+				dataLine = new StringTokenizer(line);
+				String coord = "";
+				while(coord != null)
 				{
-					double [] p = Transform.transformLatLon(Double.parseDouble(temp[0]), Double.parseDouble(temp[1]));
-					linePts.InsertNextPoint(p);
-				}
-				else
-				{
-					if(linePts.GetNumberOfPoints()>0)
+					try{
+						String latitude = "";
+						String longitude = "";
+						coord = dataLine.nextToken();
+						coord = coord.substring(0,coord.length()-3);
+						int i = coord.indexOf(',');
+						longitude = coord.substring(0,i);
+						latitude = coord.substring(i + 1, coord.length()-1);
+						
+							double [] p = Transform.transformLatLon(Double.parseDouble(latitude), Double.parseDouble(longitude));
+							linePts.InsertNextPoint(p);
+
+						
+							
+						
+					}catch(Exception e)
 					{
-						points.add(linePts);
-						linePts = new vtkPoints();
+						break;
 					}
+					
 				}
-				line = inStream.readLine();						
+				if(linePts.GetNumberOfPoints()>0)
+				{
+					points.add(linePts);
+					linePts = new vtkPoints();
+				}
+				
+				line = inStream.readLine();
+				if(line != null)
+				{
+					if(line.contains(":"))
+						System.out.println(line);
+				}
+				
 			}
 			inStream.close();
 		} catch (FileNotFoundException e) {
@@ -351,10 +366,89 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		
 		return actor;
 	}
+	private vtkActor loadHighways()
+    {
+            String selectedFile = selectedInputFile;
+            File highwaysFile = new File(selectedFile);
+            ArrayList<vtkPoints> points = new ArrayList<vtkPoints>();
+            String temp[] = new String[2];
+            String nameOfSegment="";
+            vtkCellArray cells = new vtkCellArray();
+            int ptCount=0;
+           
+            try {
+                    BufferedReader inStream = new BufferedReader(new FileReader(highwaysFile));
+                    String line = inStream.readLine();
+                    StringTokenizer dataLine = new StringTokenizer(line);
+                    temp[0] = dataLine.nextToken();
+                    temp[1] = dataLine.nextToken();
+                    /*process first line */
+                    if (temp[0].equals("segment")) {
+                            if(temp[1] == null)
+                                    System.out.println("first highway name missing");
+                    }
+                    else
+                            System.out.println("File does not start with \"segment\", see expected format");
+                    /* finished with first line */
+                    line = inStream.readLine();
+                    vtkPoints linePts =new vtkPoints();
+                    while (line!=null){
+                            dataLine = new StringTokenizer(line); 
+                            temp[0] = dataLine.nextToken(); temp[1] = dataLine.nextToken();
+                           
+                            if (!temp[0].equals("segment"))
+                            {
+                                    double [] p = Transform.transformLatLon(Double.parseDouble(temp[0]), Double.parseDouble(temp[1]));
+                                    linePts.InsertNextPoint(p);
+                            }
+                            else
+                            {
+                                    if(linePts.GetNumberOfPoints()>0)
+                                    {
+                                            points.add(linePts);
+                                            linePts = new vtkPoints();
+                                    }
+                            }
+                            line = inStream.readLine();                                             
+                    }
+                    inStream.close();
+            } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+            } catch (IOException e) {
+                    e.printStackTrace();
+            }               
+            vtkPoints glbPoints = new vtkPoints();
+            for(int i = 0;i<points.size();i++)
+            {
+                    vtkPolyLine plyLine = new vtkPolyLine();
+                    plyLine.GetPointIds().SetNumberOfIds(points.get(i).GetNumberOfPoints());
+                    for(int j = 0;j<points.get(i).GetNumberOfPoints();j++)
+                            {
+                                    glbPoints.InsertNextPoint(points.get(i).GetPoint(j));
+                                    plyLine.GetPointIds().SetId(j,ptCount);
+                                    ptCount++;
+                            }
+                    cells.InsertNextCell(plyLine);
+            }
+            vtkPolyData polyData = new vtkPolyData();
+            polyData.SetPoints(glbPoints);
+            polyData.SetLines(cells);
+            vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+            mapper.SetInputData(polyData);
+            vtkActor actor = new vtkActor();
+            actor.SetMapper(mapper);
+           
+            return actor;
+    }
 	
 	public void removeHighways()
 	{
 		this.guiparent.appendActors.removeFromAppendedPolyData(highwayActor);		
+		Info.getMainGUI().updateRenderWindow();
+	}
+	public void removeCounties()
+	{
+		this.guiparent.appendActors.removeFromAppendedPolyData(countyActor);		
 		Info.getMainGUI().updateRenderWindow();
 	}
 	
@@ -432,7 +526,16 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					{
 						highwayActor = loadHighways();
 						this.guiparent.appendActors.addToAppendedPolyData(highwayActor);
-						addBuiltInFiles(highwayList);
+						//addBuiltInFiles(highwayList);
+						Info.getMainGUI().updateRenderWindow();
+					}
+					else if(tempGroup.name.equals("CA Counties"))
+					{
+						countyActor = loadCounties();
+						
+						tempGroup.locations = loadBuiltInFiles();
+						addBuiltInFiles(tempGroup.locations);
+						this.guiparent.appendActors.addToAppendedPolyData(countyActor);
 						Info.getMainGUI().updateRenderWindow();
 					}
 					else
@@ -446,6 +549,9 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					removeBuiltInFiles(tempGroup.locations);
 					if (tempGroup.name.equals("highways sorted")) {
 						removeHighways();
+					}
+					else if(tempGroup.name.equals("CA Counties")){
+						removeCounties();
 					}
 				}
 			}

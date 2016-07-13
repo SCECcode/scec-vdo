@@ -1,0 +1,116 @@
+Alameda County
+2216
+San Diego County
+784
+Imperial County
+43
+Riverside County
+327
+Orange County
+3967
+San Bernardino County
+106
+Los Angeles County
+2506
+Kern County
+123
+Ventura County
+461
+Santa Barbara County
+162
+San Luis Obispo County
+85
+Inyo County
+1
+Tulare County
+95
+Kings County
+108
+Monterey County
+132
+San Benito County
+42
+Fresno County
+163
+Mono County
+4
+Madera County
+72
+Mariposa County
+12
+Merced County
+138
+Santa Cruz County
+616
+Santa Clara County
+1486
+San Mateo County
+1707
+Stanislaus County
+360
+Tuolumne County
+9
+Alpine County
+1
+Calaveras County
+43
+San Joaquin County
+522
+Contra Costa County
+1573
+San Francisco County
+18451
+Marin County
+502
+Solano County
+530
+Sacramento County
+1555
+Amador County
+62
+El Dorado County
+107
+Sonoma County
+318
+Napa County
+190
+Yolo County
+209
+Sutter County
+160
+Placer County
+266
+Nevada County
+103
+Yuba County
+117
+Colusa County
+18
+Lake County
+51
+Mendocino County
+24
+Glenn County
+21
+Butte County
+137
+Plumas County
+7
+Tehama County
+21
+Lassen County
+7
+Shasta County
+47
+Trinity County
+4
+Humboldt County
+38
+Del Norte County
+27
+Siskiyou County
+7
+Modoc County
+2
+Sierra County
+3
