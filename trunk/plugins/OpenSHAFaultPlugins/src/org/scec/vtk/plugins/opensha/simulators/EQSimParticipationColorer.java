@@ -70,6 +70,7 @@ public class EQSimParticipationColorer extends CPTBasedColorer implements EQSims
 		
 		probabilityParam = new BooleanParameter("Probabilities", false);
 		probabilityParam.addParameterChangeListener(this);
+		probabilityParam.setInfo("If selected, Poisson probabilities with the given duration. Otherwise annualized rates");
 		params.addParameter(probabilityParam);
 		
 		probDurationParam = new DoubleParameter("Duration", 1d/365.25, 100000d, "Years");
