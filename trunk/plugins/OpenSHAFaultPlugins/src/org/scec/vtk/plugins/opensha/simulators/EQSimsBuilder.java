@@ -111,9 +111,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		EQSlipRateColorer slipColorer = new EQSlipRateColorer();
 		eventListeners.add(slipColorer);
 		colorers.add(slipColorer);
-//		EQSimParticipationColorer particColor = new EQSimParticipationColorer();
-//		eventListeners.add(particColor);
-//		colorers.add(particColor);
+		EQSimParticipationColorer particColor = new EQSimParticipationColorer();
+		eventListeners.add(particColor);
+		colorers.add(particColor);
 //		EQSimTimeDepParticColorer timeDepParticColor = new EQSimTimeDepParticColorer();
 //		eventListeners.add(timeDepParticColor);
 //		colorers.add(timeDepParticColor);
