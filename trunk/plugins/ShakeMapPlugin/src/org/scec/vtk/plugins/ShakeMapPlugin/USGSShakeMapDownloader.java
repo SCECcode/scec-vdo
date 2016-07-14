@@ -16,7 +16,7 @@ import org.scec.vtk.main.Info;
  * website. The url consists of the network and the earthquake id. 
  * By specifying both, the user can the required shake map.
  */
-public class ShakeMapDownloader {
+public class USGSShakeMapDownloader {
 
 	static final String URLSTART = "http://earthquake.usgs.gov/earthquakes/shakemap";
 	static final String URLEND = "download/grid.xyz.zip";
@@ -27,7 +27,7 @@ public class ShakeMapDownloader {
 	private String network; //the network that recorded the earthquake
 	private String quakeId; //the earthquake's id
 	
-	public ShakeMapDownloader(String network, String id){
+	public USGSShakeMapDownloader(String network, String id){
 		this.network = network;
 		quakeId = id;
 	}
