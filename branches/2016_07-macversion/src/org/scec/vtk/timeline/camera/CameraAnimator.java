@@ -108,7 +108,7 @@ public class CameraAnimator implements AnimationTimeListener {
 	}
 	
 	static void setActiveCamera(final vtkCamera cam) {
-		final vtkRenderer renderer = MainGUI.getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer();
+		final vtkRenderer renderer = MainGUI.getRenderWindow().getRenderWindow().GetRenderers().GetFirstRenderer();
 		Runnable run = new Runnable() {
 			public void run() {	
 //				MainGUI.updateRenderWindow();
