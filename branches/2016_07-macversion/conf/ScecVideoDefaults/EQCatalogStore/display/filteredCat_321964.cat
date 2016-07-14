@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: object_template.xml 20 2005-05-04 19:44:40Z pmpowers $-->
+<scec_video_object>
+  <object_info>
+    <class>org.scec.geo3d.plugins.EQCatalogPlugin.components.EQCatalog</class>
+    <source_file>\EQCatalogStore\source\convertedHypo71.cat</source_file>
+    <attribute_file>\EQCatalogStore\display\filteredCat_321964.cat</attribute_file>
+    <data_file>\EQCatalogStore\display\data\filteredCat_321964.dat</data_file>
+    <display_name>Chino Hills (2008)</display_name>
+    <source_info>
+      <citation />
+      <reference />
+    </source_info>
+    <notes />
+  </object_info>
+  <object_attributes>
+    <data num_events="138" scope="13">
+      <latitude min="33.84" max="34.115" />
+      <longitude min="-117.82" max="-117.29" />
+      <depth min="4.8" max="15.9" />
+      <magnitude min="0.5" max="5.4" />
+      <date min="July 28, 2008  (17:45:45)" max="August 03, 2008  (01:43:46)" />
+    </data>
+    <display>
+      <geometry value="1" />
+      <scaling value="4" />
+      <focal_mech value="0" />
+      <colors apply_gradient="0">
+        <color_1 r="1.0" g="0.0" b="0.0" />
+        <color_2 r="0.8" g="1.0" b="0.0" />
+      </colors>
+      <recentEQcoloring value="0" />
+    </display>
+  </object_attributes>
+</scec_video_object>
+
