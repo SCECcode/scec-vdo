@@ -111,7 +111,7 @@ public class ResizeWindowDialog extends JDialog implements ActionListener {
 
 		Container c  = this.getContentPane();
 		c.add(content);
-		oldSize = MainGUI.getRenderWindow().getSize();
+		oldSize = MainGUI.getRenderWindow().getComponent().getSize();
 		heightText.setText(Integer.toString((int)oldSize.getHeight()));
 		widthText.setText(Integer.toString((int)oldSize.getWidth()));
 		
@@ -160,13 +160,13 @@ public class ResizeWindowDialog extends JDialog implements ActionListener {
 					heightText.setText(Integer.toString((int)Prefs.getMainHeight()));
 					widthText.setText(Integer.toString((int)Prefs.getMainWidth()));
 				}
-			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
+			MainGUI.getRenderWindow().getComponent().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
 		}
 		if (src == this.ok) {
-			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
+			MainGUI.getRenderWindow().getComponent().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
 		} else if (src == this.cancel) {
 			this.cancelled = true;
-			MainGUI.getRenderWindow().setSize(oldSize);
+			MainGUI.getRenderWindow().getComponent().setSize(oldSize);
 			
 		}
 		Info.getMainGUI().repaint();

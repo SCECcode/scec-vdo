@@ -76,11 +76,12 @@ import vtk.vtkPropPicker;
 import vtk.vtkSphereSource;
 import vtk.vtkStringArray;
 import vtk.vtkTextActor;
+import vtk.rendering.jogl.vtkJoglCanvasComponent;
 
 public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsChangeListener{
 	private final int BORDER_SIZE = 10;
 	//	private static JFrame frame ;
-	private static vtkCanvas  renderWindow;
+	private static vtkJoglCanvasComponent  renderWindow;
 	private static JTabbedPane pluginTabPane;
 	//Create Main Panel
 	private static JPanel mainPanel;
@@ -147,8 +148,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	public MainGUI() {
 
-		renderWindow = new vtkCanvas ();
-		renderWindow.GetRenderer().Render();
+		renderWindow = new vtkJoglCanvasComponent();
+		renderWindow.getRenderer().Render();
 		//vtkCamera camera = new vtkCamera();
 		//renderWindow.GetRenderer().SetActiveCamera(camera);
 		mainPanel = new JPanel(new BorderLayout());
@@ -157,7 +158,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 
 		//renderWindow.setFocusable(true);
-		renderWindow.GetRenderer().SetBackground(0,0,0);
+		renderWindow.getRenderer().SetBackground(0,0,0);
 
 		mainMenu = new MainMenu();
 
@@ -178,7 +179,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		pluginGUIScrollPane.setPreferredSize(d);
 		Dimension minimumSize = new Dimension(100, 50);
 		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
-		renderWindow.setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
+		renderWindow.getComponent().setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 
 		timeline = new Timeline();
 		timelineGUI = new TimelineGUI(timeline);
@@ -197,16 +198,16 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		vtkPolyDataMapper focalPointMapper = new vtkPolyDataMapper();
 		focalPointMapper.SetInputConnection(focalPoint.GetOutputPort());
 		focalPointActor.SetMapper(focalPointMapper);
-		renderWindow.GetRenderer().AddActor(focalPointActor);
+		renderWindow.getRenderer().AddActor(focalPointActor);
 		focalPointActor.VisibilityOff();
 
-		renderWindow.GetRenderer().SetActiveCamera(tmpCam);
-		renderWindow.GetRenderer().ResetCameraClippingRange();
-		focalPointActor.SetPosition(renderWindow.GetRenderer().GetActiveCamera().GetFocalPoint());
+		renderWindow.getRenderer().SetActiveCamera(tmpCam);
+		renderWindow.getRenderer().ResetCameraClippingRange();
+		focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
 		focalPointActor.Modified();
-		renderWindow.setFocusable(true);
+		renderWindow.getComponent().setFocusable(true);
 
-		renderWindow.addKeyListener(new KeyListener() {
+		renderWindow.getComponent().addKeyListener(new KeyListener() {
 
 			@Override
 			public void keyTyped(KeyEvent e) {
@@ -218,7 +219,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			@Override
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				renderWindow.GetRenderer().Render();
+				renderWindow.getRenderer().Render();
 			}
 
 			@Override
@@ -228,30 +229,30 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				{
 					//TODO: change start cam coordinates to be as per the region assigned by default they are set for California
 					//reset view position to default 
-					if(renderWindow.GetRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0)
+					if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0)
 					{
 						vtkCamera tmpCam = new vtkCamera();
 
 						tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
 						tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
 						tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
-						renderWindow.GetRenderer().SetActiveCamera(tmpCam);
-						renderWindow.GetRenderer().ResetCameraClippingRange();
-						renderWindow.repaint();				    		
+						renderWindow.getRenderer().SetActiveCamera(tmpCam);
+						renderWindow.getRenderer().ResetCameraClippingRange();
+						renderWindow.getComponent().repaint();				    		
 					}
 				}
 				if(e.getKeyCode() == KeyEvent.VK_SPACE)
 				{
-					if(renderWindow.GetRenderer().GetViewProps().IsItemPresent(focalPointActor)!=0)
+					if(renderWindow.getRenderer().GetViewProps().IsItemPresent(focalPointActor)!=0)
 					{
 						if(focalPointActor.GetVisibility()==0)
 						{ 
 							focalPointActor.VisibilityOn();
-							focalPointActor.SetPosition(renderWindow.GetRenderer().GetActiveCamera().GetFocalPoint());
+							focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
 						}
 						else
 							focalPointActor.VisibilityOff();
-						renderWindow.repaint();	 	
+						renderWindow.getComponent().repaint();	 	
 					}
 				}
 			}
@@ -262,11 +263,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		cellPicker.SetTolerance(0.001);
 
 		// Show the point on the sphere the mouse is hovering over in the status bar
-		renderWindow.addMouseListener(new MouseAdapter() {
+		renderWindow.getComponent().addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				int[] clickPos = renderWindow.getRenderWindowInteractor().GetEventPosition();
  
-				cellPicker.Pick(clickPos[0], clickPos[1],0, renderWindow.GetRenderer());
+				cellPicker.Pick(clickPos[0], clickPos[1],0, renderWindow.getRenderer());
 				// if we picked a pick enabled actor, fire off a pick event
 				// DON'T REMOVE THIS when playing with the highlighting stuff you're doing below please!
 				if (cellPicker.GetActor() instanceof PickEnabledActor<?>) {
@@ -277,7 +278,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			}
 		});
 
-		mainPanel.add(renderWindow, BorderLayout.CENTER);
+		mainPanel.add(renderWindow.getComponent(), BorderLayout.CENTER);
 		try {
 			mainMenu.availablePlugins = Plugins.getAvailablePlugins();
 			mainMenu.setupPluginMenus();
@@ -325,7 +326,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	{
 		// render window locks up and won't repaint if there are zero actors. add a blank actor to prevent this
 		vtkActor blankActor = new vtkActor();
-		renderWindow.GetRenderer().AddActor(blankActor);
+		renderWindow.getRenderer().AddActor(blankActor);
 		
 		// TODO these should be treated as plugins that are loaded by default, not hardcoded here
 		ArrayList<String> ids =new ArrayList<String>();
@@ -493,7 +494,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public static void updateRenderWindow(vtkActor actor)
 	{
 		renderWindow.Render();
-		renderWindow.GetRenderer().ResetCamera(actor.GetBounds());
+		renderWindow.getRenderer().ResetCamera(actor.GetBounds());
 		//renderWindow.repaint(); 
 	}
 	//just update renderwindow
@@ -505,7 +506,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		//renderWindow.repaint();
 	}
 
-	public static vtkCanvas  getRenderWindow() {
+	public static vtkJoglCanvasComponent  getRenderWindow() {
 		return renderWindow;
 	}
 
@@ -821,12 +822,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	@Override
 	public void actorAdded(vtkProp actor) {
 		// called when a plugin adds an actor
-		renderWindow.GetRenderer().AddActor(actor);
+		renderWindow.getRenderer().AddActor(actor);
 	}
 
 	@Override
 	public void actorRemoved(vtkProp actor) {
 		// called when a plugin removes an actor
-		renderWindow.GetRenderer().RemoveActor(actor);
+		renderWindow.getRenderer().RemoveActor(actor);
 	}
 }
