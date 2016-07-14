@@ -54,13 +54,30 @@ public class XYZToColorPalette {
 			System.out.println("Loading file...");
 			File file = new File(dP);
 			try {
-				 this.griddedGeoDataSet = GriddedGeoDataSet.loadXYZFile(file, 1, 0, -1, 2);
+				 this.griddedGeoDataSet = GriddedGeoDataSet.loadXYZFile(file, 1, 0, -1, 2); 
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 	 }
+	 
+	 /*
+	  * In these files, the latitude is the first column,
+	  * not the longitude
+	  */
+	 public void loadOpenSHAFileToGriddedGeoDataSet(String dP){
+		 	System.out.println("Loading file...");
+			File file = new File(dP);
+			try {
+				 this.griddedGeoDataSet = GriddedGeoDataSet.loadXYZFile(file, 0, 1, -1, 2); 
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	 }
+	 
 	 public vtkActor builtPolygonSurface()
 	 {
 		 return GeoDataSetGeometryGenerator.buildPolygonSurface(griddedGeoDataSet, cpt);
