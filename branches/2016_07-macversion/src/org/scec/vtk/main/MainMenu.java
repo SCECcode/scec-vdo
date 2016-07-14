@@ -23,6 +23,7 @@ import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -37,7 +38,9 @@ import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.plugins.utils.components.ResizeWindowDialog;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
+
 import com.google.common.base.Preconditions;
+
 import vtk.vtkActor;
 import vtk.vtkActorCollection;
 import vtk.vtkAppendPolyData;
@@ -48,6 +51,7 @@ import vtk.vtkPolyDataMapper;
 import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
 import vtk.vtkRenderWindow;
+import vtk.rendering.jogl.vtkJoglCanvasComponent;
 
 
 public class MainMenu implements ActionListener, ItemListener{
@@ -166,11 +170,11 @@ public class MainMenu implements ActionListener, ItemListener{
 	public void saveVTKObj(File file)
 	{
 
-		vtkPanel renderWindow = Info.getMainGUI().getRenderWindow();
+		vtkJoglCanvasComponent renderWindow = Info.getMainGUI().getRenderWindow();
 
-		vtkRenderWindow renWin = renderWindow.GetRenderWindow();
+		vtkRenderWindow renWin = renderWindow.getRenderWindow();
 
-		vtkActorCollection actorlist = renderWindow.GetRenderer().GetActors();
+		vtkActorCollection actorlist = renderWindow.getRenderer().GetActors();
 		if(actorlist.GetNumberOfItems()>0){
 			System.out.println(actorlist.GetNumberOfItems());
 			vtkPolyDataWriter objExporter = new vtkPolyDataWriter();
@@ -229,8 +233,8 @@ public class MainMenu implements ActionListener, ItemListener{
 		vtkActor actor = new vtkActor();
 		actor.SetMapper(mapper);
 		actor.GetProperty().SetColor(c);
-		vtkPanel renderWindow = MainGUI.getRenderWindow();
-		renderWindow.GetRenderer().AddActor(actor);
+		vtkJoglCanvasComponent renderWindow = MainGUI.getRenderWindow();
+		renderWindow.getRenderer().AddActor(actor);
 		MainGUI.updateRenderWindow(actor);
 	}
 
