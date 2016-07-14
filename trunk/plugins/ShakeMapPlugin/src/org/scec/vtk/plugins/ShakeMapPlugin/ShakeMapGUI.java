@@ -18,14 +18,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,8 +60,13 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	private static final long serialVersionUID = 1L;
 	
 	static final String dataPath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin"; //path to directory with local folders
+	static final String moreMaps = "More_USGS_Maps"; //the extra maps that the user may download
+	static final String openSHAFile = "openSHA.txt";
+	static final String openSHAMapURL = "http://zero.usc.edu/gmtData/1468263306257/map_data.txt"; //custom shakemaps which may be uploaded to this link
 
 	private JPanel shakeMapLibraryPanel;
+	private JTabbedPane tabbedPane = new JTabbedPane();
+	
 	ArrayList<JCheckBox> defaultList; //for the local files in ShakeMapPlugin directory
 	ArrayList<ShakeMap> shakeMapsList;
 	PluginActors pluginActors;
@@ -69,23 +77,22 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	private JRadioButton nc = new JRadioButton("NorCal");
 	private JRadioButton sc = new JRadioButton("SoCal");
 	JTextField eventIdBox = new JTextField("Insert Earthquake ID");
-	JButton downloadUSGS = new JButton("Download USGS Shake Map");
+	JButton downloadUSGSButton = new JButton("Download USGS Shake Map");
 	
 	
 	public ShakeMapGUI(PluginActors pluginActors) {
 		shakeMapLibraryPanel = new JPanel();
 //		shakeMapLibraryPanel.setLayout(new BoxLayout(shakeMapLibraryPanel, BoxLayout.Y_AXIS));
-		shakeMapLibraryPanel.setLayout(new GridLayout(3,0));
+//		shakeMapLibraryPanel.setLayout(new GridLayout(3,0));
 
-		
-		JPanel presets = new JPanel();
-		presets.setLayout(new GridLayout(0,2)); //2 per row
-		
 		defaultList = new ArrayList<JCheckBox>();
 		this.pluginActors = pluginActors;
 		shakeMapsList = new ArrayList<ShakeMap>();
 		actorList = new ArrayList<>();
 		
+		//Make checkboxes of all the presets
+		JPanel presets = new JPanel();
+		presets.setLayout(new GridLayout(0,2)); //2 per row
 		//Initialize all the preset files in the data/ShakeMapPlugin directory
 		File dataDirectory = new File(dataPath);
 		if (dataDirectory.isDirectory()) {
@@ -105,19 +112,43 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 			}
 		}
 		
+		//Checkboxes for the USGS Table
+//		JPanel usgsDownloads = new JPanel();
+//		usgsDownloads.setLayout(new GridLayout(0,2)); //2 per row
+//		//Initialize all the preset files in the data/ShakeMapPlugin directory
+//		File usgsDirectory = new File(dataPath + "/" + moreMaps);
+//		if (usgsDirectory.isDirectory()) {
+//			// List files in the directory and process each
+//			File files[] = usgsDirectory.listFiles();
+//			for (int i = 0; i < files.length; i++) {
+//				if (files[i].isFile()) {
+//					String tempName = files[i].getName();
+//					System.out.println(tempName);
+//					JCheckBox tempCheckbox = new JCheckBox(tempName);
+//					tempCheckbox.setName(tempName);
+//					tempCheckbox.addItemListener(this);
+//					usgsDownloads.add(tempCheckbox);
+//					defaultList.add(tempCheckbox); //add the JCheckBox to the list
+//					shakeMapsList.add(null); //for now, initialize to null
+//					actorList.add(null);
+//				}
+//			}
+//		}
+		
 		
 		JPanel USGSPanel = new JPanel();
-		USGSPanel.setLayout(new GridLayout(2,1));
-		USGSPanel.add(new JLabel("USGS Map"));
+		USGSPanel.setLayout(new GridLayout(0,2));
+//		USGSPanel.add(usgsDownloads);
+//		USGSPanel.add(new JLabel("USGS Map"));
 		calChooser.add(nc);
 		calChooser.add(sc);
 		USGSPanel.add(nc);
 		USGSPanel.add(sc);
-//		USGSPanel.add(new JLabel("Enter earthquake id:"));
 		USGSPanel.add(eventIdBox);
-		USGSPanel.add(downloadUSGS);
+		USGSPanel.add(downloadUSGSButton);
 		
-		downloadUSGS.addActionListener(new ActionListener(){
+		
+		downloadUSGSButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
@@ -130,36 +161,60 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 						network = "sc";
 					}
 					if(network.length() > 0){
-						ShakeMapDownloader smd = new ShakeMapDownloader(network, id);
+						USGSShakeMapDownloader smd = new USGSShakeMapDownloader(network, id);
 						String d = smd.downloadShakeMap("usgsMap.txt");
 						System.out.println(d);
 						if(d.length() <= 0){
 							System.out.println("Failure");
+							JOptionPane.showMessageDialog(shakeMapLibraryPanel,
+								    "Sorry, file not found on USGS site.");
 						}else{
 							System.out.println("Loaded!");
 							try {
-								Files.copy(Paths.get(dataPath+"/"+"usgsMap.txt"), Paths.get(dataPath+"/"+"USGS_Maps/"+id+".txt"));
+								Files.copy(Paths.get(dataPath+"/"+"usgsMap.txt"), Paths.get(dataPath+"/"+moreMaps +"/"+id+".txt"));
 							} catch (IOException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
-//							 FileUtils.copyFile(dataPath+"/"+"usgsMap.txt", dataPath+"/"+"USGS_Maps/"+id+".txt");
 							showNewUSGSMap();
 						}
 					}else{
 						System.out.println("Make a location selection!");
+						JOptionPane.showMessageDialog(shakeMapLibraryPanel,
+							    "Select A Region (Northern or Southern California");
 					}
 				}else{
 					System.out.println("Enter an earthquake ID!");
+					JOptionPane.showMessageDialog(shakeMapLibraryPanel,
+						    "Enter an earthquake ID.");
 				}
 			}			
 		});
 		
+		tabbedPane.addTab("Presets", presets);
+		tabbedPane.addTab("USGS", USGSPanel);
+		JButton openSHAButton = new JButton("Download OpenSHA File");
+		openSHAButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				try {
+					URL openSHA = new URL(openSHAMapURL);
+					Files.copy(openSHA.openStream(), Paths.get(dataPath+"/openSHA.txt"), StandardCopyOption.REPLACE_EXISTING);
+				} catch (MalformedURLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(shakeMapLibraryPanel,
+						    "There is no file on OpenSHA right now.");
+				}
+			}		
+		});
+		tabbedPane.addTab("OpenSHA", openSHAButton);
 		
-		//now add eveything to the main panel
-		shakeMapLibraryPanel.add(presets);
-		shakeMapLibraryPanel.add(USGSPanel);
-//		shakeMapLibraryPanel.add(new JButton("Download from OpenSHA"));
+		shakeMapLibraryPanel.add(tabbedPane);
 		this.add(shakeMapLibraryPanel);
 
 	}
@@ -194,7 +249,13 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 				if (e.getStateChange()==ItemEvent.SELECTED) {
 					if(shakeMapsList.get(i) == null){ //if it has never been selected before, load the file
 						ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
-						shakeMap.loadFromFileToGriddedGeoDataSet(dataPath + "/" + defaultList.get(i).getName());
+						if(defaultList.get(i).getName().equals("openSHA.txt")){
+							//The file format for data from openSHA files are a little different.
+							//Open declaration of method for more details
+							shakeMap.loadOpenSHAFileToGriddedGeoDataSet(dataPath + "/" + defaultList.get(i).getName());
+						}else{
+							shakeMap.loadFromFileToGriddedGeoDataSet(dataPath + "/" + defaultList.get(i).getName());
+						}
 						shakeMap.setActor(shakeMap.builtPolygonSurface());
 						actorList.set(i, shakeMap.getActor());
 						pluginActors.addActor(shakeMap.getActor());
