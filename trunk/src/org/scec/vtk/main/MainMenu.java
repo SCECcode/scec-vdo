@@ -23,7 +23,6 @@ import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -35,10 +34,10 @@ import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.plugins.StatefulPlugin;
+import org.scec.vtk.plugins.utils.components.ResizeWindowDialog;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
 import com.google.common.base.Preconditions;
-
 import vtk.vtkActor;
 import vtk.vtkActorCollection;
 import vtk.vtkAppendPolyData;
@@ -58,12 +57,14 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem fileOpen;
 	private MenuItem saveItem;
 	private MenuItem appExit;
-
+	private Menu windowMenu ;
 	private Timeline timeline;
 	private TimelineGUI timelineGUI;
 	private JFrame timelineFrame;
 	private CheckboxMenuItem timelineItem;
 	private MenuItem saveItemVTK;
+	private MenuItem resizeWindow;
+	private ResizeWindowDialog srcInfoDialog;
 
 	static Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	// TODO why are these static?
@@ -86,6 +87,25 @@ public class MainMenu implements ActionListener, ItemListener{
 		displayMenu.setLabel("Display");
 		displayMenu.setName("Display");
 		menuBar.add(displayMenu);
+		
+
+		setupWindowMenu();
+	}
+
+
+	private void setupWindowMenu() {
+		// TODO Auto-generated method stub
+		windowMenu = new Menu();
+		windowMenu.setLabel("Window");
+		windowMenu.setName("Window");
+	
+		
+		
+		resizeWindow = new MenuItem("Resize render window");
+		windowMenu.add(resizeWindow);
+		menuBar.add(windowMenu);
+		windowMenu.addActionListener(this);
+		this.resizeWindow.addActionListener(this);
 	}
 
 
@@ -294,6 +314,10 @@ public class MainMenu implements ActionListener, ItemListener{
 				System.out.println("Unhandled event");
 			}
 		}
+		else if(eventSource == resizeWindow)
+			{
+				this.srcInfoDialog = new ResizeWindowDialog(Info.getMainGUI());
+			}
 	}
 
 	private void saveXMLFile(Document document,Element root,String destinationData) {
