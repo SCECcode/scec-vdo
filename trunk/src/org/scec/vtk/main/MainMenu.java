@@ -317,6 +317,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		else if(eventSource == resizeWindow)
 			{
 				this.srcInfoDialog = new ResizeWindowDialog(Info.getMainGUI());
+				System.out.println("Initial: " + MainGUI.getRenderWindow().getWidth() + "," + MainGUI.getRenderWindow().getHeight());
 			}
 	}
 
