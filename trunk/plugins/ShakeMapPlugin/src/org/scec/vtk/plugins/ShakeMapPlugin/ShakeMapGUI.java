@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -28,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.xml.parsers.DocumentBuilder;
@@ -65,9 +67,10 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	static final String openSHAMapURL = "http://zero.usc.edu/gmtData/1468263306257/map_data.txt"; //custom shakemaps which may be uploaded to this link
 
 	private JPanel shakeMapLibraryPanel;
+	JPanel usgsDownloads;
 	private JTabbedPane tabbedPane = new JTabbedPane();
 	
-	ArrayList<JCheckBox> defaultList; //for the local files in ShakeMapPlugin directory
+	ArrayList<JCheckBox> checkBoxList; //for the local files in ShakeMapPlugin directory
 	ArrayList<ShakeMap> shakeMapsList;
 	PluginActors pluginActors;
 	private ArrayList<vtkActor> actorList;
@@ -76,16 +79,21 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	private ButtonGroup calChooser = new ButtonGroup();
 	private JRadioButton nc = new JRadioButton("NorCal");
 	private JRadioButton sc = new JRadioButton("SoCal");
-	JTextField eventIdBox = new JTextField("Insert Earthquake ID");
+	JTextField eventIdBox = new JTextField("Enter Event ID");
 	JButton downloadUSGSButton = new JButton("Download USGS Shake Map");
 	
 	
 	public ShakeMapGUI(PluginActors pluginActors) {
+		//First check if More_USGS_Maps directory exists...
+		//Otherwise, make that directory
+		File f = new File(dataPath+"/"+moreMaps);
+		if(!(f.exists()))
+			f.mkdirs();	
+			
+		
 		shakeMapLibraryPanel = new JPanel();
-//		shakeMapLibraryPanel.setLayout(new BoxLayout(shakeMapLibraryPanel, BoxLayout.Y_AXIS));
-//		shakeMapLibraryPanel.setLayout(new GridLayout(3,0));
 
-		defaultList = new ArrayList<JCheckBox>();
+		checkBoxList = new ArrayList<JCheckBox>();
 		this.pluginActors = pluginActors;
 		shakeMapsList = new ArrayList<ShakeMap>();
 		actorList = new ArrayList<>();
@@ -105,7 +113,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 					tempCheckbox.setName(tempName);
 					tempCheckbox.addItemListener(this);
 					presets.add(tempCheckbox);
-					defaultList.add(tempCheckbox); //add the JCheckBox to the list
+					checkBoxList.add(tempCheckbox); //add the JCheckBox to the list
 					shakeMapsList.add(null); //for now, initialize to null
 					actorList.add(null);
 				}
@@ -113,27 +121,27 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		}
 		
 		//Checkboxes for the USGS Table
-//		JPanel usgsDownloads = new JPanel();
-//		usgsDownloads.setLayout(new GridLayout(0,2)); //2 per row
-//		//Initialize all the preset files in the data/ShakeMapPlugin directory
-//		File usgsDirectory = new File(dataPath + "/" + moreMaps);
-//		if (usgsDirectory.isDirectory()) {
-//			// List files in the directory and process each
-//			File files[] = usgsDirectory.listFiles();
-//			for (int i = 0; i < files.length; i++) {
-//				if (files[i].isFile()) {
-//					String tempName = files[i].getName();
+		usgsDownloads = new JPanel();
+		usgsDownloads.setLayout(new GridLayout(0,2)); //2 per row
+		//Initialize all the preset files in the data/ShakeMapPlugin directory
+		File usgsDirectory = new File(dataPath + "/" + moreMaps);
+		if (usgsDirectory.isDirectory()) {
+			// List files in the directory and process each
+			File files[] = usgsDirectory.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				if (files[i].isFile()) {
+					String tempName = files[i].getName();
 //					System.out.println(tempName);
-//					JCheckBox tempCheckbox = new JCheckBox(tempName);
-//					tempCheckbox.setName(tempName);
-//					tempCheckbox.addItemListener(this);
-//					usgsDownloads.add(tempCheckbox);
-//					defaultList.add(tempCheckbox); //add the JCheckBox to the list
-//					shakeMapsList.add(null); //for now, initialize to null
-//					actorList.add(null);
-//				}
-//			}
-//		}
+					JCheckBox tempCheckbox = new JCheckBox(tempName);
+					tempCheckbox.setName(tempName);
+					tempCheckbox.addItemListener(this);
+					usgsDownloads.add(tempCheckbox);
+					checkBoxList.add(tempCheckbox); //add the JCheckBox to the list
+					shakeMapsList.add(null); //for now, initialize to null
+					actorList.add(null);
+				}
+			}
+		}
 		
 		
 		JPanel USGSPanel = new JPanel();
@@ -146,7 +154,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		USGSPanel.add(sc);
 		USGSPanel.add(eventIdBox);
 		USGSPanel.add(downloadUSGSButton);
-		
 		
 		downloadUSGSButton.addActionListener(new ActionListener(){
 			@Override
@@ -177,6 +184,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 								e1.printStackTrace();
 							}
 							showNewUSGSMap();
+							addNewUSGSCheckBox(id+".txt");
 						}
 					}else{
 						System.out.println("Make a location selection!");
@@ -191,8 +199,11 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 			}			
 		});
 		
-		tabbedPane.addTab("Presets", presets);
-		tabbedPane.addTab("USGS", USGSPanel);
+		
+		JScrollPane scrollPane = new JScrollPane(presets);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
 		JButton openSHAButton = new JButton("Download OpenSHA File");
 		openSHAButton.addActionListener(new ActionListener(){
 			@Override
@@ -212,11 +223,14 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 				}
 			}		
 		});
+		
+		tabbedPane.addTab("Presets", presets);
+		tabbedPane.addTab("Saved Maps", usgsDownloads);
+		tabbedPane.addTab("Download USGS Map", USGSPanel);
 		tabbedPane.addTab("OpenSHA", openSHAButton);
 		
 		shakeMapLibraryPanel.add(tabbedPane);
 		this.add(shakeMapLibraryPanel);
-
 	}
 
 
@@ -239,22 +253,35 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		shakeMapsList.add(shakeMap);
 		Info.getMainGUI().updateRenderWindow();
 	}
+	
+	private void addNewUSGSCheckBox(String fileName){
+		JCheckBox tempCheckbox = new JCheckBox(fileName);
+		tempCheckbox.setName(fileName);
+		tempCheckbox.setSelected(true);
+		tempCheckbox.addItemListener(this);
+		usgsDownloads.add(tempCheckbox); //add it to GUI
+		checkBoxList.add(tempCheckbox); //add it to data
+	}
 
 	@Override
 	public void itemStateChanged(ItemEvent e) {
 		// TODO Auto-generated method stub
 		Object src = e.getSource();
-		for(int i=0; i<defaultList.size(); i++){
-			if(src == defaultList.get(i)){
+		for(int i=0; i<checkBoxList.size(); i++){
+			if(src == checkBoxList.get(i)){
 				if (e.getStateChange()==ItemEvent.SELECTED) {
 					if(shakeMapsList.get(i) == null){ //if it has never been selected before, load the file
 						ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
-						if(defaultList.get(i).getName().equals("openSHA.txt")){
+						if(checkBoxList.get(i).getName().equals("openSHA.txt")){
 							//The file format for data from openSHA files are a little different.
 							//Open declaration of method for more details
-							shakeMap.loadOpenSHAFileToGriddedGeoDataSet(dataPath + "/" + defaultList.get(i).getName());
+							shakeMap.loadOpenSHAFileToGriddedGeoDataSet(dataPath + "/" + checkBoxList.get(i).getName());
 						}else{
-							shakeMap.loadFromFileToGriddedGeoDataSet(dataPath + "/" + defaultList.get(i).getName());
+							File f = new File(dataPath + "/" + checkBoxList.get(i).getName());
+							if(f.exists())
+								shakeMap.loadFromFileToGriddedGeoDataSet(dataPath + "/" + checkBoxList.get(i).getName());			
+							else
+								shakeMap.loadFromFileToGriddedGeoDataSet(dataPath + "/" + moreMaps + "/" + checkBoxList.get(i).getName());
 						}
 						shakeMap.setActor(shakeMap.builtPolygonSurface());
 						actorList.set(i, shakeMap.getActor());
