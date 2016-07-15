@@ -96,7 +96,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 	};
 	public SurfaceTableModel surfaceTableModel = new SurfaceTableModel(columnNames);
 	public JTable surfaceTable = new JTable(surfaceTableModel);
-	public Vector<Surface> surfaceArray = new Vector<Surface>();
+	public static Vector<Surface> surfaceArray = new Vector<Surface>();
 	private MapSetCreatePluginGUI mscpg;
 	private PluginActors surfaceActors;
 	private String filename;
@@ -213,7 +213,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 			ListSelectionModel model = surfaceTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 				int row = model.getMinSelectionIndex();
-				surfaceArray.get(row).getSurfaceActor().GetProperty().SetOpacity(transparency);
+				setTransparency(surfaceArray.get(row),transparency);
 			}
 			Info.getMainGUI().updateRenderWindow();
 		}
@@ -259,7 +259,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -283,7 +283,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -307,7 +307,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -331,7 +331,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -354,7 +354,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -378,7 +378,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -402,8 +402,8 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -427,7 +427,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -451,7 +451,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -475,7 +475,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -499,7 +499,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
-				mscpg = new MapSetCreatePluginGUI(imageData);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
 			}
 			else
@@ -525,16 +525,9 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 			ListSelectionModel model = surfaceTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 				int row = i;//model.getMinSelectionIndex();
-				if(surfaceArray.get(row).getSurfaceActor().GetVisibility()==1)
-				{surfaceArray.get(row).getSurfaceActor().VisibilityOff();
-				surfaceTableModel.setValueAt("false",row, 0);
-				//surfaceTableModel.fireTableCellUpdated(row, 0);
-				}
-				else
-				{surfaceArray.get(row).getSurfaceActor().VisibilityOn();
-				surfaceTableModel.setValueAt("true",row, 0);
-				//surfaceTableModel.fireTableCellUpdated(row, 0);
-				}
+				int v =(surfaceArray.get(row).getSurfaceActor().GetVisibility()==0)?1:0;
+				setVisibility(surfaceArray.get(row),row, v);
+				
 			}
 			Info.getMainGUI().updateRenderWindow();
 		}
@@ -936,4 +929,59 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		Info.getMainGUI().updateRenderWindow();
 	}
 
+
+
+	public void setTransparency(Surface surface, double transparency)
+	{
+		surface.getSurfaceActor().GetProperty().SetOpacity(transparency);
+	}
+	
+	public void setVisibility(Surface surf, int row, int visibility)
+	{
+		surf.setVisibility(visibility);
+		surf.getSurfaceActor().SetVisibility(visibility);
+		if(visibility == 0)
+		{
+
+			surfaceTableModel.setValueAt("false",row, 0);
+			//surfaceTableModel.fireTableCellUpdated(row, 0);
+		}
+		else
+		{	
+			surfaceTableModel.setValueAt("true",row, 0);
+			//surfaceTableModel.fireTableCellUpdated(row, 0);
+		}
+		
+	}
+	
+	public void setCheckBox(String nameOFButton, boolean what)
+	{
+		switch (nameOFButton)
+		{
+		case "wm" : wm.setSelected(what);
+		break;
+		case "sc" : sc.setSelected(what);
+		break;
+		case "cm" : cm.setSelected(what);
+		break;
+		case "jm" : jm.setSelected(what);
+		break;
+		case "nz" : nz.setSelected(what);
+		break;
+		case "im" : im.setSelected(what);
+		break;
+		case "hm" : hm.setSelected(what);
+		break;
+		case "mm" : mm.setSelected(what);
+		break;
+		case "sa" : sa.setSelected(what);
+		break;
+		case "cd" : cd.setSelected(what);
+		break;
+		case "cdc" : cdc.setSelected(what);
+
+		}
+
+	}
+		
 }

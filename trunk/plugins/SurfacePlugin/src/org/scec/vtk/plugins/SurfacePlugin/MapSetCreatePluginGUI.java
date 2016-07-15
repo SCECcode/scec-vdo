@@ -154,7 +154,6 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	
 	Logger log = Logger.getLogger(MapSetCreatePluginGUI.class);
 	
-	
 	JComboBox mapLayersBox = new JComboBox();
 	JComboBox mapStylesBox = new JComboBox();
 	JLabel mapLayerLabel = new JLabel("Layer: ");
@@ -162,9 +161,11 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	private String googleName = "Google Static Maps";
 	private boolean enableGoogle = false;
 	private static final String wms_layer_default = "bmng200407";
+	private String imageName;
 	
-	public MapSetCreatePluginGUI(double[] imageData){
+	public MapSetCreatePluginGUI(String imgName, double[] imageData){
 		this.imageData= imageData;
+		this.imageName = imgName;
 		
 	}
 	private vtkActor mapSetActor = new vtkActor();
@@ -835,7 +836,7 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 			}
 		
 			//image file info
-			   temp.addImageInfo(new ImageInfo(temp.getImageFilePath(), ul, lr, meshType));
+			   temp.addImageInfo(new ImageInfo(imageName, temp.getImageFilePath(), ul, lr, meshType));
 			//create surface plus texture
 			   if(temp.getSurfaceFilePath()!="-")
 			{
@@ -1008,7 +1009,7 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 						setProgressIndeterminate(true);
 						
 						String loadedFilePath;
-			
+//here here here		
 						if((surfaceFile) && !imageFile)
 						{   
 							parent.setScaleFactor(Double.parseDouble(surfaceScale.getText()));
@@ -1020,7 +1021,7 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 								return;
 							}
 							LoadedFilesProperties lfp;
-							lfp = new LoadedFilesProperties("-", null, surfaceFilePath.getText(),surfaceData,null,false,loadedFilePath);
+							lfp = new LoadedFilesProperties(imageFilePath.getText(), imageData,"-",null,null,false,loadedFilePath);
 							lfp.setPlot(true);
 							lfp.setShow(true);
 							createSurface(lfp,parent);
