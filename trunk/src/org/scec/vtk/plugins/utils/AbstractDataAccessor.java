@@ -56,6 +56,7 @@ public abstract class AbstractDataAccessor implements DataAccessor {
     private String sourceCite;
     private String sourceRef;
     private String objNotes;
+    private boolean fromWeb;
     public boolean infoAdded=false;
     
     private boolean display = false;
@@ -474,6 +475,7 @@ public abstract class AbstractDataAccessor implements DataAccessor {
         this.sourceRef = reference;
         this.object_info.getChild("source_info").getChild("reference").setText(reference);
     }
+
 
 }
 

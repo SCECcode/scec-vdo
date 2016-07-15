@@ -11,7 +11,7 @@ package org.scec.vtk.plugins.SurfacePlugin;
  */
 public class ImageInfo {
 	
-
+	private String imageName;
 	private String filename;
 	private double[] upperLeft;
 	private double[] lowerRight;
@@ -20,7 +20,8 @@ public class ImageInfo {
 	//private BranchGroup bg;
 	private GeographicSurfaceInfo attachedSurface;
 	
-	public ImageInfo(String f, double[] ul, double[] lr, boolean mt) {
+	public ImageInfo(String imgName, String f, double[] ul, double[] lr, boolean mt) {
+		this.imageName = imgName;
 		filename = f;
 		upperLeft = ul;
 		lowerRight = lr;
@@ -29,6 +30,11 @@ public class ImageInfo {
 			transparency = 0.0f;
 		else
 			transparency = 0.4f;
+	}
+	
+	public String getImageName()
+	{
+		return this.imageName;
 	}
 	
 	public String getFilename() {

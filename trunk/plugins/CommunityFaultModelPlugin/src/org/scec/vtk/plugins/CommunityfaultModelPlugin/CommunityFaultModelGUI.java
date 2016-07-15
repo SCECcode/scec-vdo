@@ -58,7 +58,11 @@ import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.GroupList;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.TSurfImport;
 
 
-public class CommunityFaultModelGUI  extends JPanel implements ActionListener, ListSelectionListener, TableModelListener {
+public class CommunityFaultModelGUI  extends JPanel implements 
+ActionListener, 
+ListSelectionListener, 
+TableModelListener 
+{
 
 	private static final long serialVersionUID = 1L;
 	// fault library panel accessible components

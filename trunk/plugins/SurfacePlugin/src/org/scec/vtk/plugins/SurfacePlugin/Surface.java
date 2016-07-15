@@ -1,30 +1,38 @@
 package org.scec.vtk.plugins.SurfacePlugin;
 
 import vtk.vtkActor;
+import org.scec.vtk.plugins.utils.AbstractDataAccessor;
 
-public class Surface {
-	ImageInfo imageInfo = new ImageInfo(null, null, null, false);
+
+public class Surface extends AbstractDataAccessor{
+	ImageInfo imageInfo = new ImageInfo(null, null, null, null, false);
 	GeographicSurfaceInfo geoSurfaceInfo = new GeographicSurfaceInfo();
 	vtkActor surfaceActor = new vtkActor();
 	boolean displayed = true;
+	private int visibility = 1;
+
 	Surface(ImageInfo imageInfo, GeographicSurfaceInfo geoSurfaceInfo,vtkActor surfaceActor)
 	{
 		this.imageInfo = imageInfo;
 		this.geoSurfaceInfo = geoSurfaceInfo;
 		this.surfaceActor = surfaceActor;
 	}
+	
 	public ImageInfo getImageInfo()
 	{
 		return imageInfo;
 	}
+	
 	public GeographicSurfaceInfo getGeoSurfaceInfo()
 	{
 		return geoSurfaceInfo;
 	}
+	
 	public vtkActor getSurfaceActor()
 	{
 		return surfaceActor;
 	}
+	
 	public Object[] createRow() {
 		String geoSurfaceFileName;
 		String imageSurfaceFileName;
@@ -32,7 +40,7 @@ public class Surface {
 			geoSurfaceFileName="-";
 		else
 			geoSurfaceFileName = geoSurfaceInfo.getFilename(); 
-		
+
 		String data = new String();
 		String file = new String();
 		//get only the surface file name
@@ -84,11 +92,22 @@ public class Surface {
 			data = file.substring(begin,end);
 		}
 		imageSurfaceFileName = data;
-		
+
 		Object[] newRow = {	displayed,
 				imageSurfaceFileName, 
 				geoSurfaceFileName
 		};
 		return newRow;
 	}
+	
+	public int getVisibility()
+	{
+		return visibility;
+	}
+
+	public void setVisibility(int visible)
+	{
+		visibility = visible;
+	}
+
 }

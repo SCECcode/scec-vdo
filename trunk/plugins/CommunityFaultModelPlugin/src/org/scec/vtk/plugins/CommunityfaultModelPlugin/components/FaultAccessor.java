@@ -124,7 +124,7 @@ public abstract class FaultAccessor extends AbstractDataAccessor {
 			this.meshState = this.displayAttributes.getChild("mesh_state").getAttribute("value").getIntValue();
 			this.color     = readColorElement(this.displayAttributes.getChild("color"));
 		}
-		catch (Exception e) {
+		catch (Exception e) { 
 			log.debug("problem reading XML");
 			//Fault3DGUI.status.setText(DataImport.ERROR_OBJECT_LOAD);
 			return false;
