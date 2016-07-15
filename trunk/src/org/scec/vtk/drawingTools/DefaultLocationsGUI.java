@@ -113,7 +113,8 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			// List files in the directory and process each
 			File files[] = dataDirectory.listFiles();
 			for (int i = 0; i < files.length; i++) {
-				if (files[i].isFile() && files[i].getName().endsWith(".shp") || files[i].getName().endsWith(".txt")) {
+				if (files[i].isFile() && files[i].getName().endsWith(".shp") || files[i].getName().endsWith(".txt") && !files[i].getName().equals("CA_Counties.txt") && !files[i].getName().contains("popdensity.txt") 
+						&& !files[i].getName().contains("CA_Cities")) {
 					PresetLocationGroup tempGroup = new PresetLocationGroup();
 					
 					tempGroup.file = files[i];

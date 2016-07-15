@@ -83,11 +83,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private static vtkCanvas  renderWindow;
 	private static JTabbedPane pluginTabPane;
 	//Create Main Panel
-	private static JPanel mainPanel;
+	public static JPanel mainPanel;
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
 	private int yCenter = BORDER_SIZE / 2;
 	private ViewRange viewRange;
+	public boolean resize = false;
 	private static final Logger log = Logger.getLogger(MainGUI.class);
 	// In the static constructor we load in the native code.
 	// The libraries must be in your path to work.
@@ -360,7 +361,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		mainMenu.availablePlugins.put(ids.get(2), pluginInfo.get(2));
 		mainMenu.activatePlugin(ids.get(2));
 	}
-
 	
 	public boolean getGridDisplayBool() {
 		return this.gridDisplay;
@@ -500,7 +500,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public static void updateRenderWindow()
 	{
 		//updateActors(getActorToAllActors());
-		
 		renderWindow.Render();
 		//renderWindow.repaint();
 	}
