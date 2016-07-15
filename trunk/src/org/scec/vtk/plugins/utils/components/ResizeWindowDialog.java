@@ -27,6 +27,8 @@ import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.Prefs;
 
+import vtk.vtkCanvas;
+
 
 /**
  * Class provides a custom dialog for a user to enter citation, reference, and notes
@@ -62,7 +64,6 @@ public class ResizeWindowDialog extends JDialog implements ActionListener {
 
 	public ResizeWindowDialog(Component owner) {
 		super(JOptionPane.getFrameForComponent(owner),false);
-
 		this.setSize(100,200);
 		this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
@@ -140,36 +141,46 @@ public class ResizeWindowDialog extends JDialog implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
+		System.out.println(MainGUI.getRenderWindow().getWidth() + "," + MainGUI.getRenderWindow().getHeight());
 		if(src ==sizeList)
 		{
 			String option = (String)sizeList.getSelectedItem();
-			System.out.println(option);
+			//System.out.println(option);
 			if(option =="1080p" )
 			{
-			heightText.setText("1080");
-			widthText.setText("1920");
+				if(Integer.parseInt(heightText.getText()) < 1080 && Integer.parseInt(widthText.getText()) < 1920 && !Info.getMainGUI().resize)
+				{
+					System.out.println("Adjusting");
+					Info.getMainGUI().setSize(Info.getMainGUI().getWidth(),Info.getMainGUI().getHeight()+1);
+					Info.getMainGUI().resize = true;
+					MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
+					Info.getMainGUI().setSize(Info.getMainGUI().getWidth(),Info.getMainGUI().getHeight()-1);
+					Info.getMainGUI().updateRenderWindow();
+				}	
+				heightText.setText("1080");
+				widthText.setText("1920");
+				MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
 			}
 			if(option =="720p" )
 			{
 				heightText.setText("576");
 				widthText.setText("720");
 			}
-			else
-				if(option=="Default")
-				{
-					heightText.setText(Integer.toString((int)Prefs.getMainHeight()));
-					widthText.setText(Integer.toString((int)Prefs.getMainWidth()));
-				}
+			if(option=="Default")
+			{
+				heightText.setText(Integer.toString((int)Prefs.getMainHeight()));
+				widthText.setText(Integer.toString((int)Prefs.getMainWidth()));
+			}
 			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
+			//MainGUI.updateCanvasSize();
 		}
 		if (src == this.ok) {
 			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
 		} else if (src == this.cancel) {
 			this.cancelled = true;
 			MainGUI.getRenderWindow().setSize(oldSize);
-			
 		}
-		Info.getMainGUI().repaint();
+		System.out.println(MainGUI.getRenderWindow().getWidth() + "," + MainGUI.getRenderWindow().getHeight());
 		this.setVisible(false);
 	}
 }
