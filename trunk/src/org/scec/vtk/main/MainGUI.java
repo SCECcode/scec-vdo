@@ -41,17 +41,14 @@ import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.apache.log4j.Logger;
-import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
-import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
+//import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
+//import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.drawingTools.DrawingToolsGUI;
 import org.scec.vtk.drawingTools.DrawingToolsPlugin;
-import org.scec.vtk.grid.GlobeBox;
 import org.scec.vtk.grid.GraticuleGUI;
 import org.scec.vtk.grid.GraticulePlugin;
-import org.scec.vtk.grid.GraticulePreset;
 import org.scec.vtk.grid.ViewRange;
 import org.scec.vtk.plugins.Plugin;
-import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
@@ -67,15 +64,10 @@ import vtk.vtkCamera;
 import vtk.vtkCanvas;
 import vtk.vtkCellPicker;
 import vtk.vtkNativeLibrary;
-import vtk.vtkObject;
-import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
-import vtk.vtkPropCollection;
 import vtk.vtkPropPicker;
 import vtk.vtkSphereSource;
-import vtk.vtkStringArray;
-import vtk.vtkTextActor;
 
 public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsChangeListener{
 	private final int BORDER_SIZE = 10;
@@ -127,7 +119,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private DrawingToolsGUI drawingTool;
 	private DrawingToolsPlugin drawingToolPlugin;
 	private double[] pointerPosition;
-	private ScriptingPlugin scriptingPluginObj;
+//	private ScriptingPlugin scriptingPluginObj;
 	
 	private Timeline timeline;
 	private TimelineGUI timelineGUI;
@@ -149,15 +141,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public MainGUI() {
 
 		renderWindow = new vtkCanvas ();
-		renderWindow.GetRenderer().Render();
-		//vtkCamera camera = new vtkCamera();
-		//renderWindow.GetRenderer().SetActiveCamera(camera);
+		
 		mainPanel = new JPanel(new BorderLayout());
-		//vtkPanel = new JPanel(new BorderLayout());
-		//vtkPanel.add(renderWindow,BorderLayout.CENTER);
+		
 
-
-		//renderWindow.setFocusable(true);
 		renderWindow.GetRenderer().SetBackground(0,0,0);
 
 		mainMenu = new MainMenu();
@@ -433,8 +420,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		else
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
 
-		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
-			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
+//		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
+//			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
 
 		pluginTabPane.repaint();
 
@@ -808,14 +795,14 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	}
 
-	public ScriptingPluginGUI GetScriptingPlugin() {
-		// TODO Auto-generated method stub
-		if(scriptingPluginObj==null || scriptingPluginObj.getGratPanel()==null)
-		{
-			mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
-		}
-		return scriptingPluginObj.getScriptingPluginGUI();
-	}
+//	public ScriptingPluginGUI GetScriptingPlugin() {
+//		// TODO Auto-generated method stub
+//		if(scriptingPluginObj==null || scriptingPluginObj.getGratPanel()==null)
+//		{
+//			mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
+//		}
+//		return scriptingPluginObj.getScriptingPluginGUI();
+//	}
 
 	@Override
 	public void actorAdded(vtkProp actor) {
