@@ -27,26 +27,7 @@ import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.Prefs;
 
-import vtk.vtkCanvas;
-
-
-/**
- * Class provides a custom dialog for a user to enter citation, reference, and notes
- * for a particular earthquake source catalog. 
- * <br/>
- * <br/>
- * <font color="red">
- * TODO problems:<br/>
- *    -- drag and drop between TextComponents produces non fatal awt error.
- *</font>
- *
- * Created on Feb 23, 2005
- * 
- * @author P. Powers
- * @version $Id: ObjectInfoDialog.java 3428 2010-07-16 19:19:44Z kmilner $
- */
 public class ResizeWindowDialog extends JDialog implements ActionListener {
-	// TODO SJD consider renaming to something more domain-specific ... EarthquakeNotesDialog?
 	private static final long serialVersionUID = 1L;
 
 	private JLabel heightLabel    = new JLabel();
@@ -172,7 +153,6 @@ public class ResizeWindowDialog extends JDialog implements ActionListener {
 				widthText.setText(Integer.toString((int)Prefs.getMainWidth()));
 			}
 			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
-			//MainGUI.updateCanvasSize();
 		}
 		if (src == this.ok) {
 			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
@@ -180,7 +160,7 @@ public class ResizeWindowDialog extends JDialog implements ActionListener {
 			this.cancelled = true;
 			MainGUI.getRenderWindow().setSize(oldSize);
 		}
-		System.out.println(MainGUI.getRenderWindow().getWidth() + "," + MainGUI.getRenderWindow().getHeight());
+		//System.out.println(MainGUI.getRenderWindow().getWidth() + "," + MainGUI.getRenderWindow().getHeight());
 		this.setVisible(false);
 	}
 }
