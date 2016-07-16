@@ -1,0 +1,49 @@
+Data is read from shapefiles
+
+Some roads and railways do not have names
+
+
+******
+7/9/12
+======
+Updating California Counties Population Data, by year.
+=======================================================
+
+We googled "CA Population by County" which lead us to CA Quickfacts table. 
+
+Above the CA & USA columns is a link that reads "Browse data sets for CAlifornia". Below is the link:
+
+http://quickfacts.census.gov/qfd/states/06000lk.html
+
+
+Under the Population Estimates,  download "Estimates for California Counties" which downloads as an Excel File.
+
+The header should be "Table 1. Annual Estimates for Resident Population for Counties of California".
+
+There are a few sets of census and estimates. For 2012, we chose 2011 estimates which is the most recent. 
+
+
+Then we looked up the total area in square miles for each county and brought that into the population excel. From this, we took the 
+population divided by the area to get population density for each county.
+
+The numbers generated from this were then inputted into the California.shp file in ArcMap
+
+
+
+
+Inputing it into attribute data on ArcMap. 
+========================================================
+
+***Make sure to keep a copy of this California shapefile before you begin to edit the attribute table incase of any errors.***
+Per each county, we updated the latest population density using the CALIFORNIA shapefile on Eclipse. On ArcMap, we uploaded it, checked the attribute table. You can see the most recent population estimates and density per square mile. 
+
+We edited by updating the NEW population data by REPLACING the old with the new. To edit the table open the attribute table, then thru your editor tool bar select start editing, change the field that has the PopDensity with the 
+updated numbers, Save changes through the editor toolbar and then stop editing through the editor toolbar. After you have made and saved the changes export the data as a shapefile.  
+
+
+If you wish to delete fields, you can do so through ArcMap or ArcCatalog - ArcToolbox - Data Management. Arc10 bumped into a glitch where it cannot delete fields through ArcMap using the attribute table sometimes. (Bug #NIM059051). Using ArcToolbox on ArcCatalog, you can delete the fields using Datamanagement Tools. 
+
+
+Name the new file "California_Year" (ex: California_2014). Be sure to keep the old file as on the server. 
+
+
