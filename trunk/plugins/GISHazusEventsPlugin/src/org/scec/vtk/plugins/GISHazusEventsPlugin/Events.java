@@ -10,13 +10,11 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.DBFReaderJGeom;
-import oracle.spatial.util.ShapefileReaderJGeom;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.tools.actors.AppendActors;
 import org.w3c.dom.Document;
@@ -24,6 +22,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.DBFReaderJGeom;
+import oracle.spatial.util.ShapefileReaderJGeom;
 
 
 /**
@@ -64,7 +66,7 @@ public class Events {
 		
 		private ArrayList<FilledBoundaryCluster> allBounds = new ArrayList<FilledBoundaryCluster>();
 		private AppendActors segmentActors;
-
+		private NodeList nodeList;
 	public Events() {
 		populationCategory = new ArrayList<Float>();
 		purpleGradient[0] = new Color(0.219f, 0.659f, 0.000f);
@@ -93,7 +95,7 @@ public class Events {
 			document = builder.parse(new File(Info.getMainGUI().getRootPluginDir()+File.separator+"GISHazusEventsPlugin"
 					+File.separator+"QuakeEvents.xml"));
 			eventList = new ArrayList<EventAttributes>();
-			NodeList nodeList = document.getDocumentElement().getChildNodes();
+			nodeList = document.getDocumentElement().getChildNodes();
 			
 			for (int i = 0; i < nodeList.getLength(); i++){
 				Node node = nodeList.item(i);
@@ -307,12 +309,11 @@ public class Events {
 		bIsImport2 = false;
 		bIsImport3 = false;
 		int i = 0;
-		
 		while (i < numLines){
 			
 			if (i == row){
 				if (i == 0){
-					do
+					/*do
 					{
 						int returnValue = OpenShapeFile.showOpenDialog(null);
 						if (returnValue==JFileChooser.APPROVE_OPTION) {
@@ -325,7 +326,9 @@ public class Events {
 
 
 					bIsImport = true;
-					buildBoundaries(sImportedFilePath);
+					buildBoundaries(sImportedFilePath);*/
+					importFiles();
+					buildBoundaries(eventList.get(eventList.size()-1).getSHPFile());
 				}
 				else{
 					buildBoundaries(eventList.get(i).getSHPFile());
@@ -338,7 +341,60 @@ public class Events {
 		currentBoundary = new FilledBoundaryCluster(segmentActors);
 		return allBounds;
 	}
-	
+	private void importFiles()
+	{
+		//TODO:
+		event = new EventAttributes();
+		event.setID("" + (nodeList.getLength() + 1));
+		String s = (String)JOptionPane.showInputDialog(
+                Info.getMainGUI(),
+                "Enter name of event:",
+                JOptionPane.QUESTION_MESSAGE);
+		event.setEventName(s);
+		int n = JOptionPane.showConfirmDialog(
+			    Info.getMainGUI(),
+			    "Please enter location of the .shp file you wish to import:",
+			    "Import SHF File",
+			    JOptionPane.YES_NO_OPTION);
+		if(n == JOptionPane.YES_OPTION)
+		{
+			int returnValue = OpenShapeFile.showOpenDialog(null);
+			if (returnValue==JFileChooser.APPROVE_OPTION) {
+				String path = OpenShapeFile.getSelectedFile().getPath();
+				event.setSHPFile(path);
+				sImportedFilePath = path;
+				int x = JOptionPane.showConfirmDialog(
+					    Info.getMainGUI(),
+					    "Please enter location of the .dbf file you wish to import:",
+					    "Import DBF File",
+					    JOptionPane.YES_NO_OPTION);
+				if(x == JOptionPane.YES_OPTION){
+					returnValue = OpenShapeFile.showOpenDialog(null);
+					if (returnValue==JFileChooser.APPROVE_OPTION) {
+						event.setDBFFile(OpenShapeFile.getSelectedFile().getPath());
+					}
+					//TODO: Show the user what their .dbf file contains
+					String z = (String)JOptionPane.showInputDialog(
+			                Info.getMainGUI(),
+			                "Enter name of column:",
+			                JOptionPane.QUESTION_MESSAGE);
+					event.setColumn(z);
+					event.setLikeEarthquake("Northridge"); //TODO: Allow users to switch this
+					String timeOrType = (String)JOptionPane.showInputDialog(
+			                Info.getMainGUI(),
+			                "Enter legend time or type:",
+			                JOptionPane.QUESTION_MESSAGE);
+					event.setLegendTitle(timeOrType);
+					eventList.add(event);
+					numLines++;
+					numFiles++;
+					bIsImport2 = true;
+					
+				}
+			}
+		}
+		
+	}
 	private void buildBoundaries(String file) {
 		allBounds = null;
 		allBounds = new ArrayList<FilledBoundaryCluster>();
@@ -365,9 +421,11 @@ public class Events {
 			DBFReaderJGeom dbfFile = new DBFReaderJGeom(dbfFilename);
 			int columnIndex = 0;
 			for (fileEnum = 0; fileEnum < numFiles; fileEnum++){
+				System.out.println(file2 + "," + eventList.get(fileEnum).getDBFFile());
 				if(file2.equals(eventList.get(fileEnum).getDBFFile())){
-					//dbfList.get(fileEnum))){
+					
 					columnIndex = fileEnum;
+					System.out.println("Column Index: " + columnIndex);
 					break;
 				}
 			}
@@ -381,10 +439,12 @@ public class Events {
 			
 			for (int i = 0; i < fieldsCount; i ++){
 				fieldName = dbfFile.getFieldName(i);
-				System.out.println(": "+fieldName);
+				System.out.println(":"+fieldName);
+				System.out.println(eventList.get(columnIndex).getColumn());
 				
 				if (fieldName.equalsIgnoreCase("tract"))
 					nameColumn = i;
+			//	popColumn = 15;
 					if(eventList.get(columnIndex).getColumn().equals(fieldName))//columnList.get(columnIndex).equals(fieldName))
 						popColumn = i;
 			}
@@ -414,7 +474,7 @@ public class Events {
 					populationCategory.add(populationRecord[i]);
 				}
 			}
-		
+		    System.out.println(sImportedFilePath);
 			//-----------------shape file stuff--------------------
 		    if(bIsImport)  
 				shpFile = new ShapefileReaderJGeom(sImportedFilePath);
@@ -425,7 +485,7 @@ public class Events {
 			else if(bIsImport3)
 				shpFile = new ShapefileReaderJGeom(sImportedFilePath);
 			else
-			shpFile = new ShapefileReaderJGeom(Info.getMainGUI().getRootPluginDir() + File.separator + "GISHazusEventsPlugin" + File.separator +file);
+				shpFile = new ShapefileReaderJGeom(Info.getMainGUI().getRootPluginDir() + File.separator + "GISHazusEventsPlugin" + File.separator +file);
 			ArrayList<Double> latitude= new ArrayList<Double>(), longitude= new ArrayList<Double>();
 			//amount of shapes in the shp file
 			int shapeCount = shpFile.numRecords();

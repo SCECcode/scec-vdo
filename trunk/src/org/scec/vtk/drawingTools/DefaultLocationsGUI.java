@@ -288,12 +288,12 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			/*process first line */
 			
 			/*DrawingTool tempLocation = new DrawingTool(
-					34.05,
-					-118.24,
+					0,
+					0,
 					0.0d,
 					name,
-					displayAttributes);*/
-			//highwayList.add(tempLocation);
+					displayAttributes);
+			highwayList.add(tempLocation);*/
 			/* finished with first line */
 			line = inStream.readLine();
 			vtkPoints linePts =new vtkPoints();
@@ -546,9 +546,17 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					}
 					else if(tempGroup.name.equals("CA Counties"))
 					{
+						int n = JOptionPane.showConfirmDialog(
+							    frame,
+							    "Load County Labels?",
+							    "County Labels",
+							    JOptionPane.YES_NO_OPTION);
 						countyActor = loadCounties();
-						tempGroup.locations = loadBuiltInFiles();
-						addBuiltInFiles(tempGroup.locations);
+						if(n == JOptionPane.YES_OPTION)
+						{
+							tempGroup.locations = loadBuiltInFiles();
+							addBuiltInFiles(tempGroup.locations);
+						}
 						this.guiparent.appendActors.addToAppendedPolyData(countyActor);
 						Info.getMainGUI().updateRenderWindow();
 					}

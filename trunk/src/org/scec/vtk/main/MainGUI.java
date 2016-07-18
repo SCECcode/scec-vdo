@@ -516,8 +516,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	/**
 	 * When tabs are changed, TODO change whether the pickability of objects
 	 * belonging to a tab are turned on or off. If a tab is currently selected
-	 * allow objects to be pickable. All other tabs should have their objects'
-	 * pickability off.
+	 * allow objects to be pickable. All other tabs should have their objects' 
 	 */
 	public void stateChanged(ChangeEvent e) {
 		Object source = e.getSource();
