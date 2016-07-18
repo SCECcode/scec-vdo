@@ -1,5 +1,6 @@
 package org.scec.vtk.plugins.ShakeMapPlugin;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -30,8 +31,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,6 +45,7 @@ import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.ShakeMapPlugin.Component.ShakeMap;
+import org.scec.vtk.plugins.SurfacePlugin.SurfaceTableModel;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -70,9 +75,9 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	JPanel usgsDownloads;
 	private JTabbedPane tabbedPane = new JTabbedPane();
 	
-	ArrayList<JCheckBox> checkBoxList; //for the local files in ShakeMapPlugin directory
-	ArrayList<ShakeMap> shakeMapsList;
-	PluginActors pluginActors;
+	private ArrayList<JCheckBox> checkBoxList; //for the local files in ShakeMapPlugin directory
+	private ArrayList<ShakeMap> shakeMapsList;
+	private PluginActors pluginActors;
 	private ArrayList<vtkActor> actorList;
 	
 	//for the usgs download option
@@ -81,6 +86,13 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	private JRadioButton sc = new JRadioButton("SoCal");
 	JTextField eventIdBox = new JTextField("Enter Event ID");
 	JButton downloadUSGSButton = new JButton("Download USGS Shake Map");
+	
+	//transparency sliders and tables
+	String[] header = {"Transparency"};
+	public SurfaceTableModel shakeMapSurfaceTable = new SurfaceTableModel(header);
+	public JTable surfaceTable = new JTable(shakeMapSurfaceTable);
+	private JSlider transparencySlider = new JSlider(); 
+	private JSlider transparencySlider2 = new JSlider();
 	
 	
 	public ShakeMapGUI(PluginActors pluginActors) {
@@ -119,6 +131,15 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 				}
 			}
 		}
+		
+		
+		transparencySlider.setMajorTickSpacing(10);
+		transparencySlider.setMinorTickSpacing(5);
+		transparencySlider.setPaintLabels(true); 
+		transparencySlider.setPaintTicks(true);
+//		transparencySlider.addChangeListener((ChangeListener) this);
+		transparencySlider.setEnabled(false);
+//		presets.add(transparencySlider);
 		
 		//Checkboxes for the USGS Table
 		usgsDownloads = new JPanel();
@@ -304,6 +325,53 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 			pluginActors.removeActor(actor);
 		}
 		Info.getMainGUI().updateRenderWindow();
+	}
+	
+	//getters and setters
+	public ArrayList<JCheckBox> getCheckBoxList() {
+		return checkBoxList;
+	}
+
+
+
+	public void setCheckBoxList(ArrayList<JCheckBox> checkBoxList) {
+		this.checkBoxList = checkBoxList;
+	}
+
+
+
+	public ArrayList<ShakeMap> getShakeMapsList() {
+		return shakeMapsList;
+	}
+
+
+
+	public void setShakeMapsList(ArrayList<ShakeMap> shakeMapsList) {
+		this.shakeMapsList = shakeMapsList;
+	}
+
+
+
+	public PluginActors getPluginActors() {
+		return pluginActors;
+	}
+
+
+
+	public void setPluginActors(PluginActors pluginActors) {
+		this.pluginActors = pluginActors;
+	}
+
+
+
+	public ArrayList<vtkActor> getActorList() {
+		return actorList;
+	}
+
+
+
+	public void setActorList(ArrayList<vtkActor> actorList) {
+		this.actorList = actorList;
 	}
 
 }
