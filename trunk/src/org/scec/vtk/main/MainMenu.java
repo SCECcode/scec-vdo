@@ -41,7 +41,10 @@ import com.google.common.base.Preconditions;
 import vtk.vtkActor;
 import vtk.vtkActorCollection;
 import vtk.vtkAppendPolyData;
+import vtk.vtkCanvas;
 import vtk.vtkDoubleArray;
+import vtk.vtkOBJExporter;
+import vtk.vtkObject;
 import vtk.vtkPanel;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
@@ -63,6 +66,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private JFrame timelineFrame;
 	private CheckboxMenuItem timelineItem;
 	private MenuItem saveItemVTK;
+	private MenuItem saveItemOBJ;
 	private MenuItem resizeWindow;
 	private ResizeWindowDialog srcInfoDialog;
 
@@ -142,17 +146,20 @@ public class MainMenu implements ActionListener, ItemListener{
 		fileOpen = new MenuItem("Open...");
 		saveItem = new MenuItem("Save state...");
 		saveItemVTK = new MenuItem("Save as VTK...");
+		saveItemOBJ = new MenuItem("Save as OBJ...");
 		appExit = new MenuItem("Quit");
 
 		fileMenu.addActionListener(this);
 		this.saveItem.addActionListener(this);
 		this.saveItemVTK.addActionListener(this);
+		this.saveItemOBJ.addActionListener(this);
 		this.appExit.addActionListener(this);
 		this.fileOpen.addActionListener(this);
 
 		this.fileMenu.add(fileOpen);
 		this.fileMenu.add(saveItem);
 		this.fileMenu.add(saveItemVTK);
+		this.fileMenu.add(saveItemOBJ);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(appExit);
 
@@ -163,12 +170,23 @@ public class MainMenu implements ActionListener, ItemListener{
 		System.exit(0);
 	}
 
+	public void saveObj(File file)
+	{
+		vtkActorCollection actorlist =  Info.getMainGUI().getRenderWindow().GetRenderer().GetActors();
+		if(actorlist.GetNumberOfItems()>0){
+			System.out.println(actorlist.GetNumberOfItems());
+			vtkOBJExporter objExporter = new vtkOBJExporter();
+			objExporter.SetFilePrefix(file.getPath()+".obj"); 
+			objExporter.SetRenderWindow(Info.getMainGUI().getRenderWindow().GetRenderWindow());
+			objExporter.Write();
+			System.out.println("done");
+		}
+	}
+	
 	public void saveVTKObj(File file)
 	{
 
-		vtkPanel renderWindow = Info.getMainGUI().getRenderWindow();
-
-		vtkRenderWindow renWin = renderWindow.GetRenderWindow();
+		vtkCanvas renderWindow = Info.getMainGUI().getRenderWindow();
 
 		vtkActorCollection actorlist = renderWindow.GetRenderer().GetActors();
 		if(actorlist.GetNumberOfItems()>0){
@@ -198,6 +216,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			objExporter.Write();
 			System.out.println("done");
 		}
+		
 	}
 	public void openVTKObj()
 	{
@@ -284,6 +303,15 @@ public class MainMenu implements ActionListener, ItemListener{
 			if (ret == JFileChooser.APPROVE_OPTION) {
 				File file = chooser.getSelectedFile();
 				saveVTKObj(file);
+			}
+		}
+		else if(eventSource == saveItemOBJ)
+		{
+			JFileChooser chooser = new JFileChooser();
+			int ret = chooser.showSaveDialog(Info.getMainGUI());
+			if (ret == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				saveObj(file);
 			}
 		}
 		else if(eventSource == saveItem)
