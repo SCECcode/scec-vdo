@@ -40,6 +40,7 @@ public class USGSShakeMapDownloader {
 	public String downloadShakeMap(String destinationFile){
 		String header = "";
 		try {
+			//url for usgs website
 			URL usgs = new URL(URLSTART + "/" + network + "/shake/" + quakeId + "/" + URLEND);
 			ZipInputStream zipIn = new ZipInputStream(usgs.openStream());
 			ZipEntry entry = zipIn.getNextEntry();

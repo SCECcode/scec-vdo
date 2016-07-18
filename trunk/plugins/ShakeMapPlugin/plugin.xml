@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://www.scec.org/vdo/plugin-descriptor plugin.xsd"
 	version="1.0">
 	
-	<plugin id="org.scec.vdo.plugins.ShakeMapPlugin" name="Surface Plugin" short-name="ShakeMap Plugin"
+	<plugin id="org.scec.vdo.plugins.ShakeMapPlugin" name="ShakeMap Plugin" short-name="ShakeMap Plugin"
 		version="0.1" creator="P. Powers"
 		plugin-class="org.scec.vtk.plugins.ShakeMapPlugin.ShakeMapPlugin">
 		
