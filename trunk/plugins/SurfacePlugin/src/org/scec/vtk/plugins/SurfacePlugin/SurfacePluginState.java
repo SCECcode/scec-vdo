@@ -128,7 +128,7 @@ public class SurfacePluginState implements PluginState{
 
 	@Override
 	public void fromXML(Element stateEl) {
-		ArrayList<File> file = new ArrayList<>();
+
 		for ( Iterator i = stateEl.elementIterator( "Surfaces" ); i.hasNext(); ) 
 		{
 			Element e = (Element) i.next();
@@ -141,7 +141,7 @@ public class SurfacePluginState implements PluginState{
 
 			System.out.println(e.attributeValue("filePath"));
 			// read the catalog file
-			file.add(new File(filePath.get(filePath.size()-1)));
+
 		}
 		addSurfaceToTable(dispName, filePath);
 
