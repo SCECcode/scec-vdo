@@ -8,20 +8,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.zip.ZipInputStream;
-
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -35,19 +28,18 @@ import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.commons.io.FileUtils;
-import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.ShakeMapPlugin.Component.ShakeMap;
 import org.scec.vtk.plugins.SurfacePlugin.SurfaceTableModel;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.scec.vtk.tools.Prefs;
 
 import vtk.vtkActor;
 
@@ -61,7 +53,7 @@ import vtk.vtkActor;
  * The files in the data/ShakeMapPlugin directory will automatically 
  * be loaded when the ShakeMap plugin is opened in the program.
  */
-public class ShakeMapGUI extends JPanel implements ItemListener{
+public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener, ListSelectionListener, TableModelListener{
 
 
 	private static final long serialVersionUID = 1L;
@@ -71,9 +63,12 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	static final String openSHAFile = "openSHA.txt";
 	static final String openSHAMapURL = "http://zero.usc.edu/gmtData/1468263306257/map_data.txt"; //custom shakemaps which may be uploaded to this link
 
-	private JPanel shakeMapLibraryPanel;
-	JPanel usgsDownloads;
+	private JPanel shakeMapLibraryPanel = new JPanel();
+	JPanel panel1 = new JPanel();
+	private JPanel panesPanel = new JPanel();
+	private JPanel usgsDownloads = new JPanel();
 	private JTabbedPane tabbedPane = new JTabbedPane();
+	JPanel bottomPane = new JPanel();
 	
 	private ArrayList<JCheckBox> checkBoxList; //for the local files in ShakeMapPlugin directory
 	private ArrayList<ShakeMap> shakeMapsList;
@@ -87,12 +82,16 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 	JTextField eventIdBox = new JTextField("Enter Event ID");
 	JButton downloadUSGSButton = new JButton("Download USGS Shake Map");
 	
-	//transparency sliders and tables
-	String[] header = {"Transparency"};
-	public SurfaceTableModel shakeMapSurfaceTable = new SurfaceTableModel(header);
-	public JTable surfaceTable = new JTable(shakeMapSurfaceTable);
+	//Table and transparency for preset shakemaps
+	String[] header = {"Name", "List Index"};
+	public SurfaceTableModel surfaceTableModel = new SurfaceTableModel(header);
+	public JTable surfaceTable = new JTable(surfaceTableModel);
 	private JSlider transparencySlider = new JSlider(); 
-	private JSlider transparencySlider2 = new JSlider();
+	
+	//Table and transparency for User's shakemaps
+//	public SurfaceTableModel surfaceTableModel2 = new SurfaceTableModel(header);
+//	public JTable surfaceTable2 = new JTable(surfaceTableModel);
+//	private JSlider transparencySlider2 = new JSlider(); 
 	
 	
 	public ShakeMapGUI(PluginActors pluginActors) {
@@ -101,9 +100,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		File f = new File(dataPath+"/"+moreMaps);
 		if(!(f.exists()))
 			f.mkdirs();	
-			
-		
-		shakeMapLibraryPanel = new JPanel();
 
 		checkBoxList = new ArrayList<JCheckBox>();
 		this.pluginActors = pluginActors;
@@ -132,17 +128,35 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 			}
 		}
 		
+		surfaceTable.setPreferredScrollableViewportSize(new Dimension(350, 70));
+		surfaceTable.getSelectionModel().addListSelectionListener(this);
+		surfaceTableModel.addTableModelListener(this);
+		
+		JScrollPane scrollPane = new JScrollPane(surfaceTable);
+		panesPanel.setLayout(new GridLayout(1,2,10,10));
+		panesPanel.add(scrollPane);
+		
+		panel1.setLayout(new GridLayout(1,0,0,15));
+		panel1.add(new JScrollPane(presets));
+//		panel1.add(panesPanel);
 		
 		transparencySlider.setMajorTickSpacing(10);
 		transparencySlider.setMinorTickSpacing(5);
 		transparencySlider.setPaintLabels(true); 
 		transparencySlider.setPaintTicks(true);
-//		transparencySlider.addChangeListener((ChangeListener) this);
+		transparencySlider.addChangeListener(this);
 		transparencySlider.setEnabled(false);
-//		presets.add(transparencySlider);
+		JPanel sliderPanel = new JPanel(new BorderLayout());
+		sliderPanel.add(new JLabel("Transparency"), BorderLayout.NORTH);
+		sliderPanel.add(transparencySlider, BorderLayout.CENTER);
+//		panel1.add(sliderPanel, BorderLayout.CENTER);
+		
+		bottomPane.setLayout(new GridLayout(2,0,0,15));
+		bottomPane.add(panesPanel);
+		bottomPane.add(sliderPanel);
+		
 		
 		//Checkboxes for the USGS Table
-		usgsDownloads = new JPanel();
 		usgsDownloads.setLayout(new GridLayout(0,2)); //2 per row
 		//Initialize all the preset files in the data/ShakeMapPlugin directory
 		File usgsDirectory = new File(dataPath + "/" + moreMaps);
@@ -221,10 +235,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 		});
 		
 		
-		JScrollPane scrollPane = new JScrollPane(presets);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		
 		JButton openSHAButton = new JButton("Download OpenSHA File");
 		openSHAButton.addActionListener(new ActionListener(){
 			@Override
@@ -245,12 +255,15 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 			}		
 		});
 		
-		tabbedPane.addTab("Presets", presets);
+		tabbedPane.setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()/2));
+		tabbedPane.addTab("Presets", panel1);
 		tabbedPane.addTab("Saved Maps", usgsDownloads);
 		tabbedPane.addTab("Download USGS Map", USGSPanel);
 		tabbedPane.addTab("OpenSHA", openSHAButton);
 		
-		shakeMapLibraryPanel.add(tabbedPane);
+		shakeMapLibraryPanel.setLayout(new BorderLayout());
+		shakeMapLibraryPanel.add(tabbedPane, BorderLayout.NORTH);
+		shakeMapLibraryPanel.add(bottomPane, BorderLayout.SOUTH);
 		this.add(shakeMapLibraryPanel);
 	}
 
@@ -308,10 +321,20 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 						actorList.set(i, shakeMap.getActor());
 						pluginActors.addActor(shakeMap.getActor());
 						shakeMapsList.set(i, shakeMap);
-					}else
+					}else{
 						shakeMapsList.get(i).getActor().SetVisibility(1);
-				}else
+					}
+					//add to table
+					surfaceTableModel.addRow(new Object[]{checkBoxList.get(i).getName(), i});
+				}else{ //checkbox is unselected
 					shakeMapsList.get(i).getActor().SetVisibility(0);
+					for(int j=0; j<surfaceTableModel.getRowCount(); j++){
+						if(checkBoxList.get(i).getName().equals(surfaceTableModel.getValueAt(j, 0))){
+							System.out.println("list index is " + surfaceTableModel.getValueAt(j, 1));
+							surfaceTableModel.removeRow(j);
+						}
+					}
+				}
 				Info.getMainGUI().updateRenderWindow();
 			}
 		}
@@ -325,6 +348,51 @@ public class ShakeMapGUI extends JPanel implements ItemListener{
 			pluginActors.removeActor(actor);
 		}
 		Info.getMainGUI().updateRenderWindow();
+	}
+
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		// TODO Auto-generated method stub
+		Object src = e.getSource();
+		this.surfaceTable.getModel();
+		if (e.getValueIsAdjusting()) return;
+		
+		if (src == this.surfaceTable.getSelectionModel()) {
+			processTableSelectionChange();
+		}
+	}
+
+	public void processTableSelectionChange() {
+		int[] selectedRows = this.surfaceTable.getSelectedRows();
+		if (selectedRows.length > 0) {
+			this.transparencySlider.setEnabled(true);
+		} else {
+			this.transparencySlider.setEnabled(false);
+		}
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		// TODO Auto-generated method stub
+		Object src = e.getSource();
+		if(src == transparencySlider)
+		{
+			double transparency = ((double)(transparencySlider.getValue())/100.0);
+			ListSelectionModel model = surfaceTable.getSelectionModel();
+			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+				int idx = (int) surfaceTableModel.getValueAt(i, 1);
+				shakeMapsList.get(idx).getActor().GetProperty().SetOpacity(transparency);
+			}
+			Info.getMainGUI().updateRenderWindow();
+		}
 	}
 	
 	//getters and setters
