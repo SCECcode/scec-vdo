@@ -239,8 +239,8 @@ public class FilledBoundary
 		color = inColor;
 		if(segmentActors!=null){
 			//System.out.println(color.getRed()+","+color.getGreen()+","+color.getBlue());
-		segmentActors.GetProperty().SetColor(color.getRed()/255.0,color.getGreen()/255.0,color.getBlue()/255.0);
-		segmentActors.Modified();
+			segmentActors.GetProperty().SetColor(color.getRed()/255.0,color.getGreen()/255.0,color.getBlue()/255.0);
+			segmentActors.Modified();
 		}
 	}
 	
@@ -344,10 +344,8 @@ public class FilledBoundary
 	}
 
 		public void setTransparency(float transparency) {
-//	          for(Shape3D segment:Shapes){
-//	        	  TransparencyAttributes ta = segment.getAppearance().getTransparencyAttributes();
-//	              ta.setTransparency(transparency);
-//	          }
+			if(segmentActors != null)
+				this.segmentActors.GetProperty().SetOpacity(transparency);
 		}
 
 		public void setLineApperance(Color color2, float value) {

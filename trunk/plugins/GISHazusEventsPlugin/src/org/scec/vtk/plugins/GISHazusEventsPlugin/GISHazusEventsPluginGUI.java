@@ -356,15 +356,15 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		int index = this.boundaryRowOrder[subgroupNum];
 		//make sure the group is actually loaded
 		if(index != -1) {
-			System.out.println(boundaryStartIndex[subgroupNum] + "," + boundaryRowSize[boundaryRowOrder[subgroupNum]]);
+			
 			for(int i = boundaryStartIndex[subgroupNum]; i < boundaryRowSize[boundaryRowOrder[subgroupNum]] + boundaryStartIndex[subgroupNum]; i++){
+				System.out.println(polArray.get(i).getCategory());
 				if(polArray.get(i).getCategory() > color.length - 1)
 					polArray.get(i).setColor(color[0]);
 				else
 					polArray.get(i).setColor(color[polArray.get(i).getCategory()]);
 			}
 			this.paintAll(this.getGraphics());
-			Info.getMainGUI().updateRenderWindow();
 		}
 	}
 	
@@ -805,12 +805,23 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 					float transparency = ((float) transparencySlider.getValue()) / 100.0f;
 				
 					System.out.println("transparency: "+ transparency);
-					for (FilledBoundary boundary : boundaries)
-					{	
+					for(int i=0; i<numOfBoundaries; i++)
+					{
+						if(polArray.get(i).isDisplayed() == true)
+						{
+							for (FilledBoundary boundary : polArray.get(i).getBoundaries())
+							{	
+								boundary.setTransparency(transparency);
 
+							}
+							
+						}
+					}
+					/*for (FilledBoundary boundary : boundaries)
+					{	
 						boundary.setTransparency(transparency);
 
-					}
+					}*/
 
 					
 					
