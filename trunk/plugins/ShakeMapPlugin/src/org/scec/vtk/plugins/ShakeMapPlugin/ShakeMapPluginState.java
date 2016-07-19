@@ -17,29 +17,34 @@ public class ShakeMapPluginState implements PluginState{
 
 
 	private ArrayList<String> filePath;
+	private ArrayList<Double> transparency;
+	private ArrayList<String> dispName;
 	
-
 	ShakeMapPluginState(ShakeMapGUI parent)
 	{
-
 		this.parent = parent;
-
 		filePath = new ArrayList<>();
-
-
-
+		transparency = new ArrayList<>();
+		dispName = new ArrayList<>();
 	}
 
 	void copyLatestCatalogDetails()
 	{
 
 		filePath.clear();
-
+		transparency.clear();
+		dispName.clear();
 
 		for (JCheckBox box : parent.getCheckBoxList())
 		{
 			filePath.add(box.getName());
-			System.out.println(box.getName());
+//			System.out.println(box.getName());
+			dispName.add(box.getName());
+		}
+		
+		for(ShakeMap shake: parent.getShakeMapsList()){
+			if(shake != null) 
+				transparency.add(shake.getActor().GetProperty().GetOpacity());
 		}
 	}
 
@@ -67,8 +72,9 @@ public class ShakeMapPluginState implements PluginState{
 		{
 			if(box.isSelected()){
 				stateEl.addElement( "ShakeMaps" )
-				.addAttribute( "filePath", filePath.get(i));
-	//			.addAttribute( "transparency", Double.toString(transparency.get(i)));
+				.addAttribute( "filePath", filePath.get(i))
+				.addAttribute( "dispName", dispName.get(i))
+				.addAttribute( "transparency", Double.toString(parent.getShakeMapsList().get(i).getActor().GetProperty().GetOpacity()));
 			}
 
 			i++;
@@ -81,15 +87,15 @@ public class ShakeMapPluginState implements PluginState{
 		createElement(stateEl);
 	}
 	
-	public void showMaps(ArrayList<String> filenames){
+	public void showMaps(ArrayList<String> filenames, ArrayList<String> displayNames, ArrayList<Double> transparentValues){
 		File dataDirectory = new File(parent.dataPath);
+		int indexCounter = 0;
 		for(String chosenFile: filenames){
 			// List files in the directory and process each
-			int fileIndex = -1;
+			int fileIndex = 0;
 			File files[] = dataDirectory.listFiles();
 			for (int i = 0; i < files.length; i++) {
 				if(files[i].isFile()){
-					fileIndex++;
 					if (files[i].getName().equals(chosenFile)) {
 						//set visiblity true
 						ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
@@ -101,12 +107,15 @@ public class ShakeMapPluginState implements PluginState{
 							shakeMap.loadFromFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.getCheckBoxList().get(fileIndex).getName());			
 						}
 						shakeMap.setActor(shakeMap.builtPolygonSurface());
+						shakeMap.getActor().GetProperty().SetOpacity(transparentValues.get(indexCounter));
 						parent.getActorList().set(fileIndex, shakeMap.getActor());
 						parent.getPluginActors().addActor(shakeMap.getActor());
 						parent.getShakeMapsList().set(fileIndex, shakeMap);
 						parent.getCheckBoxList().get(fileIndex).setSelected(true);
 						Info.getMainGUI().updateRenderWindow();
+						indexCounter++;
 					}
+					fileIndex++;
 				}
 			}
 		}
@@ -118,12 +127,13 @@ public class ShakeMapPluginState implements PluginState{
 		{
 			Element e = (Element) i.next();
 			filePath.add(e.attributeValue("filePath"));
-//			transparency.add(Double.parseDouble(e.attributeValue("transparency")));	          
+			dispName.add(e.attributeValue("dispName"));
+			transparency.add(Double.parseDouble(e.attributeValue("transparency")));	          
 
 //			System.out.println(e.attributeValue("filePath"));
 			// read the catalog file
 		}
-		showMaps(filePath);
+		showMaps(filePath, dispName, transparency);
 	}
 
 	@Override
