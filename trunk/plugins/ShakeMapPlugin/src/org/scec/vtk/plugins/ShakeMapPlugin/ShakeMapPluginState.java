@@ -2,6 +2,7 @@ package org.scec.vtk.plugins.ShakeMapPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.swing.JCheckBox;
@@ -38,7 +39,6 @@ public class ShakeMapPluginState implements PluginState{
 		for (JCheckBox box : parent.getCheckBoxList())
 		{
 			filePath.add(box.getName());
-//			System.out.println(box.getName());
 			dispName.add(box.getName());
 		}
 		
@@ -88,35 +88,46 @@ public class ShakeMapPluginState implements PluginState{
 	}
 	
 	public void showMaps(ArrayList<String> filenames, ArrayList<String> displayNames, ArrayList<Double> transparentValues){
-		File dataDirectory = new File(parent.dataPath);
-		int indexCounter = 0;
+		File presetDirectory = new File(parent.dataPath);
+		File savedDirectory = new File(parent.dataPath+"/"+parent.moreMaps);
+		//Add everyting to one list
+		ArrayList<File> files = new ArrayList<File>();
+		//add presets first
+		for(File f: presetDirectory.listFiles())
+			if(f.isFile())
+				files.add(f);
+		//add saved maps next
+		//for now, there's no subdirectories, so just add all
+		files.addAll(Arrays.asList(savedDirectory.listFiles()));
+		
+		int transparencyIndex = 0; //only increments if a file is loaded
 		for(String chosenFile: filenames){
 			// List files in the directory and process each
-			int fileIndex = 0;
-			File files[] = dataDirectory.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				if(files[i].isFile()){
-					if (files[i].getName().equals(chosenFile)) {
-						//set visiblity true
-						ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
-						if(parent.getCheckBoxList().get(fileIndex).getName().equals("openSHA.txt")){
-							//The file format for data from openSHA files are a little different.
-							//Open declaration of method for more details
-							shakeMap.loadOpenSHAFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.getCheckBoxList().get(fileIndex).getName());
-						}else{
-							shakeMap.loadFromFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.getCheckBoxList().get(fileIndex).getName());			
-						}
-						shakeMap.setActor(shakeMap.builtPolygonSurface());
-						shakeMap.getActor().GetProperty().SetOpacity(transparentValues.get(indexCounter));
-						parent.getActorList().set(fileIndex, shakeMap.getActor());
-						parent.getPluginActors().addActor(shakeMap.getActor());
-						parent.getShakeMapsList().set(fileIndex, shakeMap);
-						parent.getCheckBoxList().get(fileIndex).setSelected(true);
-						Info.getMainGUI().updateRenderWindow();
-						indexCounter++;
+			for (int i = 0; i < files.size(); i++) {
+				if (files.get(i).getName().equals(chosenFile)) {
+					//set visiblity true
+					ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
+					if(parent.getCheckBoxList().get(i).getName().equals("openSHA.txt")){
+						//The file format for data from openSHA files are a little different.
+						//Open declaration of method for more details
+						shakeMap.loadOpenSHAFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.getCheckBoxList().get(i).getName());
+					}else{
+						File f = new File(parent.dataPath + "/" + parent.getCheckBoxList().get(i).getName());
+						if(f.exists())
+							shakeMap.loadFromFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.getCheckBoxList().get(i).getName());	
+						else
+							shakeMap.loadFromFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.moreMaps + "/" + parent.getCheckBoxList().get(i).getName());			
 					}
-					fileIndex++;
-				}
+					shakeMap.setActor(shakeMap.builtPolygonSurface());
+					shakeMap.getActor().GetProperty().SetOpacity(transparentValues.get(transparencyIndex));
+					parent.getActorList().set(i, shakeMap.getActor());
+					parent.getPluginActors().addActor(shakeMap.getActor());
+					parent.getShakeMapsList().set(i, shakeMap);
+					parent.getCheckBoxList().get(i).setSelected(true);
+					Info.getMainGUI().updateRenderWindow();
+					transparencyIndex++;
+					break;
+				}	
 			}
 		}
 	}
