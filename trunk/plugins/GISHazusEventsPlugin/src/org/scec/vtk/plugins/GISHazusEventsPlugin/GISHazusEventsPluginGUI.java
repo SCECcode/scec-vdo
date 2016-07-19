@@ -356,10 +356,15 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		int index = this.boundaryRowOrder[subgroupNum];
 		//make sure the group is actually loaded
 		if(index != -1) {
+			System.out.println(boundaryStartIndex[subgroupNum] + "," + boundaryRowSize[boundaryRowOrder[subgroupNum]]);
 			for(int i = boundaryStartIndex[subgroupNum]; i < boundaryRowSize[boundaryRowOrder[subgroupNum]] + boundaryStartIndex[subgroupNum]; i++){
-				polArray.get(i).setColor(color[polArray.get(i).getCategory()]);	
+				if(polArray.get(i).getCategory() > color.length - 1)
+					polArray.get(i).setColor(color[0]);
+				else
+					polArray.get(i).setColor(color[polArray.get(i).getCategory()]);
 			}
 			this.paintAll(this.getGraphics());
+			Info.getMainGUI().updateRenderWindow();
 		}
 	}
 	
@@ -617,6 +622,9 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 			/*In order for the title of the legend to match the specific event this if statement is needed. Each dbf file has a particular column
 			that the Events class is getting the information from. These column names can help for a few certain things, in this case it helps set
 			the right title.*/
+			if(selectedEventRow == 0)
+				selectedEventRow = bTrace.getIndexByEventName(bTrace.eventList.get(bTrace.eventList.size()-1).getEventName());
+			System.out.println("Selected Row" + selectedEventRow  + "," + bTrace.event.getID());
 			if (bTrace.getLegendTitle(selectedEventRow).equals("Direct Building Economic Loss")){
 				title.setText("Building Damage ($)");
 			}
