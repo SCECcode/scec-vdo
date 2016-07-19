@@ -50,7 +50,7 @@ public class Events {
     File ralph;
     EventAttributes event;
 	private ArrayList<Float> legendMaxList;
-	private ArrayList<EventAttributes> eventList;
+	ArrayList<EventAttributes> eventList;
     private int numLines = 0;
     private int numFiles = 0;
     String sImportedFilePath, sImportedFilePath1,  sImportedFilePath2, sImportedFilePath3, sImportedFilePath4;
@@ -370,10 +370,26 @@ public class Events {
 					    JOptionPane.YES_NO_OPTION);
 				if(x == JOptionPane.YES_OPTION){
 					returnValue = OpenShapeFile.showOpenDialog(null);
+					String dbfFilename = null;
 					if (returnValue==JFileChooser.APPROVE_OPTION) {
-						event.setDBFFile(OpenShapeFile.getSelectedFile().getPath());
+						dbfFilename = OpenShapeFile.getSelectedFile().getPath();
+						event.setDBFFile(dbfFilename);
 					}
 					//TODO: Show the user what their .dbf file contains
+					try {
+						DBFReaderJGeom dbfFile = new DBFReaderJGeom(dbfFilename);
+						int fieldsCount = dbfFile.numFields();
+						String fieldName = "poop";
+						
+						for (int i = 0; i < fieldsCount; i ++){
+							fieldName = dbfFile.getFieldName(i);
+							System.out.println(":"+fieldName);
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				
 					String z = (String)JOptionPane.showInputDialog(
 			                Info.getMainGUI(),
 			                "Enter name of column:",
@@ -445,7 +461,7 @@ public class Events {
 				if (fieldName.equalsIgnoreCase("tract"))
 					nameColumn = i;
 			//	popColumn = 15;
-					if(eventList.get(columnIndex).getColumn().equals(fieldName))//columnList.get(columnIndex).equals(fieldName))
+					if(eventList.get(columnIndex).getColumn().equalsIgnoreCase(fieldName))//columnList.get(columnIndex).equals(fieldName))
 						popColumn = i;
 			}
 			
