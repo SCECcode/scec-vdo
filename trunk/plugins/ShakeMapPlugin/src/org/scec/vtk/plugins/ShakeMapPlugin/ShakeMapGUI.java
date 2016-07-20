@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -55,7 +54,6 @@ import vtk.vtkActor;
  */
 public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener, ListSelectionListener, TableModelListener{
 
-
 	private static final long serialVersionUID = 1L;
 	
 	static final String dataPath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin"; //path to directory with local folders
@@ -87,11 +85,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	public SurfaceTableModel surfaceTableModel = new SurfaceTableModel(header);
 	public JTable surfaceTable = new JTable(surfaceTableModel);
 	private JSlider transparencySlider = new JSlider(); 
-	
-	//Table and transparency for User's shakemaps
-//	public SurfaceTableModel surfaceTableModel2 = new SurfaceTableModel(header);
-//	public JTable surfaceTable2 = new JTable(surfaceTableModel);
-//	private JSlider transparencySlider2 = new JSlider(); 
 	
 	
 	public ShakeMapGUI(PluginActors pluginActors) {
@@ -138,7 +131,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		
 		panel1.setLayout(new GridLayout(1,0,0,15));
 		panel1.add(new JScrollPane(presets));
-//		panel1.add(panesPanel);
 		
 		transparencySlider.setMajorTickSpacing(10);
 		transparencySlider.setMinorTickSpacing(5);
@@ -149,7 +141,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		JPanel sliderPanel = new JPanel(new BorderLayout());
 		sliderPanel.add(new JLabel("Transparency"), BorderLayout.NORTH);
 		sliderPanel.add(transparencySlider, BorderLayout.CENTER);
-//		panel1.add(sliderPanel, BorderLayout.CENTER);
 		
 		bottomPane.setLayout(new GridLayout(2,0,0,15));
 		bottomPane.add(panesPanel);
@@ -166,7 +157,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			for (int i = 0; i < files.length; i++) {
 				if (files[i].isFile()) {
 					String tempName = files[i].getName();
-//					System.out.println(tempName);
 					JCheckBox tempCheckbox = new JCheckBox(tempName);
 					tempCheckbox.setName(tempName);
 					tempCheckbox.addItemListener(this);
@@ -181,8 +171,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		
 		JPanel USGSPanel = new JPanel();
 		USGSPanel.setLayout(new GridLayout(0,2));
-//		USGSPanel.add(usgsDownloads);
-//		USGSPanel.add(new JLabel("USGS Map"));
 		calChooser.add(nc);
 		calChooser.add(sc);
 		USGSPanel.add(nc);
@@ -204,7 +192,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 					}
 					if(network.length() > 0){
 						USGSShakeMapDownloader smd = new USGSShakeMapDownloader(network, id);
-						String d = smd.downloadShakeMap("usgsMap.txt");
+						String d = smd.downloadShakeMap(id+".txt");
 						System.out.println(d);
 						if(d.length() <= 0){
 							System.out.println("Failure");
@@ -212,13 +200,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 								    "Sorry, file not found on USGS site.");
 						}else{
 							System.out.println("Loaded!");
-							try {
-								Files.copy(Paths.get(dataPath+"/"+"usgsMap.txt"), Paths.get(dataPath+"/"+moreMaps +"/"+id+".txt"));
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							showNewUSGSMap();
+							showNewUSGSMap(id+".txt");
 							addNewUSGSCheckBox(id+".txt");
 						}
 					}else{
@@ -257,7 +239,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		
 		tabbedPane.setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()/2));
 		tabbedPane.addTab("Presets", panel1);
-		tabbedPane.addTab("Saved Maps", usgsDownloads);
+		tabbedPane.addTab("Saved Maps", new JScrollPane(usgsDownloads));
 		tabbedPane.addTab("Download USGS Map", USGSPanel);
 		tabbedPane.addTab("OpenSHA", openSHAButton);
 		
@@ -278,9 +260,9 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	 * This immediately shows the map after downloading it
 	 * from the USGS website
 	 */
-	private void showNewUSGSMap(){
+	private void showNewUSGSMap(String filename){
 		ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
-		shakeMap.loadFromFileToGriddedGeoDataSet(dataPath + "/" + "usgsMap.txt");
+		shakeMap.loadFromFileToGriddedGeoDataSet(dataPath + "/" + moreMaps + "/" + filename);
 		shakeMap.setActor(shakeMap.builtPolygonSurface());
 		actorList.add(shakeMap.getActor());
 		pluginActors.addActor(shakeMap.getActor());
@@ -288,6 +270,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		Info.getMainGUI().updateRenderWindow();
 	}
 	
+	//appends a CheckBox after downloading a new USGS
+	//shake map
 	private void addNewUSGSCheckBox(String fileName){
 		JCheckBox tempCheckbox = new JCheckBox(fileName);
 		tempCheckbox.setName(fileName);
@@ -296,7 +280,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		usgsDownloads.add(tempCheckbox); //add it to GUI
 		checkBoxList.add(tempCheckbox); //add it to data
 	}
-
+	
+	//What happens whenever a check box is selected
 	@Override
 	public void itemStateChanged(ItemEvent e) {
 		// TODO Auto-generated method stub
@@ -340,6 +325,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		}
 	}
 
+	//Removes all the maps from the GUI
 	public void unloadPlugin()
 	{
 
@@ -357,7 +343,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	}
 
 
-
+	//Checks if a value in the table is being modified
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		// TODO Auto-generated method stub
@@ -370,6 +356,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		}
 	}
 
+	//Enables the transparency slider if a map is selected in
+	//the table. Otherwise, the slider is disabled
 	public void processTableSelectionChange() {
 		int[] selectedRows = this.surfaceTable.getSelectedRows();
 		if (selectedRows.length > 0) {
@@ -379,6 +367,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		}
 	}
 
+	//Whenever the transparency is changed
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		// TODO Auto-generated method stub
@@ -395,7 +384,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		}
 	}
 	
-	//getters and setters
+	//GETTERS and SETTERS
 	public ArrayList<JCheckBox> getCheckBoxList() {
 		return checkBoxList;
 	}

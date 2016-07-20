@@ -21,8 +21,8 @@ public class USGSShakeMapDownloader {
 	static final String URLSTART = "http://earthquake.usgs.gov/earthquakes/shakemap";
 	static final String URLEND = "download/grid.xyz.zip";
 	
-	//path to local directory where all the shakemaps are stored
-	static final String dataPath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin"; 
+	//path to local directory where all the downloaded USGS shakemaps are stored
+	static final String USGSDataPath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/More_USGS_Maps";
 	
 	private String network; //the network that recorded the earthquake
 	private String quakeId; //the earthquake's id
@@ -45,7 +45,7 @@ public class USGSShakeMapDownloader {
 			ZipInputStream zipIn = new ZipInputStream(usgs.openStream());
 			ZipEntry entry = zipIn.getNextEntry();
 			while(entry != null){
-				String filePath = dataPath + "/" + destinationFile;
+				String filePath = USGSDataPath + "/" + destinationFile;
 
 				FileWriter writ = new FileWriter(new File(filePath));
 				Scanner sc = new Scanner(zipIn);
