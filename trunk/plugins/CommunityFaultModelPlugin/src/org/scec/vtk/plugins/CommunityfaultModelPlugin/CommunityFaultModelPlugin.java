@@ -13,8 +13,12 @@ import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.ActionPlugin;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.StatefulPlugin;
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultAccessor;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.FaultTableModel;
+import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginState;
+
 import vtk.vtkActor;
 
 /**
@@ -31,13 +35,13 @@ import vtk.vtkActor;
  * @author P. Powers
  * @version $Id: Fault3DPlugin.java 2071 2008-07-03 15:39:24Z rberti $
  */
-public class CommunityFaultModelPlugin extends ActionPlugin {
+public class CommunityFaultModelPlugin extends ActionPlugin implements StatefulPlugin{
 
 	// TODO  can pluginInfo be made static and then use the plugin name as the data 
 	// repository directory name eg "Fault3DPlugin"
 	CommunityFaultModelGUI f3DGui;
 	private boolean guidisplayed = false;
-
+	private PluginState state;
 
 
 	/**
@@ -65,7 +69,7 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
 	}
 	public void unload()
 	{
-		getPluginActors().clearActors();;
+		f3DGui.unload();
 		super.unload();
 		f3DGui=null;
 	}
@@ -81,120 +85,15 @@ public class CommunityFaultModelPlugin extends ActionPlugin {
 			{
 				FaultAccessor fa = (FaultAccessor)loadedRows.get(i);
 				fa.readDataFile();
-				//allCFMActors.add(fa.getFaultBranch());
 			}
 
 		}
 	}
-	/*public Element getState()
-    {
-    	/*Element root = new Element("fault3DPlugin");
-    	if(guidisplayed){
-    		root.setAttribute("displayed","true");
-    		List loadedRows = f3DGui.faultTable.getLibraryModel().getAllObjects();
 
-    		for(int i = 0; i < loadedRows.size(); i++)
-    		{
-    			Element fault = new Element("fault");
-    			FaultAccessor fa = (FaultAccessor)loadedRows.get(i);
-    			//FaultTableModel ftm = f3DGui.faultTable.getLibraryModel().getLoadedObjects();
-    			if(fa.isInMemory())
-    			{
-    				fault.setAttribute("loaded", "true");
-    			}
-    			else
-    			{
-    				fault.setAttribute("loaded", "false");
-    			}
-    			if(fa.isDisplayed())
-    			{
-    				fault.setAttribute("displayed", "true");
-    			}
-    			else
-    			{
-    				fault.setAttribute("displayed", "false");
-    			}
-    			Color color = fa.getColor();
-    			if(color != null)
-    			{
-    				int rgb = color.getRGB();
-    				String rgbColor = String.valueOf(rgb);
-    				fault.setAttribute("color", rgbColor);
-    			}else{
-    				fault.setAttribute("color", "NULL");
-    			}
-    			//Gets mesh state of fault
-    			int meshState = fa.getMeshState();
-    			String meshStateString = String.valueOf(meshState);
-    			fault.setAttribute("meshState", meshStateString);
-
-    			fault.setText(fa.getDisplayName());
-
-    			root.addContent(fault);
-    		}
-    	}else{
-    		root.setAttribute("displayed","false");
-    	}
-
-    	return root;
-    }*/
-
-	public void setState(Element e)
-	{
-		/*Element root = e.getChild("fault3DPlugin");
-    	if(root.getAttributeValue("displayed").equals("true")){
-    		ListSelectionModel lsm = f3DGui.faultTable.getSelectionModel();
-    		FaultTableModel ftm = f3DGui.faultTable.getLibraryModel();
-
-    		int numChildren = root.getContentSize();
-
-    		for(int i = 0; i < numChildren; i++)
-    		{
-    			Element fault = root.getChild("fault");
-
-    			if(fault != null)
-    			{
-    				int row = -1;
-
-    				for(int j = 0; j < ftm.getRowCount(); j++)
-    				{
-    					if(ftm.getObjectAtRow(j).getDisplayName().equals(fault.getText()))
-    					{
-    						row = j;
-    						break;
-    					}
-    				}    		
-    				if(row >= 0)
-    				{
-    					lsm.setSelectionInterval(row, row);
-    					if(fault.getAttributeValue("displayed").equals("true"))
-    					{
-    						ActionEvent e2 = new ActionEvent(f3DGui.showFaultsButton, 0, f3DGui.showFaultsButton.toString());
-    						f3DGui.actionPerformed(e2);
-    					}
-    					if(!fault.getAttributeValue("color").equals(null))
-    					{
-    						String newColor = fault.getAttributeValue("color");
-    						int rgb = Integer.parseInt(newColor);
-    						Color c = new Color(rgb);
-    						ftm.setColorForRow(c, i);
-    					}
-    					if(!fault.getAttributeValue("meshState").equals(null))
-    					{
-    						String meshStateString = fault.getAttributeValue("meshState");
-    						int meshState = Integer.parseInt(meshStateString);
-    						ftm.setMeshStateForRow(meshState, i);
-    					}
-
-    				}
-
-    				root.removeChild("fault");
-    			}
-    		}
-    	}*/
-	}    
-
-	/*public void setClickableEnabled(boolean enable){
-    	if(f3DGui!=null) f3DGui.setPickable(enable);
-    }*/
+	@Override
+	public PluginState getState() {
+		if(state==null)
+			state = new CommunityFaultModelPluginState(this.f3DGui);
+		return state;
+	}
 }
