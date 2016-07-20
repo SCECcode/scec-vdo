@@ -29,7 +29,7 @@ import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
-import org.opensha.sha.simulators.EQSIM_Event;
+import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.RectangularElement;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.iden.MagRangeRuptureIdentifier;
@@ -270,7 +270,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			l.setGeometry(elements);
 	}
 	
-	private void fireNewEvents(List<EQSIM_Event> events) {
+	private void fireNewEvents(List<? extends SimulatorEvent> events) {
 		for (EQSimsEventListener l : eventListeners)
 			l.setEvents(events);
 	}
@@ -288,7 +288,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 				try {
 					List<RuptureIdentifier> rupIdens = new ArrayList<>();
 					rupIdens.add(new MagRangeRuptureIdentifier(eventMinMagParam.getValue(), 10d));
-					List<EQSIM_Event> events;
+					List<? extends SimulatorEvent> events;
 					CalcProgressBar progress = new CalcProgressBar("Reading Events File", "Loading events...");
 					progress.setIndeterminate(true);
 					if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
