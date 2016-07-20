@@ -635,8 +635,9 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 										invSol.getRupSet().getFaultModel(), invSol.getRupSet());
 								List<AveSlipConstraint> aveSlipConstraints = AveSlipConstraint.load(
 										sol.getRupSet().getFaultSectionDataList());
+								Map<String, List<Integer>> namedFaultsMap = invSol.getRupSet().getFaultModel().getNamedFaultsMapAlt();
 								CommandLineInversionRunner.writePaleoFaultPlots(
-										paleoRateConstraints, aveSlipConstraints, invSol, outDir);
+										paleoRateConstraints, aveSlipConstraints, namedFaultsMap, invSol, outDir);
 							} catch (IOException e) {
 								e.printStackTrace();
 								JOptionPane.showMessageDialog(null, "Error: "+e.getMessage(),
