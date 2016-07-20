@@ -24,7 +24,7 @@ import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.commons.util.cpt.LinearBlender;
-import org.opensha.sha.simulators.EQSIM_Event;
+import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
@@ -52,7 +52,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	
 	private ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
 	
-	private List<EQSIM_Event> unfilteredevents;
+	private List<? extends SimulatorEvent> unfilteredevents;
 	private Map<Integer, Integer> idToUnfilteredStepMap;
 	private List<Integer> filterIndexes;
 //	private HashMap<Integer, Color>[] eventColorCache;
@@ -164,7 +164,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 
 			@Override
 			public Map<Integer, Color> load(Integer index) throws Exception {
-				EQSIM_Event event = unfilteredevents.get(index);
+				SimulatorEvent event = unfilteredevents.get(index);
 				int[] ids = event.getAllElementIDs();
 				double[] slips = event.getAllElementSlips();
 				Map<Integer, Color> slipMap = new HashMap<>();
@@ -238,7 +238,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		}
 	}
 	
-	private EQSIM_Event getEventForStep(int step) {
+	private SimulatorEvent getEventForStep(int step) {
 		if (unfilteredevents == null)
 			return null;
 		if (filterIndexes == null)
@@ -319,7 +319,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	 * @see org.scec.geo3d.library.wgcep.faults.anim.EQSimsEventListener#setEvents(java.util.ArrayList)
 	 */
 	@Override
-	public void setEvents(List<EQSIM_Event> events) {
+	public void setEvents(List<? extends SimulatorEvent> events) {
 		this.unfilteredevents = events;
 		idToUnfilteredStepMap = Maps.newHashMap();
 		if (events != null) {
@@ -346,7 +346,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	public String getCurrentLabel() {
 		if (!isStepValid(currentStep))
 			return null;
-		EQSIM_Event event = getEventForStep(currentStep);
+		SimulatorEvent event = getEventForStep(currentStep);
 		return "Mag: " + event.getMagnitude();
 	}
 	
@@ -405,7 +405,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		if (magThresh > 0.0 || filterSectionID >= 0 || filterFault != null || supraSeis || !Double.isNaN(startTime)) {
 			filterIndexes = new ArrayList<Integer>();
 			for (int i=0; i<unfilteredevents.size(); i++) {
-				EQSIM_Event event = unfilteredevents.get(i);
+				SimulatorEvent event = unfilteredevents.get(i);
 //				if (i % 1000 == 0) {
 //					System.out.println("Testing rup "+i);
 //					HashSet<Integer> rupSects = new HashSet<Integer>();
@@ -647,7 +647,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 //		System.out.println("Time changed: "+time);
 		Map<Integer, Color> fadeColors = Maps.newHashMap();
 		for (int step=currentStep; step >= 0; step--) {
-			EQSIM_Event event = getEventForStep(step);
+			SimulatorEvent event = getEventForStep(step);
 			double stepTime = event.getTime();
 			Map<Integer, Color> eventColors = getColorCacheForStep(step);
 			double timeSinceYears = (time - stepTime)/General_EQSIM_Tools.SECONDS_PER_YEAR;

@@ -11,7 +11,7 @@ import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.util.cpt.CPT;
-import org.opensha.sha.simulators.EQSIM_Event;
+import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
@@ -38,8 +38,8 @@ public class EQSimParticipationColorer extends CPTBasedColorer implements EQSims
 	
 	private ParameterList params;
 	
-	private List<EQSIM_Event> events;
-	private HashMap<Integer, EQSIM_Event> eventsMap;
+	private List<? extends SimulatorEvent> events;
+	private HashMap<Integer, SimulatorEvent> eventsMap;
 	protected HashMap<Integer, Double> rates;
 	
 	List<SimulatorElement> elements;
@@ -111,7 +111,7 @@ public class EQSimParticipationColorer extends CPTBasedColorer implements EQSims
 	}
 
 	@Override
-	public void setEvents(List<EQSIM_Event> events) {
+	public void setEvents(List<? extends SimulatorEvent> events) {
 		this.events = events;
 		eventsMap = Maps.newHashMap();
 		if (events == null || events.isEmpty()) {
@@ -121,7 +121,7 @@ public class EQSimParticipationColorer extends CPTBasedColorer implements EQSims
 			minEventMag = Double.MAX_VALUE;
 			maxEventMag = 0d;
 			
-			for (EQSIM_Event e : events) {
+			for (SimulatorEvent e : events) {
 				double mag = e.getMagnitude();
 				if (mag < minEventMag)
 					minEventMag = mag;
@@ -161,7 +161,7 @@ public class EQSimParticipationColorer extends CPTBasedColorer implements EQSims
 		System.out.println("Num events: "+events.size());
 		
 		int eventCount = 0;
-		for (EQSIM_Event e : events) {
+		for (SimulatorEvent e : events) {
 			double mag = e.getMagnitude();
 			if (!isWithinMagRange(mag))
 				continue;
@@ -196,11 +196,11 @@ public class EQSimParticipationColorer extends CPTBasedColorer implements EQSims
 		}
 	}
 	
-	protected List<EQSIM_Event> getEvents() {
+	protected List<? extends SimulatorEvent> getEvents() {
 		return events;
 	}
 	
-	protected EQSIM_Event getEvent(int id) {
+	protected SimulatorEvent getEvent(int id) {
 		return eventsMap.get(id);
 	}
 
