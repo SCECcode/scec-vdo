@@ -14,15 +14,21 @@ import org.scec.vtk.plugins.ShakeMapPlugin.Component.ShakeMap;
 
 import vtk.vtkActor;
 
+/*
+ * So far, the attributes the Shake Map stores is the name of the file 
+ * which stores the data, and the opacity (transparency) of the shake map
+ */
 public class ShakeMapPluginState implements PluginState{
 	
 	private ShakeMapGUI parent;
 
+	//Values in these arrays will be saved to xml file
 	private ArrayList<String> filePath;
 	private ArrayList<Double> transparency;
+	
+	//These values are not saved in a xml file, 
+	//but are used in the load() function
 	private ArrayList<Integer> visibility;
-	private ArrayList<String> dispName;
-	private ArrayList<ShakeMap> shakeMaps;
 	private ArrayList<Integer> selectedIndexes;
 	
 	ShakeMapPluginState(ShakeMapGUI parent)
@@ -31,25 +37,21 @@ public class ShakeMapPluginState implements PluginState{
 		filePath = new ArrayList<String>();
 		transparency = new ArrayList<Double>();
 		visibility = new ArrayList<Integer>();
-		dispName = new ArrayList<String>();
-		shakeMaps = new ArrayList<ShakeMap>();
 		selectedIndexes = new ArrayList<Integer>();
 	}
 
+	//Gets the latest details. This function is called
+	//in toXML()
 	void copyLatestCatalogDetails()
 	{
 
 		filePath.clear();
 		transparency.clear();
-		dispName.clear();
 		selectedIndexes.clear();
 
-		int checkBoxIndex = 0;
 		for (JCheckBox box : parent.getCheckBoxList())
 		{
 			filePath.add(box.getName());
-			dispName.add(box.getName());
-			checkBoxIndex++;
 		}
 		
 		int shakeIndex = 0;
@@ -57,59 +59,33 @@ public class ShakeMapPluginState implements PluginState{
 			if(shake != null){ 
 				transparency.add(shake.getActor().GetProperty().GetOpacity());
 				visibility.add(shake.getActor().GetVisibility());
-				shakeMaps.add(shake);
 				selectedIndexes.add(shakeIndex);
 			}
 			else{
 				transparency.add(null);
 				visibility.add(0);
-				shakeMaps.add(null);
 			}
 			shakeIndex++;
 		}
 	}
 
+	/*
+	 * Whenever a new state key frame (the red key frame) for the Shake Map
+	 * plugin is added to the timeline, this function is called.
+	 */
 	@Override
 	public void load() {
 		// call methods to update based on the properties captured //might also want to put swing invoke and wait
-		
-		//try #1
-//		int i=0;
-//		int checkBoxIndex = 0;
-//		for (JCheckBox box : parent.getCheckBoxList())
-//		{
-//			if(box.isSelected()){
-//				System.out.println("Selected indicies are " + selectedIndexes);
-//				System.out.println("CheckBoxIndex is " + checkBoxIndex);
-//				System.out.println("size of transparency list is " + transparency.size());
-//				if(transparency.get(checkBoxIndex) != null)
-//					parent.getShakeMapsList().get(checkBoxIndex).getActor().GetProperty().SetOpacity(transparency.get(checkBoxIndex));
-//				i++;
-//			}
-//			checkBoxIndex++;
-//		}
-		
-		//try #2
-		System.out.println("Load start");
-		System.out.println("Selected index is " + selectedIndexes);
-		System.out.println("Parent ShakeMaps list is " + parent.getShakeMapsList());
-		System.out.println("Visiblity list is " + visibility);
-//		for(int i: selectedIndexes){
-//			shakeMaps.get(i).getActor().SetVisibility(visibility.get(i));
-//			shakeMaps.get(i).getActor().GetProperty().SetOpacity(transparency.get(i));
-//		}
-		for(int i=0; i<parent.getShakeMapsList().size(); i++){		
-			if(parent.getShakeMapsList().get(i) != null){
-				if(selectedIndexes.isEmpty())
-					break;
+		for(int i=0; i<parent.getShakeMapsList().size(); i++){	
+			if(selectedIndexes.isEmpty())
+				break;
+			if(parent.getShakeMapsList().get(i) != null){			
 				parent.getShakeMapsList().get(i).getActor().SetVisibility(visibility.get(i));
 			}
 		}
 		for(int i: selectedIndexes){
-			shakeMaps.get(i).getActor().GetProperty().SetOpacity(transparency.get(i));
-		}
-		System.out.println("Load end");		
-		
+			parent.getShakeMapsList().get(i).getActor().GetProperty().SetOpacity(transparency.get(i));
+		}		
 	}
 
 	private void createElement(Element stateEl) {
@@ -119,7 +95,6 @@ public class ShakeMapPluginState implements PluginState{
 			if(box.isSelected()){
 				stateEl.addElement( "ShakeMaps" )
 				.addAttribute( "filePath", filePath.get(i))
-				.addAttribute( "dispName", dispName.get(i))
 				.addAttribute( "transparency", Double.toString(parent.getShakeMapsList().get(i).getActor().GetProperty().GetOpacity()));
 			}
 
@@ -127,13 +102,19 @@ public class ShakeMapPluginState implements PluginState{
 		}
 	}
 
+	//Writes to a xml file
 	@Override
 	public void toXML(Element stateEl) {
 		copyLatestCatalogDetails();
 		createElement(stateEl);
 	}
 	
-	public void showMaps(ArrayList<String> filenames, ArrayList<String> displayNames, ArrayList<Double> transparentValues){
+	/*
+	 * Display the maps after reading the data from the xml files.
+	 * -filenames: list of files which contain the map data
+	 * -transparentValues: list of opacity (transparency) values
+	 */
+	public void showMaps(ArrayList<String> filenames, ArrayList<Double> transparentValues){
 		File presetDirectory = new File(parent.dataPath);
 		File savedDirectory = new File(parent.dataPath+"/"+parent.moreMaps);
 		//Add everyting to one list
@@ -178,19 +159,16 @@ public class ShakeMapPluginState implements PluginState{
 		}
 	}
 
+	//Reads the file path and the transparency value from the xml file
 	@Override
 	public void fromXML(Element stateEl) {
 		for ( Iterator i = stateEl.elementIterator( "ShakeMaps" ); i.hasNext(); ) 
 		{
 			Element e = (Element) i.next();
 			filePath.add(e.attributeValue("filePath"));
-			dispName.add(e.attributeValue("dispName"));
 			transparency.add(Double.parseDouble(e.attributeValue("transparency")));	          
-
-//			System.out.println(e.attributeValue("filePath"));
-			// read the catalog file
 		}
-		showMaps(filePath, dispName, transparency);
+		showMaps(filePath, transparency);
 	}
 
 	@Override
