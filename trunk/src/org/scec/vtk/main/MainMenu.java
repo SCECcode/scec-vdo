@@ -271,13 +271,13 @@ public class MainMenu implements ActionListener, ItemListener{
 					Document document = reader.read(file.getPath());
 					Element root = document.getRootElement();
 					// iterate through child elements of root with element name "foo"
-					Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
-							availablePlugins.values());
-					for(PluginInfo pluginDescriptor:pluginDescriptors)
+					Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
+							loadedPlugins.values());
+					for(Plugin pluginDescriptor:pluginDescriptors)
 					{
 
 						//System.out.println(pluginDescriptor.getName());
-						for ( Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
+						for ( Iterator i = root.elementIterator(pluginDescriptor.getMetadata().getName().replace(' ' ,'-')); i.hasNext(); ) {
 							Element pluginNameElement = (Element) i.next();
 							if(!activePlugins.containsKey(pluginDescriptor.getId()))
 								activatePlugin(pluginDescriptor.getId());
@@ -324,14 +324,14 @@ public class MainMenu implements ActionListener, ItemListener{
 				File file = chooser.getSelectedFile();
 				String destinationData =  file.getPath();//Prefs.getLibLoc() + File.separator;
 
-				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
-						availablePlugins.values());
-				for(PluginInfo pluginDescriptor:pluginDescriptors)
+				Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
+						loadedPlugins.values());
+				for(Plugin pluginDescriptor:pluginDescriptors)
 				{
 
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 					if (plugin instanceof StatefulPlugin) {
-						Element pluginNameElement = root.addElement(pluginDescriptor.getName().replace(' ','-'));
+						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
 						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
 
 					}
