@@ -81,6 +81,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	ArrayList<String> citypop = new ArrayList<String>();
 
 	private DrawingToolsTable drawingToolTable;
+	private DrawingToolsTable highwayToolTable;
 	private DrawingToolsTableModel drawingTooltablemodel;
 	private int defaultLocationsStartIndex = 0;
 	private int popSize = 0;
@@ -91,7 +92,8 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	
 	public DefaultLocationsGUI(DrawingToolsGUI guiparent) {
 		this.guiparent = guiparent;
-		this.drawingToolTable = guiparent.getTable();
+		this.drawingToolTable = guiparent.getDrawingToolTable();
+		this.highwayToolTable = guiparent.getHighwayToolTable();
 		this.drawingTooltablemodel = drawingToolTable.getLibraryModel();
 		this.defaultLocationsStartIndex = this.drawingToolTable.getRowCount();
 		// Set main panel layout manager and dimensions
@@ -444,7 +446,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					);
 					highway.setDisplayName(nameOfSegment);
 					this.guiparent.addHighway(highway);
-					this.drawingToolTable.addDrawingTool(highway);
+					this.highwayToolTable.addDrawingTool(highway);
 					nameOfSegment = temp[1];
 				}
 				line = inStream.readLine();						
