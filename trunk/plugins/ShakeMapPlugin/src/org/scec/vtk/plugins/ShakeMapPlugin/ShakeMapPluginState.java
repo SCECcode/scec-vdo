@@ -77,10 +77,11 @@ public class ShakeMapPluginState implements PluginState{
 	public void load() {
 		// call methods to update based on the properties captured //might also want to put swing invoke and wait
 		for(int i=0; i<parent.getShakeMapsList().size(); i++){	
-			if(selectedIndexes.isEmpty())
+			if(visibility.isEmpty())
 				break;
 			if(parent.getShakeMapsList().get(i) != null){			
 				parent.getShakeMapsList().get(i).getActor().SetVisibility(visibility.get(i));
+				parent.getCheckBoxList().get(i).setSelected(visibility.get(i)==1);
 			}
 		}
 		for(int i: selectedIndexes){
