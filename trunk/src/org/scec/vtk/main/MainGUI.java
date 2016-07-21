@@ -97,7 +97,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private static File getCWD;
 
 	// TODO why static?
-	static MainMenu mainMenu;
+	public static MainMenu mainMenu;
 
 	// TODO why static?
 	// TODO this should be a plugin
