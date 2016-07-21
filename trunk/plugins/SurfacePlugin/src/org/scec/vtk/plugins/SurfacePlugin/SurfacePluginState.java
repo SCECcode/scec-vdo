@@ -20,7 +20,6 @@ public class SurfacePluginState implements PluginState{
 	private ArrayList<String> dispName;
 	private ArrayList<String> filePath;
 	private ArrayList<String> filePathgeo;
-	private ArrayList<Integer> fromWeb;
 	private ArrayList<Surface> surfaceArray;
 
 
@@ -35,14 +34,14 @@ public class SurfacePluginState implements PluginState{
 		filePathgeo = new ArrayList<>();
 		transparency = new ArrayList<>();
 		visibility = new ArrayList<>();
-		fromWeb = new ArrayList<>();
+
 
 
 	}
 
 	void copyLatestCatalogDetails()
 	{
-		fromWeb.clear();
+
 		dispName.clear();
 		filePath.clear();
 		surfaceArray.clear();
@@ -59,13 +58,13 @@ public class SurfacePluginState implements PluginState{
 			filePath.add(new File(file).getAbsolutePath());
 			if(surf.getGeoSurfaceInfo() == null)
 			{
-				//fromWeb.add(0);
+			
 			}
 			else
 			{
 				String fileGeo = surf.getGeoSurfaceInfo().getFilename();
 				filePathgeo.add(new File(fileGeo).getAbsolutePath());
-				//fromWeb.add(1);
+
 			}
 			//create local copies of display attributes
 			transparency.add(surf.getSurfaceActor().GetProperty().GetOpacity());
@@ -100,7 +99,6 @@ public class SurfacePluginState implements PluginState{
 				.addAttribute( "dispName", dispName.get(i))
 				.addAttribute( "filePath", filePath.get(i))
 				.addAttribute("GeographicSurfaceInfo", filePathgeo.get(i))
-				//.addAttribute("fromWeb", Integer.toString(fromWeb.get(i)))
 				.addAttribute( "transparency", Double.toString(transparency.get(i)))
 				.addAttribute( "visibility",(visibility.get(i).toString()));
 			}
@@ -110,7 +108,6 @@ public class SurfacePluginState implements PluginState{
 				.addAttribute( "dispName", dispName.get(i))
 				.addAttribute( "filePath", filePath.get(i))
 				.addAttribute("GeographicSurfaceInfo", "")
-				//.addAttribute("fromWeb", Integer.toString(fromWeb.get(i)))
 				.addAttribute( "transparency", Double.toString(transparency.get(i)))
 				.addAttribute( "visibility",(visibility.get(i).toString()));
 
@@ -135,7 +132,6 @@ public class SurfacePluginState implements PluginState{
 			dispName.add(e.attributeValue("dispName"));
 			filePath.add(e.attributeValue("filePath"));
 			filePathgeo.add(e.attributeValue("GeographicSurfaceInfo"));
-			//fromWeb.add(Integer.parseInt(e.attributeValue("fromWeb")));
 			transparency.add(Double.parseDouble(e.attributeValue("transparency")));	          
 			visibility.add(Integer.parseInt(e.attributeValue("visibility")));	            
 
