@@ -38,8 +38,8 @@ import oracle.spatial.util.ShapefileReaderJGeom;
 
 
 public class Events {    
-	private FilledBoundaryCluster currentBoundary;
-	private static final int NUM_POP_CATEGORY = 12;
+	FilledBoundaryCluster currentBoundary;
+	static final int NUM_POP_CATEGORY = 12;
 	boolean bIsImport = false;
 	boolean bIsImport1 = false;
 	boolean bIsImport2 = false;
@@ -49,24 +49,24 @@ public class Events {
     ArrayList<Float> populationCategory;
     File ralph;
     EventAttributes event;
-	private ArrayList<Float> legendMaxList;
+	ArrayList<Float> legendMaxList;
 	ArrayList<EventAttributes> eventList;
-    private int numLines = 0;
-    private int numFiles = 0;
+    int numLines = 0;
+    int numFiles = 0;
     String sImportedFilePath, sImportedFilePath1,  sImportedFilePath2, sImportedFilePath3, sImportedFilePath4;
     public static float maxPop = 0;
 //    Parser Tparser = new Parser();
 
-		private int groupCount = 0;
-		private int numBounds = 0;
+		int groupCount = 0;
+		int numBounds = 0;
 		public String[] names;
 		public int[] groupSize;
 		
-		private Color[] purpleGradient = new Color[NUM_POP_CATEGORY];
+		Color[] purpleGradient = new Color[NUM_POP_CATEGORY];
 		
-		private ArrayList<FilledBoundaryCluster> allBounds = new ArrayList<FilledBoundaryCluster>();
-		private AppendActors segmentActors;
-		private NodeList nodeList;
+		ArrayList<FilledBoundaryCluster> allBounds = new ArrayList<FilledBoundaryCluster>();
+		AppendActors segmentActors;
+		NodeList nodeList;
 	public Events() {
 		populationCategory = new ArrayList<Float>();
 		purpleGradient[0] = new Color(0.219f, 0.659f, 0.000f);
@@ -327,8 +327,8 @@ public class Events {
 
 					bIsImport = true;
 					buildBoundaries(sImportedFilePath);*/
-					importFiles();
-					buildBoundaries(eventList.get(eventList.size()-1).getSHPFile());
+					if(importFiles())
+						buildBoundaries(eventList.get(eventList.size()-1).getSHPFile());
 				}
 				else{
 					buildBoundaries(eventList.get(i).getSHPFile());
@@ -341,9 +341,9 @@ public class Events {
 		currentBoundary = new FilledBoundaryCluster(segmentActors);
 		return allBounds;
 	}
-	private void importFiles()
+	private boolean importFiles()
 	{
-		//TODO:
+		boolean worked = false;
 		event = new EventAttributes();
 		event.setID("" + (nodeList.getLength() + 1));
 		String s = (String)JOptionPane.showInputDialog(
@@ -383,7 +383,7 @@ public class Events {
 						
 						for (int i = 0; i < fieldsCount; i ++){
 							fieldName = dbfFile.getFieldName(i);
-							System.out.println(":"+fieldName);
+							//System.out.println(":"+fieldName);
 						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -405,10 +405,12 @@ public class Events {
 					numLines++;
 					numFiles++;
 					bIsImport2 = true;
+					worked = true;
 					
 				}
 			}
 		}
+		return worked;
 		
 	}
 	private void buildBoundaries(String file) {
@@ -437,11 +439,11 @@ public class Events {
 			DBFReaderJGeom dbfFile = new DBFReaderJGeom(dbfFilename);
 			int columnIndex = 0;
 			for (fileEnum = 0; fileEnum < numFiles; fileEnum++){
-				System.out.println(file2 + "," + eventList.get(fileEnum).getDBFFile());
+				//System.out.println(file2 + "," + eventList.get(fileEnum).getDBFFile());
 				if(file2.equals(eventList.get(fileEnum).getDBFFile())){
 					
 					columnIndex = fileEnum;
-					System.out.println("Column Index: " + columnIndex);
+					//System.out.println("Column Index: " + columnIndex);
 					break;
 				}
 			}
@@ -455,8 +457,8 @@ public class Events {
 			
 			for (int i = 0; i < fieldsCount; i ++){
 				fieldName = dbfFile.getFieldName(i);
-				System.out.println(":"+fieldName);
-				System.out.println(eventList.get(columnIndex).getColumn());
+				//System.out.println(":"+fieldName);
+				//System.out.println(eventList.get(columnIndex).getColumn());
 				
 				if (fieldName.equalsIgnoreCase("tract"))
 					nameColumn = i;
@@ -490,7 +492,7 @@ public class Events {
 					populationCategory.add(populationRecord[i]);
 				}
 			}
-		    System.out.println(sImportedFilePath);
+		    //System.out.println(sImportedFilePath);
 			//-----------------shape file stuff--------------------
 		    if(bIsImport)  
 				shpFile = new ShapefileReaderJGeom(sImportedFilePath);

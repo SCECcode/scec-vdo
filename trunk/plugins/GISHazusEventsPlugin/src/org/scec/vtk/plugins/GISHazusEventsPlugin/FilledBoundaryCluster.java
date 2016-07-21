@@ -103,5 +103,20 @@ public class FilledBoundaryCluster {
 		return segmentActors;
 	}
 
+	public void setBoundaries(ArrayList<FilledBoundary> arrayList) {
+		boundaries = arrayList;
+		
+	}
+
+	public void setBoundaries2(ArrayList<Boundary> arrayList) {
+		boundaries2 = arrayList;
+		
+	}
+
+	public void setAppendActor(AppendActors appendActors) {
+		segmentActors = appendActors;
+		
+	}
+
 }
 
