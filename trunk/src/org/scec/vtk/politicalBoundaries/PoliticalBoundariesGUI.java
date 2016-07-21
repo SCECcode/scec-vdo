@@ -40,6 +40,7 @@ public class PoliticalBoundariesGUI {
 	Dimension dMainPanel,dSubPanel;
 	public static vtkActor mainFocusReginActor = new vtkActor();
 	PluginActors pluginActors = new PluginActors();
+	
 	public PoliticalBoundariesGUI(PluginActors pluginActors){
 		this.pluginActors = pluginActors;
 		this.politicalBoundaryMainPanel = new JPanel(new GridLayout(0,1));
@@ -224,6 +225,7 @@ public class PoliticalBoundariesGUI {
 	private void createCheckBoxes(String checkBoxLabel, ArrayList<JCheckBox> jCheckBoxList, JPanel panel,ItemListener itemListener,boolean isSelected)
 	{
 		JCheckBox checkBoxButton = new JCheckBox(checkBoxLabel);
+		checkBoxButton.setName(checkBoxLabel);
 		checkBoxButton.addItemListener(itemListener);
 		checkBoxButton.setSelected(isSelected);
 		jCheckBoxList.add(checkBoxButton);
@@ -292,7 +294,7 @@ public class PoliticalBoundariesGUI {
 										lowerCheckBoxButtons.get(segIndex).setSelected(true);
 									}
 								}
-								politicalBoundarySubPanelLowerTab.setSelectedIndex(j);
+								//politicalBoundarySubPanelLowerTab.setSelectedIndex(j);
 								//politicalBoundarySubPanelLowerTab.addTab(politicalBoundarySubPanelLowerTab.getTitleAt(j), sp);
 
 							}
@@ -340,12 +342,28 @@ public class PoliticalBoundariesGUI {
 			}
 		}
 	};
-
-	public void displayCheckboxPanel()
-	{
-
-	}
+	  
 	public ArrayList<vtkActor> getPoliticalBoundaries()
+	{
+		return actorPoliticalBoundariesSegments;
+	}
+	
+	public ArrayList<JCheckBox> getLowerCheckBoxButtons()
+	{
+		return lowerCheckBoxButtons;
+	}
+	
+	public ArrayList<JCheckBox> getUpperCheckBoxButtons()
+	{
+		return upperCheckBoxButtons;
+	}
+	
+	public JTabbedPane getPoliticalBoundarySubPanelLowerTab()
+	{
+		return politicalBoundarySubPanelLowerTab;
+	}
+	
+	public ArrayList<vtkActor> getActorPoliticalBoundariesSegments()
 	{
 		return actorPoliticalBoundariesSegments;
 	}
