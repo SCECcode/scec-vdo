@@ -35,7 +35,9 @@ import org.scec.vtk.commons.opensha.tree.AbstractFaultNode;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.LegendPlugin.LegendPlugin;
 import org.scec.vtk.plugins.utils.components.ColorButton;
+import org.scec.vtk.plugins.utils.components.ColorWellIcon;
 import org.scec.vtk.plugins.utils.components.ShowButton;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 
@@ -60,6 +62,7 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 	private ShowButton visibilityButton = new ShowButton(this, "Visibility");
 	private ColorButton colorButton = new ColorButton(this, "Colors");
 	private JCheckBox logCheck = new JCheckBox("Log10 Scale");
+	private JCheckBox legendCheckbox = new JCheckBox("Add Legend");
 	private JFileChooser chooser;
 	private SingleColorChooser colorChooser = new SingleColorChooser(this);
 	
@@ -80,6 +83,8 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 	private static int cpt_tick_width = 4;
 	
 	private GriddedParameterListEditor paramsEdit;
+	
+	private CPT cpt;
 
 	public ColorerPanel(ArrayList<FaultColorer> colorers, FaultColorer selected) {
 		this.colorers = colorers;
@@ -111,13 +116,32 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		
 		JPanel controlPanel = new JPanel();
 		controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
-		controlPanel.add(logCheck);
+		
+		legendCheckbox.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				JCheckBox cb = (JCheckBox)e.getSource();
+				if (cb.isSelected())
+					addLegendScalarBar();
+				else{
+					removeLegend();
+				}
+			}
+		});
+		
+		JPanel wrapperPanel = new JPanel();
+		wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.Y_AXIS));
+		wrapperPanel.add(logCheck);
+		wrapperPanel.add(legendCheckbox);
+		
+		controlPanel.add(wrapperPanel);
 		controlPanel.add(visibilityButton);
 		controlPanel.add(colorButton);
 		visibilityButton.setEnabled(true);
 		colorButton.setEnabled(true);
 		controlPanel.add(rescaleButton);
 		controlPanel.add(browseButton);
+		
 		
 		// this is the lower CPT panel
 		cptPanel = new CPTPanel(null, cpt_width, cpt_image_width, cpt_image_height, cpt_tick_width);
@@ -132,6 +156,7 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		JPanel cptPanelWrapper = new JPanel();
 		cptPanelWrapper.add(cptPanel);
 		this.add(cptPanelWrapper);
+		
 		
 		ParameterList rangeSelectList = new ParameterList();
 		rangeSelectMin = new DoubleParameter("Min");
@@ -360,5 +385,44 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		updateForCPT();
 		fireColorerChangeEvent();
 	}
-
+	
+	public void addLegendScalarBar() {
+		
+		
+		System.out.print(colorerParam.getValue());
+		
+		if (Info.getMainGUI().mainMenu.isPluginActive("org.scec.vdo.plugins.LegendPlugin"))
+		{
+			LegendPlugin legendPlugin = (LegendPlugin)Info.getMainGUI().mainMenu.getActivePlugins().get("org.scec.vdo.plugins.LegendPlugin");
+			FaultColorer fc = getSelectedColorer();
+			CPTBasedColorer cptColor = (CPTBasedColorer)fc;
+			CPT cpt = cptColor.getCPT();
+			legendPlugin.getLegendGUI().addScalarBar(cpt, colorerParam.getValue());
+			
+		}
+		else
+		{
+			Info.getMainGUI().mainMenu.activatePlugin("org.scec.vdo.plugins.LegendPlugin");
+			LegendPlugin legendPlugin = (LegendPlugin)Info.getMainGUI().mainMenu.getActivePlugins().get("org.scec.vdo.plugins.LegendPlugin");
+			FaultColorer fc = getSelectedColorer();
+			CPTBasedColorer cptColor = (CPTBasedColorer)fc;
+			CPT cpt = cptColor.getCPT();
+			legendPlugin.getLegendGUI().addScalarBar(cpt, colorerParam.getValue());
+		}
+	}
+	public void removeLegend() {
+		
+		if (Info.getMainGUI().mainMenu.isPluginActive("org.scec.vdo.plugins.LegendPlugin"))
+		{
+			LegendPlugin legendPlugin = (LegendPlugin)Info.getMainGUI().mainMenu.getActivePlugins().get("org.scec.vdo.plugins.LegendPlugin");
+			legendPlugin.getLegendGUI().removeLegendActor();
+			
+		}
+		else
+		{
+			Info.getMainGUI().mainMenu.activatePlugin("org.scec.vdo.plugins.LegendPlugin");
+			LegendPlugin legendPlugin = (LegendPlugin)Info.getMainGUI().mainMenu.getActivePlugins().get("org.scec.vdo.plugins.LegendPlugin");
+			legendPlugin.getLegendGUI().removeLegendActor();
+		}
+	}
 }

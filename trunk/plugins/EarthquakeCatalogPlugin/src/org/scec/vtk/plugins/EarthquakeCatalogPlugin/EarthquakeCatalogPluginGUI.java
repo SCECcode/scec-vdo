@@ -24,6 +24,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -54,8 +55,10 @@ import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQPickBehavior;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.SourceCatalog;
+import org.scec.vtk.plugins.LegendPlugin.LegendPlugin;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
+import org.scec.vtk.plugins.utils.components.ColorWellIcon;
 import org.scec.vtk.plugins.utils.components.GradientColorChooser;
 import org.scec.vtk.plugins.utils.components.HelpButton;
 import org.scec.vtk.plugins.utils.components.ObjectInfoDialog;
@@ -158,6 +161,7 @@ MouseListener
 	private ColorWellButton dispProp_colGradientButton;				// Color button
 	private JLabel			lowerGradientLabel;
 	private JLabel			higherGradientLabel;
+	private JCheckBox		legendCheckbox;
 	// Apply gradient to:
 	private JLabel          dispProp_gradient;				// "Apply gradient to:" label
 	private JRadioButton    dispProp_gradDepth;				// "Depth" radio button
@@ -629,7 +633,6 @@ MouseListener
 		dispProp_gradButtonGroup.add(this.dispProp_gradMag);
 		dispProp_gradButtonGroup.add(this.dispProp_gradDepth);
 
-
 		assemblePropsDispPanel(false);
 
 
@@ -673,6 +676,23 @@ MouseListener
 		this.propsDisplayPanel.add(this.lowerGradientLabel,       new GridBagConstraints(1, 7, 1, 1, 0.0, 0.0, a_l, f, new Insets(0,0,0,0), 0, 0));
 		this.propsDisplayPanel.add(this.higherGradientLabel,      new GridBagConstraints(1, 7, 1, 1, 0.0, 0.0, a_r, f, new Insets(0, 0, 0, 0), 103, 0));
 
+		legendCheckbox = new JCheckBox("Add Legend");
+		legendCheckbox.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				JCheckBox cb = (JCheckBox)e.getSource();
+				if (cb.isSelected())
+				{
+					addLegendScalarBar();
+				}
+				else
+				{
+					removeLegend();
+				}
+			}
+			
+		});
+		this.propsDisplayPanel.add(legendCheckbox);
 	
 		
 		this.propsDisplayPanel.repaint();
@@ -1266,6 +1286,36 @@ MouseListener
 		// TODO Auto-generated method stub
 		return pickHandler;
 	}
-	
 
+	public void addLegendScalarBar() {
+		
+		if (Info.getMainGUI().mainMenu.isPluginActive("org.scec.vdo.plugins.LegendPlugin"))
+		{
+			LegendPlugin legendPlugin = (LegendPlugin)Info.getMainGUI().mainMenu.getActivePlugins().get("org.scec.vdo.plugins.LegendPlugin");
+			legendPlugin.getLegendGUI().addEarthquakeScale(dispProp_colGradientButton.getColor1(), dispProp_colGradientButton.getColor2(), catalogTable.getSelectedValue());
+			
+		}
+		else
+		{
+			Info.getMainGUI().mainMenu.activatePlugin("org.scec.vdo.plugins.LegendPlugin");
+			LegendPlugin legendPlugin = (LegendPlugin)Info.getMainGUI().mainMenu.getActivePlugins().get("org.scec.vdo.plugins.LegendPlugin");
+			legendPlugin.getLegendGUI().addEarthquakeScale(dispProp_colGradientButton.getColor1(), dispProp_colGradientButton.getColor2(), catalogTable.getSelectedValue());
+		}
+	}
+	
+	public void removeLegend() {
+		
+		if (Info.getMainGUI().mainMenu.isPluginActive("org.scec.vdo.plugins.LegendPlugin"))
+		{
+			LegendPlugin legendPlugin = (LegendPlugin)Info.getMainGUI().mainMenu.getActivePlugins().get("org.scec.vdo.plugins.LegendPlugin");
+			legendPlugin.getLegendGUI().removeLegendActor();
+			
+		}
+		else
+		{
+			Info.getMainGUI().mainMenu.activatePlugin("org.scec.vdo.plugins.LegendPlugin");
+			LegendPlugin legendPlugin = (LegendPlugin)Info.getMainGUI().mainMenu.getActivePlugins().get("org.scec.vdo.plugins.LegendPlugin");
+			legendPlugin.getLegendGUI().removeLegendActor();
+		}
+	}
 }

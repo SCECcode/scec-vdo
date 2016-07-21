@@ -437,7 +437,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		this.activePlugins = activePlugins;
 	}
 
-	boolean isPluginActive(String id) {
+	public boolean isPluginActive(String id) {
 		// TODO Auto-generated method stub
 		return getActivePlugins().containsKey(id);
 	}
@@ -524,7 +524,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 
 
-	void activatePlugin(String id) {
+	public void activatePlugin(String id) {
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// If it is not loaded, try to load it
