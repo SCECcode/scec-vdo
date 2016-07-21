@@ -42,6 +42,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.scec.vtk.plugins.LegendPlugin.Component.FontDialog;
 import org.scec.vtk.plugins.LegendPlugin.Component.LegendModel;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.GradientColorChooser;
@@ -68,7 +69,7 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 	private JTextArea textArea;
 	private JLabel lblInstructions; 
 	private DefaultTableModel tableModel;
-//	private FileDialog fontGUI = new FileDialog(textField);
+	private FontDialog fontGUI = new FontDialog(textField);
 	private JColorChooser colorchooser;
 	private JColorChooser colorchooser2;
 	private Color btnColor;
@@ -127,8 +128,7 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 		scalefield = scaleField; 
 		displaybutton =displayButton;
 		transparencyslider= transparencySlider;
-//		fontGUI.setForeground(new Color(0,0,0));
-		//fontGUI.setFont(new Font("Arial",Font.BOLD,12);
+		fontGUI.setForeground(new Color(0,0,0));
 		bFirstLoad = true;
 		setBounds(100, 100, 510, 703);
 		getContentPane().setLayout(null);
@@ -279,7 +279,7 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 				"6) Click the Add to List button to add input into the legend.\n"+"\n"+
 				"7) To adjust column, click between column and use mouse to drag column to preferred size.\n" + "\n" +
 				"7) Click the Create legend button and save the image to a directory on your hard drive.\n"+"\n"+
-				"8) Finally, click ok and then click the add image button in the Legend Plugin to import your image.", 1, 1);
+				"8) Finally, click ok and then click the add image button in the Legend Plugin to import your image", 1, 1);
 		
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
@@ -389,21 +389,21 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 		
 		if (e.getSource() == btnTextColor){
 		   
-//	           fontGUI.setLocation(this.getLocation());
-//	           fontGUI.setVisible(true);
-//	          
-//	           if(fontGUI.isVisible()==false){
-//	        	   
-//	                  textField.setFont(fontGUI.getFont());
-//	                  if ((fontGUI.getColor()==Color.WHITE)&&(textField.getBackground().equals(new Color(255,255,255)))){
-//	                	  textField.setForeground(Color.BLACK);
-//	                  }
-//	                	  else{
-//	                  textField.setForeground(fontGUI.getColor());
-//	                	  }
-//	                  bcolor =true;
-//	                 
-//	                  }
+	           fontGUI.setLocation(this.getLocation());
+	           fontGUI.setVisible(true);
+	          
+	           if(fontGUI.isVisible()==false){
+	        	   
+	                  textField.setFont(fontGUI.getFont());
+	                  if ((fontGUI.getColor()==Color.WHITE)&&(textField.getBackground().equals(new Color(255,255,255)))){
+	                	  textField.setForeground(Color.BLACK);
+	                  }
+	                	  else{
+	                  textField.setForeground(fontGUI.getColor());
+	                	  }
+	                  bcolor =true;
+	                 
+	                  }
 		}
 	           
 		
@@ -420,8 +420,8 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 		    field = new JLabel(textField.getText());
 		    
 		    if(bcolor){
-//		    	field.setFont(fontGUI.getFont());
-//		    	field.setForeground(fontGUI.getColor());
+		    	field.setFont(fontGUI.getFont());
+		    	field.setForeground(fontGUI.getColor());
 		    }
 			if (bcolortext){
 				Object textcolor[] = {btnColorSelect.getColor1(),field};
