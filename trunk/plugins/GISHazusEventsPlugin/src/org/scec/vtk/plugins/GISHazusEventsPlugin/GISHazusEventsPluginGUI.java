@@ -59,13 +59,13 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 	private static final int REGION_AMT = 200;
  
     private FilledBoundaryCluster 		currentBoundary;
-    private ArrayList<FilledBoundaryCluster> 		polArray;
+    ArrayList<FilledBoundaryCluster> 		polArray;
     private int 		numOfBoundaries;     
 	
 	private static final long serialVersionUID = 1L;
 	private ArrayList<String> subgroupNames;
 	protected ArrayList<JCheckBox> 		checkBoxes;
-	private Events	bTrace;
+	Events	bTrace;
     protected BoundSectionsTableModel tableModel;
     protected BoundSectionsTableModel tableModel2;
     private BoundSectionsTable table;
@@ -77,7 +77,7 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
     protected int[] boundaryStartIndex = new int[REGION_AMT];
     private int boundaryRowOrderCounter = 0;
     private JTabbedPane boundTabbedPane = new JTabbedPane();
-	private ColorWellButton colorButton;
+	ColorWellButton colorButton;
     private GradientColorChooser gradientColor;
     private JButton legendButton;
     private JPanel legendDialog;
@@ -91,6 +91,8 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
  	private JButton save;
  	private JButton info;
     private JSlider transparencySlider;
+    private BoundSectionsTableModel btm;
+    ArrayList<Integer> selected = new ArrayList<Integer>();
     
     /*The name for the tab is defined here and should be the same in the <like_earthquake> category
     in the XML file "QuakeEvents.xml" any new earthquakes that are added to the XML code with the
@@ -183,10 +185,11 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
             	Color[] purpleGradient = bTrace.getPurpleGradient();
             	Color[] newColor = gradientColor.getColors(purpleGradient[0], purpleGradient[9]);
             	if(newColor!= null){
-    			colorButton.setColor(newColor[0], newColor[1]);
+    		/*	colorButton.setColor(newColor[0], newColor[1]);
     			Color[] newGradient = bTrace.setColorGradient(colorButton.getColor1(), colorButton.getColor2());    			
     			for(int i = 0; i < REGION_AMT; i++)
-    				setColor(i, newGradient);
+    				setColor(i, newGradient);*/
+            	updateColorButton(newColor[0],newColor[1]);
             }
             }
 		});
@@ -218,6 +221,13 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		colorHolder.add(getTransparencyPanel());
 
         
+	}
+	public void updateColorButton(Color c1, Color c2)
+	{
+		colorButton.setColor(c1,c2);
+		Color[] newGradient = bTrace.setColorGradient(colorButton.getColor1(), colorButton.getColor2());    			
+		for(int i = 0; i < REGION_AMT; i++)
+			setColor(i, newGradient);
 	}
 
 	public class MyChangeAction implements ChangeListener{
@@ -358,7 +368,7 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		if(index != -1) {
 			
 			for(int i = boundaryStartIndex[subgroupNum]; i < boundaryRowSize[boundaryRowOrder[subgroupNum]] + boundaryStartIndex[subgroupNum]; i++){
-				System.out.println(polArray.get(i).getCategory());
+			//	System.out.println(polArray.get(i).getCategory());
 				if(polArray.get(i).getCategory() > color.length - 1)
 					polArray.get(i).setColor(color[0]);
 				else
@@ -500,13 +510,14 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
         	try
         	{
         		model = tableModelList.get(selectedPane);
-        		BoundSectionsTableModel btm = (BoundSectionsTableModel)e.getSource();
+        		btm = (BoundSectionsTableModel)e.getSource();
         		Object data = model.getValueAt(rowClicked, column);
         		
         		if(column == 0)
         		{
         			if((Boolean)data)
         			{
+        				
         				if((Boolean)btm.getValueAt(rowClicked, 3))//checks to see if it's in memory
         				{
         					//countries already loaded, don't need to do anything
@@ -514,68 +525,8 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
         				}
         				else
         				{
-        					int startIndex = 0;
-        					int sizeIncrease = 0;
-        					if(polArray == null){
-        						polArray = bTrace.buildSelectedBoundary(selectedEventRow);
-        						
-    
-        					}
-        					else{
-        						startIndex = polArray.size();
-//        						polArray.addAll(bTrace.buildSelectedBoundary(rowClicked));
-        						ArrayList<FilledBoundaryCluster> temp = bTrace.buildSelectedBoundary(selectedEventRow);
-  
-        						for (int i = 0; i < temp.size(); i++) {
-        							polArray.add(temp.get(i));
- 
-        						}
-        					}
-        					transparencySlider.setEnabled(true);
-        					sizeIncrease = polArray.size() - startIndex;
-        					boundaryRowOrder[rowClicked] = boundaryRowOrderCounter;//rowClicked
-        					boundaryRowSize[boundaryRowOrderCounter] = sizeIncrease;
-        					boundaryGroupOrder[boundaryRowOrderCounter] = rowClicked; //used for save state
-        					boundaryStartIndex[rowClicked] = startIndex;//rowClicked
-        					boundaryRowOrderCounter++;
-        					btm.setValueAt((Boolean)true, rowClicked, 3);//rowClicked
-        					numOfBoundaries = polArray.size();
-        					createLowerPanel(bTrace.getName(selectedEventRow), rowClicked, startIndex);//rowClicked
-        					predefinedSubGroup(rowClicked, true);
-        					dialogLegend = new JDialog();
-        					buttonPanel = new JPanel();
-        					legendDialog = new JPanel();
-        					buttonPanel.setSize(250,320);
-        					dialogLegend.setSize(420,340);
-        					dialogLegend.setLocationRelativeTo(this);
-        					legendDialog.setLayout(null);
-        
-        					buttonPanel.setLayout(new BoxLayout(	buttonPanel,BoxLayout.X_AXIS));
-        					dialogLegend.setLayout(new BoxLayout(	dialogLegend.getContentPane(),BoxLayout.Y_AXIS));
-        					
-        					save = new JButton("Save");
-        					save.addActionListener(this);
-        					
-        					info = new JButton("Info");
-        					info.addActionListener(this);
-        					
-        					buttonPanel.add(save);
-        					buttonPanel.add(info);
-        					
-        					//vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-        					//mapper.SetInputData(bTrace.getAppendActor().GetOutput());
-        					//vtkActor actor = new vtkActor();
-        					//actor.SetMapper(mapper);
-//        					actor.GetProperty().EdgeVisibilityOn();
-//        					actor.GetProperty().SetEdgeColor(0,1,1);
-        					hazusPluginActors.addActor(bTrace.getAppendActor().getAppendedActor());
-        					Info.getMainGUI().updateRenderWindow();
-        					/*
-        				   Font font = new Font("Times New Roman", Font.BOLD, 18);
-        				   JLabel rate = new JLabel(bTrace.getName(rowClicked));
-        					rate.setFont(font);
-        					rate.setBounds(10,10,420,20);
-        					legendDialog.add(rate);*/
+        					selected.add(selectedEventRow);
+        					drawEvent(selectedEventRow);
         				}
         			}
         		}
@@ -586,7 +537,71 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
         legendButton.setEnabled(true);
         this.paintAll(this.getGraphics());
 	}
-	
+	public void drawEvent(int selectedEventRow)
+	{
+		int startIndex = 0;
+		int sizeIncrease = 0;
+		if(polArray == null){
+			polArray = bTrace.buildSelectedBoundary(selectedEventRow);
+			
+
+		}
+		else{
+			startIndex = polArray.size();
+//			polArray.addAll(bTrace.buildSelectedBoundary(rowClicked));
+			ArrayList<FilledBoundaryCluster> temp = bTrace.buildSelectedBoundary(selectedEventRow);
+
+			for (int i = 0; i < temp.size(); i++) {
+				polArray.add(temp.get(i));
+
+			}
+		}
+		transparencySlider.setEnabled(true);
+		sizeIncrease = polArray.size() - startIndex;
+		boundaryRowOrder[rowClicked] = boundaryRowOrderCounter;//rowClicked
+		boundaryRowSize[boundaryRowOrderCounter] = sizeIncrease;
+		boundaryGroupOrder[boundaryRowOrderCounter] = rowClicked; //used for save state
+		boundaryStartIndex[rowClicked] = startIndex;//rowClicked
+		boundaryRowOrderCounter++;
+		btm.setValueAt((Boolean)true, rowClicked, 3);//rowClicked
+		numOfBoundaries = polArray.size();
+		createLowerPanel(bTrace.getName(selectedEventRow), rowClicked, startIndex);//rowClicked
+		predefinedSubGroup(rowClicked, true);
+		dialogLegend = new JDialog();
+		buttonPanel = new JPanel();
+		legendDialog = new JPanel();
+		buttonPanel.setSize(250,320);
+		dialogLegend.setSize(420,340);
+		dialogLegend.setLocationRelativeTo(this);
+		legendDialog.setLayout(null);
+
+		buttonPanel.setLayout(new BoxLayout(	buttonPanel,BoxLayout.X_AXIS));
+		dialogLegend.setLayout(new BoxLayout(	dialogLegend.getContentPane(),BoxLayout.Y_AXIS));
+		
+		save = new JButton("Save");
+		save.addActionListener(this);
+		
+		info = new JButton("Info");
+		info.addActionListener(this);
+		
+		buttonPanel.add(save);
+		buttonPanel.add(info);
+		
+		//vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+		//mapper.SetInputData(bTrace.getAppendActor().GetOutput());
+		//vtkActor actor = new vtkActor();
+		//actor.SetMapper(mapper);
+//		actor.GetProperty().EdgeVisibilityOn();
+//		actor.GetProperty().SetEdgeColor(0,1,1);
+		hazusPluginActors.addActor(bTrace.getAppendActor().getAppendedActor());
+		Info.getMainGUI().updateRenderWindow();
+		/*
+	   Font font = new Font("Times New Roman", Font.BOLD, 18);
+	   JLabel rate = new JLabel(bTrace.getName(rowClicked));
+		rate.setFont(font);
+		rate.setBounds(10,10,420,20);
+		legendDialog.add(rate);*/
+	}
 	protected void refreshCheckbox(int position){
 			currentBoundary = polArray.get(position);
 		
@@ -791,7 +806,21 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 	
 		
 	}
+	public void setTransparency(float transparency)
+	{
+		for(int i=0; i<numOfBoundaries; i++)
+		{
+			if(polArray.get(i).isDisplayed() == true)
+			{
+				for (FilledBoundary boundary : polArray.get(i).getBoundaries())
+				{	
+					boundary.setTransparency(transparency);
 
+				}
+				
+			}
+		}
+	}
 	// State Changed =
 	@Override
 	public void stateChanged(ChangeEvent e) {
@@ -805,28 +834,14 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 					float transparency = ((float) transparencySlider.getValue()) / 100.0f;
 				
 					System.out.println("transparency: "+ transparency);
-					for(int i=0; i<numOfBoundaries; i++)
-					{
-						if(polArray.get(i).isDisplayed() == true)
-						{
-							for (FilledBoundary boundary : polArray.get(i).getBoundaries())
-							{	
-								boundary.setTransparency(transparency);
+					setTransparency(transparency);
 
-							}
-							
-						}
-					}
-					/*for (FilledBoundary boundary : boundaries)
-					{	
-						boundary.setTransparency(transparency);
-
-					}*/
-
-					
-					
 				}
 		
+	}
+
+	public JSlider getTransparencySlider() {
+		return transparencySlider;
 	}
 	
 }	
