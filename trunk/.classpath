@@ -10,6 +10,7 @@
 	<classpathentry kind="src" path="plugins/SurfacePlugin/src"/>
 	<classpathentry kind="src" path="commons/src"/>
 	<classpathentry kind="src" path="plugins/ShakeMapPlugin/src"/>
+	<classpathentry kind="src" path="plugins/LegendPlugin/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.9.jar"/>
