@@ -2,6 +2,7 @@ package org.scec.vtk.plugins.ShakeMapPlugin;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -75,8 +76,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	
 	//for the usgs download option
 	private ButtonGroup calChooser = new ButtonGroup();
-	private JRadioButton nc = new JRadioButton("NorCal");
-	private JRadioButton sc = new JRadioButton("SoCal");
+	private JRadioButton nc = new JRadioButton("Northern California");
+	private JRadioButton sc = new JRadioButton("Southern California");
 	JTextField eventIdBox = new JTextField("Enter Event ID");
 	JButton downloadUSGSButton = new JButton("Download USGS Shake Map");
 	
@@ -170,11 +171,13 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		
 		
 		JPanel USGSPanel = new JPanel();
-		USGSPanel.setLayout(new GridLayout(0,2));
+		USGSPanel.setLayout(new FlowLayout());
 		calChooser.add(nc);
 		calChooser.add(sc);
+		USGSPanel.add(new JLabel("Select Region:"));
 		USGSPanel.add(nc);
 		USGSPanel.add(sc);
+		eventIdBox.setPreferredSize(new Dimension(200,40));
 		USGSPanel.add(eventIdBox);
 		USGSPanel.add(downloadUSGSButton);
 		
@@ -197,7 +200,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 						if(d.length() <= 0){
 							System.out.println("Failure");
 							JOptionPane.showMessageDialog(shakeMapLibraryPanel,
-								    "Sorry, file not found on USGS site.");
+								    "File not found on USGS site.");
 						}else{
 							System.out.println("Loaded!");
 							showNewUSGSMap(id+".txt");
@@ -241,7 +244,9 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		tabbedPane.addTab("Presets", panel1);
 		tabbedPane.addTab("Saved Maps", new JScrollPane(usgsDownloads));
 		tabbedPane.addTab("Download USGS Map", USGSPanel);
-		tabbedPane.addTab("OpenSHA", openSHAButton);
+		JPanel shaPanel = new JPanel(new FlowLayout());
+		shaPanel.add(openSHAButton);
+		tabbedPane.addTab("OpenSHA", shaPanel);
 		
 		shakeMapLibraryPanel.setLayout(new BorderLayout());
 		shakeMapLibraryPanel.add(tabbedPane, BorderLayout.NORTH);
