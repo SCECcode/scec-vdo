@@ -163,18 +163,18 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		sliderPanel.add(new JLabel("Transparency"),BorderLayout.NORTH);
 		sliderPanel.add(transparencySlider,BorderLayout.CENTER);
 
-
-		wm.addActionListener(this);
-		sc.addActionListener(this);
-		cm.addActionListener(this);
-		jm.addActionListener(this);
-		nz.addActionListener(this);
-		im.addActionListener(this);
-		hm.addActionListener(this);
-		mm.addActionListener(this);
-		sa.addActionListener(this);
-		cd.addActionListener(this);
-		cdc.addActionListener(this);
+		wm.addActionListener(this); wm.setName("wm"); 
+		sc.addActionListener(this); sc.setName("sc"); 
+		cm.addActionListener(this); cm.setName("cm"); 
+		jm.addActionListener(this); jm.setName("jm"); 
+		nz.addActionListener(this); nz.setName("nz"); 
+		im.addActionListener(this); im.setName("im"); 
+		hm.addActionListener(this); hm.setName("hm"); 
+		mm.addActionListener(this); mm.setName("mm"); 
+		sa.addActionListener(this); sa.setName("sa"); 
+		cd.addActionListener(this); cd.setName("cd"); 
+		cdc.addActionListener(this); cdc.setName("cdc"); 
+		
 		defaultPanel.add(defaultSurfaces);
 		defaultPanel.setLayout(new BoxLayout(defaultPanel,BoxLayout.Y_AXIS));
 		defaultPanel.setPreferredSize(new Dimension(300,120));
@@ -261,11 +261,13 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				lfp = new LoadedFilesProperties(Info.getMainGUI().getRootPluginDir()+File.separator+"Maps"+File.separator+imageTemp+imageExt, imageData,"-",null,null,false,loadedFilePath);
 				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
 				mscpg.createImage(lfp, this);
+//				CheckBoxList.add(cm);
 			}
 			else
 			{
 				removePresetObject(cm);
 			}
+			System.out.println("surfaceArray list is " + surfaceArray);
 		}
 		if (source == wm) {
 			//mscpg = new MapSetCreatePluginGUI(this);
@@ -548,6 +550,41 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		}
 		Info.getMainGUI().updateRenderWindow();
 	}
+	
+//	public void removeAllMaps(){
+//		for(int i =0;i<surfaceTableModel.getRowCount();i++)
+//		{
+//			JCheckBox tempCheckBox = uncheckPreset(i);
+//			if(tempCheckBox!=null)
+//			{
+//				for(int c=0; c<CheckBoxList.size(); c++){
+//					if(CheckBoxList.get(c) == tempCheckBox){
+//						String name = CheckBoxList.get(c).getName();
+//						setCheckBox(CheckBoxList.get(c).getName(), false);
+//					}
+//				}
+//				surfaceTableModel.removeRow(i);
+//				surfaceActors.removeActor(surfaceArray.get(i).getSurfaceActor());
+//				surfaceArray.remove(i);
+//			}
+//		}
+//		Info.getMainGUI().updateRenderWindow();
+//	}
+	
+	public void removeAllMaps(){
+		int numRows = surfaceTableModel.getRowCount();
+//		System.out.println("Removing " + numRows + "rows");
+		for(int i =0; i<numRows;i++)
+		{
+			JCheckBox tempCheckBox = uncheckPreset(0);
+			setCheckBox(tempCheckBox.getName(), false);
+			surfaceTableModel.removeRow(0);
+			surfaceActors.removeActor(surfaceArray.get(0).getSurfaceActor());
+			surfaceArray.remove(0);
+		}
+		Info.getMainGUI().updateRenderWindow();
+	}
+	
 	private JCheckBox uncheckPreset(int row)
 	{
 		String presetImage = (String) surfaceTableModel.getValueAt(row, 1);
@@ -982,6 +1019,11 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 
 		}
 
+	}
+	
+	//GETTERS and SETTERS	
+	public Vector<Surface> getSurfaceArray(){
+		return surfaceArray;
 	}
 		
 }
