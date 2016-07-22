@@ -103,6 +103,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		inputParam.addParameterChangeListener(this);
 		builderParams.addParameter(inputParam);
 		eventFileParam.addParameterChangeListener(this);
+		eventFileParam.setShowHiddenFiles(true);
 		builderParams.addParameter(eventFileParam);
 		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(5d));
 		builderParams.addParameter(eventMinMagParam);
@@ -114,6 +115,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		EQSimParticipationColorer particColor = new EQSimParticipationColorer();
 		eventListeners.add(particColor);
 		colorers.add(particColor);
+		colorers.add(new EQSimsDepthColorer());
 //		EQSimTimeDepParticColorer timeDepParticColor = new EQSimTimeDepParticColorer();
 //		eventListeners.add(timeDepParticColor);
 //		colorers.add(timeDepParticColor);
@@ -134,8 +136,10 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	}
 	
 	private File getCustomFile() {
-		if (chooser == null)
+		if (chooser == null) {
 			chooser = new JFileChooser();
+			chooser.setFileHidingEnabled(false);
+		}
 		int retVal = chooser.showOpenDialog(null);
 		if (retVal == JFileChooser.APPROVE_OPTION) {
 			File file = chooser.getSelectedFile();
@@ -309,8 +313,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	}
 	
 	private List<SimulatorElement> loadGeometry(File file) throws IOException {
-		String name = file.getName();
-		if (name.endsWith(".flt"))
+		String name = file.getName().toLowerCase();
+		if (name.endsWith(".flt") || name.endsWith(".in"))
 			return RSQSimFileReader.readGeometryFile(file, 11, 'S'); // TODO make selectable
 		return EQSIMv06FileReader.readGeometryFile(file);
 	}
