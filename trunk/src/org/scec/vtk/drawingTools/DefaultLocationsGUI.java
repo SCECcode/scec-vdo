@@ -89,6 +89,8 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private ArrayList<vtkActor> highwayActors = new ArrayList<vtkActor>();
 	private vtkActor countyActor = new vtkActor();
 	private Vector<DrawingTool> highwayList = new Vector<DrawingTool>();
+	private Vector<DrawingTool> countyList = new Vector<DrawingTool>();
+	private boolean countiesLoaded = false;
 	
 	public DefaultLocationsGUI(DrawingToolsGUI guiparent) {
 		this.guiparent = guiparent;
@@ -165,6 +167,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 
 	private void removeBuiltInFiles(Vector<DrawingTool> locations) {
 		if(locations!=null){
+			this.guiparent.appendActors.removeFromAppendedPolyData(countyActor);
 			for(int i =0;i<this.drawingToolTable.getRowCount();i++)
 			{
 				for(int j =0; j < locations.size(); j++)
@@ -172,7 +175,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					//System.out.println(locations.elementAt(j).getTextString() + "," + this.drawingToolTable.getValueAt(i, 0));
 					if(locations.elementAt(j).getTextString().equals(this.drawingToolTable.getValueAt(i, 0)))
 					{
-						//System.out.println("Removing");
+						System.out.println("Removing:" + locations.elementAt(j).getTextString());
 						this.drawingToolTable.setRowSelectionInterval(i,i);
 						guiparent.removeTextActors();
 						defaultLocationsStartIndex=i;
@@ -182,6 +185,12 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 				}
 				
 			}
+			if(countiesLoaded)
+			{
+				this.guiparent.appendActors.addToAppendedPolyData(countyActor);
+				System.out.println("Readding");
+			}
+				
 			Info.getMainGUI().updateRenderWindow();
 		
 		}
@@ -467,7 +476,15 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	}
 	public void removeCounties()
 	{
+		Vector<DrawingTool> copy = new Vector<DrawingTool>();
+		for(DrawingTool t: countyList)
+		{
+			copy.add(t);
+		}
+		countyList.clear();
 		this.guiparent.appendActors.removeFromAppendedPolyData(countyActor);
+		removeBuiltInFiles(copy);
+		
 		Info.getMainGUI().updateRenderWindow();
 	}
 	public void clearCheckBoxes() {
@@ -516,7 +533,6 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		Object src = e.getSource();
 		for (int i = 0; i < presetLocationGroups.size(); i++) {
 			PresetLocationGroup tempGroup = presetLocationGroups.get(i);
-			
 			if (tempGroup != null && src == tempGroup.checkbox) {
 				if (tempGroup.checkbox.isSelected()) {
 					selectedInputFile = tempGroup.file.getAbsolutePath();
@@ -548,6 +564,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					}
 					else if(tempGroup.name.equals("CA Counties"))
 					{
+						countiesLoaded = true;
 						int n = JOptionPane.showConfirmDialog(
 							    frame,
 							    "Load County Labels?",
@@ -556,8 +573,8 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 						countyActor = loadCounties();
 						if(n == JOptionPane.YES_OPTION)
 						{
-							tempGroup.locations = loadBuiltInFiles();
-							addBuiltInFiles(tempGroup.locations);
+							countyList = loadBuiltInFiles();
+							addBuiltInFiles(countyList);
 						}
 						this.guiparent.appendActors.addToAppendedPolyData(countyActor);
 						Info.getMainGUI().updateRenderWindow();
@@ -570,14 +587,15 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					}
 					
 				} else {
-					removeBuiltInFiles(tempGroup.locations);
 					if (tempGroup.name.equals("California Highways") || tempGroup.name.equals("California Interstates")) {
 						removeHighways();
 					}
 					if(tempGroup.name.equals("CA Counties"))
 					{
+						countiesLoaded = false;
 						removeCounties();
 					}
+					removeBuiltInFiles(tempGroup.locations);
 				}
 			}
 		}
