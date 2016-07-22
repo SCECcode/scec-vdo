@@ -1,9 +1,11 @@
-package org.scec.vtk.plugins.SurfacePlugin;
+	package org.scec.vtk.plugins.SurfacePlugin;
 
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import javax.swing.JCheckBox;
 
 import org.dom4j.Element;
 import org.scec.vtk.main.Info;
@@ -76,14 +78,18 @@ public class SurfacePluginState implements PluginState{
 	public void load() {
 		// call methods to update based on the properties captured //might also want to put swing invoke and wait
 		int i=0;
-		for (Surface surf : surfaceArray)
+//		System.out.println("surfaceArray is " + surfaceArray);
+//		System.out.println("transparency array is" + transparency);
+//		System.out.println("visibility array is " + visibility);
+//		System.out.println("disp names are " + dispName);
+		
+		parent.removeAllMaps();
+		addSurfaceToTable(dispName, filePath);
+		
+		for (Surface surf : parent.getSurfaceArray())
 		{
-			surf.setDisplayName(dispName.get(i));
-			System.out.println(transparency.get(i));
-			System.out.println(visibility.get(i));
 			parent.setTransparency(surf, transparency.get(i));
 			parent.setVisibility(surf,i,visibility.get(i));
-			Info.getMainGUI().updateRenderWindow();
 			i++;
 		}
 	}
@@ -373,7 +379,6 @@ public class SurfacePluginState implements PluginState{
 				mscpg.createImage(lfp, this.parent);
 
 			}
-
 
 			Info.getMainGUI().updateRenderWindow();
 
