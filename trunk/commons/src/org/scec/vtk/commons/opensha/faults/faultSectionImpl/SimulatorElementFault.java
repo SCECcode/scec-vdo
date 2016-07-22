@@ -53,5 +53,9 @@ public class SimulatorElementFault extends AbstractFaultSection {
 	public String getInfo() {
 		return super.getInfo()+"\nParent: "+element.getSectionName()+" ("+element.getSectionID()+")";
 	}
+	
+	public SimulatorElement getElement() {
+		return element;
+	}
 
 }
