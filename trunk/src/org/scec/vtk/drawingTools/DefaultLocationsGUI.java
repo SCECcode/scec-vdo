@@ -1,6 +1,7 @@
  package org.scec.vtk.drawingTools;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -241,7 +242,10 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							coordinates[0],
 							0.0d,
 							textStr,
-							displayAttributes);
+							displayAttributes,
+							Color.white,
+							null,
+							null);
 					locations.addElement(tempLocation);
 					//System.out.println(index);
 				}
@@ -272,7 +276,10 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							coordinates[0],
 							0.0d,
 							""/*textStr*/,
-							displayAttributes);
+							displayAttributes,
+							Color.white,
+							null,
+							null);
 					locations.addElement(tempLocation);
 				}
 				return locations;
@@ -445,16 +452,19 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					segmentPoints = new ArrayList<vtkPoints>();
 					this.guiparent.appendActors.addToAppendedPolyData(actor);
 					
-					defaultLocationsStartIndex = this.drawingToolTable.getRowCount();
+					defaultLocationsStartIndex = this.highwayToolTable.getRowCount();
 					DrawingTool highway = new DrawingTool(
 						p[0],
 						p[1],
 						0.0d,
 						nameOfSegment,
-						displayAttributes
+						displayAttributes,
+						Color.WHITE,
+						actor,
+						null
 					);
 					highway.setDisplayName(nameOfSegment);
-					this.guiparent.addHighway(highway);
+					this.guiparent.addHighways(highway);
 					this.highwayToolTable.addDrawingTool(highway);
 					nameOfSegment = temp[1];
 				}
