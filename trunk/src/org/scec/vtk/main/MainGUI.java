@@ -172,7 +172,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		timelineGUI = new TimelineGUI(timeline);
 		mainMenu.setupTimeline(timeline, timelineGUI);
 		
-		addDefaultActors();
+		
 
 		vtkCamera tmpCam = new vtkCamera();
 
@@ -269,7 +269,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		try {
 			mainMenu.availablePlugins = Plugins.getAvailablePlugins();
 			mainMenu.setupPluginMenus();
+			addDefaultActors();
 			setMainFrame();
+			
 			//Update the divider location so that the plugin pane doesn't require horizontal scrolling
 			pluginSplitPane.setDividerLocation(this.getWidth() - pluginTabPane.getPreferredSize().width - 60);
 

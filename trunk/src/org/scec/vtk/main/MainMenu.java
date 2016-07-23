@@ -271,13 +271,13 @@ public class MainMenu implements ActionListener, ItemListener{
 					Document document = reader.read(file.getPath());
 					Element root = document.getRootElement();
 					// iterate through child elements of root with element name "foo"
-					Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
-							loadedPlugins.values());
-					for(Plugin pluginDescriptor:pluginDescriptors)
+					Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
+							availablePlugins.values());
+					for(PluginInfo pluginDescriptor:pluginDescriptors)
 					{
 
 						//System.out.println(pluginDescriptor.getName());
-						for ( Iterator i = root.elementIterator(pluginDescriptor.getMetadata().getName().replace(' ' ,'-')); i.hasNext(); ) {
+						for ( Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
 							Element pluginNameElement = (Element) i.next();
 							if(!activePlugins.containsKey(pluginDescriptor.getId()))
 								activatePlugin(pluginDescriptor.getId());
