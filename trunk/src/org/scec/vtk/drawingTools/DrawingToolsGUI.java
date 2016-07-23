@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -71,7 +72,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	private EditButton editDrawingToolsButton;
 
 	private DisplayAttributes displayAttributes;
-	ArrayList<HashMap<String, String>> AttributesData; //will contain a list of attributes(lat, log, cone height, cone width, etc)
+	//ArrayList<HashMap<String, String>> AttributesData; //will contain a list of attributes(lat, log, cone height, cone width, etc)
 	private DefaultLocationsGUI defaultLocations;
 	//	private static String[] columnNames = {"Show","",
 	//			"Label",
@@ -87,15 +88,13 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	//	vtkPoints conePinPoints = new vtkPoints();
 	//	vtkPoints labelPoints = new vtkPoints();
 
-	private PluginActors pluginActors;
-
 	AppendActors appendActors = new AppendActors();
 
 	private int  numText =0;
-	private ArrayList<DrawingTool> drawingToolsArray ;
+	private Vector<DrawingTool> drawingToolsArray ;
+	private Vector<DrawingTool> highwayToolsArray;
 
 	public DrawingToolsGUI(PluginActors pluginActors){
-		this.pluginActors = pluginActors;
 		pluginActors.addActor(appendActors.getAppendedActor());
 
 		//setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -119,7 +118,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		//displayAttributes.rotateZField.addActionListener(this);
 		displayAttributes.fontSizeField.addActionListener(this);
 
-		AttributesData = new ArrayList<HashMap<String, String>>(); 
+		//AttributesData = new ArrayList<HashMap<String, String>>(); 
 
 		JPanel displayPanel = new JPanel();
 		displayPanel.setLayout(new BoxLayout(displayPanel,BoxLayout.Y_AXIS));
@@ -132,34 +131,30 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		displayPanel.add(getDrawingToolLibraryPanel());//mid level
 		displayPanel.add(this.drawingToolSubPanelLowest);//lowest level
 		add(displayPanel);
-		drawingToolsArray  = new ArrayList<>();
+		drawingToolsArray  = new Vector<DrawingTool>();
+		highwayToolsArray  = new Vector<DrawingTool>();
 		//labels.SetName("labels");
 
 		this.drawingToolTable.addMouseListener(new MouseAdapter(){ 
 
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 1){
-					//					displayAttributes.latField.getText();
-					//					displayAttributes.lonField.getText(); //set text to the index
-
 					DrawingToolsTable target = (DrawingToolsTable)e.getSource();
 					int i = target.getSelectedRow();
-					vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-					vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-
-
-					displayAttributes.latField.setText(AttributesData.get(i).get("Lat"));
-					displayAttributes.lonField.setText(AttributesData.get(i).get("Lon"));
-					displayAttributes.altField.setText(AttributesData.get(i).get("Alt"));
-					displayAttributes.coneHeightField.setText(AttributesData.get(i).get("pinH"));
-					displayAttributes.coneBaseRadiusField.setText(AttributesData.get(i).get("pinR"));
-					displayAttributes.fontSizeField.setText(AttributesData.get(i).get("fontSize"));
+					DrawingTool dr = drawingToolsArray.get(i);
+					displayAttributes.latField.setText(dr.getAttributes().get("Lat"));
+					displayAttributes.lonField.setText(dr.getAttributes().get("Lon"));
+					displayAttributes.altField.setText(dr.getAttributes().get("Alt"));
+					displayAttributes.coneHeightField.setText(dr.getAttributes().get("pinH"));
+					displayAttributes.coneBaseRadiusField.setText(dr.getAttributes().get("pinR"));
+					displayAttributes.fontSizeField.setText(dr.getAttributes().get("fontSize"));
 				}
 				if (e.getClickCount() == 2) { //double click text in table to highlight it
 					DrawingToolsTable target = (DrawingToolsTable)e.getSource();
 					int i = target.getSelectedRow();
-					vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-					vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+					DrawingTool dr = drawingToolsArray.get(i);
+					vtkProp actor = (vtkProp) dr.getActorText();// appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+					vtkProp actorPin = (vtkProp) dr.getActorPin();//appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
 
 					double rbg[] = ((vtkActor) actorPin).GetProperty().GetColor();
 					if(rbg[0] == 1.0 && rbg[1] == 1.0 && rbg[2] == 0.0){
@@ -188,6 +183,53 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			}
 		});
 
+		this.highwayToolTable.addMouseListener(new MouseAdapter(){ 
+
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 1){
+					DrawingToolsTable target = (DrawingToolsTable)e.getSource();
+					int i = target.getSelectedRow();
+					DrawingTool dr = highwayToolsArray.get(i);
+					displayAttributes.latField.setText(dr.getAttributes().get("Lat"));
+					displayAttributes.lonField.setText(dr.getAttributes().get("Lon"));
+					displayAttributes.altField.setText(dr.getAttributes().get("Alt"));
+					displayAttributes.coneHeightField.setText(dr.getAttributes().get("pinH"));
+					displayAttributes.coneBaseRadiusField.setText(dr.getAttributes().get("pinR"));
+					displayAttributes.fontSizeField.setText(dr.getAttributes().get("fontSize"));
+				}
+				if (e.getClickCount() == 2) { //double click text in table to highlight it
+					DrawingToolsTable target = (DrawingToolsTable)e.getSource();
+					int i = target.getSelectedRow();
+					DrawingTool dr = highwayToolsArray.get(i);
+					//vtkProp actor = (vtkProp) dr.getActorText();// appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+					vtkProp actorPin = (vtkProp) dr.getActorPin();//appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+
+					double rbg[] = ((vtkActor) actorPin).GetProperty().GetColor();
+					if(rbg[0] == 1.0 && rbg[1] == 1.0 && rbg[2] == 0.0){
+						//make text back to white
+						((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,1.0); //sets color to white
+						//((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,1.0);
+					}else{
+						((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,0.0); //sets color to yellow
+						//((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,0.0);
+						// System.out.println("asdas" +  defaultLocations.presetLocationGroups.size());
+//						for(int i1 = 0; i1 < defaultLocations.presetLocationGroups.size(); i1++)
+//						{ 
+//							PresetLocationGroup tempGroup = defaultLocations.presetLocationGroups.get(i1);
+//							//System.out.println(tempGroup.name);
+//							if (tempGroup != null && tempGroup.name.equals("CA Cities") && tempGroup.checkbox.isSelected())
+//							{
+//								JOptionPane.showMessageDialog(defaultLocations.frame,"City Name: " + (String)target.getValueAt(i,target.getSelectedColumn()) + "\n"
+//										+"City Population: "  + defaultLocations.getPopulation((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "County: " +
+//										defaultLocations.getCounty((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "Population Density: " + defaultLocations.getPopulationDensity((String)target.getValueAt(i,target.getSelectedColumn())) + " people/sq. mile\n",
+//										"City Information",JOptionPane.DEFAULT_OPTION);
+//							}
+//						}
+					}
+					MainGUI.updateRenderWindow();
+				}
+			}
+		});
 	}
 	public DrawingToolsTable getDrawingToolTable()
 	{
@@ -197,12 +239,20 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	{
 		return this.highwayToolTable;
 	}
+	public AppendActors getDrawingToolActors()
+	{
+		return this.appendActors;
+	}
+	public Vector<DrawingTool> getDrawingToolArray()
+	{
+		return this.drawingToolsArray;
+	}
 	private JPanel getDrawingToolLibraryPanel() {
 
 		// set up panel
 		this.drawingToolSubPanelLower = new JPanel();
 		this.drawingToolSubPanelLower.setLayout(new BoxLayout(this.drawingToolSubPanelLower, BoxLayout.PAGE_AXIS));
-//		this.drawingToolSubPanelLower.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		//		this.drawingToolSubPanelLower.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		this.drawingToolSubPanelLower.setName("Library");
 		this.drawingToolSubPanelLower.setOpaque(false);
 
@@ -267,16 +317,13 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	}
 	//grouping actor 
 	public DrawingTool addDrawingTool(DrawingTool drawingTool){
+	
 		//indivisual text as actors
 		String text = "Text";
 		double[] pt= {Transform.calcRadius(37),37,-120};
 		//ArrayList<DataAccessor> a = this.drawingToolTable.getLibraryModel().getAllObjects();
-		if(drawingTool.getTextString()==null)
-		{
-			drawingTool = new DrawingTool(pt[1],pt[2],pt[0],text,null);
-			drawingTool.setDisplayName(text +" -"+ numText++); 
-		}
-		else
+
+		if(drawingTool.getTextString()!=null)
 		{
 			text = drawingTool.getTextString();
 			drawingTool.setDisplayName(drawingTool.getTextString());
@@ -336,10 +383,20 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		vtkActor actorPin = new vtkActor();
 		actorPin.SetMapper(pm);
 
+		if(drawingTool.getTextString()==null)
+		{
+			drawingTool = new DrawingTool(pt[1],pt[2],pt[0],text,null,Color.white,actorPin,actor);
+			drawingTool.setDisplayName(text +" -"+ numText++); 
+		}
+		else
+		{
+			drawingTool.setActors(actorPin,actor);
+		}
+
 		//first pin then label
 		appendActors.addToAppendedPolyData(actorPin);
 		appendActors.addToAppendedPolyData(actor);
-
+		appendActors.getAppendedActor().Modified();
 		HashMap<String,String> locData = new HashMap<String, String>();
 		locData.put("Lat", String.format("%.1f", pt[1])); 
 		locData.put("Lon", String.format("%.1f", pt[2]));
@@ -347,12 +404,13 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		locData.put("pinH", "10");
 		locData.put("pinR", "5");
 		locData.put("fontSize", "21");
-		AttributesData.add(locData);
-
+		//AttributesData.add(locData);
+		drawingTool.setAttributes(locData);
+		drawingToolsArray.add(drawingTool);
 		return drawingTool;
 
 	}
-	public void addHighway(DrawingTool drawingTool) {
+	public void addHighways(DrawingTool drawingTool) {
 		double[] pt= {Transform.calcRadius(37),37,-120};
 		drawingTool.setDisplayName(drawingTool.getTextString());
 		pt[0]= pt[0]+drawingTool.getaltitude();
@@ -363,44 +421,45 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		locData.put("Lat", String.format("%.1f", pt[1])); 
 		locData.put("Lon", String.format("%.1f", pt[2]));
 		locData.put("Alt", "0");
-		AttributesData.add(locData);
+		drawingTool.setAttributes(locData);
+		highwayToolsArray.add(drawingTool);
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
-		DrawingToolsTableModel drawingTooltablemodel = this.drawingToolTable.getLibraryModel();
+		this.drawingToolTable.getLibraryModel();
 		if (src == this.showDrawingToolsButton) {
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
+			vtkProp actorPin = null;
+			if (!model.isSelectionEmpty())
+			{
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 				//int row = model.getMinSelectionIndex();
+				DrawingTool dr = drawingToolsArray.get(i);
 
 				vtkProp actor = null;
-				vtkProp actorPin = null;
-
-				if (defaultLocations.getHighwayActors().size() > 0)
-				{
-					actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i);
-				}
-				else
-				{
-					actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-					actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-				}
-
+				actor = ((vtkActor2D) dr.getActorText());
+				actorPin = (vtkActor) dr.getActorPin();
 				if (actor != null && actorPin != null) {
 					if(actor.GetVisibility() == 1 && actorPin.GetVisibility() == 1)
 					{actor.SetVisibility(0); actorPin.SetVisibility(0);}
 					else
 					{actor.SetVisibility(1); actorPin.SetVisibility(1);}
 				}
-				else if (actor != null) {
-					if(actor.GetVisibility() == 1)
-						actor.SetVisibility(0);
-					else
-						actor.SetVisibility(1);
+			}
+			}
+			model = this.highwayToolTable.getSelectionModel();
+			if (!model.isSelectionEmpty())
+			{
+				for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+				DrawingTool dr = highwayToolsArray.get(i);
+				actorPin = (vtkActor) dr.getActorPin();
+				if(actorPin.GetVisibility() == 1)
+					actorPin.SetVisibility(0);
+				else
+					actorPin.SetVisibility(1);
 				}
 			}
-			appendActors.getAppendedActor().Modified();
 			Info.getMainGUI().updateRenderWindow();
 		}
 		else if (src == this.editDrawingToolsButton) {
@@ -409,10 +468,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			runObjectInfoDialog();
 		}
 		else if (src == this.addDrawingToolsButton) {
-			DrawingTool drawingToolObj = new DrawingTool();
-			drawingToolObj = addDrawingTool(drawingToolObj);
-			//ArrayList<DrawingTool> newObjects = new ArrayList<>();
-			//newObjects.add(drawingToolObj);
+			DrawingTool drawingToolObj = addDrawingTool(new DrawingTool());
+
 			this.drawingToolTable.addDrawingTool(drawingToolObj);
 
 			HashMap<String,String> defaultData = new HashMap<String, String>();
@@ -420,7 +477,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			defaultData.put("Lon", "-120");
 			defaultData.put("Alt", "0");
 			defaultData.put("fontSize", "21");
-			AttributesData.add(defaultData);
+			drawingToolObj.setAttributes(defaultData);
 
 			MainGUI.updateRenderWindow();
 		}
@@ -431,51 +488,61 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 				//int row = model.getMinSelectionIndex();
-				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-				vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+				DrawingTool dr = drawingToolsArray.get(i);
+				if ((vtkActor) dr.getActorPin() != null)
+				{
+					vtkProp actor = ((vtkActor2D) dr.getActorText());
+					vtkProp actorPin = (vtkActor) dr.getActorPin();
 
-				vtkPoints labelPoints = new vtkPoints();
-				labelPoints.InsertNextPoint(Transform.transformLatLonHeight(Double.parseDouble((String) this.displayAttributes.latField.getText()),
-						Double.parseDouble((String) this.displayAttributes.lonField.getText()),
-						Double.parseDouble((String) this.displayAttributes.altField.getText())));
+					vtkPoints labelPoints = new vtkPoints();
+					labelPoints.InsertNextPoint(Transform.transformLatLonHeight(Double.parseDouble((String) this.displayAttributes.latField.getText()),
+							Double.parseDouble((String) this.displayAttributes.lonField.getText()),
+							Double.parseDouble((String) this.displayAttributes.altField.getText())));
 
-				vtkPolyData temp = new vtkPolyData();
-				temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
-				temp.SetPoints(labelPoints);
+					vtkPolyData temp = new vtkPolyData();
+					temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
+					temp.SetPoints(labelPoints);
 
-				vtkGlyph3D glyphPoints = new vtkGlyph3D();
-				glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
-				glyphPoints.SetInputData(temp);
+					vtkGlyph3D glyphPoints = new vtkGlyph3D();
+					glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
+					glyphPoints.SetInputData(temp);
 
-				AttributesData.get(i).put("Lat", this.displayAttributes.latField.getText());
-				AttributesData.get(i).put("Lon", this.displayAttributes.lonField.getText());
-				AttributesData.get(i).put("Alt", this.displayAttributes.altField.getText());
+					dr.getAttributes().put("Lat", this.displayAttributes.latField.getText());
+					dr.getAttributes().put("Lon", this.displayAttributes.lonField.getText());
+					dr.getAttributes().put("Alt", this.displayAttributes.altField.getText());
+				}
 			}
 			MainGUI.updateRenderWindow();
 		}
 		if (src == this.displayAttributes.coneHeightField || src == this.displayAttributes.coneBaseRadiusField) {
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
-				vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-				double coneHeight = (Double.parseDouble( this.displayAttributes.coneHeightField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneHeightField.getText());
-				double coneRadius = (Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText());
 
-				vtkGlyph3D glyphPoints = new vtkGlyph3D();
-				glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
+				DrawingTool dr = drawingToolsArray.get(i);
+				vtkProp actorPin =(vtkActor) dr.getActorPin();
+				if (actorPin != null)
+				{
 
-				vtkPolyData temp = new vtkPolyData();
-				temp = (vtkPolyData) (glyphPoints).GetInput();
+					double coneHeight = (Double.parseDouble( this.displayAttributes.coneHeightField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneHeightField.getText());
+					double coneRadius = (Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText());
 
-				vtkConeSource conePin = new vtkConeSource();
-				conePin.SetRadius(coneRadius);
-				conePin.SetHeight(coneHeight);
-				conePin.SetDirection(-temp.GetPoint(0)[0],-temp.GetPoint(0)[1],-temp.GetPoint(0)[2]);
-				conePin.SetResolution(10);
+					vtkGlyph3D glyphPoints = new vtkGlyph3D();
+					glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
 
-				glyphPoints.SetSourceConnection(conePin.GetOutputPort());
+					vtkPolyData temp = new vtkPolyData();
+					temp = (vtkPolyData) (glyphPoints).GetInput();
 
-				AttributesData.get(i).put("pinH", this.displayAttributes.coneHeightField.getText());
-				AttributesData.get(i).put("pinR", this.displayAttributes.coneBaseRadiusField.getText());
+					vtkConeSource conePin = new vtkConeSource();
+					conePin.SetRadius(coneRadius);
+					conePin.SetHeight(coneHeight);
+					conePin.SetDirection(-temp.GetPoint(0)[0],-temp.GetPoint(0)[1],-temp.GetPoint(0)[2]);
+					conePin.SetResolution(10);
+
+					glyphPoints.SetSourceConnection(conePin.GetOutputPort());
+
+					dr.getAttributes().put("pinH", this.displayAttributes.coneHeightField.getText());
+					dr.getAttributes().put("pinR", this.displayAttributes.coneBaseRadiusField.getText());
+				}
 			}
 			MainGUI.updateRenderWindow();
 		}
@@ -483,12 +550,16 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 				//int row = model.getMinSelectionIndex();
-				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
+				//				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
 				//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
 
-				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
-
-				AttributesData.get(i).put("fontSize", this.displayAttributes.fontSizeField.getText());
+				//				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor)
+				DrawingTool dr = drawingToolsArray.get(i);
+				if ((vtkActor) dr.getActorPin() != null)
+				{
+					((vtkPointSetToLabelHierarchy) ((vtkActor2D) dr.getActorText()).GetMapper().GetInputAlgorithm()).GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
+				}
+				dr.getAttributes().put("fontSize", this.displayAttributes.fontSizeField.getText());
 			}
 			MainGUI.updateRenderWindow();
 		}
@@ -500,31 +571,23 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			if (newColor != null) {
 				double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
 				ListSelectionModel model = this.drawingToolTable.getSelectionModel();
-				for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
-					//int row = model.getMinSelectionIndex();
-					vtkProp actor = null;
-					vtkProp actorPin = null;
-
-					if (defaultLocations.getHighwayActors().size() > 0)
-					{
-						actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i);
-						((vtkActor) actor).GetProperty().SetColor(color);
-						//		 				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
+				if(!model.isSelectionEmpty())
+				{
+					for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+						DrawingTool dr = drawingToolsArray.get(i);
+						((vtkActor) dr.getActorPin()).GetProperty().SetColor(color);
+						((vtkPointSetToLabelHierarchy) ((vtkActor2D) dr.getActorText()).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
 					}
-					else
-					{
-						actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-						actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-					}
-					if (actorPin != null)
-					{
-						((vtkActor) actorPin).GetProperty().SetColor(color);
-						((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
-					}
-
-
 				}
-				MainGUI.updateRenderWindow();
+				model = this.highwayToolTable.getSelectionModel();
+				if (!model.isSelectionEmpty())
+				{
+					for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
+						DrawingTool dr = highwayToolsArray.get(i);
+						((vtkActor) dr.getActorPin()).GetProperty().SetColor(color);
+					}
+					MainGUI.updateRenderWindow();
+				}
 			}
 		}
 
@@ -537,27 +600,27 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 		while (model.getMinSelectionIndex() >= 0) {
 			int row = model.getMinSelectionIndex();
-
-			vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(row*2+1);
-			vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(row*2);
-			appendActors.getAppendedActor().RemovePart(actorPin);
-			appendActors.getAppendedActor().RemovePart(actor);
+			DrawingTool dr = drawingToolsArray.get(row);
+			appendActors.getAppendedActor().RemovePart(dr.getActorPin());
+			appendActors.getAppendedActor().RemovePart(dr.getActorText());
 			drawingTooltablemodel.removeRow(row);
-
-			AttributesData.remove(row);
+			drawingToolsArray.remove(row);
 		}
 		Info.getMainGUI().updateRenderWindow();
-		ArrayList<vtkObject> removedActors = new ArrayList<>();
+		new ArrayList<>();
 
 	}
 	public void removeHighways() {
 		DrawingToolsTableModel drawingTooltablemodel = this.highwayToolTable.getLibraryModel();
 		while (highwayToolTable.getRowCount() > 0)
 		{
-			vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(this.highwayToolTable.getRowCount()-1);
-			appendActors.getAppendedActor().RemovePart(actor);
-			drawingTooltablemodel.removeRow(this.highwayToolTable.getRowCount()-1);
-			AttributesData.remove(this.highwayToolTable.getRowCount());
+			int row = this.highwayToolTable.getRowCount()-1;
+			DrawingTool dr = highwayToolsArray.get(row);
+			//vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(this.highwayToolTable.getRowCount()-1);
+			appendActors.getAppendedActor().RemovePart(dr.getActorPin());
+			drawingTooltablemodel.removeRow(row);
+			highwayToolsArray.remove(row);
+			//AttributesData.remove(this.highwayToolTable.getRowCount());
 		}
 		Info.getMainGUI().updateRenderWindow();
 	}
@@ -573,20 +636,25 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 				//int row = model.getMinSelectionIndex();
-				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-				//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-				this.drawingToolTable.setValueAt(displayTextInput,i, 0);//= .setDisplayName(displayTextInput);
-				vtkStringArray labels =new vtkStringArray();
-				labels.SetName("labels");
-				labels.SetNumberOfValues(1);
-				labels.SetValue(0, displayTextInput);
-				labels.Modified();
-				vtkPolyData temp = new vtkPolyData();
-				temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
-				temp.GetPointData().AddArray(labels);
-				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).SetLabelArrayName("labels");
-				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).Update();
-				MainGUI.updateRenderWindow();
+
+				DrawingTool dr = drawingToolsArray.get(i);
+				if ((vtkActor) dr.getActorPin() != null)
+				{
+					vtkProp actor = dr.getActorText(); 
+					//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
+					this.drawingToolTable.setValueAt(displayTextInput,i, 0);//= .setDisplayName(displayTextInput);
+					vtkStringArray labels =new vtkStringArray();
+					labels.SetName("labels");
+					labels.SetNumberOfValues(1);
+					labels.SetValue(0, displayTextInput);
+					labels.Modified();
+					vtkPolyData temp = new vtkPolyData();
+					temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
+					temp.GetPointData().AddArray(labels);
+					((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).SetLabelArrayName("labels");
+					((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).Update();
+					MainGUI.updateRenderWindow();
+				}
 			}
 		}
 	}
@@ -601,29 +669,35 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	public void valueChanged(ListSelectionEvent e) {
 		Object src = e.getSource();
 		if (e.getValueIsAdjusting()) return;
-
+	
 		if (src == this.drawingToolTable.getSelectionModel()) {
-			processTableSelectionChange();
+			this.highwayToolTable.clearSelection();
+			processTableSelectionChange(this.drawingToolTable.getSelectedRows());
+			enablePropertyEditButtons(true);
+		}
+		else if (src == this.highwayToolTable.getSelectionModel()) {
+			this.drawingToolTable.clearSelection();
+			processTableSelectionChange(this.highwayToolTable.getSelectedRows());
+			enablePropertyEditButtons(false);
 		}
 	}
-	public void processTableSelectionChange() {
-		int[] selectedRows = this.drawingToolTable.getSelectedRows();
+	public void processTableSelectionChange(int[] selectedRows) { 
 		if (selectedRows.length > 0) {
 			this.remDrawingToolsButton.setEnabled(true);
-			this.editDrawingToolsButton.setEnabled(true);
 			this.colorDrawingToolsButton.setEnabled(true);
-			enablePropertyEditButtons(true);
+			this.showDrawingToolsButton.setEnabled(true);
+
 		} else {
 			enablePropertyEditButtons(false);
 			this.remDrawingToolsButton.setEnabled(false);
-			this.editDrawingToolsButton.setEnabled(false);
+			this.showDrawingToolsButton.setEnabled(false);
 			this.colorDrawingToolsButton.setEnabled(false);
 		}
 
 
 	}
 	private void enablePropertyEditButtons(boolean enable) {
-		this.showDrawingToolsButton.setEnabled(enable);
+		this.editDrawingToolsButton.setEnabled(enable);
 		this.displayAttributes.coneBaseRadiusField.setEnabled(enable);
 		this.displayAttributes.coneHeightField.setEnabled(enable);
 		this.displayAttributes.latField.setEnabled(enable);
