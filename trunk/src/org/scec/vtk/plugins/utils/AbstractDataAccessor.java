@@ -333,7 +333,7 @@ public abstract class AbstractDataAccessor implements DataAccessor {
      */
     public void setSourceFile(String filename) {
         this.sourceFile = filename;
-        this.object_info.getChild("source_file").setText(filename);
+      //  this.object_info.getChild("source_file").setText(filename);
     }
     
     /**
@@ -353,7 +353,7 @@ public abstract class AbstractDataAccessor implements DataAccessor {
      */
     public void setAttributeFile(String filename) {
         this.attsFile = new File(Prefs.getLibLoc() + filename);
-        this.object_info.getChild("attribute_file").setText(filename);
+        //this.object_info.getChild("attribute_file").setText(filename);
     }
 
     /**

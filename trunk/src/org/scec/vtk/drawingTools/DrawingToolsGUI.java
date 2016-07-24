@@ -31,6 +31,7 @@ import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
 import org.scec.vtk.plugins.utils.DataAccessor;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorButton;
@@ -231,6 +232,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			}
 		});
 	}
+	public DefaultLocationsGUI getDefaultLocation()
+	{
+		return this.defaultLocations;
+	}
 	public DrawingToolsTable getDrawingToolTable()
 	{
 		return this.drawingToolTable;
@@ -370,7 +375,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		pointSetToLabelHierarchyFilter.SetLabelArrayName("labels");
 		//pointSetToLabelHierarchyFilter.SetInputConnection(pinSource.GetOutputPort());
 		pointSetToLabelHierarchyFilter.Update();
-		pointSetToLabelHierarchyFilter.GetTextProperty().SetFontSize(Integer.parseInt(displayAttributes.fontSizeField.getText()));
+		pointSetToLabelHierarchyFilter.GetTextProperty().SetFontSize(21);
 
 
 		vtkLabelPlacementMapper cellMapper = new vtkLabelPlacementMapper();
@@ -424,6 +429,98 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		drawingTool.setAttributes(locData);
 		highwayToolsArray.add(drawingTool);
 	}
+	
+	public void setVisibility(DrawingTool dr, Integer visible) {
+		vtkActor2D actor = ((vtkActor2D) dr.getActorText());
+		vtkActor actorPin = (vtkActor) dr.getActorPin();
+		
+		if (actor != null && actorPin != null) {
+		actor.SetVisibility(visible);
+		actorPin.SetVisibility(visible);
+		}
+		else if(actorPin!=null && actor == null)
+		{
+			actorPin.SetVisibility(visible);
+		}
+	}
+	
+	public void setColor(DrawingTool dr, Color newColor) {
+		vtkActor2D actor = ((vtkActor2D) dr.getActorText());
+		vtkActor actorPin = (vtkActor) dr.getActorPin();
+		
+		double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
+		if (actor != null && actorPin != null) {
+			((vtkPointSetToLabelHierarchy) (actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
+		actorPin.GetProperty().SetColor(color);
+		}
+		else if(actorPin!=null && actor == null)
+		{
+			actorPin.GetProperty().SetColor(color);
+		}
+	}
+	
+	public void setLatLon(DrawingTool dr)
+	{
+		vtkProp actor = ((vtkActor2D) dr.getActorText());
+		vtkProp actorPin = (vtkActor) dr.getActorPin();
+		if (actor != null && actorPin != null) {
+		vtkPoints labelPoints = new vtkPoints();
+		labelPoints.InsertNextPoint(Transform.transformLatLonHeight(Double.parseDouble((String) this.displayAttributes.latField.getText()),
+				Double.parseDouble((String) this.displayAttributes.lonField.getText()),
+				Double.parseDouble((String) this.displayAttributes.altField.getText())));
+
+		vtkPolyData temp = new vtkPolyData();
+		temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
+		temp.SetPoints(labelPoints);
+
+		vtkGlyph3D glyphPoints = new vtkGlyph3D();
+		glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
+		glyphPoints.SetInputData(temp);
+		}
+	}
+	
+	public void setConeHtRadius(DrawingTool dr)
+	{
+		vtkProp actor = ((vtkActor2D) dr.getActorText());
+		vtkProp actorPin = (vtkActor) dr.getActorPin();
+		if (actor != null && actorPin != null) {
+		double coneHeight = (Double.parseDouble( this.displayAttributes.coneHeightField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneHeightField.getText());
+		double coneRadius = (Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText());
+
+		vtkGlyph3D glyphPoints = new vtkGlyph3D();
+		glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
+
+		vtkPolyData temp = new vtkPolyData();
+		temp = (vtkPolyData) (glyphPoints).GetInput();
+
+		vtkConeSource conePin = new vtkConeSource();
+		conePin.SetRadius(coneRadius);
+		conePin.SetHeight(coneHeight);
+		conePin.SetDirection(-temp.GetPoint(0)[0],-temp.GetPoint(0)[1],-temp.GetPoint(0)[2]);
+		conePin.SetResolution(10);
+
+		glyphPoints.SetSourceConnection(conePin.GetOutputPort());
+		}
+	}
+	
+	public void setFontSize(DrawingTool dr)
+	{
+		vtkProp actor = ((vtkActor2D) dr.getActorText());
+		if (actor != null)
+			((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
+	}
+	
+	public void setAttributes(DrawingTool dr, HashMap<String,String> attributes) {
+		this.displayAttributes.latField.setText(attributes.get("Lat"));
+		this.displayAttributes.lonField.setText(attributes.get("Lon"));
+		this.displayAttributes.altField.setText(attributes.get("Alt"));
+		this.displayAttributes.coneBaseRadiusField.setText(attributes.get("pinR"));
+		this.displayAttributes.coneHeightField.setText(attributes.get("pinH"));
+		this.displayAttributes.fontSizeField.setText(attributes.get("fontSize"));
+		setLatLon(dr);
+		setConeHtRadius(dr);
+		setFontSize(dr);
+	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
@@ -442,9 +539,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				actorPin = (vtkActor) dr.getActorPin();
 				if (actor != null && actorPin != null) {
 					if(actor.GetVisibility() == 1 && actorPin.GetVisibility() == 1)
-					{actor.SetVisibility(0); actorPin.SetVisibility(0);}
+					{setVisibility(dr, 0) ;}
 					else
-					{actor.SetVisibility(1); actorPin.SetVisibility(1);}
+					{setVisibility(dr, 1) ;}
 				}
 			}
 			}
@@ -455,9 +552,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				DrawingTool dr = highwayToolsArray.get(i);
 				actorPin = (vtkActor) dr.getActorPin();
 				if(actorPin.GetVisibility() == 1)
-					actorPin.SetVisibility(0);
+					setVisibility(dr, 0) ;
 				else
-					actorPin.SetVisibility(1);
+					setVisibility(dr, 1) ;
 				}
 			}
 			Info.getMainGUI().updateRenderWindow();
@@ -469,16 +566,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		}
 		else if (src == this.addDrawingToolsButton) {
 			DrawingTool drawingToolObj = addDrawingTool(new DrawingTool());
-
 			this.drawingToolTable.addDrawingTool(drawingToolObj);
-
-			HashMap<String,String> defaultData = new HashMap<String, String>();
-			defaultData.put("Lat", "37"); 
-			defaultData.put("Lon", "-120");
-			defaultData.put("Alt", "0");
-			defaultData.put("fontSize", "21");
-			drawingToolObj.setAttributes(defaultData);
-
 			MainGUI.updateRenderWindow();
 		}
 		if (src == this.remDrawingToolsButton) {
@@ -491,22 +579,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				DrawingTool dr = drawingToolsArray.get(i);
 				if ((vtkActor) dr.getActorPin() != null)
 				{
-					vtkProp actor = ((vtkActor2D) dr.getActorText());
-					vtkProp actorPin = (vtkActor) dr.getActorPin();
-
-					vtkPoints labelPoints = new vtkPoints();
-					labelPoints.InsertNextPoint(Transform.transformLatLonHeight(Double.parseDouble((String) this.displayAttributes.latField.getText()),
-							Double.parseDouble((String) this.displayAttributes.lonField.getText()),
-							Double.parseDouble((String) this.displayAttributes.altField.getText())));
-
-					vtkPolyData temp = new vtkPolyData();
-					temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
-					temp.SetPoints(labelPoints);
-
-					vtkGlyph3D glyphPoints = new vtkGlyph3D();
-					glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
-					glyphPoints.SetInputData(temp);
-
+					setLatLon(dr);
 					dr.getAttributes().put("Lat", this.displayAttributes.latField.getText());
 					dr.getAttributes().put("Lon", this.displayAttributes.lonField.getText());
 					dr.getAttributes().put("Alt", this.displayAttributes.altField.getText());
@@ -523,22 +596,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				if (actorPin != null)
 				{
 
-					double coneHeight = (Double.parseDouble( this.displayAttributes.coneHeightField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneHeightField.getText());
-					double coneRadius = (Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText())==0)?1:Double.parseDouble( this.displayAttributes.coneBaseRadiusField.getText());
-
-					vtkGlyph3D glyphPoints = new vtkGlyph3D();
-					glyphPoints = (vtkGlyph3D) ((vtkActor) actorPin).GetMapper().GetInputAlgorithm();
-
-					vtkPolyData temp = new vtkPolyData();
-					temp = (vtkPolyData) (glyphPoints).GetInput();
-
-					vtkConeSource conePin = new vtkConeSource();
-					conePin.SetRadius(coneRadius);
-					conePin.SetHeight(coneHeight);
-					conePin.SetDirection(-temp.GetPoint(0)[0],-temp.GetPoint(0)[1],-temp.GetPoint(0)[2]);
-					conePin.SetResolution(10);
-
-					glyphPoints.SetSourceConnection(conePin.GetOutputPort());
+					setConeHtRadius(dr);
 
 					dr.getAttributes().put("pinH", this.displayAttributes.coneHeightField.getText());
 					dr.getAttributes().put("pinR", this.displayAttributes.coneBaseRadiusField.getText());
@@ -549,15 +607,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		if (src == this.displayAttributes.fontSizeField ) {
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
-				//int row = model.getMinSelectionIndex();
-				//				vtkProp actor = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
-				//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-
-				//				((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor)
-				DrawingTool dr = drawingToolsArray.get(i);
+					DrawingTool dr = drawingToolsArray.get(i);
 				if ((vtkActor) dr.getActorPin() != null)
 				{
-					((vtkPointSetToLabelHierarchy) ((vtkActor2D) dr.getActorText()).GetMapper().GetInputAlgorithm()).GetTextProperty().SetFontSize(Integer.parseInt((String) this.displayAttributes.fontSizeField.getText()));
+					setFontSize(dr);
 				}
 				dr.getAttributes().put("fontSize", this.displayAttributes.fontSizeField.getText());
 			}
@@ -569,30 +622,29 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			}
 			Color newColor = this.colorChooser.getColor();
 			if (newColor != null) {
-				double[] color = {newColor.getRed()/Info.rgbMax,newColor.getGreen()/Info.rgbMax,newColor.getBlue()/Info.rgbMax};
 				ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 				if(!model.isSelectionEmpty())
 				{
 					for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 						DrawingTool dr = drawingToolsArray.get(i);
-						((vtkActor) dr.getActorPin()).GetProperty().SetColor(color);
-						((vtkPointSetToLabelHierarchy) ((vtkActor2D) dr.getActorText()).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(color);
-					}
+						dr.setColor(newColor);
+						setColor(dr,  newColor);
+						}
 				}
 				model = this.highwayToolTable.getSelectionModel();
 				if (!model.isSelectionEmpty())
 				{
 					for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 						DrawingTool dr = highwayToolsArray.get(i);
-						((vtkActor) dr.getActorPin()).GetProperty().SetColor(color);
+						dr.setColor(newColor);
+						setColor(dr,  newColor);
 					}
-					MainGUI.updateRenderWindow();
 				}
 			}
+			MainGUI.updateRenderWindow();
 		}
 
 	}
-
 
 	public void removeTextActors() {
 		//remove actors
@@ -607,8 +659,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			drawingToolsArray.remove(row);
 		}
 		Info.getMainGUI().updateRenderWindow();
-		new ArrayList<>();
-
 	}
 	public void removeHighways() {
 		DrawingToolsTableModel drawingTooltablemodel = this.highwayToolTable.getLibraryModel();
@@ -704,6 +754,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		this.displayAttributes.lonField.setEnabled(enable);
 		this.displayAttributes.altField.setEnabled(enable);
 		this.displayAttributes.fontSizeField.setEnabled(enable);
+	}
+	public Vector<DrawingTool> getHighwayToolsArray() {
+		// TODO Auto-generated method stub
+		return highwayToolsArray;
 	}
 
 

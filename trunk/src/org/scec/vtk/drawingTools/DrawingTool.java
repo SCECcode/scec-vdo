@@ -60,6 +60,10 @@ public class DrawingTool extends AbstractDataAccessor{
 		// TODO Auto-generated method stub
 		return color ;
 	}
+	public void setColor(Color col) {
+		// TODO Auto-generated method stub
+		 color = col ;
+	}
 	public void setActors(vtkActor actorPin2, vtkActor2D actor) {
 		// TODO Auto-generated method stub
 		this.actorPin =actorPin2;
