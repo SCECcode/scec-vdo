@@ -379,8 +379,13 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		
 		return actor;
 	}
-	private void loadHighways()
+	public void setSelectedInputFile(String filen)
 	{
+		selectedInputFile =filen;
+	}
+	public  void loadHighways()
+	{
+		presetLocationGroups.get(0).checkbox.setSelected(true);
 		String selectedFile = selectedInputFile;
 		File highwaysFile = new File(selectedFile);
 		String temp[] = new String[2];
@@ -464,6 +469,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 						null
 					);
 					highway.setDisplayName(nameOfSegment);
+					highway.setSourceFile(selectedFile);
 					this.guiparent.addHighways(highway);
 					this.highwayToolTable.addDrawingTool(highway);
 					nameOfSegment = temp[1];
@@ -569,7 +575,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					else if (tempGroup.name.equals("California Highways") || tempGroup.name.equals("California Interstates"))
 					{
 						loadHighways();
-						addBuiltInFiles(highwayList);
+						//addBuiltInFiles(highwayList);
 						Info.getMainGUI().updateRenderWindow();
 					}
 					else if(tempGroup.name.equals("CA Counties"))
