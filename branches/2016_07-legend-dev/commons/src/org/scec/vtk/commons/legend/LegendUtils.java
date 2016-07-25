@@ -87,7 +87,6 @@ public class LegendUtils {
 	}
 	
 	public static LegendItem buildImageLegend(Plugin source, File imageFile, double x, double y) throws IOException {
-		BufferedImage image = ImageIO.read(imageFile);
 		vtkImageReader2 imageReader = new vtkImageReader2();
 		if (imageFile.getName().toLowerCase().endsWith(".jpg") || imageFile.getName().toLowerCase().endsWith(".jpeg")) {
 			imageReader = new vtkJPEGReader();

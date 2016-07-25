@@ -52,7 +52,7 @@ public class PluginActors {
 	}
 	
 	public synchronized void clearActors() {
-		for (vtkProp actor : actors)
+		for (vtkProp actor : new ArrayList<>(actors))
 			removeActor(actor);
 	}
 	
@@ -77,7 +77,7 @@ public class PluginActors {
 	}
 	
 	public synchronized void clearLegends() {
-		for (LegendItem legend : legends)
+		for (LegendItem legend : new ArrayList<>(legends))
 			removeLegend(legend);
 	}
 	
