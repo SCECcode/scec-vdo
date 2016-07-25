@@ -6,13 +6,17 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -27,22 +31,31 @@ import javax.swing.event.ListSelectionListener;
 
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
+import org.scec.vtk.commons.legend.LegendItem;
+import org.scec.vtk.commons.legend.LegendUtils;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
-import org.scec.vtk.plugins.LegendPlugin.Component.LegendModel;
 import org.scec.vtk.plugins.utils.components.ColorButton;
+import org.scec.vtk.plugins.utils.components.ImageFileChooser;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
+
+import com.google.common.base.Preconditions;
 
 import vtk.vtkActor2D;
 import vtk.vtkColorTransferFunction;
 import vtk.vtkImageMapper;
 import vtk.vtkJPEGReader;
 import vtk.vtkLookupTable;
+import vtk.vtkProp;
 import vtk.vtkScalarBarActor;
 import vtk.vtkTextActor;
 
-public class LegendPluginGUI extends JPanel implements ActionListener, ChangeListener, ListSelectionListener {
+public class LegendPluginGUI extends JPanel implements ActionListener, ChangeListener, ListSelectionListener,
+PluginActorsChangeListener {
 
 	private static final long serialVersionUID = 1L;
 	private JButton displayButton, moveLeftButton, moveRightButton, moveUpButton, moveDownButton;
@@ -52,24 +65,24 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 
 	private JSlider transparencySlider;
 	private JTextField scaleField;
-	private JList<String> legendSelectList;
-	private DefaultListModel<String> model;
-	private LegendModel legendModel;
+	private JList<LegendItem> legendSelectList;
+	private DefaultListModel<LegendItem> model;
 
 	final float SCALE = 0.5f;
 
 	public CreateLegendsGUI createLeg;
 	
-	private PluginActors legendActors = new PluginActors();
-	private ArrayList<vtkActor2D> legends = new ArrayList<vtkActor2D>();
-	private int legendCounter = 0;
+	private LegendPlugin plugin;
+	private PluginActors legendActors;
+	
+	private ImageFileChooser chooser;
 
-	public LegendPluginGUI(PluginActors actors)
+	public LegendPluginGUI(LegendPlugin plugin)
 	{
 		super();
-//		this.legendActors = actors;
+		this.plugin = plugin;
+		this.legendActors = plugin.getPluginActors();
 		this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		legendModel = new LegendModel(this, actors);   
 		this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
 		displayButton = new JButton("Display");
@@ -100,8 +113,8 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 		upperButtonPanel.add(moveUpButton);
 		upperButtonPanel.add(moveDownButton);
 
-		model = new DefaultListModel();
-		legendSelectList = new JList(model);
+		model = new DefaultListModel<>();
+		legendSelectList = new JList<>(model);
 		legendSelectList.addListSelectionListener(this);
 		JScrollPane listScroll = new JScrollPane(legendSelectList);
 		JPanel listPanel = new JPanel();
@@ -135,43 +148,11 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 		listPanel.add(lowerButtonPanel);
 
 		add(listPanel);
-		loadActors();
-	}
-	
-	private void loadActors()
-	{
-		ArrayList<vtkActor2D> legends = legendModel.getLegends();
-		for (vtkActor2D actor : legends)
-		{
-			if (actor instanceof vtkTextActor)
-			{
-				model.addElement(((vtkTextActor) actor).GetInput());
-			}
-			else if (actor instanceof vtkScalarBarActor)
-			{
-				model.addElement("Color Gradient");
-			}
-			else 
-			{
-				legendCounter++;
-				model.addElement("Legend #" + legendCounter);
-			}
-		}
-		legendSelectList.setSelectedIndex(model.getSize()-1);
-		Info.getMainGUI().updateRenderWindow();
-	}
-	
-	public void addToModel(String text)
-	{
-		model.addElement(text);
-		legendSelectList.setSelectedIndex(model.getSize()-1);
-	}
-	
-	public void removeFromModel(int index)
-	{
-		model.remove(index);
-		if (model.size() >= 1)
-			legendSelectList.setSelectedIndex(model.getSize()-1);
+		
+		Info.getMainGUI().addPluginActorsChangeListener(this);
+		// now add any legends that were created before this plugin was instantiated
+		for (LegendItem legend : Info.getMainGUI().getDisplayedLegends())
+			legendAdded(legend);
 	}
 
 	public void valueChanged(ListSelectionEvent e)
@@ -180,10 +161,9 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 		
 		if (source == legendSelectList)
 		{
-			int index = legendSelectList.getSelectedIndex();
-			if (index != -1)
-			{
-				int visibility = legendModel.getLegendVisibility(index);
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null) {
+				int visibility = legend.getActor().GetVisibility();
 				if (visibility == 1)
 				{
 					displayButton.setText("Hide");
@@ -203,206 +183,145 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 		}
 	}
 
-	public JList getLegendSelectList() {
-		return legendSelectList;
-	}
-
-	public void setLegendSelectList(JList legendSelectList) {
-		this.legendSelectList = legendSelectList;
-	}
-
 	public void actionPerformed(ActionEvent e)
 	{
 		Object source = e.getSource();
 
 		if (source == imageButton)
 		{
-			try {
-				legendModel.addImageLegend();
-			} catch (NullPointerException | IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			if (chooser == null) {
+				chooser = new ImageFileChooser();
 			}
-			legendCounter++;
-			displayButton.setText("Hide");
-			setMoveButtonsEnabled(true);
-			displayButton.setEnabled(true);
-			removeButton.setEnabled(true);
-			model.addElement("Legend #" + legendCounter);
-			legendSelectList.setSelectedIndex(model.getSize()-1);
-			Info.getMainGUI().updateRenderWindow();
+
+			int returnVal = chooser.showOpenDialog(this);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				try {
+					LegendItem legend = LegendUtils.buildImageLegend(plugin, file, 0d, 0d);
+					legendActors.addLegend(legend); // this will trigger a call to legendAdded
+					MainGUI.updateRenderWindow();
+				} catch (IOException e1) {
+					JOptionPane.showMessageDialog(this, e1.getMessage(), "Error loading image", JOptionPane.ERROR_MESSAGE);
+				}
+			}
 		}
 		else if (source == textButton)
 		{
-			String text = (String)JOptionPane.showInputDialog(Info.getMainGUI().getContentPane(), "Text Label: ", "Text To Add", JOptionPane.PLAIN_MESSAGE);
-			addText(text);
+			String text = (String)JOptionPane.showInputDialog(Info.getMainGUI().getContentPane(),
+					"Text Label: ", "Text To Add", JOptionPane.PLAIN_MESSAGE);
+			LegendItem legend = LegendUtils.buildTextLegend(plugin, text, 24, Color.WHITE, 0d, 0d);
+			legendActors.addLegend(legend); // this will trigger a call to legendAdded
+			MainGUI.updateRenderWindow();
 		}
 		else if (source == removeButton)
 		{
-			removeLegendActor();
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null) {
+				Plugin plugin = legend.getSource();
+				plugin.getPluginActors().removeLegend(legend);
+				MainGUI.updateRenderWindow();
+			}
 		}
 		else if (source == displayButton)
 		{	
-			int index = legendSelectList.getSelectedIndex();
-			if (index != -1)
-			{
-				int visibility = legendModel.getLegendVisibility(index);
-				if (visibility == 1)
-				{
-					legendModel.setLegendVisibility(index, 0);
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null) {
+				vtkActor2D legendActor = legend.getActor();
+				int visibility = legendActor.GetVisibility();
+				if (visibility == 1) {
+					legendActor.SetVisibility(0);
 					displayButton.setText("Display");
-				}
-				else
-				{
-					legendModel.setLegendVisibility(index, 1);
+				} else {
+					legendActor.SetVisibility(1);
 					displayButton.setText("Hide");
 				}
+				legendActor.Modified();
+				MainGUI.updateRenderWindow();
 			}
-			
-			Info.getMainGUI().updateRenderWindow();
 		}
 		else if (source == colorButton)
 		{
-			int index = legendSelectList.getSelectedIndex();
-			if (index != -1)
-			{
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null) {
+				vtkActor2D legendActor = legend.getActor();
 				Color color = colorChooser.getColor();
-				if(color != null)
-				{
-					legendModel.setLegendColor(index, color);
-				}
+				legendActor.GetProperty().SetColor(color.getRed()/255d, color.getGreen()/255d, color.getBlue()/255d);
+				legendActor.Modified();
+				MainGUI.updateRenderWindow();
 			}
-			
-			Info.getMainGUI().updateRenderWindow();
 		}
 		
 		else if(source == moveLeftButton)
 		{
-			if (model.getElementAt(legendSelectList.getSelectedIndex()).equals("Color Gradient")){
-				moveLegend(-0.05, 0);
-			} else {
-				moveLegend(-5, 0);
-			}
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null)
+				moveLegend(legend, -5, 0);
 		}
 		else if (source == moveRightButton)
 		{
-			if (model.getElementAt(legendSelectList.getSelectedIndex()).equals("Color Gradient")){
-				moveLegend(0.05, 0);
-			} else {
-				moveLegend(5, 0);
-			}
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null)
+				moveLegend(legend, 5, 0);
 		}
 		else if (source == moveUpButton)
 		{
-			if (model.getElementAt(legendSelectList.getSelectedIndex()).equals("Color Gradient")){
-				moveLegend(0, 0.05);
-			} else {
-				moveLegend(0, 5);
-			}
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null)
+				moveLegend(legend, 0, 5);
 		}
 		else if (source == moveDownButton)
 		{
-			if (model.getElementAt(legendSelectList.getSelectedIndex()).equals("Color Gradient")){
-				moveLegend(0, -0.05);
-			} else {
-				moveLegend(0, -5);
-			}
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null)
+				moveLegend(legend, 0, -5);
 		}
 		else if(source == scaleField){
 			//Update if the value changes
 			updateScale();
 		}
 		else if(source == createButton){
-			createLeg = new CreateLegendsGUI(this,model,legendSelectList,legendModel,scaleField,displayButton,transparencySlider);
+			// TODO
+			createLeg = new CreateLegendsGUI(scaleField, displayButton, transparencySlider);
 			createLeg.setLocation(Info.getMainGUI().getLocation());
 			createLeg.setVisible(true);
 		}
 	}
 	
-	private void moveLegend(double x, double y)
+	private void moveLegend(LegendItem legend, double x, double y)
 	{
-		int index = legendSelectList.getSelectedIndex();
-		legendModel.moveLegend(index, x, y);
-		Info.getMainGUI().updateRenderWindow();
+		vtkActor2D actor = legend.getActor();
+		double[] position = actor.GetPosition();
+		if (actor instanceof vtkScalarBarActor)
+			// TODO figure out why things are different for scalar bars and remove this hack
+			actor.SetPosition(position[0] + x*0.01, position[1] + y*0.01);
+		else
+			actor.SetPosition(position[0] + x, position[1] + y);
+		actor.Modified();
+		MainGUI.updateRenderWindow();
 	}
 	
-	public void addText(String text)
-	{		
-		if (text != null)
-		{
-			legendModel.addText(text);
-			legendSelectList.setSelectedIndex(model.getSize()-1);
-			Info.getMainGUI().updateRenderWindow();
-		}
-	}	
-	
-	public void removeLegendActor()
-	{
-		int index = legendSelectList.getSelectedIndex();
-		if (index != -1)
-		{
-			legendModel.removeLegendActor(index);
-			if (legendCounter > 0)
-				legendCounter--;
-
-			if (model.size() >= 1)
-			{
-				legendSelectList.setSelectedIndex(model.size()-1);
-			}
-			else
-			{
-				setMoveButtonsEnabled(false);
-				displayButton.setEnabled(false);
-				removeButton.setEnabled(false);
-			}
-			Info.getMainGUI().updateRenderWindow();
-		}
-	}
-	
-	private void removeLegendActors()
-	{
-		legendModel.removeLegendActors();
-		model.clear();
-		legendCounter = 0;
-		setMoveButtonsEnabled(false);
-		displayButton.setEnabled(false);
-		removeButton.setEnabled(false);
-		Info.getMainGUI().updateRenderWindow();
-	}
-
-	public DefaultListModel getModel() {
-		return model;
-	}
-
-	public void setModel(DefaultListModel model) {
-		this.model = model;
-	}
 	/**
 	 * Takes the value in the scale field and apply it to the image
 	 */
 	private void updateScale(){
-		int index = legendSelectList.getSelectedIndex();
+		LegendItem legend = legendSelectList.getSelectedValue();
 
-		if (index != -1)
-		{
-			try
-			{
+		if (legend != null) {
+			try {
 				double scaleFactor = new Double(scaleField.getText()).doubleValue();
 				System.out.println(scaleFactor);
 				if (scaleFactor == 0)
 					return; // cannot be 0 or a crash will occur
-				
-				legends.get(index).SetHeight(legends.get(index).GetHeight()*scaleFactor);
-				legends.get(index).SetWidth(legends.get(index).GetWidth()*scaleFactor);
-				legends.get(index).Modified();
-				legendActors.clearActors();
-				legendActors.addActor(legends.get(index));
+				vtkActor2D actor = legend.getActor();
+				actor.SetHeight(actor.GetHeight()*scaleFactor);
+				actor.SetWidth(actor.GetWidth()*scaleFactor);
+				actor.Modified();
 			}
 			catch(NumberFormatException nfe)
 			{
 				// User put in something that was NaN
 			}
-			Info.getMainGUI().updateRenderWindow();
+			MainGUI.updateRenderWindow();
 		}
 	}
 	private void setMoveButtonsEnabled(boolean enabled)
@@ -434,15 +353,31 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 	public void itemStateChanged(ItemEvent e)
 	{
 	}
-
-	public LegendModel getLegendModel()
-	{
-		return legendModel;
-	}
 	
 	public void unload()
 	{
-		legendModel.removeLegendActors();
+		Info.getMainGUI().removePluginActorsChangeListener(this);
+		// clear any custom legends
+		legendActors.clearLegends();
 		model.clear();
+	}
+
+	@Override
+	public void actorAdded(vtkProp actor) {} // do nothing
+
+	@Override
+	public void actorRemoved(vtkProp actor) {} // do nothing
+
+	@Override
+	public synchronized void legendAdded(LegendItem legend) {
+		// called whenever a legend is added
+		if (!model.contains(legend))
+			model.addElement(legend);
+	}
+
+	@Override
+	public synchronized void legendRemoved(LegendItem legend) {
+		// called whenever a legend is removed
+		model.removeElement(legend);
 	}
 }

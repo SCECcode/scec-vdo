@@ -43,7 +43,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import org.scec.vtk.plugins.LegendPlugin.Component.FontDialog;
-import org.scec.vtk.plugins.LegendPlugin.Component.LegendModel;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.GradientColorChooser;
 
@@ -80,16 +79,11 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 	private JButton moveDown;
 	private JFileChooser saveFile = new JFileChooser();
 	private File bobby = null;
-	private LegendModel legendmodel;
-	private LegendPluginGUI legendgui;
 	private JRadioButton colorText;
 	private JRadioButton textColor;
 	private JRadioButton gradientColor;
 	private boolean bcolortext = false;
 	private JLabel field;
-	private DefaultListModel legendGUIModel;
-	private JList legendGUIList;
-	private boolean bFirstLoad;
 	JTextField scalefield;
 	JButton displaybutton;
 	JSlider transparencyslider;
@@ -113,23 +107,18 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 	private JButton right;
 	private ColorWellButton btnColorSelect2;
 	private JLabel colorLabel2;
+	
 	/**
 	 * Create the dialog.
 	 * @param transparencySlider 
 	 * @param displayButton 
 	 * @param scaleField 
 	 */
-	public CreateLegendsGUI(LegendPluginGUI parent, DefaultListModel parentModel, JList parentList, LegendModel parentlegendmodel, JTextField scaleField, JButton displayButton, JSlider transparencySlider ) {
-
-		legendmodel = parentlegendmodel;
-		legendgui = parent;
-		legendGUIModel = parentModel;
-		legendGUIList = parentList;
+	public CreateLegendsGUI(JTextField scaleField, JButton displayButton, JSlider transparencySlider ) {
 		scalefield = scaleField; 
 		displaybutton =displayButton;
 		transparencyslider= transparencySlider;
 		fontGUI.setForeground(new Color(0,0,0));
-		bFirstLoad = true;
 		setBounds(100, 100, 510, 703);
 		getContentPane().setLayout(null);
 		{

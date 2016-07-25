@@ -45,6 +45,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
+import org.scec.vtk.commons.legend.LegendItem;
+import org.scec.vtk.commons.legend.LegendUtils;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
@@ -56,7 +58,6 @@ import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQPickBehavior;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.SourceCatalog;
 import org.scec.vtk.plugins.LegendPlugin.LegendPlugin;
-import org.scec.vtk.plugins.LegendPlugin.Component.LegendModel;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.ColorWellIcon;
@@ -101,6 +102,7 @@ MouseListener
 	 * @version $Id: EQCatalogGUI.java 4543 2013-07-18 16:30:17Z jeremypc $
 	 */
 
+	private EarthquakeCatalogPlugin plugin;
 	private PluginActors pluginActors;
 
 	private static ArrayList<Earthquake> earthquakes = new ArrayList<Earthquake>();
@@ -206,9 +208,7 @@ MouseListener
 	private Object depthSliderValue;
 	public static ArrayList<EQCatalog> eqCatalogs = new ArrayList<>();
 	
-	private LegendModel legendModel;
-	private vtkScalarBarActor scalarBar;
-
+	private LegendItem scalarBar;
 
 	// init data store
 	static {
@@ -239,12 +239,12 @@ MouseListener
 
 	public  EarthquakeCatalogPluginGUI(EarthquakeCatalogPlugin plugin){
 		super();
+		this.plugin = plugin;
 		pluginActors = plugin.getPluginActors();
 		pickHandler = new EQPickBehavior();
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()));
 		setName("Earthquake Catalog Plugin");
-		legendModel = new LegendModel();
 
 		JPanel upperPane = getLibraryPanel();
 		upperPane.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
@@ -1294,10 +1294,17 @@ MouseListener
 	}
 
 	public void addLegendScalarBar() {
-		scalarBar = legendModel.addEarthquakeScale(dispProp_colGradientButton.getColor1(), dispProp_colGradientButton.getColor2(), catalogTable.getSelectedValue());
+		Color minColor = dispProp_colGradientButton.getColor1();
+		Color maxColor = dispProp_colGradientButton.getColor2();
+		EQCatalog cat = catalogTable.getSelectedValue();
+		scalarBar = LegendUtils.buildColorBarLegend(plugin, "Magnitude", 0.05, 0.05,
+				minColor, cat.getMinMagnitude(), maxColor, cat.getMaxMagnitude());
+		pluginActors.addLegend(scalarBar);
+		MainGUI.updateRenderWindow();
 	}
 	
 	public void removeLegend() {
-		legendModel.removeLegendActor(scalarBar);
+		pluginActors.removeLegend(scalarBar);
+		MainGUI.updateRenderWindow();
 	}
 }
