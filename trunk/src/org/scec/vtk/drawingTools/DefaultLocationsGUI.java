@@ -49,6 +49,7 @@ import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkPolyLine;
+import vtk.vtkProp;
 
 
 
@@ -88,7 +89,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private int popSize = 0;
 	private ArrayList<String> ccount = new ArrayList<String>();
 	private ArrayList<vtkActor> highwayActors = new ArrayList<vtkActor>();
-	private vtkActor countyActor = new vtkActor();
+	vtkActor countyActor = new vtkActor();
 	private Vector<DrawingTool> highwayList = new Vector<DrawingTool>();
 	private Vector<DrawingTool> countyList = new Vector<DrawingTool>();
 	private boolean countiesLoaded = false;
@@ -289,8 +290,9 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		}
 		return null;
 	}
-	private vtkActor loadCounties()
+	private vtkActor loadCounties(boolean dt)
 	{
+		double [] p = null;
 		String selectedFile = dataPath + "CA_Counties.txt";
 		File highwaysFile = new File(selectedFile);
 		ArrayList<vtkPoints> points = new ArrayList<vtkPoints>();
@@ -302,50 +304,57 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			BufferedReader inStream = new BufferedReader(new FileReader(highwaysFile));
 			String line = inStream.readLine();
 			StringTokenizer dataLine = new StringTokenizer(line);
-			name = dataLine.nextToken(":");
-			/*process first line */
-			
-			/*DrawingTool tempLocation = new DrawingTool(
-					0,
-					0,
-					0.0d,
-					name,
-					displayAttributes);
-			highwayList.add(tempLocation);*/
-			/* finished with first line */
-			line = inStream.readLine();
 			vtkPoints linePts =new vtkPoints();
 			while (line!=null){
 				dataLine = new StringTokenizer(line);
 				String coord = "";
+				if(line.contains(":"))
+				{
+					name = dataLine.nextToken(":");
+				}
+				line = inStream.readLine();
+				dataLine = new StringTokenizer(line);
 				while(coord != null)
 				{
 					try{
 						String latitude = "";
 						String longitude = "";
 						coord = dataLine.nextToken();
+						//System.out.println(line);
 						coord = coord.substring(0,coord.length()-3);
 						int i = coord.indexOf(',');
 						longitude = coord.substring(0,i);
 						latitude = coord.substring(i + 1, coord.length()-1);
-						
-							double [] p = Transform.transformLatLon(Double.parseDouble(latitude), Double.parseDouble(longitude));
-							linePts.InsertNextPoint(p);
+						p = Transform.transformLatLon(Double.parseDouble(latitude), Double.parseDouble(longitude));
+						linePts.InsertNextPoint(p);
 
-						
-							
-						
 					}catch(Exception e)
 					{
 						break;
 					}
-					
 				}
 				if(linePts.GetNumberOfPoints()>0)
 				{
 					points.add(linePts);
 					linePts = new vtkPoints();
 				}
+				if(dt)
+				{
+					DrawingTool highway = new DrawingTool(
+							p[0],
+							p[1],
+							0.0d,
+							name,
+							displayAttributes,
+							Color.WHITE,
+							null,
+							null
+						);
+					highway.setDisplayName(highway.getTextString());
+					this.drawingToolTable.addDrawingTool(highway);
+					this.guiparent.addDrawingTool(highway);
+				}
+				
 				
 				line = inStream.readLine();
 			}
@@ -376,7 +385,6 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		mapper.SetInputData(polyData);
 		vtkActor actor = new vtkActor();
 		actor.SetMapper(mapper);
-		
 		return actor;
 	}
 	public void setSelectedInputFile(String filen)
@@ -586,14 +594,18 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							    "Load County Labels?",
 							    "County Labels",
 							    JOptionPane.YES_NO_OPTION);
-						countyActor = loadCounties();
+						
+						boolean dt = false;
 						if(n == JOptionPane.YES_OPTION)
 						{
 							countyList = loadBuiltInFiles();
 							addBuiltInFiles(countyList);
+							dt= true;
 						}
+						countyActor = loadCounties(dt);
 						this.guiparent.appendActors.addToAppendedPolyData(countyActor);
 						Info.getMainGUI().updateRenderWindow();
+						
 					}
 					else
 					{
