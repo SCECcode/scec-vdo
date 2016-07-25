@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="plugins/GISHazusEventsPlugin/src"/>
+	<classpathentry kind="src" path="plugins/OpenSHAFaultPlugins/src"/>
+	<classpathentry kind="src" path="plugins/DummyPlugin/src"/>
+	<classpathentry kind="src" path="plugins/CommunityFaultModelPlugin/src"/>
+	<classpathentry kind="src" path="plugins/ScriptingPlugin/src"/>
+	<classpathentry kind="src" path="plugins/EarthquakeCatalogPlugin/src"/>
+	<classpathentry kind="src" path="plugins/SurfacePlugin/src"/>
+	<classpathentry kind="src" path="commons/src"/>
+	<classpathentry kind="src" path="plugins/ShakeMapPlugin/src"/>
+	<classpathentry kind="src" path="plugins/LegendPlugin/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/jdom.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.9.jar"/>
+	<classpathentry kind="lib" path="lib/vtk.jar"/>
+	<classpathentry kind="lib" path="lib/jmf.jar"/>
+	<classpathentry kind="lib" path="lib/opensha.jar"/>
+	<classpathentry kind="lib" path="lib/EventWebService.jar"/>
+	<classpathentry kind="lib" path="lib/sdoutl.jar"/>
+	<classpathentry kind="lib" path="lib/org-netbeans-swing-outline.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
