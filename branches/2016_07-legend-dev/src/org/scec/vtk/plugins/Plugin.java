@@ -69,5 +69,10 @@ public interface Plugin {
 	 * @return Plugin metadata
 	 */
     public PluginInfo getMetadata();
+    
+    /**
+     * @return actors for this plugin
+     */
+    public PluginActors getPluginActors();
 }
 

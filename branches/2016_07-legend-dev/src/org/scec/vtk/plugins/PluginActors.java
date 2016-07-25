@@ -6,20 +6,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.scec.vtk.commons.legend.LegendItem;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.main.MainGUI;
 
 import vtk.vtkActor;
+import vtk.vtkActor2D;
 import vtk.vtkProp;
 
 public class PluginActors {
 	
 	private HashSet<vtkProp> actors;
+	private HashSet<LegendItem> legends;
 	
 	// used to notify the GUI of changes to actors. plugins can't add actors directly to the gui
 	private List<PluginActorsChangeListener> listeners = new ArrayList<>();
 	
 	public PluginActors() {
 		this.actors = new HashSet<>();
+		this.legends = new HashSet<>();
 	}
 	
 	public void addActorsChangeListener(PluginActorsChangeListener l) {
@@ -51,6 +56,31 @@ public class PluginActors {
 			removeActor(actor);
 	}
 	
+	public synchronized void addLegend(LegendItem legend) {
+		if (!legends.contains(legend)) {
+			legends.add(legend);
+			for (PluginActorsChangeListener l : listeners)
+				l.legendAdded(legend);
+		}
+	}
+	
+	public synchronized void removeLegend(LegendItem legend) {
+		if (legends.contains(legend)) {
+			legends.remove(legend);
+			for (PluginActorsChangeListener l : listeners)
+				l.legendRemoved(legend);
+		}
+	}
+	
+	public boolean containsLegend(LegendItem legend) {
+		return legends.contains(legend);
+	}
+	
+	public synchronized void clearLegends() {
+		for (LegendItem legend : legends)
+			removeLegend(legend);
+	}
+	
 	/**
 	 * 
 	 * @return an unmodifiable view of the current actors
@@ -60,12 +90,23 @@ public class PluginActors {
 	}
 	
 	/**
+	 * 
+	 * @return an unmodifiable view of the current legends
+	 */
+	public Set<LegendItem> getLegends() {
+		return Collections.unmodifiableSet(legends);
+	}
+	
+	/**
 	 * Remove all actors from any listeners without removing them from the actors group
 	 */
 	public void visibilityOff() {
 		for (vtkProp actor : actors)
 			for (PluginActorsChangeListener l : listeners)
 				l.actorRemoved(actor);
+		for (LegendItem legend : legends)
+			for (PluginActorsChangeListener l : listeners)
+				l.legendRemoved(legend);
 	}
 	
 	/**
@@ -75,6 +116,9 @@ public class PluginActors {
 		for (vtkProp actor : actors)
 			for (PluginActorsChangeListener l : listeners)
 				l.actorAdded(actor);
+		for (LegendItem actor : legends)
+			for (PluginActorsChangeListener l : listeners)
+				l.legendAdded(actor);
 	}
 	
 	/**
@@ -112,7 +156,7 @@ public class PluginActors {
 			}
 		}
 		
-		Info.getMainGUI().updateRenderWindow();
+		MainGUI.updateRenderWindow();
 	}
 
 }
