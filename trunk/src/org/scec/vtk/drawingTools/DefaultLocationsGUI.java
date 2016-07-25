@@ -338,7 +338,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					points.add(linePts);
 					linePts = new vtkPoints();
 				}
-				if(dt)
+				if(!dt)
 				{
 					DrawingTool highway = new DrawingTool(
 							p[0],
