@@ -363,8 +363,4 @@ public class PoliticalBoundariesGUI {
 		return politicalBoundarySubPanelLowerTab;
 	}
 	
-	public ArrayList<vtkActor> getActorPoliticalBoundariesSegments()
-	{
-		return actorPoliticalBoundariesSegments;
-	}
 }
