@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -27,6 +28,8 @@ import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ListUtils;
 import org.opensha.commons.util.cpt.CPT;
+import org.scec.vtk.commons.legend.LegendItem;
+import org.scec.vtk.commons.legend.LegendUtils;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
@@ -35,13 +38,14 @@ import org.scec.vtk.commons.opensha.tree.AbstractFaultNode;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
-import org.scec.vtk.plugins.LegendPlugin.LegendPlugin;
-import org.scec.vtk.plugins.LegendPlugin.Component.LegendModel;
+import org.scec.vtk.plugins.Plugin;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.utils.components.ColorButton;
 import org.scec.vtk.plugins.utils.components.ColorWellIcon;
 import org.scec.vtk.plugins.utils.components.ShowButton;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 
+import vtk.vtkActor2D;
 import vtk.vtkScalarBarActor;
 
 public class ColorerPanel extends JPanel implements ParameterChangeListener, ActionListener, ColorerChangeListener {
@@ -56,9 +60,11 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 	private static final String COLORER_SELECTOR_PARAM_NAME = "Color Faults By";
 	private static final String COLORER_SELECTOR_CUSTOM = "(custom)";
 	
+	private Plugin plugin;
+	
 	private StringParameter colorerParam;
 	
-	private ArrayList<FaultColorer> colorers;
+	private List<FaultColorer> colorers;
 	
 	private JButton browseButton = new JButton("Load CPT");
 	private JButton rescaleButton = new JButton("Rescale CPT");
@@ -87,11 +93,10 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 	
 	private GriddedParameterListEditor paramsEdit;
 	
-	private CPT cpt;
-	private LegendModel legendModel;
-	private vtkScalarBarActor scalarBar;
+	private LegendItem legend;
 
-	public ColorerPanel(ArrayList<FaultColorer> colorers, FaultColorer selected) {
+	public ColorerPanel(Plugin plugin, List<FaultColorer> colorers, FaultColorer selected) {
+		this.plugin = plugin;
 		this.colorers = colorers;
 		for (FaultColorer colorer : colorers)
 			colorer.setColorerChangeListener(this);
@@ -170,8 +175,6 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		rangeSelectList.addParameter(rangeSelectMax);
 		rangeSelectEditor = new ParameterListEditor(rangeSelectList);
 		rangeSelectEditor.setName("Select Range");
-		
-		legendModel = new LegendModel();
 		
 		updateForCPT();
 	}
@@ -254,8 +257,10 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		} else {
 			cptPanel.updateCPT(null);
 		}
+		legendCheckbox.setEnabled(cptBased);
 		cptPanel.repaint();
 //		System.out.println("Updated cptBased="+cptBased);
+		updateLegendIfVisible();
 	}
 	
 	public void cptChangedExternally() {
@@ -375,7 +380,7 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		ArrayList<FaultColorer> colorers = new ArrayList<FaultColorer>();
 		colorers.add(slip);
 		
-		ColorerPanel cp = new ColorerPanel(colorers, slip);
+		ColorerPanel cp = new ColorerPanel(null, colorers, slip);
 		
 		JFrame frame = new JFrame();
 		
@@ -393,13 +398,42 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		fireColorerChangeEvent();
 	}
 	
-	public void addLegendScalarBar() {	
+	private void updateLegendIfVisible() {
+		if (legend != null)
+			addLegendScalarBar();
+	}
+	
+	private void addLegendScalarBar() {
+		PluginActors actors = plugin.getPluginActors();
+		vtkActor2D prevActor = null;
+		double x = 0.05;
+		double y = 0.05;
+		if (legend != null) {
+			// duplicate - first remove old one but keep same position/size
+			prevActor = legend.getActor();
+			double[] position = prevActor.GetPosition();
+			x = position[0];
+			y = position[1];
+			actors.removeLegend(legend);
+		}
 		FaultColorer fc = getSelectedColorer();
 		CPTBasedColorer cptColor = (CPTBasedColorer)fc;
 		CPT cpt = cptColor.getCPT();
-		scalarBar = legendModel.addScalarBar(cpt, colorerParam.getValue());
+		legend = LegendUtils.buildColorBarLegend(plugin, cpt, colorerParam.getValue(), x, y);
+		if (prevActor != null) {
+			// set size
+			legend.getActor().SetWidth(prevActor.GetWidth());
+			legend.getActor().SetHeight(prevActor.GetHeight());
+		}
+		actors.addLegend(legend);
+		MainGUI.updateRenderWindow();
 	}
-	public void removeLegend() {
-		legendModel.removeLegendActor(scalarBar);
+	
+	private void removeLegend() {
+		if (legend != null) {
+			plugin.getPluginActors().removeLegend(legend);
+			MainGUI.updateRenderWindow();
+			legend = null;
+		}
 	}
 }

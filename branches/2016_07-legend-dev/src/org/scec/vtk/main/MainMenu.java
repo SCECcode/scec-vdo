@@ -15,9 +15,11 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -77,9 +79,6 @@ public class MainMenu implements ActionListener, ItemListener{
 	static Map<String, Plugin> activePlugins = new HashMap<String, Plugin>();
 	private static Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
-
-
-
 
 	public MainMenu(){
 		//Creates the main menu bar.
@@ -639,6 +638,13 @@ public class MainMenu implements ActionListener, ItemListener{
 		loadedPlugins.remove(id);
 	}
 
-
+	List<PluginActors> getActivatedPluginActors() {
+		ArrayList<PluginActors> actorsList = new ArrayList<>();
+		for (Plugin plugin : getActivePlugins().values()) {
+			PluginActors actors = pluginActors.get(plugin);
+			actorsList.add(actors);
+		}
+		return actorsList;
+	}
 
 }

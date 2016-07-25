@@ -15,6 +15,7 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractButton;
@@ -41,6 +42,7 @@ import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.apache.log4j.Logger;
+import org.scec.vtk.commons.legend.LegendItem;
 //import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
 //import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
 import org.scec.vtk.drawingTools.DrawingToolsGUI;
@@ -49,6 +51,7 @@ import org.scec.vtk.grid.GraticuleGUI;
 import org.scec.vtk.grid.GraticulePlugin;
 import org.scec.vtk.grid.ViewRange;
 import org.scec.vtk.plugins.Plugin;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
@@ -137,6 +140,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	vtkActor focalPointActor = new vtkActor();
 	vtkPropPicker  picker =new vtkPropPicker();
+	
+	private ArrayList<PluginActorsChangeListener> actorsChangeListeners = new ArrayList<>();
 
 	public MainGUI() {
 
@@ -809,11 +814,51 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public void actorAdded(vtkProp actor) {
 		// called when a plugin adds an actor
 		renderWindow.GetRenderer().AddActor(actor);
+		for (PluginActorsChangeListener l : actorsChangeListeners)
+			l.actorAdded(actor);
 	}
 
 	@Override
 	public void actorRemoved(vtkProp actor) {
 		// called when a plugin removes an actor
 		renderWindow.GetRenderer().RemoveActor(actor);
+		for (PluginActorsChangeListener l : actorsChangeListeners)
+			l.actorRemoved(actor);
+	}
+
+	@Override
+	public void legendAdded(LegendItem legend) {
+		// called when a plugin adds a legend
+		renderWindow.GetRenderer().AddActor(legend.getActor());
+		for (PluginActorsChangeListener l : actorsChangeListeners)
+			l.legendAdded(legend);
+	}
+
+	@Override
+	public void legendRemoved(LegendItem legend) {
+		// called when a plugin removes a legend
+		renderWindow.GetRenderer().RemoveActor(legend.getActor());
+		for (PluginActorsChangeListener l : actorsChangeListeners)
+			l.legendRemoved(legend);
+	}
+	
+	public void addPluginActorsChangeListener(PluginActorsChangeListener listener) {
+		actorsChangeListeners.add(listener);
+	}
+	
+	public void removePluginActorsChangeListener(PluginActorsChangeListener listener) {
+		actorsChangeListeners.remove(listener);
+	}
+	
+	/**
+	 * Used by the legend plugin to get the list of currently displayed legends, useful if a plugin added a legend without
+	 * the legend management plugin loaded.
+	 * @return
+	 */
+	public List<LegendItem> getDisplayedLegends() {
+		ArrayList<LegendItem> currentLegends = new ArrayList<>();
+		for (PluginActors actors : mainMenu.getActivatedPluginActors())
+			currentLegends.addAll(actors.getLegends());
+		return currentLegends;
 	}
 }
