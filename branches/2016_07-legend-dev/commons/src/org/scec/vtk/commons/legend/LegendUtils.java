@@ -96,7 +96,6 @@ public class LegendUtils {
 		} else if (imageFile.getName().toLowerCase().endsWith(".tiff")) {
 			imageReader = new vtkTIFFReader();
 		} else {
-			System.out.println("That image type is not supported. Please use a .jpg, .png, or .tiff image.");
 			return null;
 		}
 		

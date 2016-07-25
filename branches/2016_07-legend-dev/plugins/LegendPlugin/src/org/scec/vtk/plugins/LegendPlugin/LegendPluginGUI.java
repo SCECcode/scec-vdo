@@ -202,6 +202,8 @@ PluginActorsChangeListener {
 					MainGUI.updateRenderWindow();
 				} catch (IOException e1) {
 					JOptionPane.showMessageDialog(this, e1.getMessage(), "Error loading image", JOptionPane.ERROR_MESSAGE);
+				} catch (NullPointerException e2) {
+					JOptionPane.showMessageDialog(this, "That image type is not supported. Please use a .jpg, .png, or .tiff image.", "Error loading image.", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		}
@@ -334,20 +336,22 @@ PluginActorsChangeListener {
 	
 	public void stateChanged(ChangeEvent e)
 	{	
-//		JSlider source = (JSlider)e.getSource();
-//
-//		if (source == transparencySlider)
-//		{
-//			
-//			for (vtkActor2D actor : legends)
-//			{
-//				vtkActor2D act = new vtkActor2D
-//				
-//				actor.GetProperty().SetOpacity(0.5);
-//				actor.Modified();
-//			}
-//		}
-//		Info.getMainGUI().updateRenderWindow();
+		JSlider source = (JSlider)e.getSource();
+
+		if (source == transparencySlider)
+		{
+			LegendItem legend = legendSelectList.getSelectedValue();
+
+			if (legend != null) {
+				int transparency = source.getValue();
+				if (transparency == 0)
+					return; // cannot be 0 or a crash will occur
+				vtkActor2D actor = legend.getActor();
+				actor.GetProperty().SetOpacity(transparency);
+				actor.Modified();
+				MainGUI.updateRenderWindow();
+			}
+		}
 	}
 
 	public void itemStateChanged(ItemEvent e)
