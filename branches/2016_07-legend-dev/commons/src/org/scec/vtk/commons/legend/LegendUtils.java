@@ -96,7 +96,7 @@ public class LegendUtils {
 		} else if (imageFile.getName().toLowerCase().endsWith(".tiff")) {
 			imageReader = new vtkTIFFReader();
 		} else {
-			return null;
+			throw new NullPointerException();
 		}
 		
 		imageReader.SetFileName(imageFile.getAbsolutePath());
