@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
@@ -16,8 +15,13 @@ import com.google.common.base.Preconditions;
 
 import vtk.vtkActor2D;
 import vtk.vtkColorTransferFunction;
+import vtk.vtkImageMapper;
+import vtk.vtkImageReader2;
+import vtk.vtkJPEGReader;
 import vtk.vtkLookupTable;
+import vtk.vtkPNGReader;
 import vtk.vtkScalarBarActor;
+import vtk.vtkTIFFReader;
 import vtk.vtkTextActor;
 
 public class LegendUtils {
@@ -75,7 +79,6 @@ public class LegendUtils {
 		Preconditions.checkNotNull(text, "Text cannot be null when building text legend");
 		vtkTextActor textActor = new vtkTextActor();
 		textActor.SetInput(text);
-//		textActor.SetPosition(300,300);
 		textActor.SetPosition(x, y); // TODO : why different coordinates? figure that out
 		textActor.GetTextProperty().SetFontSize(fontSize);
 		textActor.GetTextProperty().SetColor(color.getRed()/255d, color.getGreen()/255d, color.getBlue()/255d);
@@ -83,19 +86,32 @@ public class LegendUtils {
 		return new LegendItem(textActor, source, text);
 	}
 	
-	public static LegendItem buildImageLegend(Plugin source, InputStream imageStream, double x, double y) throws IOException {
-		BufferedImage image = ImageIO.read(imageStream);
-		return buildImageLegend(source, image, x, y);
-	}
-	
 	public static LegendItem buildImageLegend(Plugin source, File imageFile, double x, double y) throws IOException {
 		BufferedImage image = ImageIO.read(imageFile);
-		return buildImageLegend(source, image, x, y);
+		vtkImageReader2 imageReader = new vtkImageReader2();
+		if (imageFile.getName().toLowerCase().endsWith(".jpg") || imageFile.getName().toLowerCase().endsWith(".jpeg")) {
+			imageReader = new vtkJPEGReader();
+		} else if (imageFile.getName().toLowerCase().endsWith(".png")) {
+			imageReader = new vtkPNGReader();
+		} else if (imageFile.getName().toLowerCase().endsWith(".tiff")) {
+			imageReader = new vtkTIFFReader();
+		} else {
+			System.out.println("That image type is not supported. Please use a .jpg, .png, or .tiff image.");
+			return null;
+		}
+		
+		imageReader.SetFileName(imageFile.getAbsolutePath());
+		imageReader.Update();
+		
+		vtkImageMapper mapper = new vtkImageMapper();
+        mapper.SetInputData(imageReader.GetOutput());
+        mapper.SetColorWindow(256.0);
+        mapper.SetColorLevel(128.0);
+        vtkActor2D vtkImage = new vtkActor2D();
+        vtkImage.SetMapper(mapper);
+        vtkImage.SetPosition(x, y);
+        
+        return new LegendItem(vtkImage, source, imageFile.getName());
+		
 	}
-	
-	public static LegendItem buildImageLegend(Plugin source, BufferedImage image, double x, double y) {
-		// TODO figure out how to load from a java BufferedImage
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-
 }
