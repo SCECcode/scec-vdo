@@ -34,21 +34,21 @@ import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
-import org.scec.vtk.commons.opensha.tree.AbstractFaultNode;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.utils.components.ColorButton;
-import org.scec.vtk.plugins.utils.components.ColorWellIcon;
 import org.scec.vtk.plugins.utils.components.ShowButton;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 
 import vtk.vtkActor2D;
-import vtk.vtkScalarBarActor;
+import vtk.vtkProp;
 
-public class ColorerPanel extends JPanel implements ParameterChangeListener, ActionListener, ColorerChangeListener {
+public class ColorerPanel extends JPanel implements ParameterChangeListener, ActionListener, ColorerChangeListener,
+PluginActorsChangeListener {
 	
 	/**
 	 * 
@@ -127,17 +127,7 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		JPanel controlPanel = new JPanel();
 		controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
 		
-		legendCheckbox.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				JCheckBox cb = (JCheckBox)e.getSource();
-				if (cb.isSelected())
-					addLegendScalarBar();
-				else{
-					removeLegend();
-				}
-			}
-		});
+		legendCheckbox.addActionListener(this);
 		
 		JPanel wrapperPanel = new JPanel();
 		wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.Y_AXIS));
@@ -177,6 +167,8 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		rangeSelectEditor.setName("Select Range");
 		
 		updateForCPT();
+		
+		Info.getMainGUI().addPluginActorsChangeListener(this);
 	}
 	
 	public void setFaultTable(FaultTreeTable faultTable) {
@@ -342,6 +334,13 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 			Color color = colorChooser.getColor();
 			if(color != null)
 				faultTable.setColorForSelected(color);
+		} else if (e.getSource() == legendCheckbox) {
+			if (legendCheckbox.isSelected()) {
+				if (legendCheckbox.isEnabled())
+					addLegendScalarBar();
+			} else {
+				removeLegend();
+			}
 		}
 	}
 
@@ -399,7 +398,7 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 	}
 	
 	private void updateLegendIfVisible() {
-		if (legend != null)
+		if (legendCheckbox.isSelected() && legendCheckbox.isEnabled())
 			addLegendScalarBar();
 	}
 	
@@ -422,8 +421,11 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		legend = LegendUtils.buildColorBarLegend(plugin, cpt, colorerParam.getValue(), x, y);
 		if (prevActor != null) {
 			// set size
-			legend.getActor().SetWidth(prevActor.GetWidth());
-			legend.getActor().SetHeight(prevActor.GetHeight());
+			vtkActor2D newActor = legend.getActor();
+			newActor.SetWidth(prevActor.GetWidth());
+			newActor.SetHeight(prevActor.GetHeight());
+			// set color
+			newActor.GetProperty().SetColor(prevActor.GetProperty().GetColor());
 		}
 		actors.addLegend(legend);
 		MainGUI.updateRenderWindow();
@@ -433,7 +435,48 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		if (legend != null) {
 			plugin.getPluginActors().removeLegend(legend);
 			MainGUI.updateRenderWindow();
-			legend = null;
+		}
+	}
+	
+	public boolean isLegendVisible() {
+		return legendCheckbox.isSelected();
+	}
+	
+	public void setLegendVisible(boolean visible) {
+		if (visible != legendCheckbox.isSelected()) {
+			legendCheckbox.setSelected(visible); // does not trigger action event
+			if (visible)
+				updateLegendIfVisible();
+			else
+				removeLegend();
+		}
+	}
+
+	@Override
+	public void actorAdded(vtkProp actor) {}
+
+	@Override
+	public void actorRemoved(vtkProp actor) {}
+
+	@Override
+	public void legendAdded(LegendItem legend) {
+		if (legend != null && legend == this.legend) {
+			// our legend was just added, which could have been due to a visibility change on the whole plugin.
+			// update checkbox accordingly
+			if (!legendCheckbox.isSelected()) {
+				legendCheckbox.setSelected(true); // does not trigger action event
+			}
+		}
+	}
+
+	@Override
+	public void legendRemoved(LegendItem legend) {
+		if (legend != null && legend == this.legend) {
+			// our legend was just removed externally
+//			System.out.println("Legend removed externally!");
+			if (legendCheckbox.isSelected()) {
+				legendCheckbox.setSelected(false); // does not trigger action event
+			}
 		}
 	}
 }
