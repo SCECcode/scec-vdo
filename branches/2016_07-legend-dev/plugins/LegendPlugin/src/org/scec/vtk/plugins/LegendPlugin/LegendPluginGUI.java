@@ -364,6 +364,7 @@ PluginActorsChangeListener {
 		// clear any custom legends
 		legendActors.clearLegends();
 		model.clear();
+		MainGUI.updateRenderWindow();
 	}
 
 	@Override
