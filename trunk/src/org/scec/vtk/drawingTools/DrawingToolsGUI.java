@@ -335,6 +335,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			pt[0]= pt[0]+drawingTool.getaltitude();
 			pt[1]= drawingTool.getLatitude();
 			pt[2]= drawingTool.getLongitude();
+			//drawingTool.setDisplayName(text);
 		}
 
 		//text as label facing camera
@@ -428,6 +429,20 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		locData.put("Alt", "0");
 		drawingTool.setAttributes(locData);
 		highwayToolsArray.add(drawingTool);
+	}
+	public void addCounty(DrawingTool drawingTool) {
+		double[] pt= {Transform.calcRadius(37),37,-120};
+		drawingTool.setDisplayName(drawingTool.getTextString());
+		pt[0]= pt[0]+drawingTool.getaltitude();
+		pt[1]= drawingTool.getLatitude();
+		pt[2]= drawingTool.getLongitude();
+
+		HashMap<String,String> locData = new HashMap<String, String>();
+		locData.put("Lat", String.format("%.1f", pt[1])); 
+		locData.put("Lon", String.format("%.1f", pt[2]));
+		locData.put("Alt", "0");
+		drawingTool.setAttributes(locData);
+		drawingToolsArray.add(drawingTool);
 	}
 	
 	public void setVisibility(DrawingTool dr, Integer visible) {
@@ -627,9 +642,19 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				{
 					for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 						DrawingTool dr = drawingToolsArray.get(i);
-						dr.setColor(newColor);
-						setColor(dr,  newColor);
+						if(dr.getTextString().contains("County"))
+						{
+							//System.out.println(dr.getTextString());
+							defaultLocations.countyActor.GetProperty().SetColor(Info.convertColor(newColor));
+							Info.getMainGUI().updateRenderWindow();
 						}
+						else
+						{
+							dr.setColor(newColor);
+							setColor(dr,  newColor);
+						}
+						
+					}
 				}
 				model = this.highwayToolTable.getSelectionModel();
 				if (!model.isSelectionEmpty())
