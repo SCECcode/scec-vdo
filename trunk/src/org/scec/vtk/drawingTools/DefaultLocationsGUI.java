@@ -93,6 +93,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private Vector<DrawingTool> highwayList = new Vector<DrawingTool>();
 	private Vector<DrawingTool> countyList = new Vector<DrawingTool>();
 	private boolean countiesLoaded = false;
+	boolean dt = false;
 	
 	public DefaultLocationsGUI(DrawingToolsGUI guiparent) {
 		this.guiparent = guiparent;
@@ -248,6 +249,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							null,
 							null);
 					locations.addElement(tempLocation);
+					tempLocation.setSourceFile(selectedInputFile);
 					//System.out.println(index);
 				}
 				return locations;
@@ -282,6 +284,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							null,
 							null);
 					locations.addElement(tempLocation);
+					tempLocation.setSourceFile(selectedInputFile);
 				}
 				return locations;
 			} catch (Exception e) {
@@ -290,7 +293,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		}
 		return null;
 	}
-	private vtkActor loadCounties(boolean dt)
+	vtkActor loadCounties(boolean dt)
 	{
 		double [] p = null;
 		String selectedFile = dataPath + "CA_Counties.txt";
@@ -350,6 +353,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							null,
 							null
 						);
+					highway.setSourceFile(selectedFile);
 					highway.setDisplayName(highway.getTextString());
 					this.drawingToolTable.addDrawingTool(highway);
 					this.guiparent.addDrawingTool(highway);
@@ -595,7 +599,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							    "County Labels",
 							    JOptionPane.YES_NO_OPTION);
 						
-						boolean dt = false;
+						dt = false;
 						if(n == JOptionPane.YES_OPTION)
 						{
 							countyList = loadBuiltInFiles();
