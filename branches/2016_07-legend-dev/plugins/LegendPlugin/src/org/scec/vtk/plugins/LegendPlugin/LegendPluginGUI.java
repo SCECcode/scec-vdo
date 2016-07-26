@@ -2,6 +2,7 @@ package org.scec.vtk.plugins.LegendPlugin;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,12 +17,14 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -39,6 +42,7 @@ import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
+import org.scec.vtk.plugins.LegendPlugin.Component.FontDialog;
 import org.scec.vtk.plugins.utils.components.ColorButton;
 import org.scec.vtk.plugins.utils.components.ImageFileChooser;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
@@ -48,6 +52,7 @@ import com.google.common.base.Preconditions;
 import vtk.vtkActor2D;
 import vtk.vtkColorTransferFunction;
 import vtk.vtkImageMapper;
+import vtk.vtkImageResize;
 import vtk.vtkJPEGReader;
 import vtk.vtkLookupTable;
 import vtk.vtkProp;
@@ -84,6 +89,13 @@ PluginActorsChangeListener {
 		this.legendActors = plugin.getPluginActors();
 		this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+		
+//		scaleField = new JTextField("1.0");
+//		scaleField.addActionListener(this);
+//		JPanel scalePanel = new JPanel();
+//		scalePanel.setLayout(new GridLayout(1,2));
+//		scalePanel.setBorder(BorderFactory.createTitledBorder("Scale"));
+//		scalePanel.add(scaleField);
 
 		displayButton = new JButton("Display");
 		displayButton.setEnabled(false);
@@ -147,6 +159,7 @@ PluginActorsChangeListener {
 		lowerButtonPanel.add(removeButton);
 		listPanel.add(lowerButtonPanel);
 
+//		add(scalePanel);
 		add(listPanel);
 		
 		Info.getMainGUI().addPluginActorsChangeListener(this);
@@ -209,11 +222,18 @@ PluginActorsChangeListener {
 		}
 		else if (source == textButton)
 		{
-			String text = (String)JOptionPane.showInputDialog(Info.getMainGUI().getContentPane(),
-					"Text Label: ", "Text To Add", JOptionPane.PLAIN_MESSAGE);
-			LegendItem legend = LegendUtils.buildTextLegend(plugin, text, 24, Color.WHITE, 0d, 0d);
-			legendActors.addLegend(legend); // this will trigger a call to legendAdded
-			MainGUI.updateRenderWindow();
+//			String text = (String)JOptionPane.showInputDialog(Info.getMainGUI().getContentPane(),
+//					"Text Label: ", "Text To Add", JOptionPane.PLAIN_MESSAGE);
+			TextDialogBox textDialog = new TextDialogBox();
+			String text = textDialog.getText();
+			Font font = textDialog.getFont();
+			
+			if (text != null)
+			{
+				LegendItem legend = LegendUtils.buildTextLegend(plugin, text, font, 24, Color.WHITE, 0d, 0d);
+				legendActors.addLegend(legend); // this will trigger a call to legendAdded
+				MainGUI.updateRenderWindow();
+			}
 		}
 		else if (source == removeButton)
 		{
@@ -314,9 +334,14 @@ PluginActorsChangeListener {
 				System.out.println(scaleFactor);
 				if (scaleFactor == 0)
 					return; // cannot be 0 or a crash will occur
+				vtkImageResize resize = new vtkImageResize();
 				vtkActor2D actor = legend.getActor();
-				actor.SetHeight(actor.GetHeight()*scaleFactor);
-				actor.SetWidth(actor.GetWidth()*scaleFactor);
+				resize.SetInputData(((vtkImageMapper)actor.GetMapper()).GetInput());
+				resize.SetOutputDimensions((int)(actor.GetHeight()*scaleFactor), (int)(actor.GetWidth()*scaleFactor), 1);
+				resize.Update();
+				actor.GetMapper().SetInputConnection(resize.GetOutputPort());
+//				actor.SetHeight(actor.GetHeight()*scaleFactor);
+//				actor.SetWidth(actor.GetWidth()*scaleFactor);
 				actor.Modified();
 			}
 			catch(NumberFormatException nfe)
@@ -384,5 +409,72 @@ PluginActorsChangeListener {
 	public synchronized void legendRemoved(LegendItem legend) {
 		// called whenever a legend is removed
 		model.removeElement(legend);
+	}
+	
+	class TextDialogBox {
+		private JDialog dialog;
+		private JTextArea textField;
+		private JPanel upperPanel, lowerPanel;
+		private JButton fontButton, okButton;
+		private FontDialog fontGUI;
+		private String text;
+		
+		public TextDialogBox()
+		{
+			dialog = new JDialog();
+			dialog.setSize(400, 300);
+			dialog.setLocation(500, 500);
+			dialog.setModal(true);
+			dialog.setTitle("Text To Add");
+			dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
+			
+			upperPanel = new JPanel();
+			textField = new JTextArea();
+			textField.setColumns(30);
+			upperPanel.add(textField);
+			
+			lowerPanel = new JPanel();
+			lowerPanel.setLayout(new BoxLayout(lowerPanel, BoxLayout.X_AXIS));
+			fontButton = new JButton("Font");
+			fontButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					fontGUI = new FontDialog(textField);
+					fontGUI.setVisible(true);
+					if(fontGUI.isVisible()==false) { 
+						textField.setFont(fontGUI.getFont());
+						if ((fontGUI.getColor()==Color.WHITE)&&(textField.getBackground().equals(new Color(255,255,255)))){
+							textField.setForeground(Color.BLACK);
+						} else {
+							textField.setForeground(fontGUI.getColor());
+						}
+					}
+				}
+			});
+			
+			okButton = new JButton("OK");
+			okButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					text = textField.getText();
+					dialog.setVisible(false);
+					dialog.dispose();
+				}
+			});
+			lowerPanel.add(fontButton);
+			lowerPanel.add(okButton);
+			dialog.add(upperPanel);
+			dialog.add(lowerPanel);
+			dialog.pack();
+			dialog.setVisible(true);
+		}
+		
+		public String getText()
+		{
+			return text;
+		}
+		
+		public Font getFont()
+		{
+			return textField.getFont();
+		}
 	}
 }
