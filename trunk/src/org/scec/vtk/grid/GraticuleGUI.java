@@ -125,14 +125,11 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	PluginActors pluginActors = new PluginActors();
 	
 	public static GraticulePreset getGraticlePreset(){
-		URL calGridURL = GraticuleGUI.class.getResource("resources/California.grat");
-		File calGrid = null;
-		try {
-			calGrid = new File(calGridURL.toURI());
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//URL calGridURL = GraticuleGUI.class.getResource("resources/California.grat");
+		String calGridPath = Info.getMainGUI().getRootPluginDir() + File.separator + "Grid\\California.grat";
+		System.out.println(calGridPath);
+		File calGrid = new File(calGridPath);//.toURI());
+		
 		return new GraticulePreset(calGrid);
 	}
 	
