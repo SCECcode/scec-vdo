@@ -141,6 +141,12 @@ public class GUITests {
 		public PluginInfo getMetadata() {
 			return metadata;
 		}
+
+		@Override
+		public PluginActors getPluginActors() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 		
 	}
 	

@@ -27,7 +27,7 @@ public class FaultModelPlugin extends AbstractFaultPlugin {
 //		colorers.add(new OnlyNewColorer(false)); // TODO
 		ArrayList<GeometryGenerator> geomGens = FaultPluginGUI.createDefaultGeomGens();
 		
-		FaultPluginGUI gui = new FaultPluginGUI(getPluginActors(), builder, colorers, geomGens, Color.GRAY);
+		FaultPluginGUI gui = new FaultPluginGUI(this, builder, colorers, geomGens, Color.GRAY);
 		// TODO
 //		gui.addDistTab();
 //		gui.addTab("Section Connections", connsPanel);
