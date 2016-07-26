@@ -1,6 +1,7 @@
 package org.scec.vtk.commons.legend;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -75,12 +76,13 @@ public class LegendUtils {
 		return new LegendItem(scalarBar, source, title);
 	}
 	
-	public static LegendItem buildTextLegend(Plugin source, String text, int fontSize, Color color, double x, double y) {
+	public static LegendItem buildTextLegend(Plugin source, String text, Font font, int fontSize, Color color, double x, double y) {
 		Preconditions.checkNotNull(text, "Text cannot be null when building text legend");
 		vtkTextActor textActor = new vtkTextActor();
 		textActor.SetInput(text);
 		textActor.SetPosition(x, y); // TODO : why different coordinates? figure that out
 		textActor.GetTextProperty().SetFontSize(fontSize);
+		textActor.GetTextProperty().SetFontFamilyAsString(font.getFamily());
 		textActor.GetTextProperty().SetColor(color.getRed()/255d, color.getGreen()/255d, color.getBlue()/255d);
 		
 		return new LegendItem(textActor, source, text);
