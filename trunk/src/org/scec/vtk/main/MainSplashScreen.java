@@ -14,6 +14,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.InputStreamReader;
+import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
@@ -63,6 +65,7 @@ public class MainSplashScreen  extends Frame implements ActionListener {
 		public static void main(String s[]) {
 		    SwingUtilities.invokeLater(new Runnable() {
 		      public void run() {
+		    	  
 		    	  MainSplashScreen mss = new MainSplashScreen();
 		      }
 		    });
