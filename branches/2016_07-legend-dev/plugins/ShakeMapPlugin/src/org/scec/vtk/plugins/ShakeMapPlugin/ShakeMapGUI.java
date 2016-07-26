@@ -6,6 +6,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -35,6 +38,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.ShakeMapPlugin.Component.ShakeMap;
@@ -64,8 +69,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 
 	private JPanel shakeMapLibraryPanel = new JPanel();
 	JPanel panel1 = new JPanel();
-	private JPanel panesPanel = new JPanel();
-	private JPanel usgsDownloads = new JPanel();
+	private JPanel loadFilePanel = new JPanel();
 	private JTabbedPane tabbedPane = new JTabbedPane();
 	JPanel bottomPane = new JPanel();
 	
@@ -73,6 +77,9 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	private ArrayList<ShakeMap> shakeMapsList;
 	private PluginActors pluginActors;
 	private ArrayList<vtkActor> actorList;
+	
+	//browse and load file button
+	JButton browse = new JButton("Load File");
 	
 	//for the usgs download option
 	private ButtonGroup calChooser = new ButtonGroup();
@@ -87,6 +94,11 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	public JTable surfaceTable = new JTable(surfaceTableModel);
 	private JSlider transparencySlider = new JSlider(); 
 	
+	//Different tabs
+	JPanel tab2 = new JPanel();
+	
+	//mmi, pga, or pgv scale
+	String scaleSelction = "";
 	
 	public ShakeMapGUI(PluginActors pluginActors) {
 		//First check if More_USGS_Maps directory exists...
@@ -126,6 +138,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		surfaceTable.getSelectionModel().addListSelectionListener(this);
 		surfaceTableModel.addTableModelListener(this);
 		
+		JPanel panesPanel = new JPanel();
 		JScrollPane scrollPane = new JScrollPane(surfaceTable);
 		panesPanel.setLayout(new GridLayout(1,2,10,10));
 		panesPanel.add(scrollPane);
@@ -147,10 +160,17 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		bottomPane.add(panesPanel);
 		bottomPane.add(sliderPanel);
 		
+		browse.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				loadShakeMapFile();
+			}
+		});
 		
 		//Checkboxes for the USGS Table
-		usgsDownloads.setLayout(new GridLayout(0,2)); //2 per row
-		//Initialize all the preset files in the data/ShakeMapPlugin directory
+		loadFilePanel.setLayout(new GridLayout(0,2)); //2 per row
+		//Initialize all the usgs files in the data/ShakeMapPlugin/More_USGS_Maps directory
 		File usgsDirectory = new File(dataPath + "/" + moreMaps);
 		if (usgsDirectory.isDirectory()) {
 			// List files in the directory and process each
@@ -161,7 +181,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 					JCheckBox tempCheckbox = new JCheckBox(tempName);
 					tempCheckbox.setName(tempName);
 					tempCheckbox.addItemListener(this);
-					usgsDownloads.add(tempCheckbox);
+					loadFilePanel.add(tempCheckbox);
 					checkBoxList.add(tempCheckbox); //add the JCheckBox to the list
 					shakeMapsList.add(null); //for now, initialize to null
 					actorList.add(null);
@@ -169,6 +189,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			}
 		}
 		
+//		JScrollPane loadFileScroll = new JScrollPane(loadFilePanel);
 		
 		JPanel USGSPanel = new JPanel();
 		USGSPanel.setLayout(new FlowLayout());
@@ -180,6 +201,19 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		eventIdBox.setPreferredSize(new Dimension(200,40));
 		USGSPanel.add(eventIdBox);
 		USGSPanel.add(downloadUSGSButton);
+		
+		eventIdBox.addFocusListener(new FocusListener(){
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				// TODO Auto-generated method stub
+				eventIdBox.setText("");
+			}
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		
 		downloadUSGSButton.addActionListener(new ActionListener(){
 			@Override
@@ -203,13 +237,13 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 								    "File not found on USGS site.");
 						}else{
 							System.out.println("Loaded!");
-							showNewUSGSMap(id+".txt");
-							addNewUSGSCheckBox(id+".txt");
+							showNewMap(dataPath + "/" + moreMaps + "/" + id+".txt", "mmi");
+							addNewCheckBox(id+".txt");
 						}
 					}else{
 						System.out.println("Make a location selection!");
 						JOptionPane.showMessageDialog(shakeMapLibraryPanel,
-							    "Select A Region (Northern or Southern California");
+							    "Select A Region (Northern or Southern California)");
 					}
 				}else{
 					System.out.println("Enter an earthquake ID!");
@@ -242,7 +276,11 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		
 		tabbedPane.setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()/2));
 		tabbedPane.addTab("Presets", panel1);
-		tabbedPane.addTab("Saved Maps", new JScrollPane(usgsDownloads));
+//		JPanel tab2 = new JPanel(); //it's global now
+		tab2.setLayout(new BorderLayout());	
+		tab2.add(loadFilePanel, BorderLayout.NORTH);
+		tab2.add(browse, BorderLayout.SOUTH);
+		tabbedPane.addTab("Saved Maps", tab2);
 		tabbedPane.addTab("Download USGS Map", USGSPanel);
 		JPanel shaPanel = new JPanel(new FlowLayout());
 		shaPanel.add(openSHAButton);
@@ -262,12 +300,23 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	}
 
 	/*
-	 * This immediately shows the map after downloading it
-	 * from the USGS website
+	 * This immediately shows the map after loading it
 	 */
-	private void showNewUSGSMap(String filename){
-		ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
-		shakeMap.loadFromFileToGriddedGeoDataSet(dataPath + "/" + moreMaps + "/" + filename);
+	private void showNewMap(String path, String scaleChoice){
+		String colorFile = "";
+		if(scaleChoice.equals("pga")){
+			colorFile = "colors_pga.cpt";
+		}else if(scaleChoice.equals("pgv")){
+			colorFile = "colors_pgv.cpt";
+		}else{
+			colorFile = "colors.cpt"; //mmi format by default
+		}
+		ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/" + colorFile);
+		try{ //try loading a usgs-format shakemap
+			shakeMap.loadFromFileToGriddedGeoDataSet(path); 
+		}catch(Exception e){ //otherwise, try loading  the opensha-form shakemap
+			shakeMap.loadOpenSHAFileToGriddedGeoDataSet(path); 
+		}
 		shakeMap.setActor(shakeMap.builtPolygonSurface());
 		actorList.add(shakeMap.getActor());
 		pluginActors.addActor(shakeMap.getActor());
@@ -275,15 +324,54 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		Info.getMainGUI().updateRenderWindow();
 	}
 	
-	//appends a CheckBox after downloading a new USGS
-	//shake map
-	private void addNewUSGSCheckBox(String fileName){
-		JCheckBox tempCheckbox = new JCheckBox(fileName);
-		tempCheckbox.setName(fileName);
+	//appends a CheckBox after loading a new shake map
+	private void addNewCheckBox(String checkBoxName){
+		JCheckBox tempCheckbox = new JCheckBox(checkBoxName);
+		tempCheckbox.setName(checkBoxName);
 		tempCheckbox.setSelected(true);
 		tempCheckbox.addItemListener(this);
-		usgsDownloads.add(tempCheckbox); //add it to GUI
+		loadFilePanel.add(tempCheckbox); //add it to GUI
 		checkBoxList.add(tempCheckbox); //add it to data
+		surfaceTableModel.addRow(new Object[]{checkBoxName, checkBoxList.size()-1});
+		tab2.revalidate(); //make gui display new checkbox
+	}
+	
+	/*
+	 * Lets the user load a shakemap file that
+	 * is saved on their computer
+	 */
+	private void loadShakeMapFile(){
+		JFileChooser chooser = new JFileChooser();
+	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+	        "Text files", "txt", "xyz");
+	    chooser.setFileFilter(filter);
+//	    chooser.setCurrentDirectory(new File(dataPath+"/"+moreMaps));
+	    int returnVal = chooser.showOpenDialog(this);
+	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	    	try{
+	    		//add new JOption Pane for user to choose mmi, pga, and pgv
+	    		String[] choices = { "mmi", "pga", "pgv" };
+	    	    String scaleChoice = (String) JOptionPane.showInputDialog(shakeMapLibraryPanel, "Choose a scale",
+	    	        "Choose a scale", JOptionPane.QUESTION_MESSAGE, null, // Use
+	    	                                                                        // default
+	    	                                                                        // icon
+	    	        choices, // Array of choices
+	    	        choices[1]); // Initial choice
+	    	    if(scaleChoice==null)
+	    	    	scaleChoice = "mmi";
+	    	    
+		    	showNewMap(chooser.getSelectedFile().toString(), scaleChoice);
+				addNewCheckBox(chooser.getSelectedFile().getName());
+	    	}catch(NumberFormatException e){
+	    		e.printStackTrace();
+	    		JOptionPane.showMessageDialog(shakeMapLibraryPanel,
+					    "This is an invalid shakeMap file.");
+	    	}catch(IllegalArgumentException e){
+	    		e.printStackTrace();
+	    		JOptionPane.showMessageDialog(shakeMapLibraryPanel,
+					    "This is an invalid shakeMap file.");
+	    	}
+	    }
 	}
 	
 	//What happens whenever a check box is selected
@@ -437,3 +525,4 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	}
 
 }
+	
