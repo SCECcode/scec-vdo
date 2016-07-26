@@ -97,6 +97,9 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	//Different tabs
 	JPanel tab2 = new JPanel();
 	
+	//mmi, pga, or pgv scale
+	String scaleSelction = "";
+	
 	public ShakeMapGUI(PluginActors pluginActors) {
 		//First check if More_USGS_Maps directory exists...
 		//Otherwise, make that directory
@@ -186,6 +189,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			}
 		}
 		
+//		JScrollPane loadFileScroll = new JScrollPane(loadFilePanel);
+		
 		JPanel USGSPanel = new JPanel();
 		USGSPanel.setLayout(new FlowLayout());
 		calChooser.add(nc);
@@ -232,7 +237,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 								    "File not found on USGS site.");
 						}else{
 							System.out.println("Loaded!");
-							showNewMap(dataPath + "/" + moreMaps + "/" + id+".txt");
+							showNewMap(dataPath + "/" + moreMaps + "/" + id+".txt", "mmi");
 							addNewCheckBox(id+".txt");
 						}
 					}else{
@@ -297,12 +302,20 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	/*
 	 * This immediately shows the map after loading it
 	 */
-	private void showNewMap(String path){
-		ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
-		try{
-			shakeMap.loadFromFileToGriddedGeoDataSet(path); //loading the usgs shakemap
-		}catch(Exception e){
-			shakeMap.loadOpenSHAFileToGriddedGeoDataSet(path); //then try loading  the opensha shakemap
+	private void showNewMap(String path, String scaleChoice){
+		String colorFile = "";
+		if(scaleChoice.equals("pga")){
+			colorFile = "colors_pga.cpt";
+		}else if(scaleChoice.equals("pgv")){
+			colorFile = "colors_pgv.cpt";
+		}else{
+			colorFile = "colors.cpt"; //mmi format by default
+		}
+		ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/" + colorFile);
+		try{ //try loading a usgs-format shakemap
+			shakeMap.loadFromFileToGriddedGeoDataSet(path); 
+		}catch(Exception e){ //otherwise, try loading  the opensha-form shakemap
+			shakeMap.loadOpenSHAFileToGriddedGeoDataSet(path); 
 		}
 		shakeMap.setActor(shakeMap.builtPolygonSurface());
 		actorList.add(shakeMap.getActor());
@@ -336,7 +349,18 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	    int returnVal = chooser.showOpenDialog(this);
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    	try{
-		    	showNewMap(chooser.getSelectedFile().toString());
+	    		//add new JOption Pane for user to choose mmi, pga, and pgv
+	    		String[] choices = { "mmi", "pga", "pgv" };
+	    	    String scaleChoice = (String) JOptionPane.showInputDialog(shakeMapLibraryPanel, "Choose a scale",
+	    	        "Choose a scale", JOptionPane.QUESTION_MESSAGE, null, // Use
+	    	                                                                        // default
+	    	                                                                        // icon
+	    	        choices, // Array of choices
+	    	        choices[1]); // Initial choice
+	    	    if(scaleChoice==null)
+	    	    	scaleChoice = "mmi";
+	    	    
+		    	showNewMap(chooser.getSelectedFile().toString(), scaleChoice);
 				addNewCheckBox(chooser.getSelectedFile().getName());
 	    	}catch(NumberFormatException e){
 	    		e.printStackTrace();
@@ -501,3 +525,4 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	}
 
 }
+	
