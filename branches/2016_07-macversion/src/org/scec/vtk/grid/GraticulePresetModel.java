@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Vector;
 
+import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 
 public class GraticulePresetModel 
@@ -23,8 +24,9 @@ public class GraticulePresetModel
 //		File dir = new File(GraticuleGUI.class.getResource("resources/").getPath());
 		File dir = null;
 		try {
-			dir = new File(GraticuleGUI.class.getResource("resources/").toURI());
-		} catch (URISyntaxException e) {
+			dir = new File(Info.getMainGUI().getRootPluginDir() + File.separator + "Grid");
+			//GraticuleGUI.class.getResource("resources/").toURI());
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
