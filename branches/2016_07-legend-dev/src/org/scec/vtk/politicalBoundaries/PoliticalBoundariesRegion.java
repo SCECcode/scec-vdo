@@ -62,7 +62,7 @@ public class PoliticalBoundariesRegion  {
 				
 			}*/
 			
-		public ArrayList buildBoundaries(URL file) {
+		public ArrayList buildBoundaries(String usBoundariesPath) {
 			allBounds = null;
 			allBounds = new ArrayList();
 			indSegments = new ArrayList();
@@ -78,7 +78,7 @@ public class PoliticalBoundariesRegion  {
 			try {
 				BufferedReader inStream =
 //					new BufferedReader(new FileReader(filename));
-					new BufferedReader(new URLReader(file));
+					new BufferedReader(new FileReader(usBoundariesPath));
 				String line = inStream.readLine();
 				line = inStream.readLine();
 				StringTokenizer dataLine = new StringTokenizer(line);

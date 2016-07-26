@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -155,9 +156,10 @@ public class PoliticalBoundariesGUI {
 	{
 
 		PoliticalBoundariesRegion newBoundaries = new PoliticalBoundariesRegion(); 
-		String usBoundariesPath = this.getClass().getResource("resources/sourcefiles/"+filename).getPath();
+		String usBoundariesPath = Info.getMainGUI().getRootPluginDir() + File.separator + "PoliticalBoundaries/sourcefiles/"+filename;
+		//this.getClass().getResource("resources/sourcefiles/"+filename).getPath();
 		//System.out.println(usBoundariesPath);
-		ArrayList<ArrayList> us_boundaries = (ArrayList<ArrayList>) newBoundaries.buildBoundaries(this.getClass().getResource("resources/sourcefiles/"+filename));
+		ArrayList<ArrayList> us_boundaries = (ArrayList<ArrayList>) newBoundaries.buildBoundaries(usBoundariesPath);//this.getClass().getResource("resources/sourcefiles/"+filename));
 		//vtkPolyData us_boundaries = (vtkPolyData) newBoundaries.buildBoundaries(this.getClass().getResource("resources/sourcefiles/us.vtk").getPath());
 		ArrayList<String> usStateNames = newBoundaries.getUSStateNames();
 		vtkLine line0 = new vtkLine();
@@ -363,8 +365,4 @@ public class PoliticalBoundariesGUI {
 		return politicalBoundarySubPanelLowerTab;
 	}
 	
-	public ArrayList<vtkActor> getActorPoliticalBoundariesSegments()
-	{
-		return actorPoliticalBoundariesSegments;
-	}
 }

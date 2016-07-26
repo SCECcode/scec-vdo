@@ -24,7 +24,7 @@ public class DrawingToolsPluginState implements PluginState {
 	private ArrayList<Color> color1;
 	ArrayList<Integer> visibility;
 	private ArrayList<String> dispName;
-	//private ArrayList<String> filePath;
+	private ArrayList<String> countyFilePath;
 	//TODO position 
 	//private ArrayList<Boolean> isHighway;
 	private ArrayList<HashMap<String, String>> attributes;
@@ -34,13 +34,14 @@ public class DrawingToolsPluginState implements PluginState {
 	private ArrayList<Integer> highwayVisibility;
 	private ArrayList<HashMap<String, String>> highwayAttributes;
 	private  ArrayList<String> highwayFilePath;
+	private boolean dt;
 
 	DrawingToolsPluginState(DrawingToolsGUI parent)
 	{
 		this.parent = parent;
 		drawingTools = new ArrayList<DrawingTool>();
 		dispName =new ArrayList<>();
-		//filePath =new ArrayList<>();
+		countyFilePath =new ArrayList<>();
 		color1 =new ArrayList<>();
 		visibility =new ArrayList<>();
 		attributes =new ArrayList<>();
@@ -66,7 +67,7 @@ public class DrawingToolsPluginState implements PluginState {
 			DrawingTool dt = (DrawingTool) parent.getDrawingToolArray().get(row);
 			drawingTools.add(dt);
 			dispName.add(dt.getTextString());
-			//filePath.add(dt.getSourceFile());
+			countyFilePath.add(dt.getSourceFile());
 			System.out.println(dt.getTextString());
 			color1.add(dt.getColor());
 			System.out.println(dt.getTextString());
@@ -85,7 +86,7 @@ public class DrawingToolsPluginState implements PluginState {
 		}
 
 		//highways
-		highwayTools.clear();;
+		highwayTools.clear();
 		highwayDispName.clear();
 		highwayColor1.clear();
 		highwayVisibility.clear();
@@ -111,6 +112,7 @@ public class DrawingToolsPluginState implements PluginState {
 			//isHighway.add(false);
 			System.out.println(highwayVisibility.get(row));
 		}
+		dt = parent.getDefaultLocation().dt;
 
 	}
 	@Override
@@ -127,6 +129,7 @@ public class DrawingToolsPluginState implements PluginState {
 			System.out.println(dr.getAttributes().get("Lon"));
 			i++;
 		}
+		parent.getDefaultLocation().loadCounties(dt);
 		i=0;
 		for (DrawingTool dr : highwayTools)
 		{
