@@ -45,6 +45,7 @@ public class FaultPluginState implements PluginState {
 	private ParameterList colorerParams;
 	private CPT cpt;
 	private boolean cptLog;
+	private boolean legendVisibile;
 	// animation
 	// TODO store current step
 	private FaultAnimation anim;
@@ -101,6 +102,7 @@ public class FaultPluginState implements PluginState {
 		if (D) System.out.println("Loading colorer params");
 		waitOnColorerChange();
 		updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
+		gui.getColorPanel().setLegendVisible(legendVisibile);
 		
 		// now update the tree itself
 		waitOnColorerChange();
@@ -196,6 +198,7 @@ public class FaultPluginState implements PluginState {
 				cptLog = ((CPTBasedColorer)colorer).isCPTLog();
 			}
 		}
+		legendVisibile = gui.getColorPanel().isLegendVisible();
 		if (gui.getAnimPanel() != null) {
 			anim = gui.getAnimPanel().getSelectedAnim();
 			if (anim != null)
@@ -282,6 +285,7 @@ public class FaultPluginState implements PluginState {
 		o.colorerParams = colorerParams;
 		o.cpt = cpt;
 		o.cptLog = cptLog;
+		o.legendVisibile = legendVisibile;
 		o.anim = anim;
 		o.animParams = animParams;
 		o.geomGen = geomGen;

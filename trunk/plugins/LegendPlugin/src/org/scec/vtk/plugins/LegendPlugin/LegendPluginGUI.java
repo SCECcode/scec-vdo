@@ -2,22 +2,29 @@ package org.scec.vtk.plugins.LegendPlugin;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -27,22 +34,33 @@ import javax.swing.event.ListSelectionListener;
 
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
+import org.scec.vtk.commons.legend.LegendItem;
+import org.scec.vtk.commons.legend.LegendUtils;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
-import org.scec.vtk.plugins.LegendPlugin.Component.LegendModel;
+import org.scec.vtk.plugins.LegendPlugin.Component.FontDialog;
 import org.scec.vtk.plugins.utils.components.ColorButton;
+import org.scec.vtk.plugins.utils.components.ImageFileChooser;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
+
+import com.google.common.base.Preconditions;
 
 import vtk.vtkActor2D;
 import vtk.vtkColorTransferFunction;
 import vtk.vtkImageMapper;
+import vtk.vtkImageResize;
 import vtk.vtkJPEGReader;
 import vtk.vtkLookupTable;
+import vtk.vtkProp;
 import vtk.vtkScalarBarActor;
 import vtk.vtkTextActor;
 
-public class LegendPluginGUI extends JPanel implements ActionListener, ChangeListener, ListSelectionListener {
+public class LegendPluginGUI extends JPanel implements ActionListener, ChangeListener, ListSelectionListener,
+PluginActorsChangeListener {
 
 	private static final long serialVersionUID = 1L;
 	private JButton displayButton, moveLeftButton, moveRightButton, moveUpButton, moveDownButton;
@@ -52,25 +70,32 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 
 	private JSlider transparencySlider;
 	private JTextField scaleField;
-	private JList<String> legendSelectList;
-	private DefaultListModel<String> model;
-	private LegendModel legendModel;
+	private JList<LegendItem> legendSelectList;
+	private DefaultListModel<LegendItem> model;
 
 	final float SCALE = 0.5f;
 
 	public CreateLegendsGUI createLeg;
 	
-	private PluginActors legendActors = new PluginActors();
-	private ArrayList<vtkActor2D> legends = new ArrayList<vtkActor2D>();
-	private int legendCounter = 0;
+	private LegendPlugin plugin;
+	private PluginActors legendActors;
+	
+	private ImageFileChooser chooser;
 
-	public LegendPluginGUI(PluginActors actors)
+	public LegendPluginGUI(LegendPlugin plugin)
 	{
 		super();
-		this.legendActors = actors;
+		this.plugin = plugin;
+		this.legendActors = plugin.getPluginActors();
 		this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		legendModel = new LegendModel(this);   
 		this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+		
+//		scaleField = new JTextField("1.0");
+//		scaleField.addActionListener(this);
+//		JPanel scalePanel = new JPanel();
+//		scalePanel.setLayout(new GridLayout(1,2));
+//		scalePanel.setBorder(BorderFactory.createTitledBorder("Scale"));
+//		scalePanel.add(scaleField);
 
 		displayButton = new JButton("Display");
 		displayButton.setEnabled(false);
@@ -100,8 +125,8 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 		upperButtonPanel.add(moveUpButton);
 		upperButtonPanel.add(moveDownButton);
 
-		model = new DefaultListModel();
-		legendSelectList = new JList(model);
+		model = new DefaultListModel<>();
+		legendSelectList = new JList<>(model);
 		legendSelectList.addListSelectionListener(this);
 		JScrollPane listScroll = new JScrollPane(legendSelectList);
 		JPanel listPanel = new JPanel();
@@ -134,7 +159,13 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 		lowerButtonPanel.add(removeButton);
 		listPanel.add(lowerButtonPanel);
 
+//		add(scalePanel);
 		add(listPanel);
+		
+		Info.getMainGUI().addPluginActorsChangeListener(this);
+		// now add any legends that were created before this plugin was instantiated
+		for (LegendItem legend : Info.getMainGUI().getDisplayedLegends())
+			legendAdded(legend);
 	}
 
 	public void valueChanged(ListSelectionEvent e)
@@ -143,10 +174,9 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 		
 		if (source == legendSelectList)
 		{
-			int index = legendSelectList.getSelectedIndex();
-			if (index != -1)
-			{
-				int visibility = legends.get(index).GetVisibility();
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null) {
+				int visibility = legend.getActor().GetVisibility();
 				if (visibility == 1)
 				{
 					displayButton.setText("Hide");
@@ -166,334 +196,159 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 		}
 	}
 
-	public JList getLegendSelectList() {
-		return legendSelectList;
-	}
-
-	public void setLegendSelectList(JList legendSelectList) {
-		this.legendSelectList = legendSelectList;
-	}
-
 	public void actionPerformed(ActionEvent e)
 	{
 		Object source = e.getSource();
 
 		if (source == imageButton)
 		{
-			vtkJPEGReader jpeg = null;
-			try {
-				jpeg = legendModel.addImageLegend();
-			} catch (NullPointerException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			if (chooser == null) {
+				chooser = new ImageFileChooser();
 			}
-			
-			if (jpeg != null)
-			{
-				vtkImageMapper  mapper = new vtkImageMapper();
-	            mapper.SetInputData(jpeg.GetOutput());
-	            mapper.SetColorWindow(256.0);
-	            mapper.SetColorLevel(128.0);
-	            vtkActor2D  actor2d = new vtkActor2D();
-	            actor2d.SetMapper(mapper);
-	            actor2d.SetPosition(400, 600);
-				
-				legendActors.addActor(actor2d);
-				legends.add(actor2d);
-				legendCounter++;
-				displayButton.setText("Hide");
-				setMoveButtonsEnabled(true);
-				displayButton.setEnabled(true);
-				removeButton.setEnabled(true);
-				model.addElement("Legend #" + legendCounter);
-				legendSelectList.setSelectedIndex(model.getSize()-1);
-				Info.getMainGUI().updateRenderWindow();
-			}	
+
+			int returnVal = chooser.showOpenDialog(this);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				try {
+					LegendItem legend = LegendUtils.buildImageLegend(plugin, file, 0d, 0d);
+					legendActors.addLegend(legend); // this will trigger a call to legendAdded
+					MainGUI.updateRenderWindow();
+				} catch (IOException e1) {
+					JOptionPane.showMessageDialog(this, e1.getMessage(), "Error loading image", JOptionPane.ERROR_MESSAGE);
+				} catch (NullPointerException e2) {
+					JOptionPane.showMessageDialog(this, "That image type is not supported. Please use a .jpg, .png, or .tiff image.", "Error loading image.", JOptionPane.ERROR_MESSAGE);
+				}
+			}
 		}
 		else if (source == textButton)
 		{
-			String text = (String)JOptionPane.showInputDialog(Info.getMainGUI().getContentPane(), "Text Label: ", "Text To Add", JOptionPane.PLAIN_MESSAGE);
-			addText(text);
+//			String text = (String)JOptionPane.showInputDialog(Info.getMainGUI().getContentPane(),
+//					"Text Label: ", "Text To Add", JOptionPane.PLAIN_MESSAGE);
+			TextDialogBox textDialog = new TextDialogBox();
+			String text = textDialog.getText();
+			Font font = textDialog.getFont();
+			
+			if (text != null)
+			{
+				LegendItem legend = LegendUtils.buildTextLegend(plugin, text, font, 24, Color.WHITE, 0d, 0d);
+				legendActors.addLegend(legend); // this will trigger a call to legendAdded
+				MainGUI.updateRenderWindow();
+			}
 		}
 		else if (source == removeButton)
 		{
-			removeLegendActor();
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null) {
+				Plugin plugin = legend.getSource();
+				plugin.getPluginActors().removeLegend(legend);
+				MainGUI.updateRenderWindow();
+			}
 		}
 		else if (source == displayButton)
 		{	
-			int index = legendSelectList.getSelectedIndex();
-			if (index != -1)
-			{
-				int visibility = legends.get(index).GetVisibility();
-				if (visibility == 1)
-				{
-					legends.get(index).SetVisibility(0);
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null) {
+				vtkActor2D legendActor = legend.getActor();
+				int visibility = legendActor.GetVisibility();
+				if (visibility == 1) {
+					legendActor.SetVisibility(0);
 					displayButton.setText("Display");
-				}
-				else
-				{
-					legends.get(index).SetVisibility(1);
+				} else {
+					legendActor.SetVisibility(1);
 					displayButton.setText("Hide");
 				}
+				legendActor.Modified();
+				MainGUI.updateRenderWindow();
 			}
-			
-			Info.getMainGUI().updateRenderWindow();
 		}
 		else if (source == colorButton)
 		{
-			int index = legendSelectList.getSelectedIndex();
-			if (index != -1)
-			{
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null) {
+				vtkActor2D legendActor = legend.getActor();
 				Color color = colorChooser.getColor();
-				if(color != null)
-				{
-					legends.get(index).GetProperty().SetColor(color.getRed(), color.getGreen(), color.getBlue());
-					legends.get(index).Modified();
-				}
+				legendActor.GetProperty().SetColor(color.getRed()/255d, color.getGreen()/255d, color.getBlue()/255d);
+				legendActor.Modified();
+				MainGUI.updateRenderWindow();
 			}
-			
-			Info.getMainGUI().updateRenderWindow();
 		}
 		
 		else if(source == moveLeftButton)
 		{
-			if (model.getElementAt(legendSelectList.getSelectedIndex()).equals("Color Gradiant")){
-				moveLegend(-0.05, 0);
-			} else {
-				moveLegend(-5, 0);
-			}
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null)
+				moveLegend(legend, -5, 0);
 		}
 		else if (source == moveRightButton)
 		{
-			if (model.getElementAt(legendSelectList.getSelectedIndex()).equals("Color Gradiant")){
-				moveLegend(0.05, 0);
-			} else {
-				moveLegend(5, 0);
-			}
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null)
+				moveLegend(legend, 5, 0);
 		}
 		else if (source == moveUpButton)
 		{
-			if (model.getElementAt(legendSelectList.getSelectedIndex()).equals("Color Gradiant")){
-				moveLegend(0, 0.05);
-			} else {
-				moveLegend(0, 5);
-			}
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null)
+				moveLegend(legend, 0, 5);
 		}
 		else if (source == moveDownButton)
 		{
-			if (model.getElementAt(legendSelectList.getSelectedIndex()).equals("Color Gradiant")){
-				moveLegend(0, -0.05);
-			} else {
-				moveLegend(0, -5);
-			}
+			LegendItem legend = legendSelectList.getSelectedValue();
+			if (legend != null)
+				moveLegend(legend, 0, -5);
 		}
 		else if(source == scaleField){
 			//Update if the value changes
 			updateScale();
 		}
 		else if(source == createButton){
-			createLeg = new CreateLegendsGUI(this,model,legendSelectList,legendModel,scaleField,displayButton,transparencySlider);
+			// TODO
+			createLeg = new CreateLegendsGUI(scaleField, displayButton, transparencySlider);
 			createLeg.setLocation(Info.getMainGUI().getLocation());
 			createLeg.setVisible(true);
 		}
 	}
 	
-	private void moveLegend(double x, double y)
+	private void moveLegend(LegendItem legend, double x, double y)
 	{
-		int index = legendSelectList.getSelectedIndex();
-		legends.get(index).SetPosition(legends.get(index).GetPosition()[0]+x, legends.get(index).GetPosition()[1]+y);
-		legends.get(index).Modified();
-		Info.getMainGUI().updateRenderWindow();
+		vtkActor2D actor = legend.getActor();
+		double[] position = actor.GetPosition();
+		if (actor instanceof vtkScalarBarActor)
+			// TODO figure out why things are different for scalar bars and remove this hack
+			actor.SetPosition(position[0] + x*0.01, position[1] + y*0.01);
+		else
+			actor.SetPosition(position[0] + x, position[1] + y);
+		actor.Modified();
+		MainGUI.updateRenderWindow();
 	}
 	
-	public void addText(String text)
-	{
-		vtkTextActor textActor = new vtkTextActor();
-		
-		if (text != null)
-		{
-			textActor.SetInput(text);
-			textActor.SetPosition(300,300);
-			textActor.GetTextProperty().SetFontSize(24);
-			textActor.GetTextProperty().SetColor(1.0, 1.0, 1.0);
-			
-			model.addElement(text);
-			legends.add(textActor);
-			legendActors.addActor(textActor);
-			legendSelectList.setSelectedIndex(model.getSize()-1);
-			Info.getMainGUI().updateRenderWindow();
-		}
-	}
-	
-	public void addScalarBar(CPT cpt, String title)
-	{
-		vtkScalarBarActor scalarBar = new vtkScalarBarActor();
-		int minValue = (int)cpt.getMinValue();
-		int maxValue = (int)cpt.getMaxValue();
-		Color minColor = cpt.getMinColor();
-		Color maxColor = cpt.getMaxColor();
-		int numTicks = cpt.size()+1;
-		
-		scalarBar.SetTitle(title);
-		scalarBar.SetNumberOfLabels(numTicks);
-		
-		
-		vtkLookupTable hue = new vtkLookupTable();
-		hue.SetTableRange(minValue, maxValue);
-		hue.SetNumberOfColors(256);
-		vtkColorTransferFunction ctf = new vtkColorTransferFunction();
-		ctf.SetColorSpaceToRGB();
-		for (int i=0; i<cpt.size(); i++)
-		{
-			CPTVal str = cpt.get(i);
-			ctf.AddRGBPoint((float)i/(float)cpt.size(), str.minColor.getRed()/255.0, str.minColor.getGreen()/255.0, str.minColor.getBlue()/255.0);
-		}
-		ctf.AddRGBPoint(1, maxColor.getRed()/255.0, maxColor.getGreen()/255.0, maxColor.getBlue()/255.0);
-		
-		int tableSize = (int)maxValue;
-		hue.Build();
-		for (int i=0; i<256; i++)
-		{
-			double[] color=ctf.GetColor((double)i/256.0);
-			hue.SetTableValue(i, color[0], color[1], color[2], 1);
-		}
-		
-		scalarBar.SetLookupTable(hue);
-		scalarBar.SetOrientationToHorizontal();
-		scalarBar.SetWidth(0.6);
-		scalarBar.SetHeight(0.10);
-		scalarBar.SetPosition(0.1, 0.1);
-		scalarBar.Modified();
-		
-		legendActors.addActor(scalarBar);
-		legends.add(scalarBar);
-		model.addElement("Color Gradiant");
-		legendSelectList.setSelectedIndex(model.getSize()-1);
-		Info.getMainGUI().getRenderWindow().GetRenderer().AddActor2D(scalarBar);
-		Info.getMainGUI().updateRenderWindow();
-	}
-	
-	public void addEarthquakeScale(Color colorOne, Color colorTwo, EQCatalog eqc)
-	{
-		vtkScalarBarActor scalarBar = new vtkScalarBarActor();
-		double minValue = (double)eqc.getMinMagnitude();
-		double maxValue = (double)eqc.getMaxMagnitude();
-		int numTicks = 4;
-		String title = eqc.getDisplayName() + " Magnitude Range";
-		scalarBar.SetTitle(title);
-		scalarBar.SetNumberOfLabels(numTicks);
-		
-		
-		vtkLookupTable hue = new vtkLookupTable();
-		hue.SetTableRange(minValue, maxValue);
-		hue.SetNumberOfColors(256);
-		vtkColorTransferFunction ctf = new vtkColorTransferFunction();
-		ctf.SetColorSpaceToRGB();
-		for (int i=0; i<2; i++)
-		{
-			ctf.AddRGBPoint((float)i/(float)2, colorOne.getRed()/255.0, colorOne.getGreen()/255.0, colorOne.getBlue()/255.0);
-		}
-		ctf.AddRGBPoint(1, colorTwo.getRed()/255.0, colorTwo.getGreen()/255.0, colorTwo.getBlue()/255.0);
-		
-		hue.Build();
-		for (int i=0; i<256; i++)
-		{
-			double[] color=ctf.GetColor((double)i/256.0);
-			hue.SetTableValue(i, color[0], color[1], color[2], 1);
-		}
-		
-		scalarBar.SetLookupTable(hue);
-		scalarBar.SetOrientationToHorizontal();
-		scalarBar.SetWidth(0.6);
-		scalarBar.SetHeight(0.10);
-		scalarBar.SetPosition(0.1, 0.1);
-		scalarBar.Modified();
-		
-		legendActors.addActor(scalarBar);
-		legends.add(scalarBar);
-		model.addElement("Color Gradiant");
-		legendSelectList.setSelectedIndex(model.getSize()-1);
-		Info.getMainGUI().getRenderWindow().GetRenderer().AddActor2D(scalarBar);
-		Info.getMainGUI().updateRenderWindow();
-	}
-	
-	
-	public void removeLegendActor()
-	{
-		int index = legendSelectList.getSelectedIndex();
-		if (index != -1)
-		{
-			legendActors.removeActor(legends.get(index));
-			legends.remove(index);
-			legendCounter--;
-			
-			model.remove(legendSelectList.getSelectedIndex());
-
-			if (model.size() >= 1)
-			{
-				legendSelectList.setSelectedIndex(model.size()-1);
-			}
-			else
-			{
-				setMoveButtonsEnabled(false);
-				displayButton.setEnabled(false);
-				removeButton.setEnabled(false);
-			}
-			Info.getMainGUI().updateRenderWindow();
-		}
-	}
-	
-	private void removeLegendActors()
-	{
-		for (vtkActor2D actor : legends)
-		{
-			legendActors.removeActor(actor);
-		}
-		legends.clear();
-		model.clear();
-		legendCounter = 0;
-		setMoveButtonsEnabled(false);
-		displayButton.setEnabled(false);
-		removeButton.setEnabled(false);
-		Info.getMainGUI().updateRenderWindow();
-	}
-
-	public DefaultListModel getModel() {
-		return model;
-	}
-
-	public void setModel(DefaultListModel model) {
-		this.model = model;
-	}
 	/**
 	 * Takes the value in the scale field and apply it to the image
 	 */
 	private void updateScale(){
-		int index = legendSelectList.getSelectedIndex();
+		LegendItem legend = legendSelectList.getSelectedValue();
 
-		if (index != -1)
-		{
-			try
-			{
+		if (legend != null) {
+			try {
 				double scaleFactor = new Double(scaleField.getText()).doubleValue();
 				System.out.println(scaleFactor);
 				if (scaleFactor == 0)
 					return; // cannot be 0 or a crash will occur
-				
-				legends.get(index).SetHeight(legends.get(index).GetHeight()*scaleFactor);
-				legends.get(index).SetWidth(legends.get(index).GetWidth()*scaleFactor);
-				legends.get(index).Modified();
-				legendActors.clearActors();
-				legendActors.addActor(legends.get(index));
+				vtkImageResize resize = new vtkImageResize();
+				vtkActor2D actor = legend.getActor();
+				resize.SetInputData(((vtkImageMapper)actor.GetMapper()).GetInput());
+				resize.SetOutputDimensions((int)(actor.GetHeight()*scaleFactor), (int)(actor.GetWidth()*scaleFactor), 1);
+				resize.Update();
+				actor.GetMapper().SetInputConnection(resize.GetOutputPort());
+//				actor.SetHeight(actor.GetHeight()*scaleFactor);
+//				actor.SetWidth(actor.GetWidth()*scaleFactor);
+				actor.Modified();
 			}
 			catch(NumberFormatException nfe)
 			{
 				// User put in something that was NaN
 			}
-			Info.getMainGUI().updateRenderWindow();
+			MainGUI.updateRenderWindow();
 		}
 	}
 	private void setMoveButtonsEnabled(boolean enabled)
@@ -506,33 +361,120 @@ public class LegendPluginGUI extends JPanel implements ActionListener, ChangeLis
 	
 	public void stateChanged(ChangeEvent e)
 	{	
-//		JSlider source = (JSlider)e.getSource();
-//
-//		if (source == transparencySlider)
-//		{
-//			
-//			for (vtkActor2D actor : legends)
-//			{
-//				vtkActor2D act = new vtkActor2D
-//				
-//				actor.GetProperty().SetOpacity(0.5);
-//				actor.Modified();
-//			}
-//		}
-//		Info.getMainGUI().updateRenderWindow();
+		JSlider source = (JSlider)e.getSource();
+
+		if (source == transparencySlider)
+		{
+			LegendItem legend = legendSelectList.getSelectedValue();
+
+			if (legend != null) {
+				int transparency = source.getValue();
+				if (transparency == 0)
+					return; // cannot be 0 or a crash will occur
+				vtkActor2D actor = legend.getActor();
+				actor.GetProperty().SetOpacity(transparency);
+				actor.Modified();
+				MainGUI.updateRenderWindow();
+			}
+		}
 	}
 
 	public void itemStateChanged(ItemEvent e)
 	{
 	}
-
-	public LegendModel getLegendModel()
-	{
-		return legendModel;
-	}
 	
 	public void unload()
 	{
-		this.removeLegendActors();
+		Info.getMainGUI().removePluginActorsChangeListener(this);
+		// clear any custom legends
+		legendActors.clearLegends();
+		model.clear();
+		MainGUI.updateRenderWindow();
+	}
+
+	@Override
+	public void actorAdded(vtkProp actor) {} // do nothing
+
+	@Override
+	public void actorRemoved(vtkProp actor) {} // do nothing
+
+	@Override
+	public synchronized void legendAdded(LegendItem legend) {
+		// called whenever a legend is added
+		if (!model.contains(legend))
+			model.addElement(legend);
+	}
+
+	@Override
+	public synchronized void legendRemoved(LegendItem legend) {
+		// called whenever a legend is removed
+		model.removeElement(legend);
+	}
+	
+	class TextDialogBox {
+		private JDialog dialog;
+		private JTextArea textField;
+		private JPanel upperPanel, lowerPanel;
+		private JButton fontButton, okButton;
+		private FontDialog fontGUI;
+		private String text;
+		
+		public TextDialogBox()
+		{
+			dialog = new JDialog();
+			dialog.setSize(400, 300);
+			dialog.setLocation(500, 500);
+			dialog.setModal(true);
+			dialog.setTitle("Text To Add");
+			dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
+			
+			upperPanel = new JPanel();
+			textField = new JTextArea();
+			textField.setColumns(30);
+			upperPanel.add(textField);
+			
+			lowerPanel = new JPanel();
+			lowerPanel.setLayout(new BoxLayout(lowerPanel, BoxLayout.X_AXIS));
+			fontButton = new JButton("Font");
+			fontButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					fontGUI = new FontDialog(textField);
+					fontGUI.setVisible(true);
+					if(fontGUI.isVisible()==false) { 
+						textField.setFont(fontGUI.getFont());
+						if ((fontGUI.getColor()==Color.WHITE)&&(textField.getBackground().equals(new Color(255,255,255)))){
+							textField.setForeground(Color.BLACK);
+						} else {
+							textField.setForeground(fontGUI.getColor());
+						}
+					}
+				}
+			});
+			
+			okButton = new JButton("OK");
+			okButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					text = textField.getText();
+					dialog.setVisible(false);
+					dialog.dispose();
+				}
+			});
+			lowerPanel.add(fontButton);
+			lowerPanel.add(okButton);
+			dialog.add(upperPanel);
+			dialog.add(lowerPanel);
+			dialog.pack();
+			dialog.setVisible(true);
+		}
+		
+		public String getText()
+		{
+			return text;
+		}
+		
+		public Font getFont()
+		{
+			return textField.getFont();
+		}
 	}
 }
