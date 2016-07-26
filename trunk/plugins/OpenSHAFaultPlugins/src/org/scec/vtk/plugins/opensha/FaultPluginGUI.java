@@ -108,12 +108,12 @@ public class FaultPluginGUI extends JSplitPane {
 	private JXLayer<JComponent> jxLayer;
 	private LockableUI lockUI;
 	
-	public FaultPluginGUI(	PluginActors pluginActors,
+	public FaultPluginGUI(	AbstractFaultPlugin plugin,
 							FaultTreeBuilder builder,
 							ArrayList<FaultColorer> colorers,
 							ArrayList<GeometryGenerator> geomGens,
 							Color defaultColor) {
-		this(pluginActors, builder, colorers, geomGens, defaultColor, null);
+		this(plugin, builder, colorers, geomGens, defaultColor, null);
 	}
 	
 	private static boolean hasAnimColorer(ArrayList<FaultAnimation> faultAnims) {
@@ -124,7 +124,7 @@ public class FaultPluginGUI extends JSplitPane {
 		return false;
 	}
 
-	public FaultPluginGUI(	PluginActors pluginActors,
+	public FaultPluginGUI(	AbstractFaultPlugin plugin,
 							FaultTreeBuilder builder,
 							ArrayList<FaultColorer> colorers,
 							ArrayList<GeometryGenerator> geomGens,
@@ -156,7 +156,7 @@ public class FaultPluginGUI extends JSplitPane {
 			}
 		}
 		if (colorers != null && colorers.size() > 0)
-			colorPanel = new ColorerPanel(colorers, colorers.get(0));
+			colorPanel = new ColorerPanel(plugin, colorers, colorers.get(0));
 		    
 		geomPanel = new GeometryTypeSelectorPanel(geomGens);
 		if (builder.getFaultParams() != null && builder.getFaultParams().size() > 0)
@@ -201,7 +201,7 @@ public class FaultPluginGUI extends JSplitPane {
 		for (GeometryGenerator geomGen : geomGens)
 			geomGen.setPickHandler(pickhandler);
 
-		em = new EventManager( pluginActors, table, colorPanel, geomPanel,
+		em = new EventManager( plugin.getPluginActors(), table, colorPanel, geomPanel,
 				builder.getFaultParams(), defaultColor, pickhandler, lockUI, pickhandler);
 
 		if (faultAnims != null && faultAnims.size() > 0) {

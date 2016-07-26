@@ -14,7 +14,7 @@ public class LegendPlugin extends ActionPlugin {
 
 	@Override
 	protected JPanel createGUI() throws IOException {
-		this.legendGUI = new LegendPluginGUI(getPluginActors());
+		this.legendGUI = new LegendPluginGUI(this);
 		return this.legendGUI;
 	}
 	
