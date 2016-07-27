@@ -4,6 +4,9 @@ import javax.swing.JPanel;
 
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.ActionPlugin;
+import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.StatefulPlugin;
+import org.scec.vtk.plugins.ShakeMapPlugin.ShakeMapPluginState;
 
 
 /**
@@ -24,9 +27,11 @@ import org.scec.vtk.plugins.ActionPlugin;
  * 
  * @version $Id: GraticulePlugin.java 4873 2014-07-25 15:28:52Z sellsted $
  */
-public class GraticulePlugin extends ActionPlugin {
+public class GraticulePlugin extends ActionPlugin implements StatefulPlugin{
+	
 	GraticuleGUI gratPanel;
-
+	private PluginState state;
+	
 	public GraticulePlugin() {
 		// this.metadata = new PluginInfo("Grids", "Grids", "David & Genia",
 		// "1.0");
@@ -45,6 +50,14 @@ public class GraticulePlugin extends ActionPlugin {
 
 	public GraticuleGUI getGraticuleGUI() {
 		return gratPanel;
+	}
+
+	@Override
+	public PluginState getState() {
+		// TODO Auto-generated method stub
+		if(state==null)
+			state = new GraticulePluginState(this.gratPanel);
+		return state;
 	}
 
 	// TODO
