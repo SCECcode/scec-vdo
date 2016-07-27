@@ -97,8 +97,8 @@ public class CueAnimator  {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {	
 						Info.getMainGUI().updateRenderWindow();//.GetRenderWindow().Render();
-						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
-						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
+						Info.getMainGUI().getRenderWindow().getRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
+						Info.getMainGUI().getRenderWindow().getRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
 					}
 				});
 			} catch (InvocationTargetException e) {
@@ -150,9 +150,9 @@ public class CueAnimator  {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {	
-						Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
-						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
-						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
+						Info.getMainGUI().getRenderWindow().getRenderWindow().Render();
+						Info.getMainGUI().getRenderWindow().getRenderWindow().GetRenderers().GetFirstRenderer().SetActiveCamera(camnew);
+						Info.getMainGUI().getRenderWindow().getRenderWindow().GetRenderers().GetFirstRenderer().ResetCameraClippingRange();
 					}
 				});
 			} catch (InvocationTargetException e) {
@@ -176,11 +176,11 @@ public class CueAnimator  {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {
-						int[] renderSize = Info.getMainGUI().getRenderWindow().GetRenderWindow().GetSize();
+						int[] renderSize = Info.getMainGUI().getRenderWindow().getRenderWindow().GetSize();
 						int width =  renderSize[0];
 						int height = renderSize[1];
 						vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();
-						Info.getMainGUI().getRenderWindow().GetRenderWindow().GetPixelData(0, 0, width, height,
+						Info.getMainGUI().getRenderWindow().getRenderWindow().GetPixelData(0, 0, width, height,
 								1, vtkPixelData);
 						ScriptingPluginGUI.imagePixelData.add(vtkPixelData);
 					}
@@ -259,7 +259,7 @@ public class CueAnimator  {
 							//						 ArrayList eqActorList = EarthquakeCatalogPluginGUI.aniamteEarthquakeOpacity(TimerCount,eq,cat.get(j),255);
 							//						
 							//						Info.getMainGUI().addActors(eqActorList);
-							Info.getMainGUI().getRenderWindow().GetRenderWindow().Render();
+							Info.getMainGUI().getRenderWindow().getRenderWindow().Render();
 						}
 					});
 				} catch (InvocationTargetException e) {
@@ -432,7 +432,7 @@ public class CueAnimator  {
 	vtkAnimationCue info = new vtkAnimationCue();
 	vtkCameraInterpolator incam = new vtkCameraInterpolator();
 	//ArrayList<vtkUnsignedCharArray> imagePixelData = new ArrayList<vtkUnsignedCharArray>(); 
-	int[] renderSize = Info.getMainGUI().getRenderWindow().GetRenderWindow().GetSize();
+	int[] renderSize = Info.getMainGUI().getRenderWindow().getRenderWindow().GetSize();
 	int width = renderSize[0];
 	int height = renderSize[1];
 	vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();

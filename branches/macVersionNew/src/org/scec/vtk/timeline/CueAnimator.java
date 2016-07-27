@@ -89,7 +89,7 @@ public class CueAnimator {
 					scene.SetModeToSequence();
 					scene.SetFrameRate(timeline.getFamerate());
 					
-					int[] renderSize = MainGUI.getRenderWindow().GetRenderWindow().GetSize();
+					int[] renderSize = MainGUI.getRenderWindow().getRenderWindow().GetSize();
 					renderWidth =  renderSize[0];
 					renderHeight = renderSize[1];
 					
@@ -177,13 +177,13 @@ public class CueAnimator {
 		@Override
 		public void run() {
 			timeline.activateTime(animTime);
-			int[] renderSize = MainGUI.getRenderWindow().GetRenderWindow().GetSize();
+			int[] renderSize = MainGUI.getRenderWindow().getRenderWindow().GetSize();
 			int width =  renderSize[0];
 			int height = renderSize[1];
 			Preconditions.checkState(width == renderWidth && height == renderHeight,
 					"Render canvas size changed during render");
 			vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();
-			MainGUI.getRenderWindow().GetRenderWindow().GetPixelData(0, 0, width, height,
+			MainGUI.getRenderWindow().getRenderWindow().GetPixelData(0, 0, width, height,
 					1, vtkPixelData);
 			renderedFrames.add(vtkPixelData);
 		}

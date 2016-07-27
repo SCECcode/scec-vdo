@@ -12,7 +12,7 @@ public class KeyFrame {
  public KeyFrame() {
 	// TODO Auto-generated constructor stub
 	 camPos = new double[3];
-	 cam = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+	 cam = Info.getMainGUI().getRenderWindow().getRenderer().GetActiveCamera();
 	// camPos = cam.GetPosition();
 }
  public vtkCamera getCamPos()
