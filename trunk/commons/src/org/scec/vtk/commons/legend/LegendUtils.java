@@ -80,10 +80,11 @@ public class LegendUtils {
 		Preconditions.checkNotNull(text, "Text cannot be null when building text legend");
 		vtkTextActor textActor = new vtkTextActor();
 		textActor.SetInput(text);
-		textActor.SetPosition(x, y); // TODO : why different coordinates? figure that out
+		textActor.SetPosition(x, y);
 		textActor.GetTextProperty().SetFontSize(fontSize);
 		textActor.GetTextProperty().SetFontFamilyAsString(font.getFamily());
 		textActor.GetTextProperty().SetColor(color.getRed()/255d, color.getGreen()/255d, color.getBlue()/255d);
+		textActor.Modified();
 		
 		return new LegendItem(textActor, source, text);
 	}

@@ -93,4 +93,8 @@ public class ColorWellButton extends JButton {
         ColorWellIcon icon = new ColorWellIcon(c1, c2, width-(2*MARGIN), height-(2*MARGIN), 0);
         return icon;
     }
+    
+    public ColorWellIcon getIcon() {
+    	return this.buttonIcon;
+    }
 }

@@ -226,11 +226,12 @@ PluginActorsChangeListener {
 //					"Text Label: ", "Text To Add", JOptionPane.PLAIN_MESSAGE);
 			TextDialogBox textDialog = new TextDialogBox();
 			String text = textDialog.getText();
-			Font font = textDialog.getFont();
 			
-			if (text != null)
+			if (text != null && !text.equals(""))
 			{
-				LegendItem legend = LegendUtils.buildTextLegend(plugin, text, font, 24, Color.WHITE, 0d, 0d);
+				Font font = textDialog.getFont();
+				Color color = textDialog.getColor();
+				LegendItem legend = LegendUtils.buildTextLegend(plugin, text, font, font.getSize(), color, 0d, 0d);
 				legendActors.addLegend(legend); // this will trigger a call to legendAdded
 				MainGUI.updateRenderWindow();
 			}
@@ -418,6 +419,7 @@ PluginActorsChangeListener {
 		private JButton fontButton, okButton;
 		private FontDialog fontGUI;
 		private String text;
+		private JScrollPane scrollPane;
 		
 		public TextDialogBox()
 		{
@@ -429,9 +431,10 @@ PluginActorsChangeListener {
 			dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
 			
 			upperPanel = new JPanel();
-			textField = new JTextArea();
-			textField.setColumns(30);
-			upperPanel.add(textField);
+			textField = new JTextArea(12, 30);
+			scrollPane = new JScrollPane(textField);
+			
+			upperPanel.add(scrollPane);
 			
 			lowerPanel = new JPanel();
 			lowerPanel.setLayout(new BoxLayout(lowerPanel, BoxLayout.X_AXIS));
@@ -475,6 +478,15 @@ PluginActorsChangeListener {
 		public Font getFont()
 		{
 			return textField.getFont();
+		}
+		
+		public Color getColor()
+		{
+			if (fontGUI != null && fontGUI.getColor() != null) {
+				return fontGUI.getColor();
+			} else {
+				return Color.WHITE;
+			}
 		}
 	}
 }
