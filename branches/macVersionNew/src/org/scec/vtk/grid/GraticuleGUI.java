@@ -126,7 +126,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	
 	public static GraticulePreset getGraticlePreset(){
 		//URL calGridURL = GraticuleGUI.class.getResource("resources/California.grat");
-		String calGridPath = Info.getMainGUI().getRootPluginDir() + File.separator + "Grid\\California.grat";
+		String calGridPath = Info.getMainGUI().getRootPluginDir() + File.separator + "Grid/California.grat";
 		System.out.println(calGridPath);
 		File calGrid = new File(calGridPath);//.toURI());
 		
