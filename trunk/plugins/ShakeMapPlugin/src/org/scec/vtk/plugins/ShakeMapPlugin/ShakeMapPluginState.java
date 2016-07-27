@@ -25,45 +25,44 @@ public class ShakeMapPluginState implements PluginState{
 	//Values in these arrays will be saved to xml file
 	private ArrayList<String> filePath;
 	private ArrayList<Double> transparency;
+	private ArrayList<String> mapParameter; //mmi, pga, or pgv
 	
 	//These values are not saved in a xml file, 
 	//but are used in the load() function
 	private ArrayList<Integer> visibility;
 	private ArrayList<Integer> selectedIndexes;
+	private ArrayList<Double> setTransparencies;
 	
 	ShakeMapPluginState(ShakeMapGUI parent)
 	{
 		this.parent = parent;
 		filePath = new ArrayList<String>();
 		transparency = new ArrayList<Double>();
+		mapParameter = new ArrayList<String>();
 		visibility = new ArrayList<Integer>();
 		selectedIndexes = new ArrayList<Integer>();
+		setTransparencies = new ArrayList<Double>();
 	}
 
 	//Gets the latest details. This function is called
 	//in toXML()
 	void copyLatestCatalogDetails()
 	{
-
 		filePath.clear();
 		transparency.clear();
 		selectedIndexes.clear();
-
-		for (JCheckBox box : parent.getCheckBoxList())
-		{
-			filePath.add(box.getName());
-		}
+		mapParameter.clear();
 		
 		int shakeIndex = 0;
 		for(ShakeMap shake: parent.getShakeMapsList()){
 			if(shake != null){ 
-				transparency.add(shake.getActor().GetProperty().GetOpacity());
 				visibility.add(shake.getActor().GetVisibility());
 				selectedIndexes.add(shakeIndex);
+				setTransparencies.add(shake.getActor().GetProperty().GetOpacity());
 			}
 			else{
-				transparency.add(null);
 				visibility.add(0);
+				setTransparencies.add(null);
 			}
 			shakeIndex++;
 		}
@@ -75,17 +74,23 @@ public class ShakeMapPluginState implements PluginState{
 	 */
 	@Override
 	public void load() {
-		// call methods to update based on the properties captured //might also want to put swing invoke and wait
+		// call methods to update based on the properties captured //might also want to put swing invoke and wait	
+		int v_size = visibility.size();
 		for(int i=0; i<parent.getShakeMapsList().size(); i++){	
 			if(visibility.isEmpty())
 				break;
 			if(parent.getShakeMapsList().get(i) != null){			
-				parent.getShakeMapsList().get(i).getActor().SetVisibility(visibility.get(i));
-				parent.getCheckBoxList().get(i).setSelected(visibility.get(i)==1);
+				if(i<visibility.size()){ 
+					parent.getShakeMapsList().get(i).getActor().SetVisibility(visibility.get(i));
+					parent.getCheckBoxList().get(i).setSelected(visibility.get(i)==1);
+				}else{ //maybe map was not loaded yet at that time frame
+					parent.getShakeMapsList().get(i).getActor().SetVisibility(0);
+					parent.getCheckBoxList().get(i).setSelected(false);
+				}
 			}
 		}
 		for(int i: selectedIndexes){
-			parent.getShakeMapsList().get(i).getActor().GetProperty().SetOpacity(transparency.get(i));
+			parent.getShakeMapsList().get(i).getActor().GetProperty().SetOpacity(setTransparencies.get(i));
 		}		
 	}
 
@@ -95,8 +100,9 @@ public class ShakeMapPluginState implements PluginState{
 		{
 			if(box.isSelected()){
 				stateEl.addElement( "ShakeMaps" )
-				.addAttribute( "filePath", filePath.get(i))
-				.addAttribute( "transparency", Double.toString(parent.getShakeMapsList().get(i).getActor().GetProperty().GetOpacity()));
+				.addAttribute( "filePath", box.getName())
+				.addAttribute( "transparency", Double.toString(parent.getShakeMapsList().get(i).getActor().GetProperty().GetOpacity()))
+				.addAttribute("parameter", parent.getParameterList().get(i));
 			}
 
 			i++;
@@ -115,51 +121,46 @@ public class ShakeMapPluginState implements PluginState{
 	 * -filenames: list of files which contain the map data
 	 * -transparentValues: list of opacity (transparency) values
 	 */
-	public void showMaps(ArrayList<String> filenames, ArrayList<Double> transparentValues){
-		File presetDirectory = new File(parent.dataPath);
-		File savedDirectory = new File(parent.dataPath+"/"+parent.moreMaps);
-		//Add everyting to one list
-		ArrayList<File> files = new ArrayList<File>();
-		//add presets first
-		for(File f: presetDirectory.listFiles())
-			if(f.isFile())
-				files.add(f);
-		//add saved maps next
-		//for now, there's no subdirectories, so just add all
-		files.addAll(Arrays.asList(savedDirectory.listFiles()));
-		
-		int transparencyIndex = 0; //only increments if a file is loaded
-		for(String chosenFile: filenames){
-			// List files in the directory and process each
-			for (int i = 0; i < files.size(); i++) {
-				if (files.get(i).getName().equals(chosenFile)) {
-					//set visiblity true
+	public void showMaps(ArrayList<String> filepaths, ArrayList<Double> transparentValues){
+		int i = 0;
+		for(String path:filepaths){
+			boolean checked = false;
+			int checkBoxIndex = 0;
+			for(JCheckBox box: parent.getCheckBoxList()){
+				//if path one of the checkBoxes, activate the checkbox
+				if(path.equals(box.getName())){
 					ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
-					if(parent.getCheckBoxList().get(i).getName().equals("openSHA.txt")){
+					File f = new File(parent.getCheckBoxList().get(checkBoxIndex).getName());
+					if(f.getName().equals("openSHA.txt")){
 						//The file format for data from openSHA files are a little different.
 						//Open declaration of method for more details
-						shakeMap.loadOpenSHAFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.getCheckBoxList().get(i).getName());
+						shakeMap.loadOpenSHAFileToGriddedGeoDataSet(f.getPath());
 					}else{
-						File f = new File(parent.dataPath + "/" + parent.getCheckBoxList().get(i).getName());
-						if(f.exists())
-							shakeMap.loadFromFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.getCheckBoxList().get(i).getName());	
-						else
-							shakeMap.loadFromFileToGriddedGeoDataSet(parent.dataPath + "/" + parent.moreMaps + "/" + parent.getCheckBoxList().get(i).getName());			
+						shakeMap.loadFromFileToGriddedGeoDataSet(f.getPath());	
 					}
 					shakeMap.setActor(shakeMap.builtPolygonSurface());
-					shakeMap.getActor().GetProperty().SetOpacity(transparentValues.get(transparencyIndex));
-					parent.getActorList().set(i, shakeMap.getActor());
+					shakeMap.getActor().GetProperty().SetOpacity(transparentValues.get(i));
+					parent.getActorList().set(checkBoxIndex, shakeMap.getActor());
 					parent.getPluginActors().addActor(shakeMap.getActor());
-					parent.getShakeMapsList().set(i, shakeMap);
-					parent.getCheckBoxList().get(i).setSelected(true);
-					Info.getMainGUI().updateRenderWindow();
-					transparencyIndex++;
+					parent.getShakeMapsList().set(checkBoxIndex, shakeMap);
+					parent.getCheckBoxList().get(checkBoxIndex).setSelected(true);
+					i++;
+					checked = true;
 					break;
-				}	
+				}
+				checkBoxIndex++;
+			}
+			if(!checked){
+				File f = new File(path);
+				parent.addMap(f.getName(), path, mapParameter.get(i));
+				int latestIndex = parent.getShakeMapsList().size()-1;
+				parent.getShakeMapsList().get(latestIndex).getActor().GetProperty().SetOpacity(transparentValues.get(i));
+				i++;
 			}
 		}
+		Info.getMainGUI().updateRenderWindow();
 	}
-
+	
 	//Reads the file path and the transparency value from the xml file
 	@Override
 	public void fromXML(Element stateEl) {
@@ -167,7 +168,8 @@ public class ShakeMapPluginState implements PluginState{
 		{
 			Element e = (Element) i.next();
 			filePath.add(e.attributeValue("filePath"));
-			transparency.add(Double.parseDouble(e.attributeValue("transparency")));	          
+			transparency.add(Double.parseDouble(e.attributeValue("transparency")));	 
+			mapParameter.add(e.attributeValue("parameter"));
 		}
 		showMaps(filePath, transparency);
 	}
