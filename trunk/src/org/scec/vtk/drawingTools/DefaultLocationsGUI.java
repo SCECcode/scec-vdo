@@ -356,7 +356,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					highway.setSourceFile(selectedFile);
 					highway.setDisplayName(highway.getTextString());
 					this.drawingToolTable.addDrawingTool(highway);
-					this.guiparent.addDrawingTool(highway);
+					this.guiparent.getDrawingToolArray().add(highway);
 				}
 				
 				
@@ -389,6 +389,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		mapper.SetInputData(polyData);
 		vtkActor actor = new vtkActor();
 		actor.SetMapper(mapper);
+		
 		return actor;
 	}
 	public void setSelectedInputFile(String filen)
