@@ -93,6 +93,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	private ColorWellButton
 	colorChooser,
 	bckgroundColorChooser;
+	private Color gridColor=Color.DARK_GRAY, backgroundColor=Color.BLACK;
 
 	private boolean firstTime = true;
 	
@@ -161,6 +162,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		this.pluginActors.addActor(labelActor);
 		Info.getMainGUI().getRenderWindow().GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
 	}
+	
 	public void toggleGridDisplay() {
 		if (!this.gridDisplay) {
 			tempGlobeScene.VisibilityOn();
@@ -170,6 +172,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			gridDisplay = false;
 		}
 	}
+	
 	public boolean getGridDisplayBool() {
 		return this.gridDisplay;
 	}
@@ -700,6 +703,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			Color tempColor = colorChooser.getColor();
 			if (tempColor != null) {
 				setGridColor(tempColor);
+				this.gridColor = tempColor;
 				getGrid().GetProperty().SetColor(Info.convertColor(tempColor));	
 				Info.getMainGUI().updateRenderWindow();
 			}
@@ -709,6 +713,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			if (tempColor != null)
 			{	
 				this.bckgroundColorChooser.setColor(tempColor);
+				this.backgroundColor = tempColor;
 				Info.getMainGUI().getRenderWindow().GetRenderer().SetBackground(Info.convertColor(tempColor));
 				Info.getMainGUI().updateRenderWindow();
 			}
@@ -728,10 +733,6 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 
 	}
 
-	public double getGridWidth() {
-		return this.gridWidth;
-	}
-
 	protected void populateFields(ViewRange range) {
 		relIntensityProp_extentsNval1.setText(range.getUpperLatitudeAsString());
 		relIntensityProp_extentsSval1.setText(range.getLowerLatitudeAsString());
@@ -748,5 +749,107 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			this.lowerLongitude = range.getLeftLongitude();
 			firstTime = false;
 		}
+	}
+	
+	//GETTERS and SETTERS
+	public double getGridWidth() {
+		return gridWidth;
+	}
+	
+	public void setGridWidth(double w){
+		gridWidth = w;
+	}
+	
+	public GraticulePreset getGraticuleData(){
+		return new GraticulePreset(lowerLatitude, upperLatitude, 
+				   lowerLongitude, upperLongitude);
+	}
+	
+	public Color getGridColor(){
+		return gridColor;
+	}
+	
+	public void setGridColor2(Color c){
+		gridColor = c;
+		getGrid().GetProperty().SetColor(Info.convertColor(gridColor));
+	}
+	
+	public Color getBackgroundColor(){
+		return backgroundColor;
+	}
+	
+	public void setBackgroundColor(Color c){
+		backgroundColor = c;
+		Info.getMainGUI().getRenderWindow().GetRenderer().SetBackground(Info.convertColor(backgroundColor));
+	}
+
+	public int getMaxLat(){
+		return relIntensityProp_extentsNval1.getIntegerValue();
+	}
+	
+	public void setMaxLatField(int lat){
+		relIntensityProp_extentsNval1.setText(Integer.toString(lat));
+	}
+	
+	public int getMinLat(){
+		return relIntensityProp_extentsSval1.getIntegerValue();
+	}
+	
+	public void setMinLatField(int lat){
+		relIntensityProp_extentsSval1.setText(Integer.toString(lat));
+	}
+	
+	public int getMaxLon(){
+		return relIntensityProp_extentsEval1.getIntegerValue();
+	}
+	
+	public void setMaxLonField(int lon){
+		relIntensityProp_extentsEval1.setText(Integer.toString(lon));
+	}
+	
+	public int getMinLon(){
+		return relIntensityProp_extentsWval1.getIntegerValue();
+	}
+	
+	public void setMinLonField(int lon){
+		relIntensityProp_extentsWval1.setText(Integer.toString(lon));
+	}
+	
+	public boolean isLabelsOn(){
+		return latLonLabelsCheckBox.isSelected();
+	}
+	
+	public ButtonGroup getDisplayButtons(){
+		return displayButtons;
+	}
+	
+	public JRadioButton getFirstSceneRadioButton(){
+		return firstsceneRadioButton;
+	}
+	
+	public JRadioButton getSecondSceneRadioButton(){
+		return secondsceneRadioButton;
+	}
+	
+	public JRadioButton getNoneRadioButton(){
+		return noneRadioButton;
+	}
+	
+	public JRadioButton getCustomRadioButton(){
+		return customRadioButton;
+	}
+	
+	public JTextField getCustomTextField(){
+		return customTextBox;
+	}
+	
+	public void graphVisibilityOn(){
+		tempGlobeScene.VisibilityOn();
+		gridDisplay = true;
+	}
+	
+	public void graphVisibilityOff(){
+		tempGlobeScene.VisibilityOff();
+		gridDisplay = false;
 	}
 }
