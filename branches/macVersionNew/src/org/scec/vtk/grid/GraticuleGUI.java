@@ -159,7 +159,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		this.pluginActors.addActor(tempGlobeScene);
 		this.pluginActors.addActor(pointActor);
 		this.pluginActors.addActor(labelActor);
-		Info.getMainGUI().getRenderWindow().GetRenderer().ResetCamera(tempGlobeScene.GetBounds());
+		Info.getMainGUI().getRenderWindow().getRenderer().ResetCamera(tempGlobeScene.GetBounds());
 	}
 	public void toggleGridDisplay() {
 		if (!this.gridDisplay) {
@@ -709,7 +709,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			if (tempColor != null)
 			{	
 				this.bckgroundColorChooser.setColor(tempColor);
-				Info.getMainGUI().getRenderWindow().GetRenderer().SetBackground(Info.convertColor(tempColor));
+				Info.getMainGUI().getRenderWindow().getRenderer().SetBackground(Info.convertColor(tempColor));
 				Info.getMainGUI().updateRenderWindow();
 			}
 		}
