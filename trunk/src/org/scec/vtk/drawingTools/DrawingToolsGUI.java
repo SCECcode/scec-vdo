@@ -156,29 +156,32 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 					DrawingTool dr = drawingToolsArray.get(i);
 					vtkProp actor = (vtkProp) dr.getActorText();// appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2+1);
 					vtkProp actorPin = (vtkProp) dr.getActorPin();//appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-
 					double rbg[] = ((vtkActor) actorPin).GetProperty().GetColor();
-					if(rbg[0] == 1.0 && rbg[1] == 1.0 && rbg[2] == 0.0){
-						//make text back to white
-						((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,1.0); //sets color to white
-						((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,1.0);
-					}else{
-						((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,0.0); //sets color to yellow
-						((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,0.0);
-						// System.out.println("asdas" +  defaultLocations.presetLocationGroups.size());
-						for(int i1 = 0; i1 < defaultLocations.presetLocationGroups.size(); i1++)
-						{ 
-							PresetLocationGroup tempGroup = defaultLocations.presetLocationGroups.get(i1);
-							//System.out.println(tempGroup.name);
-							if (tempGroup != null && tempGroup.name.equals("CA Cities") && tempGroup.checkbox.isSelected())
-							{
-								JOptionPane.showMessageDialog(defaultLocations.frame,"City Name: " + (String)target.getValueAt(i,target.getSelectedColumn()) + "\n"
-										+"City Population: "  + defaultLocations.getPopulation((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "County: " +
-										defaultLocations.getCounty((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "Population Density: " + defaultLocations.getPopulationDensity((String)target.getValueAt(i,target.getSelectedColumn())) + " people/sq. mile\n",
-										"City Information",JOptionPane.DEFAULT_OPTION);
+					if(actor != null)
+					{
+						if(rbg[0] == 1.0 && rbg[1] == 1.0 && rbg[2] == 0.0){
+							//make text back to white
+							((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,1.0); //sets color to white
+							((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,1.0);
+						}else{
+							((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,0.0); //sets color to yellow
+							((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,0.0);
+							// System.out.println("asdas" +  defaultLocations.presetLocationGroups.size());
+							for(int i1 = 0; i1 < defaultLocations.presetLocationGroups.size(); i1++)
+							{ 
+								PresetLocationGroup tempGroup = defaultLocations.presetLocationGroups.get(i1);
+								//System.out.println(tempGroup.name);
+								if (tempGroup != null && tempGroup.name.equals("CA Cities") && tempGroup.checkbox.isSelected())
+								{
+									JOptionPane.showMessageDialog(defaultLocations.frame,"City Name: " + (String)target.getValueAt(i,target.getSelectedColumn()) + "\n"
+											+"City Population: "  + defaultLocations.getPopulation((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "County: " +
+											defaultLocations.getCounty((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "Population Density: " + defaultLocations.getPopulationDensity((String)target.getValueAt(i,target.getSelectedColumn())) + " people/sq. mile\n",
+											"City Information",JOptionPane.DEFAULT_OPTION);
+								}
 							}
 						}
 					}
+					
 					MainGUI.updateRenderWindow();
 				}
 			}

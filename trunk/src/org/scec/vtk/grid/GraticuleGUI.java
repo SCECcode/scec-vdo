@@ -618,13 +618,13 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			gridWidth = 1.0;
 			makeGrids(makeNewGrid(gridWidth),labelsOn);
 			Info.getMainGUI().updateRenderWindow();
-			System.out.println("One degree selected");
+			//System.out.println("One degree selected");
 			
 		} else if (secondsceneRadioButton.isSelected()) {
 			gridWidth = 0.1;
 			makeGrids(makeNewGrid(gridWidth),labelsOn);
 			Info.getMainGUI().updateRenderWindow();
-			System.out.println("0.1 degree selected");
+			//System.out.println("0.1 degree selected");
 		}
 		else if (noneRadioButton.isSelected()) {
 			if (getGridDisplayBool())
