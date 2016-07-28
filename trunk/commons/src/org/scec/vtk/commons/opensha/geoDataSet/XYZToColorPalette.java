@@ -54,7 +54,7 @@ public class XYZToColorPalette {
 			System.out.println("Loading file...");
 			File file = new File(dP);
 			try {
-				 this.griddedGeoDataSet = GriddedGeoDataSet.loadXYZFile(file, 1, 0, -1, 2); 
+				 this.griddedGeoDataSet = GriddedGeoDataSet.loadXYZFile(file, 1, 0, -1, 4); 
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
