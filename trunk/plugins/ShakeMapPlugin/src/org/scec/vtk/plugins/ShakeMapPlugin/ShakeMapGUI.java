@@ -43,13 +43,21 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.opensha.commons.util.cpt.CPT;
+import org.scec.vtk.commons.legend.LegendItem;
+import org.scec.vtk.commons.legend.LegendUtils;
+import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.main.Info;
+import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.ShakeMapPlugin.Component.ShakeMap;
 import org.scec.vtk.plugins.SurfacePlugin.SurfaceTableModel;
 import org.scec.vtk.tools.Prefs;
 
 import vtk.vtkActor;
+import vtk.vtkActor2D;
 
 
 /*
@@ -103,7 +111,13 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	//Different tabs
 	JPanel tab2 = new JPanel();
 	
-	public ShakeMapGUI(PluginActors pluginActors) {
+	private JCheckBox legendCheckBox;
+	private LegendItem legend;
+	private Plugin plugin;
+	
+	public ShakeMapGUI(Plugin plugin, PluginActors pluginActors) {
+		this.plugin = plugin;
+		
 		//First check if More_USGS_Maps directory exists...
 		//Otherwise, make that directory
 		File f = new File(dataPath+"/"+moreMaps);
@@ -160,6 +174,21 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		JPanel sliderPanel = new JPanel(new BorderLayout());
 		sliderPanel.add(new JLabel("Transparency"), BorderLayout.NORTH);
 		sliderPanel.add(transparencySlider, BorderLayout.CENTER);
+		
+		legendCheckBox = new JCheckBox("Add Legend");
+		legendCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e)
+			{
+				JCheckBox cb = (JCheckBox)e.getSource();
+				if (cb.isSelected()) {
+					addLegendScalarBar();
+				} else {
+					removeLegend();
+				}
+			}
+		});
+		legendCheckBox.setEnabled(false);
+		sliderPanel.add(legendCheckBox, BorderLayout.SOUTH);
 		
 		bottomPane.setLayout(new GridLayout(2,0,0,15));
 		bottomPane.add(panesPanel);
@@ -402,6 +431,47 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	    }
 	}
 	
+	private void addLegendScalarBar() {
+		ListSelectionModel model = surfaceTable.getSelectionModel();
+		int idx = (int) surfaceTableModel.getValueAt(model.getMinSelectionIndex(), 1);
+		if (idx != -1)
+		{
+			ShakeMap shakeMap = shakeMapsList.get(idx);		
+		
+			PluginActors actors = plugin.getPluginActors();
+			vtkActor2D prevActor = null;
+			double x = 0.05;
+			double y = 0.05;
+			if (legend != null) {
+				// duplicate - first remove old one but keep same position/size
+				prevActor = legend.getActor();
+				double[] position = prevActor.GetPosition();
+				x = position[0];
+				y = position[1];
+				actors.removeLegend(legend);
+			}
+			CPT cpt = shakeMap.getCPT();
+			legend = LegendUtils.buildColorBarLegend(plugin, cpt, "ShakeMap Scale (MMI)", x, y);
+			if (prevActor != null) {
+				// set size
+				vtkActor2D newActor = legend.getActor();
+				newActor.SetWidth(prevActor.GetWidth());
+				newActor.SetHeight(prevActor.GetHeight());
+				// set color
+				newActor.GetProperty().SetColor(prevActor.GetProperty().GetColor());
+			}
+			actors.addLegend(legend);
+			MainGUI.updateRenderWindow();
+		}
+	}
+	
+	private void removeLegend() {
+		if (legend != null) {
+			plugin.getPluginActors().removeLegend(legend);
+			MainGUI.updateRenderWindow();
+		}
+	}
+	
 	//What happens whenever a check box is selected
 	@Override
 	public void itemStateChanged(ItemEvent e) {
@@ -481,8 +551,10 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		int[] selectedRows = this.surfaceTable.getSelectedRows();
 		if (selectedRows.length > 0) {
 			this.transparencySlider.setEnabled(true);
+			this.legendCheckBox.setEnabled(true);
 		} else {
 			this.transparencySlider.setEnabled(false);
+			this.legendCheckBox.setEnabled(false);
 		}
 	}
 
