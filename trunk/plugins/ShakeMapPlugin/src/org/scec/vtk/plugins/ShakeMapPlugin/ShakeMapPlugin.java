@@ -17,7 +17,7 @@ public class ShakeMapPlugin  extends ActionPlugin implements StatefulPlugin{
 	}
 
 	protected JPanel createGUI() {
-		gui = new ShakeMapGUI(getPluginActors());
+		gui = new ShakeMapGUI(this, getPluginActors());
 		return gui.getPanel();
 	}
 

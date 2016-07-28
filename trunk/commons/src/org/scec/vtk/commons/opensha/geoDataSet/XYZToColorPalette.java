@@ -82,4 +82,9 @@ public class XYZToColorPalette {
 	 {
 		 return GeoDataSetGeometryGenerator.buildPolygonSurface(griddedGeoDataSet, cpt);
 	 }
+	 
+	 public CPT getCPT()
+	 {
+		 return cpt;
+	 }
 }
