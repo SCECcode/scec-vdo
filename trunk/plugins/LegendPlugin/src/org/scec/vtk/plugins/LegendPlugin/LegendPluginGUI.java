@@ -64,8 +64,7 @@ PluginActorsChangeListener {
 
 	private static final long serialVersionUID = 1L;
 	private JButton displayButton, moveLeftButton, moveRightButton, moveUpButton, moveDownButton;
-	private JButton imageButton, textButton, removeButton, createButton;
-	private ColorButton colorButton;
+	private JButton imageButton, textButton, removeButton, createButton, editButton;
 	private SingleColorChooser colorChooser = new SingleColorChooser(this);
 
 	private JSlider transparencySlider;
@@ -144,8 +143,10 @@ PluginActorsChangeListener {
 		textButton = new JButton("Add Text");
 		textButton.addActionListener(this);
 		textButton.setEnabled(true);
-		colorButton = new ColorButton(this, "Colors");
-		colorButton.setEnabled(false);
+		editButton = new JButton("Edit Text");
+		editButton.addActionListener(this);
+		editButton.setEnabled(false);
+		
 		removeButton = new JButton("Remove");
 		removeButton.addActionListener(this);
 		removeButton.setEnabled(false);
@@ -155,7 +156,7 @@ PluginActorsChangeListener {
 		lowerButtonPanel.add(imageButton);
 		lowerButtonPanel.add(createButton);
 		lowerButtonPanel.add(textButton);
-		lowerButtonPanel.add(colorButton);
+		lowerButtonPanel.add(editButton);
 		lowerButtonPanel.add(removeButton);
 		listPanel.add(lowerButtonPanel);
 
@@ -180,15 +181,21 @@ PluginActorsChangeListener {
 				if (visibility == 1)
 				{
 					displayButton.setText("Hide");
-					colorButton.setEnabled(true);
 					setMoveButtonsEnabled(true);
 					displayButton.setEnabled(true);
+					if (legend.getActor() instanceof vtkTextActor) {
+						editButton.setEnabled(true);
+					} else {
+						editButton.setEnabled(false);
+					}
 					removeButton.setEnabled(true);
 				}
 				else
 				{
 					displayButton.setText("Display");
-					colorButton.setEnabled(false);
+					if (legend.getActor() instanceof vtkTextActor) {
+						editButton.setEnabled(false);
+					}
 					setMoveButtonsEnabled(false);
 					removeButton.setEnabled(false);
 				}
@@ -222,9 +229,7 @@ PluginActorsChangeListener {
 		}
 		else if (source == textButton)
 		{
-//			String text = (String)JOptionPane.showInputDialog(Info.getMainGUI().getContentPane(),
-//					"Text Label: ", "Text To Add", JOptionPane.PLAIN_MESSAGE);
-			TextDialogBox textDialog = new TextDialogBox();
+			TextDialogBox textDialog = new TextDialogBox("");
 			String text = textDialog.getText();
 			
 			if (text != null && !text.equals(""))
@@ -262,18 +267,25 @@ PluginActorsChangeListener {
 				MainGUI.updateRenderWindow();
 			}
 		}
-		else if (source == colorButton)
+		else if (source == editButton)
 		{
 			LegendItem legend = legendSelectList.getSelectedValue();
 			if (legend != null) {
-				vtkActor2D legendActor = legend.getActor();
-				Color color = colorChooser.getColor();
-				legendActor.GetProperty().SetColor(color.getRed()/255d, color.getGreen()/255d, color.getBlue()/255d);
-				legendActor.Modified();
+				vtkTextActor actor = (vtkTextActor)legend.getActor();
+				TextDialogBox textDialog = new TextDialogBox(actor.GetInput());
+				String text = textDialog.getText();
+				Font font = textDialog.getFont();
+				Color color = textDialog.getColor();
+				actor.SetInput(text);
+				actor.GetTextProperty().SetFontFamilyAsString(font.getFamily());
+				actor.GetTextProperty().SetFontSize(font.getSize());
+				actor.GetProperty().SetColor(color.getRed(), color.getGreen(), color.getBlue());
+				actor.Modified();
+				legend.setTitle(text);
 				MainGUI.updateRenderWindow();
+				legendSelectList.updateUI();
 			}
 		}
-		
 		else if(source == moveLeftButton)
 		{
 			LegendItem legend = legendSelectList.getSelectedValue();
@@ -392,7 +404,17 @@ PluginActorsChangeListener {
 		model.clear();
 		MainGUI.updateRenderWindow();
 	}
-
+	
+	public JList<LegendItem> getLegendSelectList()
+	{
+		return legendSelectList;
+	}
+	
+	public DefaultListModel<LegendItem> getLegendModel()
+	{
+		return model;
+	}
+	
 	@Override
 	public void actorAdded(vtkProp actor) {} // do nothing
 
@@ -421,7 +443,7 @@ PluginActorsChangeListener {
 		private String text;
 		private JScrollPane scrollPane;
 		
-		public TextDialogBox()
+		public TextDialogBox(String s)
 		{
 			dialog = new JDialog();
 			dialog.setSize(400, 300);
@@ -432,6 +454,7 @@ PluginActorsChangeListener {
 			
 			upperPanel = new JPanel();
 			textField = new JTextArea(12, 30);
+			textField.setText(s);
 			scrollPane = new JScrollPane(textField);
 			
 			upperPanel.add(scrollPane);

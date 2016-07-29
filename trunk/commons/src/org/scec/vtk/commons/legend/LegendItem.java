@@ -36,5 +36,9 @@ public class LegendItem {
 	public String toString() {
 		return source.getMetadata().getShortName()+": "+title;
 	}
+	
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
 }
