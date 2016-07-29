@@ -291,7 +291,7 @@ AnimationListener {
 		}
 	}
 	
-	private synchronized void updateViewer() {
+	public synchronized void updateViewer() {
 		if (D) System.out.println("Update viewer called. queue? "+queue_renders);
 //		upToDate = false;
 		long curTime = System.nanoTime();

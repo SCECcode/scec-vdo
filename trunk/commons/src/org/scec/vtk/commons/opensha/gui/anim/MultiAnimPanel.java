@@ -17,8 +17,10 @@ import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.gui.ColorerPanel;
+import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.plugins.AnimatableChangeListener;
 import org.scec.vtk.plugins.AnimatablePlugin;
+import org.scec.vtk.plugins.Plugin;
 
 import com.google.common.base.Preconditions;
 
@@ -45,7 +47,7 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 	private AnimationPanel animPanel;
 	private AnimatablePlugin plugin;
 	
-	public MultiAnimPanel(ArrayList<FaultAnimation> anims, AnimationListener l, ColorerPanel cp) {
+	public MultiAnimPanel(Plugin plugin, EventManager em, ArrayList<FaultAnimation> anims, ColorerPanel cp) {
 		super(new BorderLayout());
 		
 		this.cp = cp;
@@ -60,9 +62,8 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 		boolean isAnimColorerSelected = false;
 		for (FaultAnimation anim : anims) {
 			animMap.put(anim.getName(), anim);
-			AnimationPanel animPanel = new AnimationPanel(anim);
+			AnimationPanel animPanel = new AnimationPanel(plugin, em, anim);
 			animPanelMap.put(anim.getName(), animPanel);
-			animPanel.addAnimationListener(l);
 			animPanel.addAnimationListener(this);
 			mainPanel.add(animPanel, anim.getName());
 			if (anim.getFaultColorer() != null && cp.getSelectedColorer() == anim.getFaultColorer())
