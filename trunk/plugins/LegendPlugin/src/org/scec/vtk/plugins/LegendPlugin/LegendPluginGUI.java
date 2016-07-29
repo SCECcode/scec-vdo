@@ -231,7 +231,7 @@ PluginActorsChangeListener {
 			{
 				Font font = textDialog.getFont();
 				Color color = textDialog.getColor();
-				LegendItem legend = LegendUtils.buildTextLegend(plugin, text, font, font.getSize(), color, 0d, 0d);
+				LegendItem legend = LegendUtils.buildTextLegend(plugin, text, font, color, 0d, 0d);
 				legendActors.addLegend(legend); // this will trigger a call to legendAdded
 				MainGUI.updateRenderWindow();
 			}

@@ -1,6 +1,8 @@
 package org.scec.vtk.commons.opensha.gui.anim;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -13,6 +15,7 @@ import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -31,11 +34,20 @@ import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
+import org.scec.vtk.commons.legend.LegendItem;
+import org.scec.vtk.commons.legend.LegendUtils;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
+import org.scec.vtk.commons.opensha.gui.EventManager;
+import org.scec.vtk.main.Info;
+import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.Plugin;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+
+import vtk.vtkTextActor;
 
 public class AnimationPanel extends JPanel implements ChangeListener, ActionListener, FocusListener, ParameterChangeListener {
 
@@ -61,6 +73,14 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 	private JButton nextButton = new JButton("Next");
 	private JButton prevButton = new JButton("Prev");
 	private AnimThread animThread;
+	
+	private JCheckBox legendCheck = new JCheckBox("Legend", false);
+	private JCheckBox legendStepCheck = new JCheckBox("Step", true);
+	private JCheckBox legendTimeCheck = new JCheckBox("Time", true);
+	private JCheckBox legendRelativeTimeCheck = new JCheckBox("Relative", false);
+	private JCheckBox legendIDCheck = new JCheckBox("ID", false);
+	private JCheckBox legendLabelCheck = new JCheckBox("Label", false);
+	private LegendItem legend;
 
 	private static final String DURATION_PARAM_NAME = "Duration (seconds)";
 	private static final Double DURATION_MIN = 1d;
@@ -134,12 +154,16 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 	private JTextField idField = new JTextField(6);
 
 	private List<AnimationListener> listeners = new ArrayList<>();
+	
+	private Plugin plugin;
+	private EventManager em;
 
-	public AnimationPanel(FaultAnimation faultAnim) {
+	public AnimationPanel(Plugin plugin, EventManager em, FaultAnimation faultAnim) {
 		super.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		
-//		Geo3dInfo.getRenderEnabledCanvas().addRenderStepListener(this); // TODO
 
+		this.plugin = plugin;
+		this.em = em;
+		addAnimationListener(em);
 		this.faultAnim = faultAnim;
 		faultAnim.addRangeChangeListener(this);
 
@@ -203,6 +227,28 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			idField.addActionListener(this);
 			idField.addFocusListener(this);
 		}
+		
+		// legend
+		JPanel legendPanel = new JPanel();
+		legendPanel.setLayout(new BoxLayout(legendPanel, BoxLayout.X_AXIS));
+		legendPanel.add(legendCheck);
+		legendCheck.addActionListener(this);
+		legendStepCheck.setSelected(!(faultAnim instanceof TimeBasedFaultAnimation));
+		legendPanel.add(legendStepCheck);
+		legendStepCheck.addActionListener(this);
+		if (faultAnim instanceof TimeBasedFaultAnimation) {
+			legendPanel.add(legendTimeCheck);
+			legendTimeCheck.addActionListener(this);
+			legendPanel.add(legendRelativeTimeCheck);
+			legendRelativeTimeCheck.addActionListener(this);
+		}
+		if (faultAnim instanceof IDBasedFaultAnimation) {
+			legendPanel.add(legendIDCheck);
+			legendIDCheck.addActionListener(this);
+		}
+		legendPanel.add(legendLabelCheck);
+		legendLabelCheck.addActionListener(this);
+		setLegendChecksEnabled(legendCheck.isSelected());
 
 //		JPanel cpWrap = new JPanel();
 //		cpWrap.add(controlPanel);
@@ -210,6 +256,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		this.add(slider);
 		this.add(controlPanel);
 		this.add(labelWrap);
+		this.add(legendPanel);
 
 		if (generalAnimParams != null && generalAnimParams.size() > 0) {
 			GriddedParameterListEditor edit = new GriddedParameterListEditor(generalAnimParams);
@@ -308,6 +355,8 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			fireAnimationStepChanged(faultAnim);
 		if (D) System.out.println("DONE Firing step changed");
 		enableAnimControls();
+		
+		updateLegend();
 	}
 	
 	private void updateTime() {
@@ -315,6 +364,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			boolean fire = ((TimeBasedFaultAnimation)faultAnim).timeChanged(curAbsTime);
 			if (fire)
 				fireAnimationStepChanged(faultAnim);
+			updateLegend();
 		}
 	}
 
@@ -585,24 +635,44 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(playButton)) {
+		if (e.getSource() == playButton) {
 			animThread = new AnimThread(this, faultAnim, getTimeCalc(), durationParam.getValue());
 			animThread.setLoop(loopParam.getValue());
 			animThread.start();
 			enableAnimControls();
-		} else if (e.getSource().equals(pauseButton)) {
+		} else if (e.getSource() == pauseButton) {
 			if (animThread != null) {
 				animThread.pause();
 			}
 			enableAnimControlsAfterAnimThread();
-		} else if (e.getSource().equals(nextButton)) {
+		} else if (e.getSource() == nextButton) {
 			setCurrentStep(curStep+1);
-		} else if (e.getSource().equals(prevButton)) {
+		} else if (e.getSource() == prevButton) {
 			setCurrentStep(curStep-1);
-		} else if (e.getSource().equals(idField)) {
+		} else if (e.getSource() == idField) {
 			if (D) System.out.println("idField: action performed");
 			idFieldUpdated();
+		} else if (e.getSource() == legendCheck) {
+			boolean displayed = legendCheck.isSelected();
+			setLegendChecksEnabled(displayed);
+			
+			updateLegend();
+			setLegendDisplayed(displayed);
+		} else if (e.getSource() == legendStepCheck || e.getSource() == legendTimeCheck
+				|| e.getSource() == legendRelativeTimeCheck || e.getSource() == legendIDCheck
+				|| e.getSource() == legendLabelCheck) {
+			if (e.getSource() == legendTimeCheck)
+				setLegendChecksEnabled(legendCheck.isSelected());
+			updateLegend();
 		}
+	}
+	
+	private void setLegendChecksEnabled(boolean enabled) {
+		legendStepCheck.setEnabled(enabled);
+		legendTimeCheck.setEnabled(enabled);
+		legendRelativeTimeCheck.setEnabled(enabled && legendTimeCheck.isSelected());
+		legendIDCheck.setEnabled(enabled);
+		legendLabelCheck.setEnabled(enabled);
 	}
 
 	@Override
@@ -688,6 +758,66 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		if (event.getSource() == durationParam || event.getSource() == animTypeParam) {
 			timeCalc = null;
 		}
+	}
+	
+	private synchronized void setLegendDisplayed(boolean displayed) {
+		if (legend == null) {
+			// determine color as compliment of background color
+			Color bkg = Info.getBackgroundColor();
+			double meanVal = (double)(bkg.getRed() + bkg.getGreen() + bkg.getBlue())/3d;
+			Color color;
+			if (meanVal >= 127.5)
+				// it's a light color
+				color = Color.BLACK;
+			else
+				// it's a dark color
+				color = Color.WHITE;
+			// first pass in the name so that it shows up as such in the legend gui
+			legend = LegendUtils.buildTextLegend(plugin, faultAnim.getName(), Font.SANS_SERIF, 28, color, 5, 5);
+			((vtkTextActor)legend.getActor()).SetInput(buildLegendText());
+		}
+		
+		if (displayed)
+			plugin.getPluginActors().addLegend(legend);
+		else
+			plugin.getPluginActors().removeLegend(legend);
+		
+		MainGUI.updateRenderWindow();
+	}
+	
+	private static final Joiner legendJoin = Joiner.on(", ");
+	
+	private synchronized void updateLegend() {
+		if (legend == null)
+			return;
+		String text = buildLegendText();
+		Preconditions.checkState(legend.getActor() instanceof vtkTextActor);
+		vtkTextActor actor = (vtkTextActor) legend.getActor();
+		actor.SetInput(text);
+		actor.Modified();
+		em.updateViewer();
+	}
+	
+	private String buildLegendText() {
+		ArrayList<String> elems = new ArrayList<>();
+		if (legendStepCheck.isSelected())
+			elems.add((curStep+1)+"/"+faultAnim.getNumSteps());
+		if (faultAnim instanceof TimeBasedFaultAnimation && legendTimeCheck.isSelected() && Double.isFinite(curAbsTime)) {
+			double time = curAbsTime;
+			if (legendRelativeTimeCheck.isSelected())
+				time -= ((TimeBasedFaultAnimation)faultAnim).getTimeForStep(0);
+			elems.add(getLabel(time));
+		}
+		if (faultAnim instanceof IDBasedFaultAnimation && legendIDCheck.isSelected()) {
+			int id = ((IDBasedFaultAnimation)faultAnim).getIDForStep(curStep);
+			elems.add("ID: "+id);
+		}
+		if (legendLabelCheck.isSelected()) {
+			String label = faultAnim.getCurrentLabel();
+			if (label != null && !label.isEmpty())
+				elems.add(label);
+		}
+		return legendJoin.join(elems);
 	}
 
 }
