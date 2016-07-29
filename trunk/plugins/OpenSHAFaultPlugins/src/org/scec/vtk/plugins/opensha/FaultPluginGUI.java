@@ -211,7 +211,7 @@ public class FaultPluginGUI extends JSplitPane {
 //				settingsPanel.addTab("Animation", null,
 //						wrapInScrollPane(animPanel), "Animate by "+faultAnim.getName());
 //			} else {
-				animPanel = new MultiAnimPanel(faultAnims, em, colorPanel);
+				animPanel = new MultiAnimPanel(plugin, em, faultAnims, colorPanel);
 				settingsPanel.addTab("Animation", null,
 						wrapInScrollPane(animPanel), "Fault Animations");
 //			}

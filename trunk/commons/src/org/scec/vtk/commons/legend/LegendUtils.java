@@ -76,13 +76,18 @@ public class LegendUtils {
 		return new LegendItem(scalarBar, source, title);
 	}
 	
-	public static LegendItem buildTextLegend(Plugin source, String text, Font font, int fontSize, Color color, double x, double y) {
+	public static LegendItem buildTextLegend(Plugin source, String text, Font font, Color color, double x, double y) {
+		return buildTextLegend(source, text, font.getFamily(), font.getSize(), color, x, y);
+	}
+	
+	public static LegendItem buildTextLegend(Plugin source, String text, String fontFamily, int fontSize,
+			Color color, double x, double y) {
 		Preconditions.checkNotNull(text, "Text cannot be null when building text legend");
 		vtkTextActor textActor = new vtkTextActor();
 		textActor.SetInput(text);
 		textActor.SetPosition(x, y);
 		textActor.GetTextProperty().SetFontSize(fontSize);
-		textActor.GetTextProperty().SetFontFamilyAsString(font.getFamily());
+		textActor.GetTextProperty().SetFontFamilyAsString(fontFamily);
 		textActor.GetTextProperty().SetColor(color.getRed()/255d, color.getGreen()/255d, color.getBlue()/255d);
 		textActor.Modified();
 		

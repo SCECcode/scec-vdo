@@ -26,4 +26,12 @@ public class Info {
 		color[2] = tempColor.getBlue()/rgbMax;
 		return color;
 	}
+	public static Color convertColor(double[] tempColor)
+	{
+		return new Color((float)(tempColor[0]/rgbMax), (float)(tempColor[1]/rgbMax), (float)(tempColor[2]/rgbMax));
+	}
+	
+	public static Color getBackgroundColor() {
+		return convertColor(MainGUI.getRenderWindow().GetRenderer().GetBackground());
+	}
 }
