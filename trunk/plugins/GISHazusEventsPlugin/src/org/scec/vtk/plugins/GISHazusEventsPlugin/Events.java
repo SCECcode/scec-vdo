@@ -385,7 +385,9 @@ public class Events {
 						for (int i = 0; i < fieldsCount; i ++){
 							fieldName = dbfFile.getFieldName(i);
 							System.out.println("Column Name: " + fieldName);
-							columns += (fieldName + "\n");
+							columns += (fieldName + " , ");
+							if(i % 3 == 0)
+								columns += "\n";
 						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
