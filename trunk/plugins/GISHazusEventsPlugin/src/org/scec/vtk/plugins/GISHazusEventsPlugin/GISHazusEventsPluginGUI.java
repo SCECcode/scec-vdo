@@ -228,6 +228,7 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		Color[] newGradient = bTrace.setColorGradient(colorButton.getColor1(), colorButton.getColor2());    			
 		for(int i = 0; i < REGION_AMT; i++)
 			setColor(i, newGradient);
+		Info.getMainGUI().updateRenderWindow();
 	}
 
 	public class MyChangeAction implements ChangeListener{
@@ -517,7 +518,6 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
         		{
         			if((Boolean)data)
         			{
-        				
         				if((Boolean)btm.getValueAt(rowClicked, 3))//checks to see if it's in memory
         				{
         					//countries already loaded, don't need to do anything
