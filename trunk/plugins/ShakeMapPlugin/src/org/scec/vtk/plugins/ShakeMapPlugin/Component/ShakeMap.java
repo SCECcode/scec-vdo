@@ -10,9 +10,11 @@ public class ShakeMap extends XYZToColorPalette{
 
 	vtkActor shakeaMapActor = new vtkActor();
 	GriddedGeoDataSet dataset;
+	String parameter; //mmi, pga, pgv, etc.
 	
-	public ShakeMap(String fp) {
+	public ShakeMap(String fp, String parameter) {
 		super(fp);
+		this.parameter = parameter;
 	}
 
 	public vtkActor getActor()
@@ -23,5 +25,9 @@ public class ShakeMap extends XYZToColorPalette{
 	public void setActor(vtkActor actor)
 	{
 		 shakeaMapActor = actor;
+	}
+	
+	public String getParameter(){
+		return parameter;
 	}
 }
