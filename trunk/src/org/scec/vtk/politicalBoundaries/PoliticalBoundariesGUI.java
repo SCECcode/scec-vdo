@@ -2,6 +2,9 @@ package org.scec.vtk.politicalBoundaries;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -18,6 +21,8 @@ import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.utils.components.ColorButton;
+import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 
@@ -29,7 +34,7 @@ import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 
-public class PoliticalBoundariesGUI {
+public class PoliticalBoundariesGUI implements ActionListener{
 	private JPanel politicalBoundaryMainPanel;
 	private JTabbedPane politicalBoundarySubPanelLowerTab;
 	private JPanel politicalBoundarySubPanelLower;
@@ -41,6 +46,8 @@ public class PoliticalBoundariesGUI {
 	Dimension dMainPanel,dSubPanel;
 	public static vtkActor mainFocusReginActor = new vtkActor();
 	PluginActors pluginActors = new PluginActors();
+	private ColorButton colorDrawingToolsButton;
+	private SingleColorChooser colorChooser;
 	
 	public PoliticalBoundariesGUI(PluginActors pluginActors){
 		this.pluginActors = pluginActors;
@@ -69,6 +76,9 @@ public class PoliticalBoundariesGUI {
 		this.actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
 
 		//loadRegion();
+		colorDrawingToolsButton = new ColorButton(this, "Change color of selected Text(s)");
+		colorDrawingToolsButton.setEnabled(true);
+		politicalBoundarySubPanelUpper.add(colorDrawingToolsButton);
 	}
 
 	public JPanel loadAllRegions()
@@ -344,6 +354,25 @@ public class PoliticalBoundariesGUI {
 			}
 		}
 	};
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		Object src = e.getSource();
+		if (src == this.colorDrawingToolsButton){
+			if (this.colorChooser == null) {
+				this.colorChooser = new SingleColorChooser(colorDrawingToolsButton);
+			}
+			Color newColor = this.colorChooser.getColor();
+			if (newColor != null) {
+				for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
+				{
+					actorPoliticalBoundariesSegments.get(j).GetProperty().SetColor(Info.convertColor(newColor));
+				}
+			}
+			Info.getMainGUI().updateRenderWindow();
+		}
+	}
 	  
 	public ArrayList<vtkActor> getPoliticalBoundaries()
 	{
@@ -364,5 +393,7 @@ public class PoliticalBoundariesGUI {
 	{
 		return politicalBoundarySubPanelLowerTab;
 	}
+
+	
 	
 }
