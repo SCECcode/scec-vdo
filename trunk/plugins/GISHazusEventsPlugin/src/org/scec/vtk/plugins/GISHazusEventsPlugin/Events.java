@@ -375,6 +375,7 @@ public class Events {
 						dbfFilename = OpenShapeFile.getSelectedFile().getPath();
 						event.setDBFFile(dbfFilename);
 					}
+					String columns = "";
 					//TODO: Show the user what their .dbf file contains
 					try {
 						DBFReaderJGeom dbfFile = new DBFReaderJGeom(dbfFilename);
@@ -383,7 +384,8 @@ public class Events {
 						
 						for (int i = 0; i < fieldsCount; i ++){
 							fieldName = dbfFile.getFieldName(i);
-							//System.out.println(":"+fieldName);
+							System.out.println("Column Name: " + fieldName);
+							columns += (fieldName + "\n");
 						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -392,13 +394,13 @@ public class Events {
 				
 					String z = (String)JOptionPane.showInputDialog(
 			                Info.getMainGUI(),
-			                "Enter name of column:",
+			                "Enter name of column:" + "\nPossible Columns" + "\n" + columns ,
 			                JOptionPane.QUESTION_MESSAGE);
 					event.setColumn(z);
 					event.setLikeEarthquake("Northridge"); //TODO: Allow users to switch this
 					String timeOrType = (String)JOptionPane.showInputDialog(
 			                Info.getMainGUI(),
-			                "Enter legend time or type:",
+			                "Enter legend time or type i.e, 3pm or Buildings Damaged:",
 			                JOptionPane.QUESTION_MESSAGE);
 					event.setLegendTitle(timeOrType);
 					eventList.add(event);
