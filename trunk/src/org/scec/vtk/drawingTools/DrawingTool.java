@@ -52,6 +52,9 @@ public class DrawingTool extends AbstractDataAccessor{
 	{
 		return this.textString;
 	}
+	public void setTextString(String s){
+		this.textString = s;
+	}
 	public DisplayAttributes getDisplayAttributes()
 	{
 		return this.displayAttributes;

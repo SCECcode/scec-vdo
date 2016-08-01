@@ -162,7 +162,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		defaultLocationsStartIndex = this.drawingToolTable.getRowCount();
 		for (int i = 0; i < locations.size(); i++) {
 			DrawingTool tempLocation = locations.get(i);
-			this.guiparent.addDrawingTool(tempLocation);//.addDrawingTool(tempLocation);
+			this.guiparent.addDrawingTool(tempLocation, "Text");//.addDrawingTool(tempLocation);
 			this.drawingToolTable.addDrawingTool(tempLocation);//newObjects);
 		}
 		Info.getMainGUI().updateRenderWindow();
@@ -757,7 +757,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 				{
 					//System.out.println(cities.get(j) + " added");
 					DrawingTool tempLocation = locations.get(i);
-					this.guiparent.addDrawingTool(tempLocation);//.addDrawingTool(tempLocation);
+					this.guiparent.addDrawingTool(tempLocation, "Text");//.addDrawingTool(tempLocation);
 					//ArrayList<DrawingTool> newObjects = new ArrayList<>();
 					//newObjects.add(tempLocation);
 					this.drawingToolTable.addDrawingTool(tempLocation);//newObjects);
@@ -893,5 +893,10 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	public ArrayList<vtkActor> getHighwayActors()
 	{
 		return this.highwayActors;
+	}
+	
+	//GETTERS and SETTERS
+	public ArrayList<PresetLocationGroup> getPresetLocations(){
+		return presetLocationGroups;
 	}
 }
