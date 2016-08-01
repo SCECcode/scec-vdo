@@ -324,10 +324,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		return bar;
 	}
 	//grouping actor 
-	public DrawingTool addDrawingTool(DrawingTool drawingTool){
+	public DrawingTool addDrawingTool(DrawingTool drawingTool, String text){
 	
 		//indivisual text as actors
-		String text = "Text";
+//		String text = "Text";
 		double[] pt= {Transform.calcRadius(37),37,-120};
 		//ArrayList<DataAccessor> a = this.drawingToolTable.getLibraryModel().getAllObjects();
 
@@ -583,7 +583,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			runObjectInfoDialog();
 		}
 		else if (src == this.addDrawingToolsButton) {
-			DrawingTool drawingToolObj = addDrawingTool(new DrawingTool());
+			DrawingTool drawingToolObj = addDrawingTool(new DrawingTool(), "Text");
 			this.drawingToolTable.addDrawingTool(drawingToolObj);
 			MainGUI.updateRenderWindow();
 		}
@@ -688,6 +688,21 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		}
 		Info.getMainGUI().updateRenderWindow();
 	}
+	
+	public void clearTable(){
+		DrawingToolsTableModel drawingTooltablemodel = this.drawingToolTable.getLibraryModel();
+		int rowIndex = drawingToolTable.getRowCount();
+		System.out.println("rowIndex = " + rowIndex);
+		while((--rowIndex) >= 0)
+		{
+			DrawingTool dr = drawingToolsArray.get(rowIndex);
+			appendActors.getAppendedActor().RemovePart(dr.getActorPin());
+			appendActors.getAppendedActor().RemovePart(dr.getActorText());
+			drawingTooltablemodel.removeRow(rowIndex);
+			drawingToolsArray.remove(rowIndex);
+		}
+	}
+	
 	public void removeHighways() {
 		DrawingToolsTableModel drawingTooltablemodel = this.highwayToolTable.getLibraryModel();
 		while (highwayToolTable.getRowCount() > 0)
@@ -718,19 +733,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				DrawingTool dr = drawingToolsArray.get(i);
 				if ((vtkActor) dr.getActorPin() != null)
 				{
-					vtkProp actor = dr.getActorText(); 
-					//vtkProp actorPin = (vtkProp) appendActors.getAppendedActor().GetParts().GetItemAsObject(i*2);
-					this.drawingToolTable.setValueAt(displayTextInput,i, 0);//= .setDisplayName(displayTextInput);
-					vtkStringArray labels =new vtkStringArray();
-					labels.SetName("labels");
-					labels.SetNumberOfValues(1);
-					labels.SetValue(0, displayTextInput);
-					labels.Modified();
-					vtkPolyData temp = new vtkPolyData();
-					temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
-					temp.GetPointData().AddArray(labels);
-					((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).SetLabelArrayName("labels");
-					((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).Update();
+					setText(dr,displayTextInput);
+					this.drawingToolTable.setValueAt(displayTextInput,i, 0);
 					MainGUI.updateRenderWindow();
 				}
 			}
@@ -738,6 +742,21 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	}
 
 
+	public void setText(DrawingTool dr, String displayTextInput) {
+		// TODO Auto-generated method stub
+		vtkProp actor = dr.getActorText();
+		dr.setTextString(displayTextInput);
+		vtkStringArray labels =new vtkStringArray();
+		labels.SetName("labels");
+		labels.SetNumberOfValues(1);
+		labels.SetValue(0, displayTextInput);
+		labels.Modified();
+		vtkPolyData temp = new vtkPolyData();
+		temp = (vtkPolyData) ((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetInput();
+		temp.GetPointData().AddArray(labels);
+		((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).SetLabelArrayName("labels");
+		((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).Update();
+	}
 	@Override
 	public void tableChanged(TableModelEvent e) {
 		// TODO Auto-generated method stub
@@ -788,5 +807,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		return highwayToolsArray;
 	}
 
+	//GETTERS and SETTERS
+	public DefaultLocationsGUI getDefaultLocaitons(){
+		return defaultLocations;
+	}
 
 }

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import javax.swing.ListSelectionModel;
 
 import org.dom4j.Element;
+import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.CommunityFaultModelPluginState;
@@ -20,6 +21,7 @@ import vtk.vtkProp;
 public class DrawingToolsPluginState implements PluginState {
 
 	private DrawingToolsGUI parent;
+	private DefaultLocationsGUI presets;
 	private ArrayList<DrawingTool> drawingTools;
 	private ArrayList<Color> color1;
 	ArrayList<Integer> visibility;
@@ -39,6 +41,7 @@ public class DrawingToolsPluginState implements PluginState {
 	DrawingToolsPluginState(DrawingToolsGUI parent)
 	{
 		this.parent = parent;
+		presets = new DefaultLocationsGUI(parent);
 		drawingTools = new ArrayList<DrawingTool>();
 		dispName =new ArrayList<>();
 		countyFilePath =new ArrayList<>();
@@ -119,17 +122,20 @@ public class DrawingToolsPluginState implements PluginState {
 	public void load() {
 		// TODO Auto-generated method stub
 		int i=0;
+		//parent.clearTable();
 		for (DrawingTool dr : drawingTools)
 		{
+			//DrawingTool drawingToolObj = parent.addDrawingTool(dr, dispName.get(i));
+			//parent.getDrawingToolTable().addDrawingTool(drawingToolObj);
 			dr.setDisplayName(dispName.get(i));
+			parent.setText(dr,dispName.get(i));
 			dr.setAttributes(attributes.get(i));
 			parent.setAttributes( dr,attributes.get(i));
 			parent.setColor(dr, color1.get(i));
 			parent.setVisibility(dr, visibility.get(i));
-			System.out.println(dr.getAttributes().get("Lon"));
 			i++;
 		}
-		parent.getDefaultLocation().loadCounties(dt);
+//		parent.getDefaultLocation().loadCounties(dt);
 		i=0;
 		for (DrawingTool dr : highwayTools)
 		{
@@ -187,6 +193,12 @@ public class DrawingToolsPluginState implements PluginState {
 
 	@Override
 	public void fromXML(Element stateEl) {
+		//clear any previous data
+		drawingTools.clear();
+		dispName.clear();
+		color1.clear();
+		visibility.clear();
+		attributes.clear();
 		for ( Iterator i = stateEl.elementIterator( "DrawingTool" ); i.hasNext(); ) {
 			Element e = (Element) i.next();
 			if(e.attributeValue("type").contains("Text"))
@@ -203,7 +215,7 @@ public class DrawingToolsPluginState implements PluginState {
 				locData.put("fontSize", e.attributeValue("fontSize"));
 				attributes.add(locData);
 				System.out.println(e.attributeValue("type"));
-				DrawingTool drawingToolObj = parent.addDrawingTool(new DrawingTool());
+				DrawingTool drawingToolObj = parent.addDrawingTool(new DrawingTool(), e.attributeValue("dispName"));
 				parent.getDrawingToolTable().addDrawingTool(drawingToolObj);
 				drawingTools.add(drawingToolObj);
 			}
@@ -233,9 +245,10 @@ public class DrawingToolsPluginState implements PluginState {
 //					parent.addHighways(drawingToolObj);
 //					parent.getHighwayToolTable().addDrawingTool(drawingToolObj);
 //					highwayTools.add(drawingToolObj);
+					parent.getDefaultLocation().setSelectedInputFile(highwayFilePath.get(0));
+					parent.getDefaultLocation().loadHighways();
 				}
-			parent.getDefaultLocation().setSelectedInputFile(highwayFilePath.get(0));
-			parent.getDefaultLocation().loadHighways();
+
 		}
 	}
 
