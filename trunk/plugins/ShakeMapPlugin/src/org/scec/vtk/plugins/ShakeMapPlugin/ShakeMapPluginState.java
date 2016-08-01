@@ -102,7 +102,7 @@ public class ShakeMapPluginState implements PluginState{
 				stateEl.addElement( "ShakeMaps" )
 				.addAttribute( "filePath", box.getName())
 				.addAttribute( "transparency", Double.toString(parent.getShakeMapsList().get(i).getActor().GetProperty().GetOpacity()))
-				.addAttribute("parameter", parent.getParameterList().get(i));
+				.addAttribute("parameter", parent.getShakeMapsList().get(i).getParameter());
 			}
 
 			i++;
@@ -129,7 +129,7 @@ public class ShakeMapPluginState implements PluginState{
 			for(JCheckBox box: parent.getCheckBoxList()){
 				//if path one of the checkBoxes, activate the checkbox
 				if(path.equals(box.getName())){
-					ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt");
+					ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt", mapParameter.get(i));
 					File f = new File(parent.getCheckBoxList().get(checkBoxIndex).getName());
 					if(f.getName().equals("openSHA.txt")){
 						//The file format for data from openSHA files are a little different.
