@@ -599,7 +599,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 							    "Load County Labels?",
 							    "County Labels",
 							    JOptionPane.YES_NO_OPTION);
-						
+						  
 						dt = false;
 						if(n == JOptionPane.YES_OPTION)
 						{
@@ -614,6 +614,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					}
 					else
 					{
+						//
 						tempGroup.locations = loadBuiltInFiles();
 						//System.out.println("Size:" + tempGroup.locations.size());
 						addBuiltInFiles(tempGroup.locations);

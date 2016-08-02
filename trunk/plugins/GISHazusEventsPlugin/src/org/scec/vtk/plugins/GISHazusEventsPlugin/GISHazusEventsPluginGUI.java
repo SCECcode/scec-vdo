@@ -189,8 +189,8 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
     			Color[] newGradient = bTrace.setColorGradient(colorButton.getColor1(), colorButton.getColor2());    			
     			for(int i = 0; i < REGION_AMT; i++)
     				setColor(i, newGradient);*/
-            	updateColorButton(newColor[0],newColor[1]);
-            }
+            		updateColorButton(newColor[0],newColor[1]);
+            	}
             }
 		});
 
@@ -336,7 +336,7 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 	 *Turns on a predefined set of boundaries
 	 */
 	public void predefinedSubGroup(int subgroupNum, boolean isSelected) {
-		System.out.println(subgroupNum);
+		System.out.println("PredefinedSubGroup:" + subgroupNum);
 		int index = this.boundaryRowOrder[subgroupNum];
 		if(index != -1)
 		{
@@ -369,12 +369,14 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		if(index != -1) {
 			
 			for(int i = boundaryStartIndex[subgroupNum]; i < boundaryRowSize[boundaryRowOrder[subgroupNum]] + boundaryStartIndex[subgroupNum]; i++){
-			//	System.out.println(polArray.get(i).getCategory());
-				if(polArray.get(i).getCategory() > color.length - 1)
+				System.out.println("setColor was called" + polArray.get(i).getCategory());
+				
+				/*if(polArray.get(i).getCategory() > color.length - 1)
 					polArray.get(i).setColor(color[0]);
 				else
-					polArray.get(i).setColor(color[polArray.get(i).getCategory()]);
+					polArray.get(i).setColor(color[polArray.get(i).getCategory()]);*/
 			}
+			bTrace.buildSelectedBoundary(selectedEventRow);
 			this.paintAll(this.getGraphics());
 		}
 	}
@@ -525,8 +527,10 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
         				}
         				else
         				{
+        					System.out.println("ASDSA");
         					selected.add(selectedEventRow);
         					drawEvent(selectedEventRow);
+        					
         				}
         			}
         		}
