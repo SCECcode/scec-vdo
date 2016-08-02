@@ -1,6 +1,7 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
 import java.awt.Color;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -341,13 +342,15 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			l.stateChanged(e);
 		}
 	}
+	
+	private static final DecimalFormat magDF = new DecimalFormat("0.00");
 
 	@Override
 	public String getCurrentLabel() {
 		if (!isStepValid(currentStep))
 			return null;
 		SimulatorEvent event = getEventForStep(currentStep);
-		return "Mag: " + event.getMagnitude();
+		return "Mag: "+magDF.format(event.getMagnitude());
 	}
 	
 	private boolean isStepValid(int step) {
