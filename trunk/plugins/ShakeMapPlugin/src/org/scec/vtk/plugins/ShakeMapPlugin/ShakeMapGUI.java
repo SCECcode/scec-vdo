@@ -230,7 +230,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		USGSPanel.setLayout(new FlowLayout());
 		calChooser.add(nc);
 		calChooser.add(sc);
-//		USGSPanel.add(new JLabel("Link to UGSS website"));
 		JButton usgsLink = new JButton("Open USGS Website");
 		usgsLink.addActionListener(new ActionListener(){
 			@Override
