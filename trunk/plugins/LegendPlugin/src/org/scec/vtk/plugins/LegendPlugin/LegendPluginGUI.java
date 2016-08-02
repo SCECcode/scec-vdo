@@ -259,9 +259,11 @@ PluginActorsChangeListener {
 				if (visibility == 1) {
 					legendActor.SetVisibility(0);
 					displayButton.setText("Display");
+					enableButtons(false);
 				} else {
 					legendActor.SetVisibility(1);
 					displayButton.setText("Hide");
+					enableButtons(true);
 				}
 				legendActor.Modified();
 				MainGUI.updateRenderWindow();
@@ -415,6 +417,25 @@ PluginActorsChangeListener {
 		return model;
 	}
 	
+	public LegendPlugin getPlugin()
+	{
+		return plugin;
+	}
+	
+	public void addLegend(LegendItem legend)
+	{
+		legendActors.addLegend(legend);
+		displayButton.setEnabled(true);
+		enableButtons(true);
+	}
+	
+	private void enableButtons(boolean visibility)
+	{
+		setMoveButtonsEnabled(visibility);
+		editButton.setEnabled(visibility);
+		removeButton.setEnabled(visibility);
+	}
+	
 	@Override
 	public void actorAdded(vtkProp actor) {} // do nothing
 
@@ -489,7 +510,7 @@ PluginActorsChangeListener {
 			lowerPanel.add(okButton);
 			dialog.add(upperPanel);
 			dialog.add(lowerPanel);
-			dialog.pack();
+			dialog.pack();  
 			dialog.setVisible(true);
 		}
 		
