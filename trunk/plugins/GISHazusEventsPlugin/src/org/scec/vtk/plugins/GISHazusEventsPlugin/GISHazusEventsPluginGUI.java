@@ -376,7 +376,12 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 				else
 					polArray.get(i).setColor(color[polArray.get(i).getCategory()]);*/
 			}
-			bTrace.buildSelectedBoundary(selectedEventRow);
+			System.out.println(selectedEventRow + "," + index);
+			if(selectedEventRow == 0)
+				bTrace.buildBoundaries(bTrace.eventList.get(bTrace.eventList.size()-1).getSHPFile());
+			else
+				bTrace.buildBoundaries(bTrace.eventList.get(selectedEventRow).getSHPFile());
+				//bTrace.buildSelectedBoundary(selectedEventRow);
 			this.paintAll(this.getGraphics());
 		}
 	}

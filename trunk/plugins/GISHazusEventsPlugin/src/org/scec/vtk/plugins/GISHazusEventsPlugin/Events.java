@@ -417,7 +417,7 @@ public class Events {
 		return worked;
 		
 	}
-	private void buildBoundaries(String file) {
+	void buildBoundaries(String file) {
 		allBounds = null;
 		allBounds = new ArrayList<FilledBoundaryCluster>();
 
