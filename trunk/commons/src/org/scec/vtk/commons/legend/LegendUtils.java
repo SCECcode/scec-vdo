@@ -117,7 +117,7 @@ public class LegendUtils {
         vtkImage.SetMapper(mapper);
         vtkImage.SetPosition(x, y);
         
-        return new LegendItem(vtkImage, source, imageFile.getName());
+        return new LegendItem(vtkImage, source, imageFile.getName(), imageFile.getAbsolutePath());
 		
 	}
 }
