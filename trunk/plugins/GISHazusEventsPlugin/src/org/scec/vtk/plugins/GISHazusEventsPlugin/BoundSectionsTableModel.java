@@ -91,6 +91,7 @@ public class BoundSectionsTableModel extends AbstractLibraryModel {
         	  boolean prevVal = isSelectedRow[row];
     		  this.isSelectedRow[row] = currVal;
     		  if(prevVal==true && currVal==false) { // remove the continent from view
+    			  System.out.println("Set value at called");
     			  eventsGUI.predefinedSubGroup(row, currVal);
     		  }
     		 if(prevVal==false && currVal==true){ // add continent to the view
