@@ -62,6 +62,7 @@ import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.RupturesAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.DateLastEventColorer;
@@ -161,7 +162,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	
 	private File defaultLoadDir;
 
-	public UCERF3FaultSystemRupturesBuilder() {
+	public UCERF3FaultSystemRupturesBuilder(Plugin plugin) {
 		faultParams.getParameter(Boolean.class, GridSpacingFitParam.NAME).setValue(false);
 		faultParams.getParameter(Boolean.class, AseismicityParam.NAME).setValue(false);
 		
@@ -228,7 +229,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		
 		// COLORERES
 		
-		ParticipationRateColorer partRateColor = new ParticipationRateColorer();
+		ParticipationRateColorer partRateColor = new ParticipationRateColorer(plugin.getPluginActors());
 		colorers.add(partRateColor);
 		rupSetChangeListeners.add(partRateColor);
 		
