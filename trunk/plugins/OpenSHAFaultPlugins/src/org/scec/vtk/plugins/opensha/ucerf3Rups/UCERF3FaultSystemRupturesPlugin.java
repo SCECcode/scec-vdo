@@ -14,7 +14,7 @@ public class UCERF3FaultSystemRupturesPlugin extends AbstractFaultPlugin {
 	@Override
 	protected FaultPluginGUI buildGUI() throws Exception {
 		//changed the parameter to take a branch group
-		UCERF3FaultSystemRupturesBuilder builder = new UCERF3FaultSystemRupturesBuilder();
+		UCERF3FaultSystemRupturesBuilder builder = new UCERF3FaultSystemRupturesBuilder(this);
 
 		ArrayList<FaultAnimation> faultAnims = builder.getFaultAnimations();
 		ArrayList<FaultColorer> faultColorers = builder.getFaultColorers();

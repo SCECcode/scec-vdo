@@ -155,9 +155,10 @@ public class GeoDataSetGeometryGenerator {
 	 * grid points will be used as the pixel size
 	 * @param dataset
 	 * @param cpt
+	 * @param skipNaN
 	 * @return
 	 */
-	public static vtkActor buildPixelSurface(GeoDataSet dataset, CPT cpt) {
+	public static vtkActor buildPixelSurface(GeoDataSet dataset, CPT cpt, boolean skipNaN) {
 		double latSpacing, lonSpacing;
 		if (dataset instanceof GriddedGeoDataSet) {
 			GriddedGeoDataSet gridded = (GriddedGeoDataSet)dataset;
@@ -178,18 +179,19 @@ public class GeoDataSetGeometryGenerator {
 				}
 			}
 		}
-		return buildPixelSurface(dataset, cpt, latSpacing, lonSpacing);
+		return buildPixelSurface(dataset, cpt, skipNaN, latSpacing, lonSpacing);
 	}
 
 	/**
 	 * Builds a polygon surface where a rectangular "pixel" polygon is created at each location in the given GeoDataSet and CPT file.
 	 * @param dataset
 	 * @param cpt
+	 * @param skipNaN
 	 * @param latSpacing
 	 * @param lonSpacing
 	 * @return
 	 */
-	public static vtkActor buildPixelSurface(GeoDataSet dataset, CPT cpt, double latSpacing, double lonSpacing) {
+	public static vtkActor buildPixelSurface(GeoDataSet dataset, CPT cpt, boolean skipNaN, double latSpacing, double lonSpacing) {
 		
 		vtkPoints pts = new vtkPoints();
 		// Add the polygon to a list of polygons
@@ -208,6 +210,8 @@ public class GeoDataSetGeometryGenerator {
 		for (int i=0; i<dataset.size(); i++) {
 			Location center = dataset.getLocation(i);
 			double val = dataset.get(i);
+			if (skipNaN && Double.isNaN(val))
+				continue;
 			Color color3 = cpt.getColor((float)val);
 
 			// build pixel

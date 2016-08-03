@@ -1,28 +1,21 @@
 package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
-import org.dom4j.DocumentException;
 import org.opensha.commons.data.function.EvenlyDiscretizedFunc;
 import org.opensha.commons.data.region.CaliforniaRegions;
 import org.opensha.commons.data.xyz.GeoDataSet;
 import org.opensha.commons.data.xyz.GriddedGeoDataSet;
 import org.opensha.commons.geo.GriddedRegion;
-import org.opensha.commons.geo.Location;
-import org.opensha.commons.geo.LocationUtils;
 import org.opensha.commons.gui.plot.GraphWindow;
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
-import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
@@ -35,13 +28,12 @@ import org.opensha.sha.earthquake.calc.ERF_Calculator;
 import org.opensha.sha.earthquake.param.ApplyGardnerKnopoffAftershockFilterParam;
 import org.opensha.sha.earthquake.param.IncludeBackgroundOption;
 import org.opensha.sha.earthquake.param.IncludeBackgroundParam;
-import org.opensha.sha.faultSurface.FourPointEvenlyGriddedSurface;
 import org.opensha.sha.magdist.IncrementalMagFreqDist;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
-import org.scec.vtk.commons.opensha.surfaces.FaultSectionActorList;
-import org.scec.vtk.commons.opensha.surfaces.PolygonSurfaceGenerator;
-import org.scec.vtk.commons.opensha.surfaces.pickBehavior.NameDispalyPickHandler;
+import org.scec.vtk.commons.opensha.geoDataSet.GeoDataSetGeometryGenerator;
+import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
@@ -88,14 +80,19 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 	private BooleanParameter displayGriddedParam;
 	private BooleanParameter includeFaultsInGriddedParam;
 	private DoubleParameter griddedDepthParam;
-	
-	private PolygonSurfaceGenerator polygonSurfGen;
+	private DoubleParameter griddedDataOpacityParam;
 	
 	private GriddedGeoDataSet loadedGriddedData;
+	
+	private vtkActor griddedDataActor;
+	
+	private PluginActors actors;
 
-	public ParticipationRateColorer() {
+	public ParticipationRateColorer(PluginActors actors) {
 		super(getDefaultCPT(), false);
 		setCPTLog(true);
+		this.actors = actors;
+		
 		params = new ParameterList();
 		magMinParam = new DoubleParameter("Min Mag", 0d, 10d);
 		magMinParam.setValue(min);
@@ -116,12 +113,11 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 		griddedDepthParam.setValue(0d);
 		griddedDepthParam.addParameterChangeListener(this);
 		params.addParameter(griddedDepthParam);
-		
-		polygonSurfGen = new PolygonSurfaceGenerator();
-		for (Parameter<?> param : polygonSurfGen.getDisplayParams()) {
-			param.addParameterChangeListener(this);
-			params.addParameter(param);
-		}
+		griddedDataOpacityParam = new DoubleParameter("Gridded Data Opacity", 0d, 1d);
+		griddedDataOpacityParam.setDefaultValue(0.7);
+		griddedDataOpacityParam.setValue(griddedDataOpacityParam.getDefaultValue());
+		griddedDataOpacityParam.addParameterChangeListener(this);
+		params.addParameter(griddedDataOpacityParam);
 	}
 	
 	@Override
@@ -185,6 +181,12 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 					|| event.getParameter() == includeFaultsInGriddedParam)
 				loadedGriddedData = null;
 			displayGriddedData();
+		} else if (event.getParameter() == griddedDataOpacityParam) {
+			if (griddedDataActor != null) {
+				griddedDataActor.GetProperty().SetOpacity(griddedDataOpacityParam.getValue());
+				griddedDataActor.Modified();
+				MainGUI.updateRenderWindow();
+			}
 		}
 	}
 
@@ -300,79 +302,48 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 	}
 	
 	// TODO
-//	static BranchGroup buildBGForGriddedData(GriddedGeoDataSet geo, boolean cptLog, CPT cpt,
-//			PolygonSurfaceGenerator surfGen, double depth, boolean skipNaN) {
-//		BranchGroup bg = new BranchGroup();
-//		
-//        bg.setCapability(BranchGroup.ALLOW_DETACH);
-//        bg.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-//        bg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-//        bg.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-//        
-//        double halfLatSpacing = 0.5*geo.getRegion().getLatSpacing();
-//        double halfLonSpacing = 0.5*geo.getRegion().getLonSpacing();
-//        
-//        for (int i=0; i<geo.size(); i++) {
-//        	Location loc = geo.getLocation(i);
-//        	double val = geo.get(i);
-//        	if (skipNaN && Double.isNaN(val))
-//        		continue;
-//        	if (cptLog)
-//        		val = Math.log10(val);
-//        	
-//        	double lat = loc.getLatitude();
-//        	double lon = loc.getLongitude();
-//        	
-//        	Location nw = new Location(lat+halfLatSpacing, lon-halfLonSpacing, depth);
-//        	Location ne = new Location(lat+halfLatSpacing, lon+halfLonSpacing, depth);
-//        	Location sw = new Location(lat-halfLatSpacing, lon-halfLonSpacing, depth);
-//        	Location se = new Location(lat-halfLatSpacing, lon+halfLonSpacing, depth);
-//        	
-//        	FourPointEvenlyGriddedSurface surf = new FourPointEvenlyGriddedSurface(nw, sw, se, ne);
-//        	
-//        	Color color = cpt.getColor((float)val);
-//        	
-//        	bg.addChild(surfGen.createFaultBranchGroup(surf, color, null));
-//        }
-//        
-//        return bg;
-//	}
+	static vtkActor buildActorForGriddedData(GriddedGeoDataSet geo, boolean cptLog, CPT cpt,
+			double depth, boolean skipNaN, double opacity) {
+		if (cptLog) {
+			geo = geo.copy();
+			geo.log10();
+		}
+		GriddedRegion reg = geo.getRegion();
+		vtkActor actor = GeoDataSetGeometryGenerator.buildPixelSurface(geo, cpt, skipNaN, reg.getLatSpacing(), reg.getLonSpacing());
+		actor.GetProperty().SetOpacity(opacity);
+		return actor;
+	}
 	
 	private void displayGriddedData() {
-		// TODO
-//		if (bg != null)
-//			bg.removeAllChildren();
-//		
-//		if (!displayGriddedParam.getValue())
-//			return;
-//		
-//		if (sol == null)
-//			return;
-//		
-//		if (bg == null) {
-//			bg = new BranchGroup();
-//			bg.setCapability(BranchGroup.ALLOW_DETACH);
-//			bg.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-//			bg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-//			bg.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-//			
-//			Geo3dInfo.getMainWindow().getPluginBranchGroup().addChild(bg);
-//		}
-//		
-//		if (loadedGriddedData == null) {
-//			GriddedRegion griddedRegion = new CaliforniaRegions.RELM_TESTING_GRIDDED(0.1);
-//			double minMag = magMinParam.getValue();
-//			double maxMag = magMaxParam.getValue();
-//			loadedGriddedData = loadGriddedData(
-//					sol, griddedRegion, minMag, maxMag, null,
-//					true, includeFaultsInGriddedParam.getValue());
-//		}
-//		
-//		if (loadedGriddedData == null)
-//			displayGriddedParam.setValue(false);
-//		else
-//			bg.addChild(buildBGForGriddedData(loadedGriddedData, isCPTLog(), getCPT(),
-//					polygonSurfGen, griddedDepthParam.getValue(), false));
+		if (griddedDataActor != null) {
+			actors.removeActor(griddedDataActor);
+			griddedDataActor = null;
+			MainGUI.updateRenderWindow();
+		}
+		
+		if (!displayGriddedParam.getValue())
+			return;
+		
+		if (sol == null)
+			return;
+		
+		if (loadedGriddedData == null) {
+			GriddedRegion griddedRegion = new CaliforniaRegions.RELM_TESTING_GRIDDED(0.1);
+			double minMag = magMinParam.getValue();
+			double maxMag = magMaxParam.getValue();
+			loadedGriddedData = loadGriddedData(
+					sol, griddedRegion, minMag, maxMag, null,
+					true, includeFaultsInGriddedParam.getValue());
+		}
+		
+		if (loadedGriddedData == null) {
+			displayGriddedParam.setValue(false);
+		} else {
+			griddedDataActor = buildActorForGriddedData(loadedGriddedData, isCPTLog(), getCPT(),
+					griddedDepthParam.getValue(), false, griddedDataOpacityParam.getValue());
+			actors.addActor(griddedDataActor);
+			MainGUI.updateRenderWindow();
+		}
 	}
 
 }
