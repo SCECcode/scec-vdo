@@ -291,6 +291,7 @@ public class MainMenu implements ActionListener, ItemListener{
 					//open timeline state
 					Element pluginNameElement = root.element("Timeline-Plugin");
 					timeline.getState().fromXML(pluginNameElement);
+					timeline.getState().load();
 					timelineGUI.getTimeLinePanel().timelinePluginsChanged();
 				} catch (DocumentException e1) {
 					// TODO Auto-generated catch block
