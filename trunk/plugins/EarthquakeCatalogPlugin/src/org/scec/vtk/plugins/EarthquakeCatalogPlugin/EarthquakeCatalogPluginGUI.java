@@ -166,6 +166,9 @@ MouseListener
 	private JLabel			lowerGradientLabel;
 	private JLabel			higherGradientLabel;
 	private JCheckBox		legendCheckbox;
+	private ButtonGroup 	timeChooser;
+	private JRadioButton	trueTime;						//show earthquake sequence in true time
+	private JRadioButton	eqTime;							//show earthquake sequence in 
 	// Apply gradient to:
 	private JLabel          dispProp_gradient;				// "Apply gradient to:" label
 	private JRadioButton    dispProp_gradDepth;				// "Depth" radio button
@@ -699,7 +702,15 @@ MouseListener
 			
 		});
 		this.propsDisplayPanel.add(legendCheckbox);
-	
+		
+		timeChooser = new ButtonGroup();
+		trueTime = new JRadioButton("True Time");
+		eqTime = new JRadioButton("Equal Event Time");
+		timeChooser.add(trueTime);
+		trueTime.setSelected(true);
+		timeChooser.add(eqTime);
+		this.propsExtentsPanel.add(trueTime);
+		this.propsExtentsPanel.add(eqTime);
 		
 		this.propsDisplayPanel.repaint();
 	}
@@ -1306,5 +1317,9 @@ MouseListener
 	public void removeLegend() {
 		pluginActors.removeLegend(scalarBar);
 		MainGUI.updateRenderWindow();
+	}
+	
+	public boolean isTrueTimeSelected(){
+		return trueTime.isSelected();
 	}
 }
