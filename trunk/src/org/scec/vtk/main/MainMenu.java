@@ -269,7 +269,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				try {
 					Document document = reader.read(file.getPath());
 					Element root = document.getRootElement();
-					// iterate through child elements of root with element name "foo"
+					// iterate through child elements of root
 					Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 							availablePlugins.values());
 					for(PluginInfo pluginDescriptor:pluginDescriptors)
@@ -288,6 +288,10 @@ public class MainMenu implements ActionListener, ItemListener{
 							}
 						}
 					}
+					//open timeline state
+					Element pluginNameElement = root.element("Timeline-Plugin");
+					timeline.getState().fromXML(pluginNameElement);
+					timelineGUI.getTimeLinePanel().timelinePluginsChanged();
 				} catch (DocumentException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -331,10 +335,14 @@ public class MainMenu implements ActionListener, ItemListener{
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 					if (plugin instanceof StatefulPlugin) {
 						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
-						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
+						((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
+						//((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
 
 					}
 				}
+				//save timeline state
+				Element pluginNameElement = root.addElement("Timeline-Plugin");
+				timeline.getState().toXML(pluginNameElement);
 				saveXMLFile(document, root, destinationData);
 			}
 			else {
