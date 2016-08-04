@@ -11,13 +11,11 @@ import java.awt.event.MouseMotionListener;
 import java.text.DecimalFormat;
 
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 
-import org.opensha.commons.util.ClassUtils;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.AnimatablePlugin;
 import org.scec.vtk.plugins.Plugin;
@@ -553,6 +551,11 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	@Override
 	public boolean getScrollableTracksViewportHeight() {
 		return true;
+	}
+
+	public Timeline getTimeline() {
+		// TODO Auto-generated method stub
+		return timeline;
 	}
 
 }

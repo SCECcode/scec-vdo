@@ -1,18 +1,21 @@
 package org.scec.vtk.timeline;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opensha.commons.util.ClassUtils;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.timeline.camera.CameraAnimator;
 import org.scec.vtk.timeline.camera.CameraAnimator.SplineType;
 
 import com.google.common.base.Preconditions;
 
-public class Timeline {
+public class Timeline implements StatefulPlugin{
 	
 	private static final boolean D = false;
 	
@@ -31,10 +34,13 @@ public class Timeline {
 	private List<AnimationTimeListener> timeListeners;
 	private List<TimelinePluginChangeListener> pluginChangeListeners;
 	
+	
 	private double maxTime = 15d;
 	private double fps = 30;
 	
 	private boolean isLive = true; // can be set to false for external GUI tests;
+
+	private TimelinePluginState state;
 	
 	public Timeline() {
 		cameraKeys = new KeyFrameList();
@@ -309,6 +315,61 @@ public class Timeline {
 	public void setFramerate(double fps) {
 		Preconditions.checkState(fps > 0);
 		this.fps = fps;
+	}
+
+	@Override
+	public String getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void initialize(PluginInfo metadata, PluginActors pluginActors) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void load() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void activate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void passivate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void unload() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public PluginInfo getMetadata() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PluginActors getPluginActors() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PluginState getState() {
+		if(state==null)
+			state = new TimelinePluginState(this);
+		return state;
 	}
 
 }
