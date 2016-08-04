@@ -1,6 +1,5 @@
 package org.scec.vtk.timeline.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
@@ -136,4 +135,8 @@ public class TimelineGUI extends JScrollPane {
 		combinedPanel.updateSize();
 	}
 
+	public TimelinePanel getTimeLinePanel()
+	{
+		return centerPanel;
+	}
 }
