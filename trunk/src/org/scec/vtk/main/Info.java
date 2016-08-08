@@ -32,6 +32,6 @@ public class Info {
 	}
 	
 	public static Color getBackgroundColor() {
-		return convertColor(MainGUI.getRenderWindow().GetRenderer().GetBackground());
+		return convertColor(MainGUI.getRenderWindow().getRenderer().GetBackground());
 	}
 }

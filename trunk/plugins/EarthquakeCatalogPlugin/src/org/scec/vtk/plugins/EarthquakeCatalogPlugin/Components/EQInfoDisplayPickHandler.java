@@ -59,7 +59,7 @@ public class EQInfoDisplayPickHandler  implements PickHandler<EQCatalog> {
 						textActor.GetTextProperty().SetFontSize (16);
 						textActor.GetTextProperty().SetColor ( 1.0, 0.0, 0.0 );
 						textActor.Modified();
-						Info.getMainGUI().getRenderWindow().GetRenderer().AddActor2D(textActor);
+						Info.getMainGUI().getRenderWindow().getRenderer().AddActor2D(textActor);
 						Info.getMainGUI().updateRenderWindow();
 						break;
 					}

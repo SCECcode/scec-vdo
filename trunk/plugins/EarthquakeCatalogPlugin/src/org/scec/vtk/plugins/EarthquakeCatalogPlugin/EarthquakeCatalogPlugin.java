@@ -40,7 +40,7 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 		screenTextDate = new vtkTextActor();
 		screenTextDate.SetPosition(0.05, 0.05);
 		screenTextDate.GetTextProperty().SetFontSize(21);
-		Info.getMainGUI().getRenderWindow().GetRenderer().AddActor(screenTextDate);
+		Info.getMainGUI().getRenderWindow().getRenderer().AddActor(screenTextDate);
 	}
 
 	/**
