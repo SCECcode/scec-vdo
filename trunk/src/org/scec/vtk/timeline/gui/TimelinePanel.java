@@ -365,7 +365,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 	}
 	
 	void addCameraKey(double time, boolean pause) {
-		vtkCamera cam = MainGUI.getRenderWindow().GetRenderer().GetActiveCamera();
+		vtkCamera cam = MainGUI.getRenderWindow().getRenderer().GetActiveCamera();
 		CameraKeyFrame key = new CameraKeyFrame(time, cam, pause);
 		
 		timeline.addCameraKeyFrame(key);

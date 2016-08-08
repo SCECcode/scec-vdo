@@ -284,7 +284,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 
 		});
 
-		Info.getMainGUI().getRenderWindow().addMouseListener(new MouseAdapter()
+		Info.getMainGUI().getRenderWindow().getComponent().addMouseListener(new MouseAdapter()
 		{
 			//public void mouseClicked(MouseEvent e)
 			//{
@@ -425,7 +425,7 @@ public class ScriptingPluginGUI extends JPanel implements ActionListener, MouseL
 		cb.pointsFocalPoint = pointsToMoveCameraOnFocalPoint;//fp;
 		cb.pointsViewUp = pointsToMoveCameraOnViewUp;//up
 		cb.cue = cue1;
-		cb.camold = Info.getMainGUI().getRenderWindow().GetRenderer().GetActiveCamera();
+		cb.camold = Info.getMainGUI().getRenderWindow().getRenderer().GetActiveCamera();
 		cb.included = included;
 		cb.scene = scene;
 		if(included)

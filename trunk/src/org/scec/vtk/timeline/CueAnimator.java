@@ -1,5 +1,6 @@
 package org.scec.vtk.timeline;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -29,7 +30,11 @@ import org.scec.vtk.tools.JpegImagesToMovie;
 
 import vtk.vtkAnimationCue;
 import vtk.vtkAnimationScene;
+import vtk.vtkCanvas;
+import vtk.vtkCocoaRenderWindow;
+import vtk.vtkJPEGWriter;
 import vtk.vtkUnsignedCharArray;
+import vtk.vtkWindowToImageFilter;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -50,7 +55,7 @@ public class CueAnimator {
 	private int renderWidth;
 	private int renderHeight;
 	private File outputFile;
-	private List<vtkUnsignedCharArray> renderedFrames;
+	private List<vtkWindowToImageFilter> renderedFrames;
 	
 	private Thread playThread;
 	
@@ -89,7 +94,7 @@ public class CueAnimator {
 					scene.SetModeToSequence();
 					scene.SetFrameRate(timeline.getFamerate());
 					
-					int[] renderSize = MainGUI.getRenderWindow().GetRenderWindow().GetSize();
+					int[] renderSize = MainGUI.getRenderWindow().getRenderer().GetSize();
 					renderWidth =  renderSize[0];
 					renderHeight = renderSize[1];
 					
@@ -177,14 +182,14 @@ public class CueAnimator {
 		@Override
 		public void run() {
 			timeline.activateTime(animTime);
-			int[] renderSize = MainGUI.getRenderWindow().GetRenderWindow().GetSize();
+			int[] renderSize = MainGUI.getRenderWindow().getRenderer().GetSize();
 			int width =  renderSize[0];
 			int height = renderSize[1];
 			Preconditions.checkState(width == renderWidth && height == renderHeight,
 					"Render canvas size changed during render");
-			vtkUnsignedCharArray vtkPixelData = new vtkUnsignedCharArray();
-			MainGUI.getRenderWindow().GetRenderWindow().GetPixelData(0, 0, width, height,
-					1, vtkPixelData);
+			vtkWindowToImageFilter vtkPixelData = new vtkWindowToImageFilter();
+			vtkPixelData.SetInput(MainGUI.getRenderWindow().getRenderWindow());
+			vtkPixelData.Update();
 			renderedFrames.add(vtkPixelData);
 		}
 	}
@@ -209,11 +214,11 @@ public class CueAnimator {
 	
 	private class ImageWriteCallable implements Runnable {
 		
-		private vtkUnsignedCharArray vtkPixelData;
+		private vtkWindowToImageFilter vtkPixelData;
 		private File outputFile;
 		private CalcProgressBar progressBar;
 		
-		public ImageWriteCallable(vtkUnsignedCharArray vtkPixelData, File outputFile, CalcProgressBar progressBar) {
+		public ImageWriteCallable(vtkWindowToImageFilter vtkPixelData, File outputFile, CalcProgressBar progressBar) {
 			this.vtkPixelData = vtkPixelData;
 			this.outputFile = outputFile;
 			this.progressBar = progressBar;
@@ -221,36 +226,12 @@ public class CueAnimator {
 
 		@Override
 		public void run() {
-			BufferedImage bufImage = new BufferedImage(renderWidth, renderHeight,
-					BufferedImage.TYPE_INT_RGB);
-			int[] rgbArray = new int[(renderWidth) * (renderHeight)];
-			int index, r, g, b;
-			double[] rgbFloat;
-			// bad performance because one has to get the values out of the vtk find a workaround jpeg writer
-			// data structure tuple by tuple (instead of one "copyToArray") ...
-			for (int y = 0; y < renderHeight; y++) {
-				for (int x = 0; x < renderWidth; x++) {
-					index = ((y * (renderWidth + 1)) + x);
-					rgbFloat = vtkPixelData.GetTuple3(index);
-					r = (int) rgbFloat[0];
-					g = (int) rgbFloat[1];
-					b = (int) rgbFloat[2];
-					// vtk window origin: bottom left, Java image origin: top left
-					rgbArray[((renderHeight -1 - y) * (renderWidth)) + x] =
-							((r << 16) + (g << 8) + b);
-				}
-			}
-			bufImage.setRGB(0, 0, renderWidth, renderHeight, rgbArray, 0, renderWidth);
-			try {
-				BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile));
-//				ImageIO.write(bufImage, "jpg", out);
-				JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
-				JPEGEncodeParam encParam = enc.getDefaultJPEGEncodeParam(bufImage);
-				encParam.setQuality(1f, true);
-				enc.setJPEGEncodeParam(encParam);
-				enc.encode(bufImage);
-				out.close();
-			} catch (IOException e) {
+			try{
+				vtkJPEGWriter enc = new vtkJPEGWriter();
+				enc.SetFileName(outputFile.getAbsolutePath());
+				enc.SetInputConnection(vtkPixelData.GetOutputPort());
+				enc.Write();
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -298,7 +279,7 @@ public class CueAnimator {
 //				}
 				// TODO just keep images in memory, never write to disk
 				File file = new File(tempDir, "Capture" + i + ".jpg");				
-				vtkUnsignedCharArray vtkPixelData = renderedFrames.get(i);
+				vtkWindowToImageFilter vtkPixelData = renderedFrames.get(i);
 				imageFiles.add(file);
 				futures.add(executor.submit(new ImageWriteCallable(vtkPixelData, file, progressBar)));
 			}
