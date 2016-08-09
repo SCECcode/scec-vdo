@@ -87,15 +87,15 @@ public class CommunityFaultModelPluginState implements PluginState
 		int i=0;
 		for (Fault3D eqc : faults)
 		{
-			stateEl.addElement( "CFM" )
-					.addAttribute( "dispName", dispName.get(i))
-					.addAttribute( "filePath", filePath.get(i))
-					.addAttribute( "color1", Integer.toString(color1.get(i).getRGB()))
-					.addAttribute( "meshState",Integer.toString(meshState.get(i)))
-					.addAttribute( "citation",(citation.get(i)))
-					.addAttribute( "reference",(reference.get(i)))
-					.addAttribute( "notes",(notes.get(i)))
-					.addAttribute( "visibility",(visibility.get(i).toString()));
+			Element  propertyEl = stateEl.addElement( "CFM" );
+			propertyEl.addElement("dispName").addText(dispName.get(i));
+			propertyEl.addElement("filePath").addText( filePath.get(i));
+			propertyEl.addElement("color1").addText(Integer.toString(color1.get(i).getRGB()));
+			propertyEl.addElement("meshState").addText(Integer.toString(meshState.get(i)));
+			propertyEl.addElement("citation").addText(citation.get(i));
+			propertyEl.addElement("reference").addText(reference.get(i));
+			propertyEl.addElement("notes").addText(notes.get(i));
+			propertyEl.addElement("visibility").addText(visibility.get(i).toString());
 			i++;
 		}
 	}
@@ -111,15 +111,15 @@ public class CommunityFaultModelPluginState implements PluginState
 		 ArrayList<File> file = new ArrayList<>();
 		for ( Iterator i = stateEl.elementIterator( "CFM" ); i.hasNext(); ) {
             Element e = (Element) i.next();
-            dispName.add(e.attributeValue("dispName"));
-            filePath.add(e.attributeValue("filePath"));
-            color1.add(Color.decode(e.attributeValue("color1")));
-            visibility.add(Integer.parseInt(e.attributeValue("visibility")));
-            meshState.add(Integer.parseInt(e.attributeValue("meshState")));
-            citation.add((e.attributeValue("citation")));
-            reference.add((e.attributeValue("reference")));
-            notes.add((e.attributeValue("notes")));
-            System.out.println(e.attributeValue("filePath"));
+            dispName.add(e.elementText("dispName"));
+            filePath.add(e.elementText("filePath"));
+            color1.add(Color.decode(e.elementText("color1")));
+            visibility.add(Integer.parseInt(e.elementText("visibility")));
+            meshState.add(Integer.parseInt(e.elementText("meshState")));
+            citation.add((e.elementText("citation")));
+            reference.add((e.elementText("reference")));
+            notes.add((e.elementText("notes")));
+            System.out.println(e.elementText("filePath"));
            
             file.add(new File(filePath.get(filePath.size()-1)));
         }

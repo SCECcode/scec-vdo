@@ -124,26 +124,27 @@ public class LegendPluginState implements PluginState {
 			{
 				if (legend.getActor() instanceof vtkTextActor)
 				{
-					stateEl.addElement("TextLegend")
-					.addAttribute("legendName", legend.toString())
-					.addAttribute("text", ((vtkTextActor)legend.getActor()).GetInput())
-					.addAttribute("font-family", ((vtkTextActor)legend.getActor()).GetTextProperty().GetFontFamilyAsString())
-					.addAttribute("font-size", "" + ((vtkTextActor)legend.getActor()).GetTextProperty().GetFontSize())
-					.addAttribute("colorR", "" + ((vtkTextActor)legend.getActor()).GetTextProperty().GetColor()[0])
-					.addAttribute("colorG", "" + ((vtkTextActor)legend.getActor()).GetTextProperty().GetColor()[1])
-					.addAttribute("colorB", "" + ((vtkTextActor)legend.getActor()).GetTextProperty().GetColor()[2])
-					.addAttribute("x-coordinate", "" + legend.getActor().GetPosition()[0])
-					.addAttribute("y-coordinate", "" + legend.getActor().GetPosition()[1])
-					.addAttribute("visibility", "" + legend.getActor().GetVisibility());
+					Element propertyEl = stateEl.addElement("TextLegend");
+					propertyEl.addElement("legendName").addText(legend.toString());
+					propertyEl.addElement("text").addText(((vtkTextActor)legend.getActor()).GetInput());
+					propertyEl.addElement("font-family").addText(((vtkTextActor)legend.getActor()).GetTextProperty().GetFontFamilyAsString());
+					propertyEl.addElement("font-size").addText("" + ((vtkTextActor)legend.getActor()).GetTextProperty().GetFontSize());
+					propertyEl.addElement("colorR").addText("" + ((vtkTextActor)legend.getActor()).GetTextProperty().GetColor()[0]);
+					propertyEl.addElement("colorG").addText("" + ((vtkTextActor)legend.getActor()).GetTextProperty().GetColor()[1]);
+					propertyEl.addElement("colorB").addText("" + ((vtkTextActor)legend.getActor()).GetTextProperty().GetColor()[2]);
+					propertyEl.addElement("x-coordinate").addText("" + legend.getActor().GetPosition()[0]);
+					propertyEl.addElement("y-coordinate").addText("" + legend.getActor().GetPosition()[1]);
+					propertyEl.addElement("visibility").addText("" + legend.getActor().GetVisibility());
 				} 
 				else if (legend.getActor() instanceof vtkActor2D)
 				{
-					stateEl.addElement("ImageLegend")
-					.addAttribute("legendName", legend.toString())
-					.addAttribute("imagePath", legend.getImagePath())
-					.addAttribute("x-coordinate", "" + legend.getActor().GetPosition()[0])
-					.addAttribute("y-coordinate", "" + legend.getActor().GetPosition()[1])
-					.addAttribute("visibility", "" + legend.getActor().GetVisibility()); 
+					Element propertyEl = stateEl.addElement("ImageLegend");
+					propertyEl.addElement("legendName").addText(legend.toString());
+					propertyEl.addElement("imagePath").addText(legend.getImagePath());
+					propertyEl.addElement("x-coordinate").addText("" + legend.getActor().GetPosition()[0]);
+					propertyEl.addElement("y-coordinate").addText("" + legend.getActor().GetPosition()[1]);
+					propertyEl.addElement("visibility").addText("" + legend.getActor().GetVisibility());
+				
 				}
 			}
 		}
@@ -187,30 +188,30 @@ public class LegendPluginState implements PluginState {
 		for ( Iterator i = stateEl.elementIterator( "TextLegend" ); i.hasNext(); ) 
 		{
 			Element e = (Element) i.next();
-			text.add(e.attributeValue("text"));
-			font.add(e.attributeValue("font-family"));
-			fontSize.add(Integer.parseInt(e.attributeValue("font-size")));
+			text.add(e.elementText("text"));
+			font.add(e.elementText("font-family"));
+			fontSize.add(Integer.parseInt(e.elementText("font-size")));
 			double [] textColor = new double[3];
-			textColor[0] = Double.parseDouble(e.attributeValue("colorR"));
-			textColor[1] = Double.parseDouble(e.attributeValue("colorG"));
-			textColor[2] = Double.parseDouble(e.attributeValue("colorB"));
+			textColor[0] = Double.parseDouble(e.elementText("colorR"));
+			textColor[1] = Double.parseDouble(e.elementText("colorG"));
+			textColor[2] = Double.parseDouble(e.elementText("colorB"));
 			color.add(textColor);
 			double [] coord = new double[2];
-			coord[0] = Double.parseDouble(e.attributeValue("x-coordinate"));
-			coord[1] = Double.parseDouble(e.attributeValue("y-coordinate"));
+			coord[0] = Double.parseDouble(e.elementText("x-coordinate"));
+			coord[1] = Double.parseDouble(e.elementText("y-coordinate"));
 			coordinates.add(coord);
-			visibility.add(Integer.parseInt(e.attributeValue("visibility")));
+			visibility.add(Integer.parseInt(e.elementText("visibility")));
 		}
 		
 		for ( Iterator i = stateEl.elementIterator( "ImageLegend" ); i.hasNext();)
 		{
 			Element e = (Element) i.next();
-			imagePath.add(e.attributeValue("imagePath"));
+			imagePath.add(e.elementText("imagePath"));
 			double [] coord = new double[2];
-			coord[0] = Double.parseDouble(e.attributeValue("x-coordinate"));
-			coord[1] = Double.parseDouble(e.attributeValue("y-coordinate"));
+			coord[0] = Double.parseDouble(e.elementText("x-coordinate"));
+			coord[1] = Double.parseDouble(e.elementText("y-coordinate"));
 			coordinates.add(coord);
-			visibility.add(Integer.parseInt(e.attributeValue("visibility")));
+			visibility.add(Integer.parseInt(e.elementText("visibility")));
 		}
 		showLegends();
 	}

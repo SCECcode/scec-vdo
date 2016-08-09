@@ -75,7 +75,7 @@ public class PoliticalBoundariesPluginState implements PluginState {
 		for (int i = 0; i < filePath.size() ; i++)
 		{
 			stateEl.addElement( "PoliticalBoundaries" )
-			.addAttribute( "filePath", filePath.get(i));
+			.addElement( "filePath").addText(filePath.get(i));
 		}
 
 	}
@@ -93,7 +93,7 @@ public class PoliticalBoundariesPluginState implements PluginState {
 		for ( Iterator i = stateEl.elementIterator( "PoliticalBoundaries" ); i.hasNext(); ) 
 		{
 			Element e = (Element) i.next();
-			filePath.add(e.attributeValue("filePath"));
+			filePath.add(e.elementText("filePath"));
 		}
 
 	}
