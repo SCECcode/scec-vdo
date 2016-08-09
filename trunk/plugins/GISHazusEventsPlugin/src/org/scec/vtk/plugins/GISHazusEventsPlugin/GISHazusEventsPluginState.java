@@ -127,7 +127,7 @@ public class GISHazusEventsPluginState implements PluginState {
 	{
 		for(int num:selected)
 		{
-			stateE1.addElement("HAZUS").addElement("id","" + num);
+			stateE1.addElement("HAZUS").addElement("id").addText("" + num);
 		}
 		
 	}
@@ -141,7 +141,7 @@ public class GISHazusEventsPluginState implements PluginState {
 	public void fromXML(Element stateEl) {
 		for ( Iterator i = stateEl.elementIterator( "HAZUS" ); i.hasNext(); ) {
             Element e = (Element) i.next();
-            selected.add(Integer.parseInt(e.attributeValue("id")));
+            selected.add(Integer.parseInt(e.elementText("id")));
 		}
 		for(int i = 0;i < selected.size();i++)
 		{

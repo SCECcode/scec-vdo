@@ -99,10 +99,10 @@ public class ShakeMapPluginState implements PluginState{
 		for (JCheckBox box : parent.getCheckBoxList())
 		{
 			if(box.isSelected()){
-				stateEl.addElement( "ShakeMaps" )
-				.addAttribute( "filePath", box.getName())
-				.addAttribute( "transparency", Double.toString(parent.getShakeMapsList().get(i).getActor().GetProperty().GetOpacity()))
-				.addAttribute("parameter", parent.getShakeMapsList().get(i).getParameter());
+				Element propertyEl = stateEl.addElement( "ShakeMaps" );
+				propertyEl.addElement("filePath").addText(box.getName());
+				propertyEl.addElement("transparency").addText(Double.toString(parent.getShakeMapsList().get(i).getActor().GetProperty().GetOpacity()));
+				propertyEl.addElement("parameter").addText(parent.getShakeMapsList().get(i).getParameter());
 			}
 
 			i++;
@@ -167,9 +167,9 @@ public class ShakeMapPluginState implements PluginState{
 		for ( Iterator i = stateEl.elementIterator( "ShakeMaps" ); i.hasNext(); ) 
 		{
 			Element e = (Element) i.next();
-			filePath.add(e.attributeValue("filePath"));
-			transparency.add(Double.parseDouble(e.attributeValue("transparency")));	 
-			mapParameter.add(e.attributeValue("parameter"));
+			filePath.add(e.elementText("filePath"));
+			transparency.add(Double.parseDouble(e.elementText("transparency")));	 
+			mapParameter.add(e.elementText("parameter"));
 		}
 		showMaps(filePath, transparency);
 	}

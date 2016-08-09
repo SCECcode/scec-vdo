@@ -104,17 +104,17 @@ public class EarthquakeCatalogPluginState implements PluginState {
 		int i=0;
 		for (EQCatalog eqc : catalogs)
 		{
-			stateEl.addElement( "EarthquakeCatalog" )
-					.addAttribute( "dispName", dispName.get(i))
-					.addAttribute( "filePath", filePath.get(i))
-					.addAttribute( "color1", Integer.toString(color1.get(i).getRGB()))
-					.addAttribute( "color2", Integer.toString(color2.get(i).getRGB()))
-					.addAttribute( "scaling", Integer.toString(scaling.get(i)))
-					.addAttribute( "transparency", Integer.toString(transparency.get(i)))
-					.addAttribute( "geometry",Integer.toString(geometry.get(i)))
-					.addAttribute( "comcat",Boolean.toString(catalogTypeIsComcat.get(i)))
-					.addAttribute( "valuesBy",(valuesBy.get(i)))
-					.addAttribute( "visibility",(visibility.get(i).toString()));
+			Element propertyEl = stateEl.addElement( "EarthquakeCatalog" );
+			propertyEl.addElement("dispName").addText(dispName.get(i));
+			propertyEl.addElement("filePath").addText(filePath.get(i));
+			propertyEl.addElement("color1").addText(Integer.toString(color1.get(i).getRGB()));
+			propertyEl.addElement("color2").addText(Integer.toString(color2.get(i).getRGB()));
+			propertyEl.addElement("scaling").addText(Integer.toString(scaling.get(i)));
+			propertyEl.addElement("transparency").addText(Integer.toString(transparency.get(i)));
+			propertyEl.addElement("geometry").addText(Integer.toString(geometry.get(i)));
+			propertyEl.addElement("comcat").addText(catalogTypeIsComcat.get(i).toString());
+			propertyEl.addElement("valuesBy").addText(valuesBy.get(i));
+			propertyEl.addElement("visibility").addText(visibility.get(i).toString());
 			System.out.println(eqc.getColor1());
     		System.out.println(eqc.getColor2());
 			i++;
@@ -131,18 +131,19 @@ public class EarthquakeCatalogPluginState implements PluginState {
 	public void fromXML(Element stateEl) {
 		 for ( Iterator i = stateEl.elementIterator( "EarthquakeCatalog" ); i.hasNext(); ) {
 	            Element e = (Element) i.next();
-	            dispName.add(e.attributeValue("dispName"));
-	            filePath.add(e.attributeValue("filePath"));
-	            color1.add(Color.decode(e.attributeValue("color1")));
-	            color2.add(Color.decode(e.attributeValue("color2")));
-	            scaling.add(Integer.parseInt(e.attributeValue("scaling")));
-	            transparency.add(Integer.parseInt(e.attributeValue("transparency")));
-	            geometry.add(Integer.parseInt(e.attributeValue("geometry")));
-	            visibility.add(Boolean.parseBoolean(e.attributeValue("visibility")));
-	            valuesBy.add((e.attributeValue("valuesBy")));
-	            catalogTypeIsComcat.add(Boolean.parseBoolean(e.attributeValue("comcat")));
+	       
+	            dispName.add(e.elementText("dispName"));
+	            filePath.add(e.elementText("filePath"));
+	            color1.add(Color.decode(e.elementText("color1")));
+	            color2.add(Color.decode(e.elementText("color2")));
+	            scaling.add(Integer.parseInt(e.elementText("scaling")));
+	            transparency.add(Integer.parseInt(e.elementText("transparency")));
+	            geometry.add(Integer.parseInt(e.elementText("geometry")));
+	            visibility.add(Boolean.parseBoolean(e.elementText("visibility")));
+	            valuesBy.add((e.elementText("valuesBy")));
+	            catalogTypeIsComcat.add(Boolean.parseBoolean(e.elementText("comcat")));
 	            
-	            System.out.println(e.attributeValue("filePath"));
+	            System.out.println(e.elementText("filePath"));
 	            // read the catalog file
 	            File file = new File(filePath.get(filePath.size()-1));
 	            EQCatalog eq;

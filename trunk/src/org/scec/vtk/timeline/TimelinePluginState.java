@@ -74,45 +74,45 @@ public class TimelinePluginState implements PluginState{
 	}
 
 	private void createElement(Element stateEl) {
-		Element timeLinePropertyElement = stateEl.addElement("TimelineProperty")
-				.addAttribute("frameRate", Double.toString(frameRate))
-				.addAttribute("cameraSplineType",(splineIndex))
-				.addAttribute("maxTime", Double.toString(totalAnimationDuration));
+		Element timeLinePropertyElement = stateEl.addElement("TimelineProperty");
+		timeLinePropertyElement.addElement("frameRate").addText(Double.toString(frameRate));
+		timeLinePropertyElement.addElement("cameraSplineType").addText((splineIndex));
+		timeLinePropertyElement.addElement("maxTime").addText( Double.toString(totalAnimationDuration));
 		
 		for(int j=0;j<cameraKeyArray.size();j++)
 		{
-			Element pluginKeyFrameElement = stateEl.addElement("CameraKeyFrame")
-					.addAttribute("index", Integer.toString(j))
-					.addAttribute("camPositon", cameraAtKeyframe.get(j).getCam().GetPosition()[0]+","+cameraAtKeyframe.get(j).getCam().GetPosition()[1]+","+cameraAtKeyframe.get(j).getCam().GetPosition()[2])
-					.addAttribute("camViewUp", cameraAtKeyframe.get(j).getCam().GetViewUp()[0]+","+cameraAtKeyframe.get(j).getCam().GetViewUp()[1]+","+cameraAtKeyframe.get(j).getCam().GetViewUp()[2])
-					.addAttribute("camLookAt", cameraAtKeyframe.get(j).getCam().GetFocalPoint()[0]+","+cameraAtKeyframe.get(j).getCam().GetFocalPoint()[1]+","+cameraAtKeyframe.get(j).getCam().GetFocalPoint()[2])
-					.addAttribute("camTime", Double.toString(cameraTimeAtKeyframe.get(j)));
+			Element pluginKeyFrameElement = stateEl.addElement("CameraKeyFrame");
+			pluginKeyFrameElement.addElement("index").addText( Integer.toString(j));
+			pluginKeyFrameElement.addElement("camPositon").addText( cameraAtKeyframe.get(j).getCam().GetPosition()[0]+","+cameraAtKeyframe.get(j).getCam().GetPosition()[1]+","+cameraAtKeyframe.get(j).getCam().GetPosition()[2]);
+			pluginKeyFrameElement.addElement("camViewUp").addText( cameraAtKeyframe.get(j).getCam().GetViewUp()[0]+","+cameraAtKeyframe.get(j).getCam().GetViewUp()[1]+","+cameraAtKeyframe.get(j).getCam().GetViewUp()[2]);
+			pluginKeyFrameElement.addElement("camLookAt").addText( cameraAtKeyframe.get(j).getCam().GetFocalPoint()[0]+","+cameraAtKeyframe.get(j).getCam().GetFocalPoint()[1]+","+cameraAtKeyframe.get(j).getCam().GetFocalPoint()[2]);
+			pluginKeyFrameElement.addElement("camTime").addText(Double.toString(cameraTimeAtKeyframe.get(j)));
 		}
 		
 		for(int i =0;i<this.numPlugins;i++)
 		{
-			Element timelineElement = stateEl.addElement( "Timeline" )
-					.addAttribute( "pluginIndex", Integer.toString(i))
-					.addAttribute( "pluginId", pluginLayerId.get(i))
-					.addAttribute( "isFrozen", Boolean.toString(pluginIsFrozen.get(i)))
-					.addAttribute( "isDisplayed", Boolean.toString(pluginIsDisplayed.get(i)))
-					.addAttribute( "pluginNumKeyFrames", Integer.toString(keyFrameTypeArray.get(i).size()));
+			Element timelineElement = stateEl.addElement( "TimelineLayer" );
+			timelineElement.addElement( "pluginIndex").addText( Integer.toString(i));
+			timelineElement.addElement( "pluginId").addText( pluginLayerId.get(i));
+			timelineElement.addElement( "isFrozen").addText( Boolean.toString(pluginIsFrozen.get(i)));
+			timelineElement.addElement( "isDisplayed").addText( Boolean.toString(pluginIsDisplayed.get(i)));
+			timelineElement.addElement( "pluginNumKeyFrames").addText(Integer.toString(keyFrameTypeArray.get(i).size()));
 		
 			for(int j=0;j<keyFrameTypeArray.get(i).size();j++)
 			{
-				Element pluginKeyFrameElement = timelineElement.addElement("Keyframe")
-						.addAttribute("index", Integer.toString(j))
-						.addAttribute("startTime", Double.toString(startTimeArray.get(i).get(j)))
-						.addAttribute("type", keyFrameTypeArray.get(i).get(j));
+				Element pluginKeyFrameElement = timelineElement.addElement("Keyframe");
+				pluginKeyFrameElement.addElement("index").addText( Integer.toString(j));
+				pluginKeyFrameElement.addElement("startTime").addText( Double.toString(startTimeArray.get(i).get(j)));
+				pluginKeyFrameElement.addElement("type").addText( keyFrameTypeArray.get(i).get(j));
 				if(keyFrameTypeArray.get(i).get(j).equals("Visibility"))
 				{
-					pluginKeyFrameElement.addAttribute("visiblity", Boolean.toString(visibilityArray.get(i).get(j)));
+					pluginKeyFrameElement.addElement("visiblity").addText( Boolean.toString(visibilityArray.get(i).get(j)));
 				}
 				else if (keyFrameTypeArray.get(i).get(j).equals("Range")) {
 					if(durationArray.get(i).get(j)>0)
 						{
-						pluginKeyFrameElement.addAttribute("endTime", Double.toString(endTimeArray.get(i).get(j)));
-						pluginKeyFrameElement.addAttribute("duration", Double.toString(durationArray.get(i).get(j)));
+						pluginKeyFrameElement.addElement("endTime").addText( Double.toString(endTimeArray.get(i).get(j)));
+						pluginKeyFrameElement.addElement("duration").addText(Double.toString(durationArray.get(i).get(j)));
 						}
 					pluginStateArray.get(i).get(j).load();
 					pluginStateArray.get(i).get(j).toXML(pluginKeyFrameElement);
@@ -147,37 +147,37 @@ public class TimelinePluginState implements PluginState{
 		
 		for ( Iterator i = stateEl.elementIterator("TimelineProperty"); i.hasNext(); ) {
 			Element eSub = (Element) i.next();
-			frameRate = Double.parseDouble( eSub.attributeValue("frameRate"));
-			splineIndex = ( eSub.attributeValue("cameraSplineType"));
-			totalAnimationDuration = Double.parseDouble( eSub.attributeValue("maxTime"));
+			frameRate = Double.parseDouble( eSub.elementText("frameRate"));
+			splineIndex = ( eSub.elementText("cameraSplineType"));
+			totalAnimationDuration = Double.parseDouble( eSub.elementText("maxTime"));
 		}
 		//camera
 		for ( Iterator j = stateEl.elementIterator("CameraKeyFrame"); j.hasNext(); ) {
 			Element eSub = (Element) j.next();
 			
 			vtkCamera cam = new vtkCamera();
-			String[] pos = eSub.attributeValue("camPositon").split(",");
+			String[] pos = eSub.elementText("camPositon").split(",");
 			cam.SetPosition(Double.parseDouble(pos[0]),Double.parseDouble(pos[1]),Double.parseDouble(pos[2]));
-			String[] viewUp = eSub.attributeValue("camViewUp").split(",");
+			String[] viewUp = eSub.elementText("camViewUp").split(",");
 			cam.SetViewUp(Double.parseDouble(viewUp[0]),Double.parseDouble(viewUp[1]),Double.parseDouble(viewUp[2]));
-			String[] focalPoint = eSub.attributeValue("camLookAt").split(",");
+			String[] focalPoint = eSub.elementText("camLookAt").split(",");
 			cam.SetFocalPoint(Double.parseDouble(focalPoint[0]),Double.parseDouble(focalPoint[1]),Double.parseDouble(focalPoint[2]));
 			
-			CameraKeyFrame key = new CameraKeyFrame(Double.parseDouble(eSub.attributeValue("camTime")), cam, false);
+			CameraKeyFrame key = new CameraKeyFrame(Double.parseDouble(eSub.elementText("camTime")), cam, false);
 			
 			parent.addCameraKeyFrame(key);
 		}
 		
 		numPlugins = 0;
-		for ( Iterator i = stateEl.elementIterator( "Timeline" ); i.hasNext(); ) {
+		for ( Iterator i = stateEl.elementIterator( "TimelineLayer" ); i.hasNext(); ) {
 			Element e = (Element) i.next();
 			
-			pluginLayerId.add(e.attributeValue("pluginId"));
+			pluginLayerId.add(e.elementText("pluginId"));
 			Plugin plugin = parent.getPluginAt(numPlugins);
-			pluginIsDisplayed.add(Boolean.parseBoolean(e.attributeValue("isDisplayed")));
-			pluginIsFrozen.add(Boolean.parseBoolean(e.attributeValue("isFrozen")));
+			pluginIsDisplayed.add(Boolean.parseBoolean(e.elementText("isDisplayed")));
+			pluginIsFrozen.add(Boolean.parseBoolean(e.elementText("isFrozen")));
 		
-			int keyFrameListSize = Integer.parseInt(e.attributeValue("pluginNumKeyFrames"));
+			int keyFrameListSize = Integer.parseInt(e.elementText("pluginNumKeyFrames"));
 			ArrayList<PluginState> pluginStateAtKeyframe  = new ArrayList<>();
 			ArrayList<Double> startTimeAtKeyframe  = new ArrayList<>();
 			ArrayList<Double> endTimeAtKeyframe  = new ArrayList<>();
@@ -187,14 +187,14 @@ public class TimelinePluginState implements PluginState{
 			for ( Iterator j = e.elementIterator("Keyframe"); j.hasNext(); ) {
 				Element eSub = (Element) j.next();
 				
-				startTimeAtKeyframe.add(Double.parseDouble(eSub.attributeValue("startTime")));
-				typeOfKeyFrame.add(eSub.attributeValue("type"));
-				if (eSub.attributeValue("type").equals("Visibility")) {
-					VisibilityKeyFrame key = new VisibilityKeyFrame(Double.parseDouble(eSub.attributeValue("startTime")),parent.getActorsForPlugin(plugin),Boolean.parseBoolean(eSub.attributeValue("visiblity")));
+				startTimeAtKeyframe.add(Double.parseDouble(eSub.elementText("startTime")));
+				typeOfKeyFrame.add(eSub.elementText("type"));
+				if (eSub.elementText("type").equals("Visibility")) {
+					VisibilityKeyFrame key = new VisibilityKeyFrame(Double.parseDouble(eSub.elementText("startTime")),parent.getActorsForPlugin(plugin),Boolean.parseBoolean(eSub.elementText("visiblity")));
 					parent.addKeyFrame(parent.getPluginAt(numPlugins),key);
 				}
-				if (eSub.attributeValue("type").equals("Range")) {
-					double duration = Double.parseDouble(eSub.attributeValue("duration"));
+				if (eSub.elementText("type").equals("Range")) {
+					double duration = Double.parseDouble(eSub.elementText("duration"));
 					if (duration < 0)
 						return;
 					if (duration == 0)
@@ -203,17 +203,17 @@ public class TimelinePluginState implements PluginState{
 						}
 					else
 					{
-						endTimeAtKeyframe.add(Double.parseDouble(eSub.attributeValue("endTime")));
-						durationAtKeyframe.add(Double.parseDouble(eSub.attributeValue("duration")));
+						endTimeAtKeyframe.add(Double.parseDouble(eSub.elementText("endTime")));
+						durationAtKeyframe.add(Double.parseDouble(eSub.elementText("duration")));
 						PluginState state = ((StatefulPlugin)plugin).getState().deepCopy();
 						state.fromXML(eSub);
 						
-						KeyFrame key = new RangeKeyFrame(Double.parseDouble(eSub.attributeValue("startTime")),Double.parseDouble(eSub.attributeValue("endTime")), state,(AnimatablePlugin)plugin);
+						KeyFrame key = new RangeKeyFrame(Double.parseDouble(eSub.elementText("startTime")),Double.parseDouble(eSub.elementText("endTime")), state,(AnimatablePlugin)plugin);
 						parent.addKeyFrame(parent.getPluginAt(numPlugins),key);
 						pluginStateAtKeyframe.add(state);
 					}
 				}
-				if (eSub.attributeValue("type").equals("State")) {
+				if (eSub.elementText("type").equals("State")) {
 					
 					pluginStateAtKeyframe.add(loadAndCreateStateKeyFrame(eSub,plugin));
 				}
@@ -241,7 +241,7 @@ public class TimelinePluginState implements PluginState{
 		PluginState state = ((StatefulPlugin)plugin).getState().deepCopy();
 		state.fromXML(pluginStateElement);
 		
-		KeyFrame key = new KeyFrame(Double.parseDouble(eSub.attributeValue("startTime")), state);
+		KeyFrame key = new KeyFrame(Double.parseDouble(eSub.elementText("startTime")), state);
 		parent.addKeyFrame(parent.getPluginAt(numPlugins),key);
 		return state;
 	}
