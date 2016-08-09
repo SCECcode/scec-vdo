@@ -65,17 +65,17 @@ public class GraticulePluginState implements PluginState{
 
 	private void createElement(Element stateEl) {
 		
-		stateEl.addElement("GraticuleGrid")
-		.addAttribute("gridChoice", buttonSelection)
-		.addAttribute("gridWidth", Double.toString(gridWidth))
-		.addAttribute("labels", Boolean.toString(latLongLabelDisplay))
-		.addAttribute("display", Boolean.toString(gridDisplay))
-		.addAttribute("gridColor", Integer.toString(gridColor.getRGB()))
-		.addAttribute("backgroundColor", Integer.toString(backgroundColor.getRGB()))
-		.addAttribute("lowLat", Integer.toString(lowerLatitude))
-		.addAttribute("upLat", Integer.toString(upperLatitude))
-		.addAttribute("lowLon", Integer.toString(lowerLongitude))
-		.addAttribute("upLon", Integer.toString(upperLongitude));
+		Element propertyEl = stateEl.addElement("GraticuleGrid");
+		propertyEl.addElement("gridChoice").addText(buttonSelection);
+		propertyEl.addElement("gridWidth").addText( Double.toString(gridWidth));
+		propertyEl.addElement("labels").addText( Boolean.toString(latLongLabelDisplay));
+		propertyEl.addElement("display").addText(Boolean.toString(gridDisplay));
+		propertyEl.addElement("gridColor").addText( Integer.toString(gridColor.getRGB()));
+		propertyEl.addElement("backgroundColor").addText( Integer.toString(backgroundColor.getRGB()));
+		propertyEl.addElement("lowLat").addText( Integer.toString(lowerLatitude));
+		propertyEl.addElement("upLat").addText( Integer.toString(upperLatitude));
+		propertyEl.addElement("lowLon").addText( Integer.toString(lowerLongitude));
+		propertyEl.addElement("upLon").addText( Integer.toString(upperLongitude));
 	}
 	
 	public void showGrid(String buttonSelection, double gridWidth, boolean labelDisplay, boolean gridDisplay, Color gridColor, 
@@ -121,16 +121,16 @@ public class GraticulePluginState implements PluginState{
 		for ( Iterator i = stateEl.elementIterator( "GraticuleGrid" ); i.hasNext(); ) 
 		{
 			Element e = (Element) i.next();
-			buttonSelection = e.attributeValue("gridChoice");
-			gridWidth = Double.parseDouble(e.attributeValue("gridWidth"));
-			latLongLabelDisplay = Boolean.parseBoolean(e.attributeValue("labels"));
-			gridDisplay = Boolean.parseBoolean(e.attributeValue("display"));
-			gridColor = new Color(Integer.parseInt(e.attributeValue("gridColor")));
-			backgroundColor = new Color(Integer.parseInt(e.attributeValue("backgroundColor")));
-			lowerLatitude = Integer.parseInt(e.attributeValue("lowLat"));
-			upperLatitude = Integer.parseInt(e.attributeValue("upLat"));
-			lowerLongitude = Integer.parseInt(e.attributeValue("lowLon"));
-			upperLongitude = Integer.parseInt(e.attributeValue("upLon"));
+			buttonSelection = e.elementText("gridChoice");
+			gridWidth = Double.parseDouble(e.elementText("gridWidth"));
+			latLongLabelDisplay = Boolean.parseBoolean(e.elementText("labels"));
+			gridDisplay = Boolean.parseBoolean(e.elementText("display"));
+			gridColor = new Color(Integer.parseInt(e.elementText("gridColor")));
+			backgroundColor = new Color(Integer.parseInt(e.elementText("backgroundColor")));
+			lowerLatitude = Integer.parseInt(e.elementText("lowLat"));
+			upperLatitude = Integer.parseInt(e.elementText("upLat"));
+			lowerLongitude = Integer.parseInt(e.elementText("lowLon"));
+			upperLongitude = Integer.parseInt(e.elementText("upLon"));
 		}
 	}
 

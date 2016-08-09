@@ -101,21 +101,21 @@ public class SurfacePluginState implements PluginState{
 			//System.out.println(filePathgeo.get(i));
 			if (filePathgeo.size() != 0)
 			{
-				stateEl.addElement( "Surfaces" )
-				.addAttribute( "dispName", dispName.get(i))
-				.addAttribute( "filePath", filePath.get(i))
-				.addAttribute("GeographicSurfaceInfo", filePathgeo.get(i))
-				.addAttribute( "transparency", Double.toString(transparency.get(i)))
-				.addAttribute( "visibility",(visibility.get(i).toString()));
+				Element propertyEl = stateEl.addElement( "Surfaces" );
+				propertyEl.addElement("dispName").addText(dispName.get(i));
+				propertyEl.addElement("filePath").addText(filePath.get(i));
+				propertyEl.addElement("GeographicSurfaceInfo").addText(filePathgeo.get(i));
+				propertyEl.addElement("transparency").addText(transparency.get(i).toString());
+				propertyEl.addElement("visibility").addText(visibility.get(i).toString());
 			}
 			else
 			{
-				stateEl.addElement( "Surfaces" )
-				.addAttribute( "dispName", dispName.get(i))
-				.addAttribute( "filePath", filePath.get(i))
-				.addAttribute("GeographicSurfaceInfo", "")
-				.addAttribute( "transparency", Double.toString(transparency.get(i)))
-				.addAttribute( "visibility",(visibility.get(i).toString()));
+				Element propertyEl = stateEl.addElement( "Surfaces" );
+				propertyEl.addElement("dispName").addText(dispName.get(i));
+				propertyEl.addElement("filePath").addText(filePath.get(i));
+				propertyEl.addElement("GeographicSurfaceInfo").addText("");
+				propertyEl.addElement("transparency").addText(transparency.get(i).toString());
+				propertyEl.addElement("visibility").addText(visibility.get(i).toString());
 
 			}
 
@@ -135,13 +135,13 @@ public class SurfacePluginState implements PluginState{
 		for ( Iterator i = stateEl.elementIterator( "Surfaces" ); i.hasNext(); ) 
 		{
 			Element e = (Element) i.next();
-			dispName.add(e.attributeValue("dispName"));
-			filePath.add(e.attributeValue("filePath"));
-			filePathgeo.add(e.attributeValue("GeographicSurfaceInfo"));
-			transparency.add(Double.parseDouble(e.attributeValue("transparency")));	          
-			visibility.add(Integer.parseInt(e.attributeValue("visibility")));	            
+			dispName.add(e.elementText("dispName"));
+			filePath.add(e.elementText("filePath"));
+			filePathgeo.add(e.elementText("GeographicSurfaceInfo"));
+			transparency.add(Double.parseDouble(e.elementText("transparency")));	          
+			visibility.add(Integer.parseInt(e.elementText("visibility")));	            
 
-			System.out.println(e.attributeValue("filePath"));
+			System.out.println(e.elementText("filePath"));
 			// read the catalog file
 
 		}

@@ -8,6 +8,8 @@ import java.util.Iterator;
 import org.dom4j.Element;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginState;
+
+import oracle.net.jdbc.TNSAddress.AddressList;
 import vtk.vtkProp;
 
 public class DrawingToolsPluginState implements PluginState {
@@ -156,34 +158,34 @@ public class DrawingToolsPluginState implements PluginState {
 		int i=0;
 		for (DrawingTool eqc : drawingTools)
 		{
-			stateEl.addElement( "DrawingTool" )
-			.addAttribute( "dispName", dispName.get(i))
-			.addAttribute( "textString", textString.get(i))
-			.addAttribute( "type", "Text")
-			.addAttribute( "color1", Integer.toString(color1.get(i).getRGB()))
-			.addAttribute( "Lat",attributes.get(i).get("Lat"))
-			.addAttribute( "Lon",attributes.get(i).get("Lon"))
-			.addAttribute( "Alt",attributes.get(i).get("Alt"))
-			.addAttribute( "pinH",attributes.get(i).get("pinH"))
-			.addAttribute( "pinR",attributes.get(i).get("pinR"))
-			.addAttribute( "fontSize",attributes.get(i).get("fontSize"))
-			.addAttribute( "visibility",(visibility.get(i).toString()));
+			Element propertyEl = stateEl.addElement( "DrawingTool" );
+			propertyEl.addElement( "dispName").addText(dispName.get(i));
+			propertyEl.addElement( "textString").addText( textString.get(i));
+			propertyEl.addElement( "type").addText( "Text");
+			propertyEl.addElement( "color1").addText( Integer.toString(color1.get(i).getRGB()));
+			propertyEl.addElement( "Lat").addText(attributes.get(i).get("Lat"));
+			propertyEl.addElement( "Lon").addText(attributes.get(i).get("Lon"));
+			propertyEl.addElement( "Alt").addText(attributes.get(i).get("Alt"));
+			propertyEl.addElement( "pinH").addText(attributes.get(i).get("pinH"));
+			propertyEl.addElement( "pinR").addText(attributes.get(i).get("pinR"));
+			propertyEl.addElement( "fontSize").addText(attributes.get(i).get("fontSize"));
+			propertyEl.addElement( "visibility").addText((visibility.get(i).toString()));
 			i++;
 		}
 		//highway
 		i=0;
 		for (DrawingTool eqc : highwayTools)
 		{
-			stateEl.addElement( "DrawingTool" )
-			.addAttribute( "dispName", highwayDispName.get(i))
-			.addAttribute( "textString", highwayTextString.get(i))
-			.addAttribute( "type", "Highway")
-			.addAttribute( "filepath", highwayFilePath.get(i))
-			.addAttribute( "color1", Integer.toString(highwayColor1.get(i).getRGB()))
-			.addAttribute( "Lat",highwayAttributes.get(i).get("Lat"))
-			.addAttribute( "Lon",highwayAttributes.get(i).get("Lon"))
-			.addAttribute( "Alt",highwayAttributes.get(i).get("Alt"))
-			.addAttribute( "visibility",(highwayVisibility.get(i).toString()));
+			Element propertyEl = stateEl.addElement( "DrawingTool" );
+			propertyEl.addElement( "dispName").addText( highwayDispName.get(i));
+			propertyEl.addElement( "textString").addText( highwayTextString.get(i));
+			propertyEl.addElement( "type").addText( "Highway");
+			propertyEl.addElement( "filepath").addText( highwayFilePath.get(i));
+			propertyEl.addElement( "color1").addText( Integer.toString(highwayColor1.get(i).getRGB()));
+			propertyEl.addElement( "Lat").addText(highwayAttributes.get(i).get("Lat"));
+			propertyEl.addElement( "Lon").addText(highwayAttributes.get(i).get("Lon"));
+			propertyEl.addElement( "Alt").addText(highwayAttributes.get(i).get("Alt"));
+			propertyEl.addElement( "visibility").addText((highwayVisibility.get(i).toString()));
 			i++;
 		}
 	}
@@ -214,50 +216,50 @@ public class DrawingToolsPluginState implements PluginState {
 		int found;
 		for ( Iterator i = stateEl.elementIterator( "DrawingTool" ); i.hasNext(); ) {
 			Element e = (Element) i.next();
-			if(e.attributeValue("type").contains("Text"))
+			if(e.elementText("type").contains("Text"))
 			{
-				dispName.add(e.attributeValue("dispName"));
-				textString.add(e.attributeValue("textString"));
-				color1.add(Color.decode(e.attributeValue("color1")));
-				visibility.add(Integer.parseInt(e.attributeValue("visibility")));
+				dispName.add(e.elementText("dispName"));
+				textString.add(e.elementText("textString"));
+				color1.add(Color.decode(e.elementText("color1")));
+				visibility.add(Integer.parseInt(e.elementText("visibility")));
 				HashMap<String,String> locData = new HashMap<String, String>();
-				locData.put("Lat", e.attributeValue("Lat")); 
-				locData.put("Lon", e.attributeValue("Lon"));
-				locData.put("Alt", e.attributeValue("Alt"));
-				locData.put("pinH", e.attributeValue("pinH"));
-				locData.put("pinR", e.attributeValue("pinR"));
-				locData.put("fontSize", e.attributeValue("fontSize"));
+				locData.put("Lat", e.elementText("Lat")); 
+				locData.put("Lon", e.elementText("Lon"));
+				locData.put("Alt", e.elementText("Alt"));
+				locData.put("pinH", e.elementText("pinH"));
+				locData.put("pinR", e.elementText("pinR"));
+				locData.put("fontSize", e.elementText("fontSize"));
 				attributes.add(locData);
-				System.out.println(e.attributeValue("type"));
+				System.out.println(e.elementText("type"));
 				found=0;
 				for(int k = 0;k<parent.getDrawingToolArray().size();k++)
 				{
-					if(parent.getDrawingToolArray().get(k).getDisplayName().equalsIgnoreCase(e.attributeValue("dispName")))
+					if(parent.getDrawingToolArray().get(k).getDisplayName().equalsIgnoreCase(e.elementText("dispName")))
 					{
 						found=1;
 						drawingTools.add(parent.getDrawingToolArray().get(k));
 					}
 				}
 				if(found==0){
-					DrawingTool drawingToolObj = parent.addDrawingTool(new DrawingTool(), e.attributeValue("textString"));
+					DrawingTool drawingToolObj = parent.addDrawingTool(new DrawingTool(), e.elementText("textString"));
 					parent.getDrawingToolTable().addDrawingTool(drawingToolObj);
 					drawingTools.add(drawingToolObj);
 				}
 			}
 			else 
-				if(e.attributeValue("type").contains("Highway"))
+				if(e.elementText("type").contains("Highway"))
 				{
-					highwayDispName.add(e.attributeValue("dispName"));
-					highwayTextString.add(e.attributeValue("textString"));
-					highwayColor1.add(Color.decode(e.attributeValue("color1")));
-					highwayVisibility.add(Integer.parseInt(e.attributeValue("visibility")));
-					highwayFilePath.add(e.attributeValue("filepath"));
+					highwayDispName.add(e.elementText("dispName"));
+					highwayTextString.add(e.elementText("textString"));
+					highwayColor1.add(Color.decode(e.elementText("color1")));
+					highwayVisibility.add(Integer.parseInt(e.elementText("visibility")));
+					highwayFilePath.add(e.elementText("filepath"));
 					HashMap<String,String> locData = new HashMap<String, String>();
-					locData.put("Lat", e.attributeValue("Lat")); 
-					locData.put("Lon", e.attributeValue("Lon"));
-					locData.put("Alt", e.attributeValue("Alt"));
+					locData.put("Lat", e.elementText("Lat")); 
+					locData.put("Lon", e.elementText("Lon"));
+					locData.put("Alt", e.elementText("Alt"));
 					highwayAttributes.add(locData);
-					System.out.println(e.attributeValue("type"));
+					System.out.println(e.elementText("type"));
 					parent.getDefaultLocation().setSelectedInputFile(highwayFilePath.get(0));
 					if(!parent.getDefaultLocation().presetLocationGroups.get(0).checkbox.isSelected())
 					{
