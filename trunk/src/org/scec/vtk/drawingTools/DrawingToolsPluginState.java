@@ -192,7 +192,7 @@ public class DrawingToolsPluginState implements PluginState {
 
 	@Override
 	public void toXML(Element stateEl) {
-		//copyLatestDetials();
+		copyLatestDetials();
 		createElement(stateEl);
 	}
 
