@@ -341,8 +341,8 @@ public class MainMenu implements ActionListener, ItemListener{
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 					if (plugin instanceof StatefulPlugin) {
 						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
-						((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
-						//((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
+						//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
+						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
 
 					}
 				}
