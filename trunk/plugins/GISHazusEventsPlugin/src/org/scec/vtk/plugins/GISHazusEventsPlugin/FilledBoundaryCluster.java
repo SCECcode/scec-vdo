@@ -18,13 +18,19 @@ public class FilledBoundaryCluster {
 	
 	public FilledBoundaryCluster(AppendActors append)
 	{
-		
+		init(append);
+	}
+	
+	public FilledBoundaryCluster() {
+		init(null);
+	}
+	public void init(AppendActors append)
+	{
 		boundaries=new ArrayList<FilledBoundary>();
 		boundaries2 =new ArrayList<Boundary>(); 
 		name="";
 		segmentActors =append;
 	}
-	
 	public void addSegment(float[] latitude, float[] longitude)
 	{
 		FilledBoundary currentBoundary= new FilledBoundary();
@@ -99,7 +105,7 @@ public class FilledBoundaryCluster {
 		// TODO Auto-generated method stub
 		
 		 
-		System.out.println(segmentActors.getAppendedActor().GetParts().GetNumberOfItems());//.GetOutput().GetNumberOfPoints());
+		//System.out.println(segmentActors.getAppendedActor().GetParts().GetNumberOfItems());//.GetOutput().GetNumberOfPoints());
 		return segmentActors;
 	}
 

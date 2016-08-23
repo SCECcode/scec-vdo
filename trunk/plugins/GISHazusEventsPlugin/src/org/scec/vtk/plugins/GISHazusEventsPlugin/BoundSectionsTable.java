@@ -54,6 +54,7 @@ public class BoundSectionsTable extends JTable implements MouseListener {
 		col2.setCellRenderer(new BoundGroupStringRenderer());
 	}
 	
+	
 	public void mouseClicked(MouseEvent event) {		
 		Point p = event.getPoint();
         int row = rowAtPoint(p);
