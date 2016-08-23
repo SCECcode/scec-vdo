@@ -71,7 +71,7 @@ public class BoundSectionsTableModel extends AbstractLibraryModel {
           if (col != 2) return true;
           else return false;
       }
-             
+  
       /*
        * Don't need to implement this method unless your table's
        * data can change.
