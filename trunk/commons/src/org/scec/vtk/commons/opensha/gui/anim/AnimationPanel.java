@@ -297,6 +297,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		if (D) System.out.println("Updating slider range!");
 		timeCalc = null;
 		int max = faultAnim.getNumSteps();
+		Preconditions.checkState(max >= 0, "Num steps must be zero or positive: %s", max);
 		if (isTimeBasedEnabled()) {
 			max = SLIDER_NUM_TIME_BASED;
 		}
@@ -505,7 +506,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		if (D) System.out.println("setCurrentStep called with step="+step);
 		curStep = step;
 		
-		if (faultAnim.getNumSteps() == 0) {
+		if (faultAnim.getNumSteps() <= 0) {
 			// no current animation
 			Preconditions.checkState(slider.getMaximum() == 0);
 			curStep = -1;

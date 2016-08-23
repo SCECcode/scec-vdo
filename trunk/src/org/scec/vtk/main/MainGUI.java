@@ -154,6 +154,14 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 
 		renderWindow.getRenderer().SetBackground(0,0,0);
+		
+		// this should enable depth peeling, but doesn't seem to work. at least for Kevin on linux.
+		// more info/source: http://www.vtk.org/Wiki/VTK/Depth_Peeling
+//		renderWindow.getRenderWindow().SetAlphaBitPlanes(1);
+//		renderWindow.getRenderWindow().SetMultiSamples(0);
+//		renderWindow.getRenderer().SetUseDepthPeeling(1);
+//		renderWindow.getRenderer().SetMaximumNumberOfPeels(100);
+//		renderWindow.getRenderer().SetOcclusionRatio(0.1);
 
 		mainMenu = new MainMenu();
 
