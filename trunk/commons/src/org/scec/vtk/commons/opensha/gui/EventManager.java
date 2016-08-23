@@ -334,6 +334,8 @@ AnimationListener {
 	
 	private void hideFault(AbstractFaultSection fault) {
 		FaultSectionActorList actors = actorsMap.get(fault);
+		if (actors == null)
+			return;
 		for (vtkActor actor : actors) {
 			actor.SetVisibility(0);
 			actor.SetPickable(0);

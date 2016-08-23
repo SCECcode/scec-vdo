@@ -63,9 +63,11 @@ import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.ETASCatalogAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.RupturesAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.DateLastEventColorer;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ETASMultiCatalogColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.InversionSlipRateColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.MaxMagColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.MultiFaultRupColorer;
@@ -145,7 +147,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	
 	private ComparisonColorer compColor;
 	
-//	private ETASCatalogAnim etasAnim;
+	private ETASCatalogAnim etasAnim;
 	
 	private ParameterList builderParams;
 	
@@ -215,9 +217,9 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 //		anims.add(smoothAnim);
 //		rupSetChangeListeners.add(smoothAnim);
 		
-//		etasAnim = new ETASCatalogAnim();
-//		anims.add(etasAnim);
-//		rupSetChangeListeners.add(etasAnim);
+		etasAnim = new ETASCatalogAnim(plugin.getPluginActors());
+		anims.add(etasAnim);
+		rupSetChangeListeners.add(etasAnim);
 		
 		RupturesAnim rupturesAnim = new RupturesAnim();
 		anims.add(rupturesAnim);
@@ -298,9 +300,9 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 //		rupSetChangeListeners.add(partProbColorer);
 		
 		// ETAS multi colorer
-//		ETASMultiCatalogColorer etasMulti = new ETASMultiCatalogColorer();
-//		colorers.add(etasMulti);
-//		rupSetChangeListeners.add(etasMulti);
+		ETASMultiCatalogColorer etasMulti = new ETASMultiCatalogColorer(plugin.getPluginActors());
+		colorers.add(etasMulti);
+		rupSetChangeListeners.add(etasMulti);
 		
 //		CyberShakeOEFColorer csColor = new CyberShakeOEFColorer();
 //		colorers.add(csColor);
