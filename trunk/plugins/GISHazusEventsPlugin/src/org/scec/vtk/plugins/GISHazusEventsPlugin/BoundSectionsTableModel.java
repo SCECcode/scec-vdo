@@ -81,7 +81,7 @@ public class BoundSectionsTableModel extends AbstractLibraryModel {
     	  
     	  if(col==1)  { // TODO change the color of the continent outline
     		  this.traceColor[row] = (Color)value;
-    		  eventsGUI.setColor(row, traceColor[row]);
+    		  eventsGUI.setColor(row, traceColor[row],eventsGUI.groupsTabbedPane.getSelectedIndex());
     		  return;    	  
     	  }
     	  
