@@ -26,7 +26,7 @@ public class GISHazusEventsPlugin extends ActionPlugin implements StatefulPlugin
 	}
 		
 	public void unload(){
-		
+		gui.unload();
 	}
 
 	@Override

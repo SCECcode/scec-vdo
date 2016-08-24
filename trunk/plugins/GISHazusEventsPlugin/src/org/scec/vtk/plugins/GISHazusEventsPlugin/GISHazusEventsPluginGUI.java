@@ -35,6 +35,7 @@ import javax.swing.table.TableModel;
 
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.GradientColorChooser;
 import org.scec.vtk.tools.Prefs;
@@ -44,6 +45,8 @@ import javax.swing.JDialog;
 
 
 import com.google.common.collect.Lists;
+
+import vtk.vtkActor;
 
 
 /**
@@ -57,6 +60,7 @@ import com.google.common.collect.Lists;
 
 class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, ActionListener, ChangeListener {
 	static final int REGION_AMT = 200;
+	static final int REGION_TAB = 3;
 
 	private FilledBoundaryCluster 		currentBoundary;
 	ArrayList<FilledBoundaryCluster> 		polArray;
@@ -71,10 +75,10 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 	private BoundSectionsTable table;
 
 
-	protected int[] boundaryRowOrder = new int[REGION_AMT];
-	protected int[] boundaryGroupOrder = new int[REGION_AMT];
-	protected int[] boundaryRowSize = new int[REGION_AMT];
-	protected int[] boundaryStartIndex = new int[REGION_AMT];
+
+	protected int[][] boundaryGroupOrder = new int[REGION_TAB][REGION_AMT];
+	protected int[][] boundaryRowSize = new int[REGION_TAB][REGION_AMT];
+	protected int[][] boundaryStartIndex = new int[REGION_TAB][REGION_AMT];
 	private int boundaryRowOrderCounter = 0;
 	private JTabbedPane boundTabbedPane = new JTabbedPane();
 	ColorWellButton colorButton;
@@ -99,8 +103,9 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
     same like earthquake defined below will automatically show up in the Hazus Plugin under the
     correct tab and be able to show the correct Hazus information.*/
 	private String[] likeEarthquakes = {"Northridge", "Loma Prieta", "Next Like-Earthquake"};
-	protected BoundaryTableModel[][] boundaryTableModel = new BoundaryTableModel[likeEarthquakes.length][REGION_AMT];
-	private BoundaryTable[] boundaryTable = new BoundaryTable[REGION_AMT];
+	protected BoundaryTableModel[][] boundaryTableModel = new BoundaryTableModel[REGION_TAB][REGION_AMT];
+	protected int[][] boundaryRowOrder = new int[REGION_TAB][REGION_AMT];
+	BoundaryTable[][] boundaryTable = new BoundaryTable[REGION_TAB][REGION_AMT];
 	private int rowClicked;
 	JTabbedPane groupsTabbedPane;
 	private ArrayList<SetUpNewHazusTab> tabList;
@@ -131,13 +136,23 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		appendHazusActor = new AppendActors();
 		bTrace.setAppendActors(appendHazusActor);
 
-		for(int i = 0; i < boundaryRowOrder.length; i++)
-		{
-			boundaryGroupOrder[i] = -1;
-			boundaryRowOrder[i] = -1;
-			boundaryRowSize[i] = -1;
-			boundaryStartIndex[i] = -1;
-		}
+//		for(int i = 0; i < boundaryRowOrder.length; i++)
+//		{
+//			
+////			boundaryRowOrder[i]=-1;
+//			
+////			boundaryStartIndex[i] = -1;
+//		}
+				for(int i = 0; i < boundaryRowOrder.length; i++)
+				{
+					for(int j = 0; j < boundaryRowOrder[0].length; j++)
+					{
+						boundaryRowOrder[i][j] = -1;
+						boundaryStartIndex[i][j] = -1;
+						boundaryRowSize[i][j] = -1;
+						boundaryGroupOrder[i][j] = -1;
+					}
+				}
 		numOfBoundaries = 0;
 		subgroupNames = bTrace.buildBoundaryNames();
 		checkBoxes = new ArrayList<JCheckBox>(numOfBoundaries);
@@ -227,9 +242,12 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 	public void updateColorButton(Color c1, Color c2)
 	{
 		colorButton.setColor(c1,c2);
-		Color[] newGradient = bTrace.setColorGradient(colorButton.getColor1(), colorButton.getColor2());    			
-		for(int i = 0; i < REGION_AMT; i++)
-			setColor(i, newGradient);
+		Color[] newGradient = bTrace.setColorGradient(colorButton.getColor1(), colorButton.getColor2());    
+		for(int i = 0; i < REGION_TAB; i++)
+		{
+			for(int j = 0; j < REGION_AMT; j++)
+				setColor(j, newGradient,i);
+		}
 		Info.getMainGUI().updateRenderWindow();
 	}
 
@@ -258,7 +276,7 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 				+ "(0 = Transparent ; 100 = Opaque)");
 		transparencySlider.setPreferredSize(new Dimension(350, 80));
 		transparencySlider.setEnabled(false);
-
+		transparencySlider.setValue(100);
 		// Transparency panel
 		JPanel transparencyPanel = new JPanel();
 		transparencyPanel.setBorder(BorderFactory
@@ -269,10 +287,11 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 	}
 
 	private void createLowerPanel(String tabName, int row, int startIndex,int tabIndex){
-		//BoxLayout is a class that guides the placement of the checkboxes as you add them		
+		//BoxLayout is a class that guides the placement of the checkboxes as you add them	
+
 		boundTabbedPane.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
-		if(boundaryTableModel[tabIndex][row] == null)
-		{
+//		if(boundaryTableModel[tabIndex][row] == null)
+//		{
 			FilledBoundaryCluster[] b = new FilledBoundaryCluster[numOfBoundaries-startIndex];
 			for(int i = startIndex; i < numOfBoundaries; i++)
 			{
@@ -284,18 +303,27 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 			}
 
 			boundaryTableModel[tabIndex][row] = new BoundaryTableModel(b);
-		}
-		boundaryTable[row] = new BoundaryTable(this, boundaryTableModel[tabIndex][row]);
-		boundaryTable[row].getModel().addTableModelListener(this);
-		JPanel polLibraryPanel = new JPanel();
-		polLibraryPanel.setLayout(new BoxLayout(polLibraryPanel, BoxLayout.Y_AXIS));
-		polLibraryPanel.add(boundaryTable[row]);		
-
-
+			boundaryTable[tabIndex][row] = new BoundaryTable(this, boundaryTableModel[tabIndex][row]);
+			boundaryTable[tabIndex][row].getModel().addTableModelListener(this);
+		
+			
+//		}
 		for(int i =startIndex; i<numOfBoundaries; i++){
-			checkBoxes.add(new JCheckBox(polArray.get(i).getName().replace('_', ' ')));
+			JCheckBox chkBox= new JCheckBox(polArray.get(i).getName().replace('_', ' '));
+			if(!checkBoxes.contains(chkBox))
+			{	
+				checkBoxes.add(chkBox);
+			}else
+				if(checkBoxes.get(i).getText().equals(chkBox.getText()))
+				{
+					checkBoxes.set(i,chkBox);
+				}
 		}	
 
+		System.out.println(checkBoxes.size());
+		JPanel polLibraryPanel = new JPanel();
+		polLibraryPanel.setLayout(new BoxLayout(polLibraryPanel, BoxLayout.Y_AXIS));
+		polLibraryPanel.add(boundaryTable[tabIndex][row]);		
 		JScrollPane scroller = new JScrollPane(polLibraryPanel);
 		scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -306,16 +334,23 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		scroller.setVerticalScrollBar(bar);
 		boundTabbedPane.add(scroller, tabName);
 		add(boundTabbedPane, BorderLayout.CENTER);  
-
-
+		
 	}
-
+	
+	public void unload()
+	{
+		//remove actors
+				System.out.println(
+						hazusPluginActors.getActors().size());
+				hazusPluginActors.clearActors();
+				Info.getMainGUI().updateRenderWindow();
+	}
 
 	/***********************
 	 * GUI building methods 
 	 * @return *
 	 ***********************/	
-	public ArrayList<TableModel> getTableModleList()
+	public ArrayList<TableModel> getTableModelList()
 	{
 		return tableModelList;
 	}
@@ -345,42 +380,44 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 	 */
 	public void predefinedSubGroup(int subgroupNum, boolean isSelected) {
 		System.out.println("PredefinedSubGroup:" + subgroupNum);
-		int index = this.boundaryRowOrder[subgroupNum];
+		int tabIndex = groupsTabbedPane.getSelectedIndex();
+		int index = this.boundaryRowOrder[tabIndex][subgroupNum];
 		if(index != -1)
 		{
-			toggleSubGroup( isSelected, subgroupNum);
+			toggleSubGroup( isSelected, subgroupNum,tabIndex);
 		}
 	}
 
 	/** 
 	 *Turns on a predefined set of boundaries
+	 * @param tabIndex 
 	 */
-	public void setColor(int subgroupNum, Color color) {
-		int index = this.boundaryRowOrder[subgroupNum];
+	public void setColor(int subgroupNum, Color color, int tabIndex) {
+		int index = this.boundaryRowOrder[tabIndex][subgroupNum];
 		Color color3f = color;
 		//make sure the group is actually loaded
 		if(index != -1) {
-			for(int i = boundaryStartIndex[subgroupNum]; i < boundaryRowSize[boundaryRowOrder[subgroupNum]] + boundaryStartIndex[subgroupNum]; i++){
+			for(int i = boundaryStartIndex[tabIndex][subgroupNum]; i < boundaryRowSize[tabIndex][boundaryRowOrder[tabIndex][subgroupNum]] + boundaryStartIndex[tabIndex][subgroupNum]; i++){
 				polArray.get(i).setColor(color3f);	
 			}
 			this.paintAll(this.getGraphics());
 		}
 	}
 
-	public void setColor(int subgroupNum, Color[] color) {
-		int index = this.boundaryRowOrder[subgroupNum];
+	public void setColor(int subgroupNum, Color[] color, int tabIndex) {
+		int index = this.boundaryRowOrder[tabIndex][subgroupNum];
 		//make sure the group is actually loaded
 		if(index != -1) {
 
-			for(int i = boundaryStartIndex[subgroupNum]; i < boundaryRowSize[boundaryRowOrder[subgroupNum]] + boundaryStartIndex[subgroupNum]; i++){
-				System.out.println("setColor was called" + polArray.get(i).getCategory());
+			for(int i = boundaryStartIndex[tabIndex][subgroupNum]; i < boundaryRowSize[tabIndex][boundaryRowOrder[tabIndex][subgroupNum]] + boundaryStartIndex[tabIndex][subgroupNum]; i++){
+			//	System.out.println("setColor was called" + polArray.get(i).getCategory());
 
 				if(polArray.get(i).getCategory() > color.length - 1)
 					polArray.get(i).setColor(color[0]);
 				else
 					polArray.get(i).setColor(color[polArray.get(i).getCategory()]);
 			}
-			System.out.println(selectedEventRow + "," + index);
+			//System.out.println(selectedEventRow + "," + index);
 			//			if(selectedEventRow == 0)
 			//				bTrace.buildBoundaries(bTrace.eventList.get(bTrace.eventList.size()-1).getSHPFile());
 			//			else
@@ -394,10 +431,10 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 
 	}
 
-	public void toggleSubGroup(boolean turnGroupOn, int subgroupNum){
+	public void toggleSubGroup(boolean turnGroupOn, int subgroupNum, int tabIndex){
 		//size of hazus lower panel events
-		int size = this.boundaryRowSize[this.boundaryRowOrder[subgroupNum]];
-		for(int i = boundaryStartIndex[subgroupNum]; i<size + boundaryStartIndex[subgroupNum];i++){ 
+		int size = this.boundaryRowSize[tabIndex][this.boundaryRowOrder[tabIndex][subgroupNum]];
+		for(int i = boundaryStartIndex[tabIndex][subgroupNum]; i<size + boundaryStartIndex[tabIndex][subgroupNum];i++){ 
 			JCheckBox temp;				
 			temp = checkBoxes.get(i);
 			if(turnGroupOn){ 
@@ -415,6 +452,8 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 				}
 			}
 		}	
+		boundTabbedPane.repaint();
+		Info.getMainGUI().updateRenderWindow();
 	}
 	public boolean[] getBoundries(){
 		boolean[] shown = new boolean[this.numOfBoundaries];
@@ -472,33 +511,39 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 			BoundaryTableModel btm = (BoundaryTableModel)e.getSource();
 
 			Object data = model.getValueAt(rowClicked, column);
-
+			int tabIndex=groupsTabbedPane.getSelectedIndex();//TODO
 			if(column==0)
 			{
 				int tabNumber = 0;
 				for(int i = 0; i < REGION_AMT; i++)
 				{
-					if(boundaryTable[i] != null)
+					if(boundaryTable[tabIndex][i] != null)
 					{
-						if(btm.equals(boundaryTable[i].model))
+						if(btm.equals(boundaryTable[tabIndex][i].model))
 						{
 							tabNumber = i;
+							
 						}
 					}
 				}
-				for(int i = 1; i<boundaryRowOrder[tabNumber]; i++){
-					rowClicked += boundaryRowSize[i-1];
+				
+				for(int i = 1; i<boundaryRowOrder[tabIndex][tabNumber]; i++){
+					rowClicked += boundaryRowSize[tabIndex][i-1];
 				}
 				if((Boolean)data == true)
 				{
+					//model.setValueAt(true,rowClicked,0);
 					checkBoxes.get(rowClicked).setSelected(true);
 
 				}
 				else
 				{
+					//model.setValueAt(false,rowClicked,0);
+//					btm.setValueAt(false, rowClicked, 0);
 					checkBoxes.get(rowClicked).setSelected(false);
 				}           	
 				refreshCheckbox(rowClicked);
+//				drawEvent(rowClicked,tabIndex);
 			}
 		}
 		catch(ClassCastException ex1)
@@ -531,9 +576,8 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 						{
 							System.out.println("ASDSA");
 							selected.add(selectedEventRow);
-							drawEvent(selectedEventRow,selectedPane);
-
 						}
+						drawEvent(selectedEventRow,selectedPane);
 					}
 				}
 			}
@@ -548,33 +592,57 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 
 		int startIndex = 0;
 		int sizeIncrease = 0;
-		if(polArray == null){
-			polArray = bTrace.buildSelectedBoundary(selectedEventRow);
 
-
-		}
-		else{
-			startIndex = polArray.size();
-			//			polArray.addAll(bTrace.buildSelectedBoundary(rowClicked));
-			ArrayList<FilledBoundaryCluster> temp = bTrace.buildSelectedBoundary(selectedEventRow);
-
-			for (int i = 0; i < temp.size(); i++) {
-				polArray.add(temp.get(i));
-
+		int index = boundTabbedPane.indexOfTab(bTrace.getName(selectedEventRow));
+		if(index!=-1)
+		{
+			System.out.println(tabIndex);
+			System.out.println(tableModelList.get(tabIndex).getValueAt(selectedEventRow, 0));
+			if((Boolean)tableModelList.get(tabIndex).getValueAt(selectedEventRow, 0)==true)
+			{
+				for (int k = 0; k<boundaryTableModel[tabIndex][selectedEventRow].getRowCount(); k++){
+					if((Boolean)boundaryTableModel[tabIndex][selectedEventRow].getValueAt(k, 0))
+						{	
+							boundaryTableModel[tabIndex][selectedEventRow].setValueAt(true,k, 0);
+							checkBoxes.get(boundaryStartIndex[tabIndex][selectedEventRow]+k).setSelected(true);
+							refreshCheckbox(boundaryStartIndex[tabIndex][selectedEventRow]+k);
+						}
+					else
+						{
+							boundaryTableModel[tabIndex][selectedEventRow].setValueAt(false,k, 0);
+							checkBoxes.get(boundaryStartIndex[tabIndex][selectedEventRow]+k).setSelected(false);
+							refreshCheckbox(boundaryStartIndex[tabIndex][selectedEventRow]+k);
+						}
+				}
 			}
 		}
+		else{
+			if(polArray == null){
+				polArray = bTrace.buildSelectedBoundary(selectedEventRow);
+
+
+			}
+			else{
+				startIndex = polArray.size();
+				//			polArray.addAll(bTrace.buildSelectedBoundary(rowClicked));
+				ArrayList<FilledBoundaryCluster> temp = bTrace.buildSelectedBoundary(selectedEventRow);
+
+				for (int i = 0; i < temp.size(); i++) {
+					polArray.add(temp.get(i));
+
+				}
+			}
+
+		
+		System.out.println(polArray.size());
+		System.out.println(boundaryRowOrderCounter);
 		transparencySlider.setEnabled(true);
 		sizeIncrease = polArray.size() - startIndex;
-		boundaryRowOrder[rowClicked] = boundaryRowOrderCounter;//rowClicked
-		boundaryRowSize[boundaryRowOrderCounter] = sizeIncrease;
-		boundaryGroupOrder[boundaryRowOrderCounter] = rowClicked; //used for save state
-		boundaryStartIndex[rowClicked] = startIndex;//rowClicked
+		boundaryRowOrder[tabIndex][rowClicked] = boundaryRowOrderCounter;//rowClicked
+		boundaryRowSize[tabIndex][boundaryRowOrderCounter] = sizeIncrease;
+		boundaryGroupOrder[tabIndex][boundaryRowOrderCounter] = rowClicked; //used for save state
+		boundaryStartIndex[tabIndex][rowClicked] = startIndex;//rowClicked
 		boundaryRowOrderCounter++;
-		//		if(btm==null)
-		//		{
-		//			btm = bou
-		//		}
-		//		btm.setValueAt((Boolean)true, rowClicked, 3);//rowClicked
 		numOfBoundaries = polArray.size();
 		createLowerPanel(bTrace.getName(selectedEventRow), rowClicked, startIndex, tabIndex);//rowClicked
 		predefinedSubGroup(rowClicked, true);
@@ -604,7 +672,9 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		//actor.SetMapper(mapper);
 		//		actor.GetProperty().EdgeVisibilityOn();
 		//		actor.GetProperty().SetEdgeColor(0,1,1);
+		System.out.println("here");
 		hazusPluginActors.addActor(bTrace.getAppendActor().getAppendedActor());
+		}
 		Info.getMainGUI().updateRenderWindow();
 		/*
 	   Font font = new Font("Times New Roman", Font.BOLD, 18);
