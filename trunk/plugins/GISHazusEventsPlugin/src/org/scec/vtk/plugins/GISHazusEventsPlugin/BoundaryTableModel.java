@@ -56,7 +56,7 @@ public class BoundaryTableModel extends AbstractTableModel {
 		} else if (col == 1) {
 			data[row].setColor((Color) value);
 		}
-		fireTableCellUpdated(row, col);
+		//fireTableCellUpdated(row, col); calling drawevent instead
 	}
 
 	public void setColorForRow(Color c, int row) {
