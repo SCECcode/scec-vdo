@@ -1,7 +1,9 @@
 package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +13,17 @@ import javax.swing.JOptionPane;
 
 import org.opensha.commons.data.function.EvenlyDiscretizedFunc;
 import org.opensha.commons.data.region.CaliforniaRegions;
+import org.opensha.commons.data.siteData.impl.SRTM30PlusTopography;
+import org.opensha.commons.data.xyz.EvenlyDiscrXYZ_DataSet;
 import org.opensha.commons.data.xyz.GeoDataSet;
 import org.opensha.commons.data.xyz.GriddedGeoDataSet;
 import org.opensha.commons.geo.GriddedRegion;
+import org.opensha.commons.geo.Location;
+import org.opensha.commons.geo.LocationList;
 import org.opensha.commons.gui.plot.GraphWindow;
+import org.opensha.commons.gui.plot.PlotCurveCharacterstics;
+import org.opensha.commons.gui.plot.PlotLineType;
+import org.opensha.commons.gui.plot.PlotSpec;
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
@@ -22,7 +31,10 @@ import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.StringParameter;
+import org.opensha.commons.util.ExceptionUtils;
+import org.opensha.commons.util.DataUtils.MinMaxAveTracker;
 import org.opensha.commons.util.cpt.CPT;
+import org.opensha.commons.util.interp.BicubicInterpolation2D;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.earthquake.calc.ERF_Calculator;
 import org.opensha.sha.earthquake.param.ApplyGardnerKnopoffAftershockFilterParam;
@@ -200,36 +212,58 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 		
 		int faultID = fault.getId();
 		
-		boolean parent = e.isShiftDown();
 		FaultSectionPrefData sect = sol.getRupSet().getFaultSectionData(faultID);
-
-		IncrementalMagFreqDist mfd;
-		if (parent)
-			mfd = sol.calcParticipationMFD_forParentSect(sect.getParentSectionId(), 5.55d, 8.55d, 31);
-		else
-			mfd = sol.calcParticipationMFD_forSect(faultID, 5.55d, 8.55d, 31);
-		mfd.setName("Incremental Mag Freq Dist");
-		mfd.setInfo(" ");
-		EvenlyDiscretizedFunc cumMFD = mfd.getCumRateDistWithOffset();
-		cumMFD.setName("Cumulative Mag Freq Dist");
-		cumMFD.setInfo(" ");
-		ArrayList<EvenlyDiscretizedFunc> funcs = new ArrayList<EvenlyDiscretizedFunc>();
-		funcs.add(mfd);
-		funcs.add(cumMFD);
-//		funcs.add(sol.calcNucleationMFD_forSect(faultID, 6d, 8.5d, 26));
 		
-		String name;
-		if (parent)
-			name = sect.getParentSectionName();
-		else
-			name = fault.getName();
+		GraphWindow graph = null;
 		
-		GraphWindow graph = new GraphWindow(funcs, "Participation Rates for "+name);
-		graph.setYLog(true);
-		graph.setAxisRange(6, 9, 1e-10, 1e-1);
+		for (boolean parent : new boolean[] {false, true}) {
+			IncrementalMagFreqDist mfd;
+			if (parent)
+				mfd = sol.calcParticipationMFD_forParentSect(sect.getParentSectionId(), 5.55d, 8.55d, 31);
+			else
+				mfd = sol.calcParticipationMFD_forSect(faultID, 5.55d, 8.55d, 31);
+			
+			mfd.setName("Incremental MFD");
+			mfd.setInfo(" ");
+			EvenlyDiscretizedFunc cumMFD = mfd.getCumRateDistWithOffset();
+			cumMFD.setName("Cumulative MFD");
+			cumMFD.setInfo(" ");
+			ArrayList<EvenlyDiscretizedFunc> funcs = new ArrayList<>();
+			ArrayList<PlotCurveCharacterstics> chars = new ArrayList<>();
+			funcs.add(mfd);
+			chars.add(new PlotCurveCharacterstics(PlotLineType.HISTOGRAM, 1f, Color.BLUE));
+			funcs.add(cumMFD);
+			chars.add(new PlotCurveCharacterstics(PlotLineType.SOLID, 2f, Color.BLACK));
+			
+//			MinMaxAveTracker yTrack = new MinMaxAveTracker();
+//			for (EvenlyDiscretizedFunc func : funcs)
+//				for (Point2D pt : func)
+//					if (pt.getY() > 0)
+//						yTrack.addValue(pt.getY());
+//			
+//			double minY = yTrack.getMin()*0.5;
+//			double maxY = yTrack.getMax()*2d;
+			
+			String name;
+			if (parent)
+				name = sect.getParentSectionName();
+			else
+				name = fault.getName();
+			
+			PlotSpec spec = new PlotSpec(funcs, chars, name, "Magnitude", "Participation Rate (1/yr)");
+			spec.setLegendVisible(true);
+			
+			if (graph == null)
+				graph = new GraphWindow(spec, false);
+			else
+				graph.addTab(spec);
+			
+			graph.setYLog(true);
+			graph.setAxisRange(6, 9, 1e-10, 1e-1);
+		}
 		
-		graph.setX_AxisLabel("Magnitude");
-		graph.setY_AxisLabel("Participation Rate");
+		graph.setSelectedTab(0);
+		graph.setVisible(true);
 	}
 	
 	static GriddedGeoDataSet loadGriddedData(FaultSystemSolution sol, GriddedRegion griddedRegion, double minMag, double maxMag,
@@ -301,17 +335,117 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 					griddedRegion, minMag, maxMag, cache);
 	}
 	
-	// TODO
 	static vtkActor buildActorForGriddedData(GriddedGeoDataSet geo, boolean cptLog, CPT cpt,
 			double depth, boolean skipNaN, double opacity) {
 		if (cptLog) {
 			geo = geo.copy();
 			geo.log10();
 		}
-		GriddedRegion reg = geo.getRegion();
-		vtkActor actor = GeoDataSetGeometryGenerator.buildPixelSurface(geo, cpt, skipNaN, reg.getLatSpacing(), reg.getLonSpacing());
+//		GriddedRegion reg = geo.getRegion();
+//		vtkActor actor = GeoDataSetGeometryGenerator.buildPixelSurface(geo, cpt, skipNaN, reg.getLatSpacing(), reg.getLonSpacing());
+		// super sample it
+		geo = superSample(geo, 0.05);
+		vtkActor actor = GeoDataSetGeometryGenerator.buildPolygonSurface(geo, cpt, true);
 		actor.GetProperty().SetOpacity(opacity);
 		return actor;
+	}
+	
+	private static GriddedGeoDataSet superSample(GriddedGeoDataSet in, double targetSpacing) {
+		GriddedRegion inReg = in.getRegion();
+		double inSpacing = inReg.getLatSpacing();
+		System.out.println("Super-sampling with inSpacing="+inSpacing+", target="+targetSpacing);
+		Preconditions.checkState((float)inSpacing == (float)inReg.getLonSpacing(), "latSpacing != lonSpacing");
+		if (inSpacing <= targetSpacing)
+			return in;
+		double outSpacing = inSpacing;
+		int numPer = 1;
+		while (outSpacing > targetSpacing) {
+			numPer++;
+			outSpacing = inSpacing/(double)numPer;
+		}
+		System.out.println("Output spacing: "+outSpacing+", numPer="+numPer);
+		
+		// map to rectangular grid
+		MinMaxAveTracker latTrack = new MinMaxAveTracker();
+		MinMaxAveTracker lonTrack = new MinMaxAveTracker();
+		for (Location loc : inReg.getNodeList()) {
+			latTrack.addValue(loc.getLatitude());
+			lonTrack.addValue(loc.getLongitude());
+		}
+		
+		int inNX = (int)((lonTrack.getMax() - lonTrack.getMin())/inSpacing + 0.5)+1;
+		int inNY = (int)((latTrack.getMax() - latTrack.getMin())/inSpacing + 0.5)+1;
+		EvenlyDiscrXYZ_DataSet inXYZ = new EvenlyDiscrXYZ_DataSet(inNX, inNY, lonTrack.getMin(), latTrack.getMin(), inSpacing);
+		// initialize to NaN
+		for (int i=0; i<inXYZ.size(); i++)
+			inXYZ.set(i, Double.NaN);
+		EvenlyDiscrXYZ_DataSet outXYZ = new EvenlyDiscrXYZ_DataSet(
+				inNX*numPer, inNY*numPer, lonTrack.getMin(), latTrack.getMin(), outSpacing);
+		for (int i=0; i<outXYZ.size(); i++)
+			outXYZ.set(i, Double.NaN);
+		
+		// fill in values where available
+		for (Location loc : inReg.getNodeList())
+			inXYZ.set(loc.getLongitude(), loc.getLatitude(), in.get(loc));
+		
+		double each = 1d/numPer;
+		
+		for (int x=0; x<inXYZ.getNumX()-1; x++) {
+			for (int y=0; y<inXYZ.getNumY()-1; y++) {
+				double[][] G = new double[4][];
+				G[0] = getG_row(x, y, 0, inXYZ);
+				G[1] = getG_row(x, y, 1, inXYZ);
+				G[2] = getG_row(x, y, 2, inXYZ);
+				G[3] = getG_row(x, y, 3, inXYZ);
+				BicubicInterpolation2D interp = new BicubicInterpolation2D(G);
+				
+				int outX = x*numPer;
+				int outY = y*numPer;
+				for (int i=0; i<numPer; i++) {
+					double x1 = each*i;
+					for (int j=0; j<numPer; j++) {
+						double y1 = each*j;
+						double val = interp.eval(x1, y1);
+						outXYZ.set(outX+i, outY+j, val);
+					}
+				}
+			}
+		}
+		
+		// convert to GriddedGeo
+		Location lowerLeft = new Location(inXYZ.getMinY(), inXYZ.getMinX());
+		Location upperRight = new Location(inXYZ.getMaxY(), inXYZ.getMaxX());
+		GriddedRegion outReg = new GriddedRegion(lowerLeft, upperRight, outSpacing, lowerLeft);
+		GriddedGeoDataSet out = new GriddedGeoDataSet(outReg, in.isLatitudeX());
+		for (int i=0; i<outXYZ.size(); i++) {
+			Point2D pt = outXYZ.getPoint(i);
+			Location loc = new Location(pt.getY(), pt.getX());
+			if (out.contains(loc))
+				out.set(loc, outXYZ.get(i));
+		}
+		
+		return out;
+	}
+	
+	private static double[] getG_row(int x, int y, int row, EvenlyDiscrXYZ_DataSet inXYZ) {
+		double[] ret = new double[4];
+		
+		y += row - 1;
+		
+		if (y < 0 || y >= inXYZ.getNumY()) {
+			for (int i=0; i<4; i++)
+				ret[i] = Double.NaN;
+			return ret;
+		}
+		
+		for (int i=0; i<4; i++) {
+			int myX = x + (i - 1);
+			if (myX < 0 || myX >= inXYZ.getNumX())
+				ret[i] = Double.NaN;
+			else
+				ret[i] = inXYZ.get(x, y);
+		}
+		return ret;
 	}
 	
 	private void displayGriddedData() {
