@@ -1,11 +1,15 @@
 package org.scec.vtk.commons.opensha.geoDataSet;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.util.List;
 
+import org.opensha.commons.data.siteData.impl.SRTM30PlusTopography;
 import org.opensha.commons.data.xyz.GeoDataSet;
 import org.opensha.commons.data.xyz.GriddedGeoDataSet;
 import org.opensha.commons.geo.GriddedRegion;
 import org.opensha.commons.geo.Location;
+import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.scec.vtk.tools.Transform;
 
@@ -27,6 +31,10 @@ public class GeoDataSetGeometryGenerator {
 	 * @return
 	 */
 	public static vtkActor buildPolygonSurface(GriddedGeoDataSet dataset, CPT cpt) {
+		return buildPolygonSurface(dataset, cpt, false);
+	}
+	
+	public static vtkActor buildPolygonSurface(GriddedGeoDataSet dataset, CPT cpt, boolean topo) {
 		vtkPoints pts = new vtkPoints();
 		// Add the polygon to a list of polygons
 		vtkCellArray polygons = new vtkCellArray();
@@ -38,7 +46,18 @@ public class GeoDataSetGeometryGenerator {
 		colors.SetNumberOfComponents(3);
 		colors.SetName ("Colors");
 		int ptCount=0;
-		int width = (int) Math.floor(( dataset.getMaxLon() - dataset.getMinLon()) / dataset.getRegion().getLonSpacing())+1 ;
+		int width = (int) Math.floor(( dataset.getMaxLon() - dataset.getMinLon()) / dataset.getRegion().getLonSpacing())+1;
+		
+		List<Double> topoVals = null;
+		if (topo) {
+			try {
+				topoVals = new SRTM30PlusTopography().getValues(dataset.getRegion().getNodeList());
+				for (int i=0; i<topoVals.size(); i++)
+					topoVals.set(i, topoVals.get(i)/1000d); // convert to km
+			} catch (IOException e) {
+				ExceptionUtils.throwAsRuntimeException(e);
+			}
+		}
 		
 		for(int j = 0; j < dataset.getRegion().getNodeCount()-width-1; j++)
 		{
@@ -46,25 +65,42 @@ public class GeoDataSetGeometryGenerator {
 			if((j+1) % width != 0){
 				//Convert latitude and longitude to a point in the 3d world
 				Location loc = dataset.getLocation(j+width);
-				double[] currentPoint = Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), loc.getDepth());
+				double z;
+				if (topo)
+					z = topoVals.get(j+width);
+				else
+					z = -loc.getDepth();
+				double[] currentPoint = Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), z);
 				pts.InsertNextPoint(currentPoint);
 				Color color3 = cpt.getColor((float) dataset.get(loc));
 				colors.InsertNextTuple3(color3.getRed(), color3.getGreen(), color3.getBlue());
 
 				loc = dataset.getLocation(j+width+1);
-				currentPoint = Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), loc.getDepth());
+				if (topo)
+					z = topoVals.get(j+width+1);
+				else
+					z = -loc.getDepth();
+				currentPoint = Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), z);
 				pts.InsertNextPoint(currentPoint);
 				color3 = cpt.getColor((float) dataset.get(loc));
 				colors.InsertNextTuple3(color3.getRed(), color3.getGreen(), color3.getBlue());
 
 				loc = dataset.getLocation(j+1);
-				currentPoint = Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), loc.getDepth());
+				if (topo)
+					z = topoVals.get(j+1);
+				else
+					z = -loc.getDepth();
+				currentPoint = Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), z);
 				pts.InsertNextPoint(currentPoint);
 				color3 = cpt.getColor((float) dataset.get(loc));
 				colors.InsertNextTuple3(color3.getRed(), color3.getGreen(), color3.getBlue());
 
 				loc = dataset.getLocation(j);
-				currentPoint = Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), loc.getDepth());
+				if (topo)
+					z = topoVals.get(j);
+				else
+					z = -loc.getDepth();
+				currentPoint = Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), z);
 				pts.InsertNextPoint(currentPoint);
 				color3 = cpt.getColor((float) dataset.get(loc));
 				colors.InsertNextTuple3(color3.getRed(), color3.getGreen(), color3.getBlue());

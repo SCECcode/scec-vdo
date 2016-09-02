@@ -1,6 +1,8 @@
 package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
 
+import java.awt.Color;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -8,11 +10,15 @@ import javax.swing.JOptionPane;
 
 import org.opensha.commons.data.function.EvenlyDiscretizedFunc;
 import org.opensha.commons.gui.plot.GraphWindow;
+import org.opensha.commons.gui.plot.PlotCurveCharacterstics;
+import org.opensha.commons.gui.plot.PlotLineType;
+import org.opensha.commons.gui.plot.PlotSpec;
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.DoubleParameter;
+import org.opensha.commons.util.DataUtils.MinMaxAveTracker;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.magdist.IncrementalMagFreqDist;
@@ -130,39 +136,59 @@ public class NucleationRateColorer extends CPTBasedColorer implements
 			return;
 		
 		int faultID = fault.getId();
-
-		IncrementalMagFreqDist mfd;
 		
-		boolean parent = e.isShiftDown();
 		FaultSectionPrefData sect = sol.getRupSet().getFaultSectionData(faultID);
 		
-		if (parent)
-			mfd = sol.calcNucleationMFD_forParentSect(sect.getParentSectionId(), 5.55d, 8.55d, 31);
-		else
-			mfd = sol.calcNucleationMFD_forSect(faultID, 5.55d, 8.55d, 31);
+		GraphWindow graph = null;
 		
-		mfd.setName("Incremental Mag Freq Dist");
-		mfd.setInfo(" ");
-		EvenlyDiscretizedFunc cumMFD = mfd.getCumRateDistWithOffset();
-		cumMFD.setName("Cumulative Mag Freq Dist");
-		cumMFD.setInfo(" ");
-		ArrayList<EvenlyDiscretizedFunc> funcs = new ArrayList<EvenlyDiscretizedFunc>();
-		funcs.add(mfd);
-		funcs.add(cumMFD);
-//		funcs.add(sol.calcNucleationMFD_forSect(faultID, 6d, 8.5d, 26));
+		for (boolean parent : new boolean[] {false, true}) {
+			IncrementalMagFreqDist mfd;
+			if (parent)
+				mfd = sol.calcNucleationMFD_forParentSect(sect.getParentSectionId(), 5.55d, 8.55d, 31);
+			else
+				mfd = sol.calcNucleationMFD_forSect(faultID, 5.55d, 8.55d, 31);
+			
+			mfd.setName("Incremental MFD");
+			mfd.setInfo(" ");
+			EvenlyDiscretizedFunc cumMFD = mfd.getCumRateDistWithOffset();
+			cumMFD.setName("Cumulative MFD");
+			cumMFD.setInfo(" ");
+			ArrayList<EvenlyDiscretizedFunc> funcs = new ArrayList<>();
+			ArrayList<PlotCurveCharacterstics> chars = new ArrayList<>();
+			funcs.add(mfd);
+			chars.add(new PlotCurveCharacterstics(PlotLineType.HISTOGRAM, 1f, Color.BLUE));
+			funcs.add(cumMFD);
+			chars.add(new PlotCurveCharacterstics(PlotLineType.SOLID, 2f, Color.BLACK));
+			
+//			MinMaxAveTracker yTrack = new MinMaxAveTracker();
+//			for (EvenlyDiscretizedFunc func : funcs)
+//				for (Point2D pt : func)
+//					if (pt.getY() > 0)
+//						yTrack.addValue(pt.getY());
+//			
+//			double minY = yTrack.getMin()*0.5;
+//			double maxY = yTrack.getMax()*2d;
+			
+			String name;
+			if (parent)
+				name = sect.getParentSectionName();
+			else
+				name = fault.getName();
+			
+			PlotSpec spec = new PlotSpec(funcs, chars, name, "Magnitude", "Nucleation Rate (1/yr)");
+			spec.setLegendVisible(true);
+			
+			if (graph == null)
+				graph = new GraphWindow(spec, false);
+			else
+				graph.addTab(spec);
+			
+			graph.setYLog(true);
+			graph.setAxisRange(6, 9, 1e-10, 1e-1);
+		}
 		
-		String name;
-		if (parent)
-			name = sect.getParentSectionName();
-		else
-			name = fault.getName();
-		
-		GraphWindow graph = new GraphWindow(funcs, "Nucleation Rates for "+name);
-		graph.setYLog(true);
-		graph.setAxisRange(6, 9, 1e-10, 1e-1);
-		
-		graph.setX_AxisLabel("Magnitude");
-		graph.setY_AxisLabel("Nucleation Rate");
+		graph.setSelectedTab(0);
+		graph.setVisible(true);
 	}
 
 }

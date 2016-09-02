@@ -1,9 +1,22 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
+import java.awt.Color;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.math3.stat.StatUtils;
+import org.opensha.commons.data.function.DefaultXY_DataSet;
+import org.opensha.commons.data.function.EvenlyDiscretizedFunc;
+import org.opensha.commons.data.function.HistogramFunction;
+import org.opensha.commons.data.function.XY_DataSet;
+import org.opensha.commons.gui.plot.GraphWindow;
+import org.opensha.commons.gui.plot.PlotCurveCharacterstics;
+import org.opensha.commons.gui.plot.PlotLineType;
+import org.opensha.commons.gui.plot.PlotSpec;
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
@@ -11,15 +24,29 @@ import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.util.cpt.CPT;
-import org.opensha.sha.simulators.SimulatorEvent;
+import org.opensha.sha.magdist.IncrementalMagFreqDist;
 import org.opensha.sha.simulators.SimulatorElement;
+import org.opensha.sha.simulators.SimulatorEvent;
+import org.opensha.sha.simulators.iden.ElementIden;
+import org.opensha.sha.simulators.iden.FaultIDIden;
+import org.opensha.sha.simulators.iden.MagRangeRuptureIdentifier;
+import org.opensha.sha.simulators.iden.SectionIDIden;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PickHandler;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class EQSimParticipationColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener {
+import scratch.kevin.simulators.MFDCalc;
+import vtk.vtkCellPicker;
+
+public class EQSimParticipationColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener,
+PickHandler<AbstractFaultSection> {
 	
 	private static final double cpt_min = 1.0e-6;
 	private static final double cpt_max = 1.0e-2;
@@ -212,6 +239,147 @@ public class EQSimParticipationColorer extends CPTBasedColorer implements EQSims
 	@Override
 	public void setGeometry(List<SimulatorElement> elements) {
 		this.elements = elements;
+	}
+
+	@Override
+	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor, AbstractFaultSection reference,
+			vtkCellPicker picker, MouseEvent e) {
+		int clickCount = e.getClickCount();
+		// return if we don't have events, or it's not a double click
+		if (events == null || events.isEmpty() || clickCount < 2 || e.getButton() != MouseEvent.BUTTON1
+				|| !(reference instanceof SimulatorElementFault))
+			return;
+		
+		List<Double> recurrenceMags = Lists.newArrayList(6d, 6.5d, 7d, 7.5d);
+		if (!recurrenceMags.contains(magMinParam.getValue()))
+			recurrenceMags.add(magMinParam.getValue());
+		Collections.sort(recurrenceMags);
+		
+		SimulatorElementFault elementFault = (SimulatorElementFault)reference;
+		
+		SimulatorElement element = elementFault.getElement();
+		
+		List<String> names = Lists.newArrayList();
+		List<List<? extends SimulatorEvent>> eventLists = Lists.newArrayList();
+		
+		int elemID = element.getID();
+		List<? extends SimulatorEvent> matches = new ElementIden(elemID+"", elemID).getMatches(events);
+		if (!matches.isEmpty()) {
+			names.add("Elem "+elemID);
+			eventLists.add(matches);
+		}
+		
+		int sectID = element.getSectionID();
+		if (sectID >= 0) {
+			matches = new SectionIDIden(sectID+"", elements, sectID).getMatches(events);
+			if (!matches.isEmpty()) {
+				names.add("Sect "+sectID+": "+element.getSectionName());
+				eventLists.add(matches);
+			}
+		}
+		int faultID = element.getFaultID();
+		if (faultID >= 0) {
+			matches = new FaultIDIden(sectID+"", elements, faultID).getMatches(events);
+			if (!matches.isEmpty()) {
+				names.add("Parent "+faultID);
+				eventLists.add(matches);
+			}
+		}
+		
+		if (names.isEmpty())
+			return;
+		
+		GraphWindow graph = null;
+		
+		double duration = events.get(events.size()-1).getTimeInYears() - events.get(0).getTimeInYears();
+		
+		double eventMinMag = Double.POSITIVE_INFINITY;
+		for (SimulatorEvent event : events)
+			if (event.getMagnitude() < eventMinMag)
+				eventMinMag = event.getMagnitude();
+		double minMag = Math.floor(eventMinMag);
+		if (minMag > 5d)
+			minMag = 5d;
+		double deltaMag = 0.1;
+		int numMag = (int)((9d - minMag)/deltaMag + 0.5);
+		Preconditions.checkState(numMag > 1, "Bad numMag=%s, minMag=%s", numMag, minMag);
+		minMag += 0.5*deltaMag;
+		
+		for (int i=0; i<names.size(); i++) {
+			String name = names.get(i);
+			List<? extends SimulatorEvent> events = eventLists.get(i);
+			
+			// calc MFD
+			IncrementalMagFreqDist mfd = MFDCalc.calcMFD(events, null, duration, minMag, numMag, deltaMag);
+			mfd.setName("Incremental MFD");
+			mfd.setInfo(" ");
+			EvenlyDiscretizedFunc cumMFD = mfd.getCumRateDistWithOffset();
+			cumMFD.setName("Cumulative MFD");
+			cumMFD.setInfo(" ");
+			
+			ArrayList<XY_DataSet> funcs = new ArrayList<>();
+			ArrayList<PlotCurveCharacterstics> chars = new ArrayList<>();
+			funcs.add(mfd);
+			chars.add(new PlotCurveCharacterstics(PlotLineType.HISTOGRAM, 1f, Color.BLUE));
+			funcs.add(cumMFD);
+			chars.add(new PlotCurveCharacterstics(PlotLineType.SOLID, 2f, Color.BLACK));
+			
+			PlotSpec spec = new PlotSpec(funcs, chars, name+" MFD", "Magnitude", "Participation Rate (1/yr)");
+			spec.setLegendVisible(true);
+			
+			if (graph == null)
+				graph = new GraphWindow(spec, false);
+			else
+				graph.addTab(spec);
+			
+			graph.setYLog(true);
+			graph.setAxisRange(6, 9, 1e-10, 1e-1);
+			
+			// now recurrence intervals
+			for (double riMag : recurrenceMags) {
+				List<? extends SimulatorEvent> riEvents = new MagRangeRuptureIdentifier(riMag, 10d).getMatches(events);
+				if (riEvents.size() < 3)
+					continue;
+				
+				double[] ris = new double[riEvents.size()-1];
+				for (int r=0; r<riEvents.size()-1; r++)
+					ris[r] = riEvents.get(r+1).getTimeInYears() - riEvents.get(r).getTimeInYears();
+				
+				double meanRI = StatUtils.mean(ris);
+				
+				double riDelta = 5d;
+				if (meanRI > 300)
+					riDelta = 10;
+				if (meanRI > 1000)
+					riDelta = 50;
+				
+				HistogramFunction hist = HistogramFunction.getEncompassingHistogram(StatUtils.min(ris), StatUtils.max(ris), riDelta);
+				for (double ri : ris)
+					hist.add(ri, 1d);
+				
+				funcs = new ArrayList<>();
+				chars = new ArrayList<>();
+				funcs.add(hist);
+				hist.setName("M≥"+(float)riMag+" RI Dist");
+				chars.add(new PlotCurveCharacterstics(PlotLineType.HISTOGRAM, 1f, Color.BLUE));
+				
+				DefaultXY_DataSet meanLine = new DefaultXY_DataSet();
+				meanLine.set(meanRI, 0d);
+				meanLine.set(meanRI, hist.getMaxY());
+				meanLine.set(meanRI, hist.getMaxY()*1.25);
+				meanLine.setName("Mean RI: "+(float)meanRI);
+				funcs.add(meanLine);
+				chars.add(new PlotCurveCharacterstics(PlotLineType.SOLID, 2f, Color.BLACK));
+				
+				spec = new PlotSpec(funcs, chars, "M≥"+(float)riMag+" RI", "Time (years)", "Number");
+				spec.setLegendVisible(true);
+				
+				graph.addTab(spec);
+			}
+		}
+		
+		graph.setSelectedTab(0);
+		graph.setVisible(true);
 	}
 
 }
