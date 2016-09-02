@@ -24,7 +24,8 @@ public class NameDispalyPickHandler implements PickHandler<AbstractFaultSection>
 	@Override
 	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor,
 			AbstractFaultSection fault, vtkCellPicker picker, MouseEvent e) {
-		if (fault == null || e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() < 2 || e.getClickCount() > 2)
+//		if (fault == null || e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() < 2 || e.getClickCount() > 2)
+		if (fault == null || e.getButton() != MouseEvent.BUTTON1)
 			return;
 		String s = fault.getInfo();
 		if (this.colorer != null && this.colorer instanceof CPTBasedColorer) {
@@ -34,9 +35,9 @@ public class NameDispalyPickHandler implements PickHandler<AbstractFaultSection>
 			} catch (Exception ex) {}
 		}
 		
-		JOptionPane.showMessageDialog(Info.getMainGUI(), s, "Fault Section Information", JOptionPane.INFORMATION_MESSAGE);
-//		s = s.replaceAll("\n", ", ");
-//		System.out.println(s);
+//		JOptionPane.showMessageDialog(Info.getMainGUI(), s, "Fault Section Information", JOptionPane.INFORMATION_MESSAGE);
+		s = s.replaceAll("\n", ", ");
+		System.out.println(s);
 		// TODO show in GUI
 	}
 
