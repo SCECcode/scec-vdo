@@ -277,19 +277,22 @@ public class MainMenu implements ActionListener, ItemListener{
 					// iterate through child elements of root
 					Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 							availablePlugins.values());
-					for(PluginInfo pluginDescriptor:pluginDescriptors)
-					{
-
+					for(PluginInfo pluginDescriptor:pluginDescriptors) {
 						//System.out.println(pluginDescriptor.getName());
 						for ( Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
 							Element pluginNameElement = (Element) i.next();
-							if(!activePlugins.containsKey(pluginDescriptor.getId()))
-								activatePlugin(pluginDescriptor.getId());
-							Plugin plugin = activePlugins.get(pluginDescriptor.getId());
-							if (plugin instanceof StatefulPlugin) {
-								((StatefulPlugin)plugin).getState().fromXML(pluginNameElement);
+							try {
+								if(!activePlugins.containsKey(pluginDescriptor.getId()))
+									activatePlugin(pluginDescriptor.getId());
+								Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+								if (plugin instanceof StatefulPlugin) {
+									((StatefulPlugin)plugin).getState().fromXML(pluginNameElement);
 
-								((StatefulPlugin)plugin).getState().load();
+									((StatefulPlugin)plugin).getState().load();
+								}
+							} catch (Exception e1) {
+								System.err.println("WARNING: Error loading plugin state from XML: "+pluginDescriptor.getName());
+								e1.printStackTrace();
 							}
 						}
 					}
