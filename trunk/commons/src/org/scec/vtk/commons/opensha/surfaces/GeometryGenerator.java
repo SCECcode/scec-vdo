@@ -13,6 +13,7 @@ import org.opensha.commons.param.ParameterList;
 import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
+import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.surfaces.events.GeometrySettingsChangeListener;
 import org.scec.vtk.commons.opensha.surfaces.events.GeometrySettingsChangedEvent;
@@ -61,7 +62,7 @@ public abstract class GeometryGenerator implements Named {
 	 * @param fault
 	 * @return
 	 */
-	public abstract FaultSectionActorList createFaultActors(RuptureSurface surface, Color color,
+	public abstract FaultSectionActorList createFaultActors(Surface3D surface, Color color,
 			AbstractFaultSection fault);
 	
 	protected FaultSectionActorList handleCompound(CompoundSurface surface, Color color, AbstractFaultSection fault) {

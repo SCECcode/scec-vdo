@@ -16,6 +16,7 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
+import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.surfaces.params.ColorParameter;
 import org.scec.vtk.commons.opensha.surfaces.params.DiscreteSizeParam;
@@ -98,7 +99,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 	}
 	
 	@Override
-	public FaultSectionActorList createFaultActors(RuptureSurface surface, Color color, AbstractFaultSection fault) {
+	public FaultSectionActorList createFaultActors(Surface3D surface, Color color, AbstractFaultSection fault) {
 		if (surface instanceof CompoundSurface)
 			return handleCompound((CompoundSurface)surface, color, fault);
 		if (surface instanceof EvenlyGriddedSurface)

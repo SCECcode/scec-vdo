@@ -15,6 +15,7 @@ import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.sha.faultSurface.RuptureSurface;
+import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
@@ -67,8 +68,8 @@ AnimationListener {
 	private HashMap<AbstractFaultSection, FaultSectionActorList> actorsMap =
 		new HashMap<AbstractFaultSection, FaultSectionActorList>();
 	
-	private HashMap<AbstractFaultSection, RuptureSurface> surfaces =
-		new HashMap<AbstractFaultSection, RuptureSurface>();
+	private HashMap<AbstractFaultSection, Surface3D> surfaces =
+		new HashMap<AbstractFaultSection, Surface3D>();
 	
 	private HashMap<AbstractFaultSection, FaultSectionNode> nodes =
 		new HashMap<AbstractFaultSection, FaultSectionNode>();
@@ -134,8 +135,8 @@ AnimationListener {
 	 * 
 	 * @return
 	 */
-	private RuptureSurface getBuildSurface(AbstractFaultSection fault) {
-		RuptureSurface surface = surfaces.get(fault);
+	private Surface3D getBuildSurface(AbstractFaultSection fault) {
+		Surface3D surface = surfaces.get(fault);
 		
 		if (surface == null) {
 			if (D) System.out.println("Building surface for fault: '"+fault.getName()+"'");
@@ -173,7 +174,7 @@ AnimationListener {
 		if (actors == null) {
 			if (D) System.out.println("Building actors for fault: '"+fault.getName()+"'");
 			FaultSectionNode node = nodes.get(fault);
-			RuptureSurface surface = getBuildSurface(fault);
+			Surface3D surface = getBuildSurface(fault);
 			if (surface == null)
 				return null;
 			Color color = node.getColor();
@@ -586,14 +587,14 @@ AnimationListener {
 	}
 
 	@Override
-	public HashMap<AbstractFaultSection, RuptureSurface> getVisibleSurfaces() {
-		HashMap<AbstractFaultSection, RuptureSurface> visSurfaces =
-			new HashMap<AbstractFaultSection, RuptureSurface>();
+	public HashMap<AbstractFaultSection, Surface3D> getVisibleSurfaces() {
+		HashMap<AbstractFaultSection, Surface3D> visSurfaces =
+			new HashMap<AbstractFaultSection, Surface3D>();
 		
 		for (AbstractFaultSection fault : nodes.keySet()) {
 			AbstractFaultNode node = nodes.get(fault);
 			if (node.isVisible()) {
-				RuptureSurface surface = surfaces.get(fault);
+				Surface3D surface = surfaces.get(fault);
 				if (surface == null)
 					throw new RuntimeException("Surfaces is displayed but null?");
 				visSurfaces.put(fault, surface);
