@@ -13,6 +13,7 @@ import org.opensha.refFaultParamDb.calc.sectionDists.SmartSurfaceFilter;
 import org.opensha.refFaultParamDb.calc.sectionDists.SurfaceFilter;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
+import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 
 public class DistanceCalc {
@@ -29,14 +30,14 @@ public class DistanceCalc {
 	}
 	
 	public void updateFaultConnections(double maxDist) throws InterruptedException {
-		HashMap<AbstractFaultSection, RuptureSurface> surfaceMap = surfaceProv.getVisibleSurfaces();
+		HashMap<AbstractFaultSection, Surface3D> surfaceMap = surfaceProv.getVisibleSurfaces();
 		
 		ArrayList<EvenlyGriddedSurface> surfaces = new ArrayList<EvenlyGriddedSurface>();
 		ArrayList<Integer> ids = new ArrayList<Integer>();
 		idFaultMap = new HashMap<Integer, AbstractFaultSection>();
 		
 		for (AbstractFaultSection fs : surfaceMap.keySet()) {
-			RuptureSurface surface = surfaceMap.get(fs);
+			Surface3D surface = surfaceMap.get(fs);
 			if (surface instanceof EvenlyGriddedSurface) {
 				ids.add(fs.getId());
 				surfaces.add((EvenlyGriddedSurface)surface);

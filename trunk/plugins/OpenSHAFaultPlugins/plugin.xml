@@ -33,4 +33,14 @@
 		<menu-item menu="Display" submenu="OpenSHA"/>
 			
 	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.regions.RegionsPlugin"
+		name="OpenSHA Regions"
+		short-name="OpenSHA Regions"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.regions.RegionsPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
 </plugins>
