@@ -3,6 +3,7 @@ package org.scec.vtk.commons.opensha.faults;
 import org.opensha.commons.data.Named;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.sha.faultSurface.RuptureSurface;
+import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 
 public abstract class AbstractFaultSection implements Named {
@@ -15,7 +16,7 @@ public abstract class AbstractFaultSection implements Named {
 		this.id = id;
 	}
 	
-	public abstract RuptureSurface createSurface(ParameterList faultRepresentationParams);
+	public abstract Surface3D createSurface(ParameterList faultRepresentationParams);
 	
 	protected static void checkHasParam(ParameterList faultRepresentationParams, String name) {
 		if (!faultRepresentationParams.containsParameter(name))

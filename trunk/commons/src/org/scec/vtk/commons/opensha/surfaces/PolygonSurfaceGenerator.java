@@ -14,6 +14,7 @@ import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
+import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 
 public class PolygonSurfaceGenerator extends GeometryGenerator implements ParameterChangeListener {
@@ -49,7 +50,7 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 	}
 
 	@Override
-	public FaultSectionActorList createFaultActors(RuptureSurface surface,
+	public FaultSectionActorList createFaultActors(Surface3D surface,
 			Color color, AbstractFaultSection fault) {
 		if (surface instanceof CompoundSurface)
 			return handleCompound((CompoundSurface)surface, color, fault);
