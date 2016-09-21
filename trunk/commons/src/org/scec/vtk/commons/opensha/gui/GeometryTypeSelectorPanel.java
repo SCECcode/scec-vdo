@@ -3,12 +3,15 @@ package org.scec.vtk.commons.opensha.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,7 +27,7 @@ import org.scec.vtk.commons.opensha.surfaces.events.GeometrySettingsChangedEvent
 
 import com.google.common.base.Preconditions;
 
-public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
+public class GeometryTypeSelectorPanel extends JPanel implements ItemListener, ActionListener {
 	
 	/**
 	 * 
@@ -37,6 +40,7 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 	private JPanel cards = new JPanel(cl);
 	
 	private JComboBox<GeometryGenerator> selector;
+	private JCheckBox bundleCheck;
 	
 	private ArrayList<GeometryGenerator> geomGens;
 	
@@ -58,6 +62,14 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 		topPanel.add(label);
 		topPanel.add(selector);
 		
+		GeometryGenerator selected = getSelectedGeomGen();
+		bundleCheck = new JCheckBox("Bundle?", selected.isBundlerEnabled());
+		bundleCheck.setEnabled(selected.getFaultActorBundler() != null);
+		bundleCheck.setToolTipText("Bundles multiple faults into one VTK actor for better performance. "
+				+ "Disabling can fix depth sorting issues with transparency enabled.");
+		bundleCheck.addActionListener(this);
+		topPanel.add(bundleCheck);
+		
 		this.add(topPanel, BorderLayout.NORTH);
 		
 		for (GeometryGenerator geomGen : geomGens) {
@@ -73,7 +85,10 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 	@Override
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource() == selector) {
-			cl.show(cards, selector.getSelectedItem().toString());
+			GeometryGenerator selected = getSelectedGeomGen();
+			cl.show(cards, selected.toString());
+			bundleCheck.setSelected(selected.isBundlerEnabled());
+			bundleCheck.setEnabled(selected.getFaultActorBundler() != null);
 			firePlotSettingsChangeEvent();
 		}
 	}
@@ -116,6 +131,13 @@ public class GeometryTypeSelectorPanel extends JPanel implements ItemListener {
 	protected void firePlotSettingsChangeEvent() {
 		for (GeometryGeneratorChangeListener l : listeners) {
 			l.geometryGeneratorChanged(getSelectedGeomGen());
+		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == bundleCheck) {
+			getSelectedGeomGen().setBundlerEneabled(bundleCheck.isSelected());
 		}
 	}
 

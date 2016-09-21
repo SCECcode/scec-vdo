@@ -34,8 +34,6 @@ import vtk.vtkVertex;
 
 public class PointSurfaceGenerator extends GeometryGenerator implements ParameterChangeListener {
 	
-	private static final boolean bundle = true;
-	
 	private static final String NAME = "Points";
 
 	private ParameterList faultDisplayParams;
@@ -246,7 +244,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 		
 		double initialOpacity;
 		FaultActorBundle currentBundle;
-		if (bundle && bundler != null) {
+		if (isBundlerEnabled() && bundler != null) {
 			// initialized to transparent, will get updated when displayed
 			initialOpacity = 0;
 			currentBundle = bundler.getBundle(fault);
@@ -255,7 +253,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 			currentBundle = null;
 		}
 		
-		boolean bundle = PointSurfaceGenerator.bundle && currentBundle != null;
+		boolean bundle = isBundlerEnabled() && currentBundle != null;
 		
 		vtkUnstructuredGrid gridData;
 		vtkPoints pts;
@@ -360,10 +358,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 				
 				actor.SetMapper(mapper);
 				actor.GetProperty().SetPointSize(pointSizeParam.getValue());
-				if (bundle)
-					actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparancey enabled renderer
-				else
-					actor.GetProperty().SetColor(getColorDoubleArray(color));
+				setActorProperties(actor, newBundle, color, 1d);
 			} else {
 				if (currentBundle != null)
 					currentBundle.modified();
