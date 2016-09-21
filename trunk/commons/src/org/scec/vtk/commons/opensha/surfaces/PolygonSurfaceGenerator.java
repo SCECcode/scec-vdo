@@ -29,7 +29,7 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 	ParameterList faultDisplayParams = new ParameterList();
 	
 	public static final String OPACITY_PARAM_NAME = "Surface Opacity";
-	private static final double OPACITY_DEFAULT = 0.7d;
+	private static final double OPACITY_DEFAULT = 1d;
 	private static final double OPACITY_MIN = 0d;
 	private static final double OPACITY_MAX = 1d;
 	private DoubleParameter opacityParam;

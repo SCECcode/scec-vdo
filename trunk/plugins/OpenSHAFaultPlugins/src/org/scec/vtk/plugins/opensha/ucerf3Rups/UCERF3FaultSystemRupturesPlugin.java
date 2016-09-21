@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
+import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.opensha.AbstractFaultPlugin;
 import org.scec.vtk.plugins.opensha.FaultPluginGUI;
 
@@ -21,6 +22,7 @@ public class UCERF3FaultSystemRupturesPlugin extends AbstractFaultPlugin {
 
 		ArrayList<GeometryGenerator> geomGens = FaultPluginGUI.createDefaultGeomGens();
 		setBundlerInGeomGens(geomGens, new ParentFaultSectionBundler());
+//		setBundlerInGeomGens(geomGens, null);
 
 		FaultPluginGUI gui = new FaultPluginGUI(this, builder, faultColorers, geomGens, Color.GRAY, faultAnims);
 //		gui.addDistTab();

@@ -53,6 +53,7 @@ public abstract class GeometryGenerator implements Named {
 	private List<GeometrySettingsChangeListener> listeners = new ArrayList<GeometrySettingsChangeListener>();
 	
 	protected FaultActorBundler bundler = new GenericFaultActorBundler(0);
+	private boolean bundlerEnabled = true;
 	
 	/**
 	 * Builds a vtkActor containing geometry representing the given surface, and colored with the given colorer.
@@ -189,8 +190,26 @@ public abstract class GeometryGenerator implements Named {
 		this.bundler = bundler;
 	}
 	
+	public FaultActorBundler getFaultActorBundler() {
+		return bundler;
+	}
+	
+	public boolean isBundlerEnabled() {
+		return bundlerEnabled;
+	}
+	
+	public void setBundlerEneabled(boolean bundlerEnabled) {
+		boolean rebuild = bundlerEnabled != this.bundlerEnabled;
+		this.bundlerEnabled = bundlerEnabled;
+		if (rebuild) {
+			clearBundles();
+			firePlotSettingsChangeEvent();
+		}
+	}
+	
 	public void clearBundles() {
-		bundler.clearBundles();
+		if (bundler != null)
+			bundler.clearBundles();
 	}
 	
 	public void setPickHandler(PickHandler<AbstractFaultSection> pickHandler) {
@@ -272,7 +291,7 @@ public abstract class GeometryGenerator implements Named {
 			GeometryType type, List<PointArray> cellDatas, Color color, double opacity, AbstractFaultSection fault) {
 		int myOpacity = (int)(255d*opacity);
 		FaultActorBundle currentBundle;
-		if (bundler != null)
+		if (bundler != null && bundlerEnabled)
 			currentBundle = bundler.getBundle(fault);
 		else
 			currentBundle = null;
@@ -401,7 +420,7 @@ public abstract class GeometryGenerator implements Named {
 	 */
 	protected void setActorProperties(vtkActor actor, boolean bundle, Color color, double opacity) {
 		if (bundle) {
-			actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparency enabled renderer
+//			actor.GetProperty().SetOpacity(0.999); // needed to trick it to using a transparency enabled renderer
 		} else {
 			actor.GetProperty().SetColor(getColorDoubleArray(color));
 			actor.GetProperty().SetOpacity(opacity);
