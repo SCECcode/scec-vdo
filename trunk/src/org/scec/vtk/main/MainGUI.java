@@ -160,8 +160,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 //		renderWindow.getRenderWindow().SetAlphaBitPlanes(1);
 //		renderWindow.getRenderWindow().SetMultiSamples(0);
 //		renderWindow.getRenderer().SetUseDepthPeeling(1);
-//		renderWindow.getRenderer().SetMaximumNumberOfPeels(100);
-//		renderWindow.getRenderer().SetOcclusionRatio(0.1);
+////		renderWindow.getRenderer().SetMaximumNumberOfPeels(100);
+////		renderWindow.getRenderer().SetOcclusionRatio(0.1);
+//		renderWindow.getRenderer().SetMaximumNumberOfPeels(1000);
+//		renderWindow.getRenderer().SetOcclusionRatio(0);
 
 		mainMenu = new MainMenu();
 
