@@ -367,6 +367,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		pluginInfo.get(2).setPluginClass("org.scec.vtk.drawingTools.DrawingToolsPlugin");	
 		mainMenu.availablePlugins.put(ids.get(2), pluginInfo.get(2));
 		mainMenu.activatePlugin(ids.get(2));
+		
+		pluginTabPane.setSelectedIndex(0);
 	}
 	
 	public boolean getGridDisplayBool() {
@@ -439,6 +441,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
 		else
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
+		pluginTabPane.setSelectedIndex(pluginTabPane.indexOfComponent(pluginTab));
 
 //		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
 //			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
