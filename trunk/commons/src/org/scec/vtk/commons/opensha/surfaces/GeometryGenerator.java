@@ -149,7 +149,7 @@ public abstract class GeometryGenerator implements Named {
 		}
 	}
 	
-	protected static double[] getPointForLoc(Location loc) {
+	public static double[] getPointForLoc(Location loc) {
 		// TODO
 //		return new Point3f(LatLongToPoint.plotPoint3f(loc.getLatitude(),loc.getLongitude(),-loc.getDepth()));
 		return Transform.transformLatLonHeight(loc.getLatitude(), loc.getLongitude(), -loc.getDepth());
@@ -220,7 +220,7 @@ public abstract class GeometryGenerator implements Named {
 		return pickHandler;
 	}
 	
-	protected class PointArray {
+	public static class PointArray {
 		
 		private double[][] points;
 		
@@ -241,7 +241,7 @@ public abstract class GeometryGenerator implements Named {
 		}
 	}
 	
-	protected enum GeometryType {
+	public enum GeometryType {
 		LINE,
 		POLYGON;
 	}
@@ -287,7 +287,7 @@ public abstract class GeometryGenerator implements Named {
 		}
 	}
 	
-	protected synchronized FaultSectionActorList createFaultActors(
+	public synchronized FaultSectionActorList createFaultActors(
 			GeometryType type, List<PointArray> cellDatas, Color color, double opacity, AbstractFaultSection fault) {
 		int myOpacity = (int)(255d*opacity);
 		FaultActorBundle currentBundle;
