@@ -38,8 +38,6 @@ import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
 import org.scec.vtk.tools.Prefs;
 
-import com.sun.jmx.snmp.Timestamp;
-
 import gov.usgs.earthquake.event.EventQuery;
 import gov.usgs.earthquake.event.EventWebService;
 import gov.usgs.earthquake.event.Format;
@@ -819,7 +817,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		//save in user's local directory
 		String destinationData = Prefs.getLibLoc() + File.separator + EarthquakeCatalogPlugin.dataStoreDir +
 				File.separator + "display" + File.separator + "data"+File.separator+
-				cat.getDisplayName()+"-"+(new Timestamp(System.currentTimeMillis())).getDateTime()+".json";
+				cat.getDisplayName()+"-"+System.currentTimeMillis()+".json";
 		//System.out.println("dd:"+destinationData);
 		try (FileWriter file = new FileWriter(destinationData)) {
 			file.write(obj.toJSONString());
