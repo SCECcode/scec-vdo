@@ -68,6 +68,7 @@ import vtk.vtkCanvas;
 import vtk.vtkCellPicker;
 import vtk.vtkNativeLibrary;
 import vtk.vtkOpenGLRenderWindow;
+import vtk.vtkPicker;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
 import vtk.vtkPropPicker;
@@ -266,13 +267,36 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		//mouse event
 		final vtkCellPicker cellPicker = new vtkCellPicker();
 		cellPicker.SetTolerance(0.001);
+		
+		final boolean clickDebug = true;
 
 		// Show the point on the sphere the mouse is hovering over in the status bar
 		renderWindow.getComponent().addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				int[] clickPos = renderWindow.getRenderWindowInteractor().GetEventPosition();
+				int height = renderWindow.getComponent().getHeight();
+				int calcY = (height - e.getY()) - 1;
+				
+				if (clickDebug) {
+					System.out.println("Mouse pressed! "+clickPos[0]+" "+clickPos[1]);
+					System.out.println("\tRW Click Pos: "+clickPos[0]+" "+clickPos[1]);
+					System.out.println("\tEvent Pos: "+e.getX()+" "+e.getY());
+					System.out.println("\tHeight: "+height);
+					System.out.println("\tCustom Pos: "+e.getX()+" "+calcY);
+				}
+				
+				int x = clickPos[0];
+				int y = clickPos[1];
+//				int x = e.getX();
+//				int y = calcY;
  
-				cellPicker.Pick(clickPos[0], clickPos[1],0, renderWindow.getRenderer());
+				cellPicker.Pick(x, y, 0, renderWindow.getRenderer());
+				if (clickDebug) {
+					if (cellPicker.GetActor() != null)
+						System.out.println("Actor: "+cellPicker.GetActor().getClass().getName());
+					else
+						System.out.println("Actor: (null)");
+				}
 				// if we picked a pick enabled actor, fire off a pick event
 				// DON'T REMOVE THIS when playing with the highlighting stuff you're doing below please!
 				if (cellPicker.GetActor() instanceof PickEnabledActor<?>) {
