@@ -268,7 +268,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		final vtkCellPicker cellPicker = new vtkCellPicker();
 		cellPicker.SetTolerance(0.001);
 		
-		final boolean clickDebug = true;
+		final boolean clickDebug = false;
 
 		// Show the point on the sphere the mouse is hovering over in the status bar
 		renderWindow.getComponent().addMouseListener(new MouseAdapter() {
