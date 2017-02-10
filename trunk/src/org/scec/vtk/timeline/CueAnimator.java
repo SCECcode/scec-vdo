@@ -31,7 +31,6 @@ import org.scec.vtk.tools.JpegImagesToMovie;
 import vtk.vtkAnimationCue;
 import vtk.vtkAnimationScene;
 import vtk.vtkCanvas;
-import vtk.vtkCocoaRenderWindow;
 import vtk.vtkJPEGWriter;
 import vtk.vtkUnsignedCharArray;
 import vtk.vtkWindowToImageFilter;
