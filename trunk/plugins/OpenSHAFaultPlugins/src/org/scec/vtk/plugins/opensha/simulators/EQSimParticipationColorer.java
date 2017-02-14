@@ -2,14 +2,20 @@ package org.scec.vtk.plugins.opensha.simulators;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import org.apache.commons.math3.stat.StatUtils;
+import org.opensha.commons.data.CSVFile;
+import org.opensha.commons.data.function.ArbitrarilyDiscretizedFunc;
 import org.opensha.commons.data.function.DefaultXY_DataSet;
+import org.opensha.commons.data.function.DiscretizedFunc;
 import org.opensha.commons.data.function.EvenlyDiscretizedFunc;
 import org.opensha.commons.data.function.HistogramFunction;
 import org.opensha.commons.data.function.XY_DataSet;
@@ -23,6 +29,7 @@ import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
+import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.sha.magdist.IncrementalMagFreqDist;
 import org.opensha.sha.simulators.SimulatorElement;
@@ -63,6 +70,9 @@ PickHandler<AbstractFaultSection> {
 	private BooleanParameter probabilityParam;
 	private DoubleParameter probDurationParam;
 	
+	private FileParameter csvComparisonParam;
+	private List<DiscretizedFunc> comparisonCumMFDs;
+	
 	private ParameterList params;
 	
 	private List<? extends SimulatorEvent> events;
@@ -70,6 +80,8 @@ PickHandler<AbstractFaultSection> {
 	protected HashMap<Integer, Double> rates;
 	
 	List<SimulatorElement> elements;
+	int minSectIndex = Integer.MAX_VALUE;
+	int maxSectIndex = -1;
 	
 	protected static CPT getDefaultCPT() {
 		try {
@@ -104,6 +116,10 @@ PickHandler<AbstractFaultSection> {
 		probDurationParam.setValue(50);
 		probDurationParam.addParameterChangeListener(this);
 		params.addParameter(probDurationParam);
+		
+		csvComparisonParam = new FileParameter("U3 CSV For Comparison");
+		csvComparisonParam.addParameterChangeListener(this);
+		params.addParameter(csvComparisonParam);
 	}
 
 	@Override
@@ -220,6 +236,31 @@ PickHandler<AbstractFaultSection> {
 		} else if (event.getParameter() == probabilityParam || event.getParameter() == probDurationParam) {
 			probDurationParam.getEditor().setEnabled(probabilityParam.getValue());
 			fireColorerChangeEvent();
+		} else if (event.getParameter() == csvComparisonParam) {
+			comparisonCumMFDs = null;
+			File csvFile = csvComparisonParam.getValue();
+			if (csvFile == null)
+				return;
+			CSVFile<String> csv;
+			try {
+				csv = CSVFile.readFile(csvFile, true);
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error opening CSV", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			final int startCol = 3;
+			List<Double> mags = new ArrayList<>();
+			comparisonCumMFDs = new ArrayList<>();
+			for (int col=startCol; col<csv.getNumCols(); col++)
+				mags.add(Double.parseDouble(csv.get(0, col)));
+			for (int row=1; row<csv.getNumRows(); row++) {
+				int index = Integer.parseInt(csv.get(row, 0));
+				Preconditions.checkState(index == comparisonCumMFDs.size(), "File out of order!");
+				DiscretizedFunc func = new ArbitrarilyDiscretizedFunc();
+				for (int i=0; i<mags.size(); i++)
+					func.set(mags.get(i), Double.parseDouble(csv.get(row, startCol+i)));
+				comparisonCumMFDs.add(func);
+			}
 		}
 	}
 	
@@ -239,6 +280,19 @@ PickHandler<AbstractFaultSection> {
 	@Override
 	public void setGeometry(List<SimulatorElement> elements) {
 		this.elements = elements;
+		minSectIndex = Integer.MAX_VALUE;
+		maxSectIndex = -1;
+		if (elements != null) {
+			for (SimulatorElement elem : elements) {
+				int s = elem.getSectionID();
+				if (s < 0)
+					continue;
+				if (s < minSectIndex)
+					minSectIndex = s;
+				if (s > maxSectIndex)
+					maxSectIndex = s;
+			}
+		}
 	}
 
 	@Override
@@ -261,12 +315,14 @@ PickHandler<AbstractFaultSection> {
 		
 		List<String> names = Lists.newArrayList();
 		List<List<? extends SimulatorEvent>> eventLists = Lists.newArrayList();
+		List<DiscretizedFunc> comparisonMFDs = Lists.newArrayList();
 		
 		int elemID = element.getID();
 		List<? extends SimulatorEvent> matches = new ElementIden(elemID+"", elemID).getMatches(events);
 		if (!matches.isEmpty()) {
 			names.add("Elem "+elemID);
 			eventLists.add(matches);
+			comparisonMFDs.add(null);
 		}
 		
 		int sectID = element.getSectionID();
@@ -275,6 +331,23 @@ PickHandler<AbstractFaultSection> {
 			if (!matches.isEmpty()) {
 				names.add("Sect "+sectID+": "+element.getSectionName());
 				eventLists.add(matches);
+				if (comparisonCumMFDs != null) {
+					System.out.println("Min: "+minSectIndex);
+					System.out.println("Max: "+maxSectIndex);
+					System.out.println("File: "+comparisonCumMFDs.size());
+					int myNumSects = (maxSectIndex - minSectIndex) + 1;
+					if (myNumSects != comparisonCumMFDs.size()) {
+						JOptionPane.showMessageDialog(null, "Section count mismatch. CSV has "+comparisonCumMFDs.size()
+						+", geom file has "+myNumSects, "Can't use comparison CSV", JOptionPane.ERROR_MESSAGE);
+						csvComparisonParam.setValue(null);
+						csvComparisonParam.getEditor().refreshParamEditor();
+						comparisonMFDs.add(null);
+					} else {
+						comparisonMFDs.add(comparisonCumMFDs.get(sectID-minSectIndex));
+					}
+				} else {
+					comparisonMFDs.add(null);
+				}
 			}
 		}
 		int faultID = element.getFaultID();
@@ -283,6 +356,7 @@ PickHandler<AbstractFaultSection> {
 			if (!matches.isEmpty()) {
 				names.add("Parent "+faultID);
 				eventLists.add(matches);
+				comparisonMFDs.add(null);
 			}
 		}
 		
@@ -323,6 +397,13 @@ PickHandler<AbstractFaultSection> {
 			chars.add(new PlotCurveCharacterstics(PlotLineType.HISTOGRAM, 1f, Color.BLUE));
 			funcs.add(cumMFD);
 			chars.add(new PlotCurveCharacterstics(PlotLineType.SOLID, 2f, Color.BLACK));
+			
+			DiscretizedFunc compMFD = comparisonMFDs.get(i);
+			if (compMFD != null) {
+				funcs.add(compMFD);
+				compMFD.setName("U3 Comparison");
+				chars.add(new PlotCurveCharacterstics(PlotLineType.DASHED, 2f, Color.RED));
+			}
 			
 			PlotSpec spec = new PlotSpec(funcs, chars, name+" MFD", "Magnitude", "Participation Rate (1/yr)");
 			spec.setLegendVisible(true);
@@ -370,6 +451,19 @@ PickHandler<AbstractFaultSection> {
 				meanLine.setName("Mean RI: "+(float)meanRI);
 				funcs.add(meanLine);
 				chars.add(new PlotCurveCharacterstics(PlotLineType.SOLID, 2f, Color.BLACK));
+				
+				if (compMFD != null && riMag >= compMFD.getMinX() && riMag <= compMFD.getMaxX()) {
+					double rate = compMFD.getInterpolatedY(riMag);
+					double compRI = 1d/rate;
+					
+					DefaultXY_DataSet compLine = new DefaultXY_DataSet();
+					compLine.set(compRI, 0d);
+					compLine.set(compRI, hist.getMaxY());
+					compLine.set(compRI, hist.getMaxY()*1.25);
+					compLine.setName("U3 Comparison RI: "+(float)meanRI);
+					funcs.add(compLine);
+					chars.add(new PlotCurveCharacterstics(PlotLineType.DASHED, 2f, Color.RED));
+				}
 				
 				spec = new PlotSpec(funcs, chars, "M≥"+(float)riMag+" RI", "Time (years)", "Number");
 				spec.setLegendVisible(true);
