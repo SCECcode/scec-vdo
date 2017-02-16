@@ -180,9 +180,11 @@ public class EQSimsPatchScalarColorer extends CPTBasedColorer implements Paramet
 					}
 				} catch (IOException e) {
 					JOptionPane.showMessageDialog(null, e.getMessage(), "I/O Exception", JOptionPane.ERROR_MESSAGE);
+					data = null;
 				} catch (NumberFormatException e) {
 					JOptionPane.showMessageDialog(null, "Each line should contain one scalar value.\n\n"+e.getMessage(),
 							"Malformed data file", JOptionPane.ERROR_MESSAGE);
+					data = null;
 				}
 				if (data == null) {
 					// failed load
