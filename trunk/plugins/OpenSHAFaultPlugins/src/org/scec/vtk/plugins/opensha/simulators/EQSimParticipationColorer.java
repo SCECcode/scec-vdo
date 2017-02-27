@@ -460,7 +460,7 @@ PickHandler<AbstractFaultSection> {
 					compLine.set(compRI, 0d);
 					compLine.set(compRI, hist.getMaxY());
 					compLine.set(compRI, hist.getMaxY()*1.25);
-					compLine.setName("U3 Comparison RI: "+(float)meanRI);
+					compLine.setName("U3 Comparison RI: "+(float)compRI);
 					funcs.add(compLine);
 					chars.add(new PlotCurveCharacterstics(PlotLineType.DASHED, 2f, Color.RED));
 				}
