@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
+import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.sha.magdist.IncrementalMagFreqDist;
@@ -55,9 +57,6 @@ import vtk.vtkCellPicker;
 public class EQSimsParticipationColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener,
 PickHandler<AbstractFaultSection> {
 	
-	private static final double cpt_min = 1.0e-6;
-	private static final double cpt_max = 1.0e-2;
-	
 	private DoubleParameter magMinParam;
 	private static final double MIN_MAG_DEFAULT = 6.5;
 	private static final double MAX_MAG_DEFAULT = 10d;
@@ -72,6 +71,26 @@ PickHandler<AbstractFaultSection> {
 	
 	private FileParameter csvComparisonParam;
 	private List<DiscretizedFunc> comparisonCumMFDs;
+	private HashMap<Integer, Double> comparisonRates;
+	
+	private enum PlotType {
+		CATALOG("Catalog Rate"),
+		UCERF3("UCERF3 Rate"),
+		RATIO("Ratio");
+		
+		private String name;
+		private PlotType(String name) {
+			this.name = name;
+		}
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
+	
+	private static final String PLOT_TYPE_PARAM_NAME = "Plot Type";
+	private static final PlotType PLOT_TYPE_DEFAULT = PlotType.CATALOG;
+	private EnumParameter<PlotType> plotTypeParam;
 	
 	private ParameterList params;
 	
@@ -79,23 +98,42 @@ PickHandler<AbstractFaultSection> {
 	private HashMap<Integer, SimulatorEvent> eventsMap;
 	protected HashMap<Integer, Double> rates;
 	
-	List<SimulatorElement> elements;
-	int minSectIndex = Integer.MAX_VALUE;
-	int maxSectIndex = -1;
+	private List<SimulatorElement> elements;
+	private int minElemIndex = Integer.MAX_VALUE;
+	private int maxElemIndex = -1;
+	private int minSectIndex = Integer.MAX_VALUE;
+	private int maxSectIndex = -1;
+	private int myNumSects = -1;
 	
-	protected static CPT getDefaultCPT() {
+	private static CPT getDefaultSlipCPT() {
 		try {
 			CPT cpt = GMT_CPT_Files.MAX_SPECTRUM.instance();
-			cpt = cpt.rescale(cpt_min, cpt_max);
+			cpt = cpt.rescale(-6, -2);
+			cpt.setNanColor(Color.GRAY);
 			return cpt;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
+	private static CPT getDefaultRatioCPT() {
+		try {
+			CPT cpt = GMT_CPT_Files.UCERF3_RATIOS.instance();
+			cpt = cpt.rescale(-3, 3d);
+			cpt.setNanColor(Color.GRAY);
+			return cpt;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	private CPT slipCPT;
+	private boolean slipCPTLog;
+	private CPT ratioCPT = getDefaultRatioCPT();
+	private boolean ratioCPTLog = true;
 
 	public EQSimsParticipationColorer() {
-		super(getDefaultCPT(), false);
-		setCPTLog(true);
+		super(getDefaultSlipCPT(), true);
+		slipCPT = getCPT();
+		slipCPTLog = isCPTLog();
 		
 		params = new ParameterList();
 		magMinParam = new DoubleParameter("Min Mag", 0d, 10d);
@@ -120,6 +158,12 @@ PickHandler<AbstractFaultSection> {
 		csvComparisonParam = new FileParameter("U3 CSV For Comparison");
 		csvComparisonParam.addParameterChangeListener(this);
 		params.addParameter(csvComparisonParam);
+		
+		plotTypeParam = new EnumParameter<PlotType>(PLOT_TYPE_PARAM_NAME,
+				EnumSet.allOf(PlotType.class), PLOT_TYPE_DEFAULT, null);
+		plotTypeParam.addParameterChangeListener(this);
+		plotTypeParam.getEditor().setEnabled(false);
+		params.addParameter(plotTypeParam);
 	}
 
 	@Override
@@ -133,6 +177,25 @@ PickHandler<AbstractFaultSection> {
 	}
 	
 	public double getValue(int id) {
+		double simRate, u3Rate;
+		switch (plotTypeParam.getValue()) {
+		case CATALOG:
+			simRate = getSimulator(id);
+			return getProbIfApplicable(simRate);
+		case UCERF3:
+			u3Rate = getUCER3(id);
+			return getProbIfApplicable(u3Rate);
+		case RATIO:
+			simRate = getSimulator(id);
+			u3Rate = getUCER3(id);
+			return simRate/u3Rate;
+
+		default:
+			throw new IllegalStateException("Unknown plot type!");
+		}
+	}
+	
+	private double getSimulator(int id) {
 		if (events == null)
 			return Double.NaN;
 		if (rates == null) {
@@ -143,9 +206,27 @@ PickHandler<AbstractFaultSection> {
 		}
 		Double rate = rates.get(id);
 		if (rate == null)
-			return 0;
+			return 0d;
+		return rate;
+	}
+	
+	private double getUCER3(int id) {
+		if (comparisonCumMFDs == null)
+			return Double.NaN;
+		if (comparisonRates == null) {
+			synchronized (this) {
+				if (comparisonRates == null)
+					updateComparisonCache();
+			}
+		}
+		if (comparisonRates == null)
+			// if still null then there's an error matching up the file with the elements
+			return Double.NaN;
+		return comparisonRates.get(id);
+	}
+	
+	private double getProbIfApplicable(double rate) {
 		if (probabilityParam.getValue()) {
-			// compute probabilities
 			double duration = probDurationParam.getValue();
 			double prob = 1d - Math.exp(-rate*duration);
 			return prob;
@@ -186,6 +267,7 @@ PickHandler<AbstractFaultSection> {
 
 	void clearCache() {
 		rates = null;
+		comparisonRates = null;
 	}
 	
 	synchronized void updateCache() {
@@ -222,8 +304,28 @@ PickHandler<AbstractFaultSection> {
 		System.out.println("Found "+eventCount+" events in the given range");
 	}
 	
+	synchronized void updateComparisonCache() {
+		if (comparisonCumMFDs == null || elements == null)
+			return;
+		if (!validateComparisonCSV())
+			return;
+		comparisonRates = Maps.newHashMap();
+		for (SimulatorElement elem : elements) {
+			int sectID = elem.getSectionID() - minSectIndex;
+			DiscretizedFunc mfd = comparisonCumMFDs.get(sectID);
+			double val = mfd.getInterpolatedY_inLogYDomain(minMag);
+			comparisonRates.put(elem.getID(), val);
+		}
+	}
+	
 	boolean isWithinMagRange(double mag) {
 		return mag >= minMag && mag < maxMag;
+	}
+	
+	private void safeDisablePlotType() {
+		plotTypeParam.getEditor().setEnabled(false);
+		if (plotTypeParam.getValue() != PlotType.CATALOG)
+			plotTypeParam.setValue(PlotType.CATALOG);
 	}
 
 	@Override
@@ -239,13 +341,16 @@ PickHandler<AbstractFaultSection> {
 		} else if (event.getParameter() == csvComparisonParam) {
 			comparisonCumMFDs = null;
 			File csvFile = csvComparisonParam.getValue();
-			if (csvFile == null)
+			if (csvFile == null) {
+				safeDisablePlotType();
 				return;
+			}
 			CSVFile<String> csv;
 			try {
 				csv = CSVFile.readFile(csvFile, true);
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error opening CSV", JOptionPane.ERROR_MESSAGE);
+				safeDisablePlotType();
 				return;
 			}
 			final int startCol = 3;
@@ -261,6 +366,22 @@ PickHandler<AbstractFaultSection> {
 					func.set(mags.get(i), Double.parseDouble(csv.get(row, startCol+i)));
 				comparisonCumMFDs.add(func);
 			}
+			plotTypeParam.getEditor().setEnabled(true);
+		} else if (event.getParameter() == plotTypeParam) {
+			if (plotTypeParam.getValue() == PlotType.CATALOG || plotTypeParam.getValue() == PlotType.UCERF3) {
+				if (event.getOldValue().equals(PlotType.RATIO)) {
+					// switching from ratio, store any custom ratio settings
+					ratioCPT = getCPT();
+					ratioCPTLog = isCPTLog();
+					setCPT(slipCPT, slipCPTLog);
+				}
+			} else {
+				// switching to ratio, store any current rate settings
+				slipCPT = getCPT();
+				slipCPTLog = isCPTLog();
+				setCPT(ratioCPT, ratioCPTLog);
+			}
+			fireColorerChangeEvent();
 		}
 	}
 	
@@ -280,10 +401,17 @@ PickHandler<AbstractFaultSection> {
 	@Override
 	public void setGeometry(List<SimulatorElement> elements) {
 		this.elements = elements;
+		minElemIndex = Integer.MAX_VALUE;
+		maxElemIndex = -1;
 		minSectIndex = Integer.MAX_VALUE;
 		maxSectIndex = -1;
 		if (elements != null) {
 			for (SimulatorElement elem : elements) {
+				int e = elem.getID();
+				if (e < minElemIndex)
+					minElemIndex = e;
+				if (e > maxElemIndex)
+					maxElemIndex = e;
 				int s = elem.getSectionID();
 				if (s < 0)
 					continue;
@@ -292,7 +420,21 @@ PickHandler<AbstractFaultSection> {
 				if (s > maxSectIndex)
 					maxSectIndex = s;
 			}
+			myNumSects = (maxSectIndex - minSectIndex) + 1;
+		} else {
+			myNumSects = -1;
 		}
+	}
+	
+	private boolean validateComparisonCSV() {
+		if (myNumSects != comparisonCumMFDs.size()) {
+			JOptionPane.showMessageDialog(null, "Section count mismatch. CSV has "+comparisonCumMFDs.size()
+			+", geom file has "+myNumSects, "Can't use comparison CSV", JOptionPane.ERROR_MESSAGE);
+			csvComparisonParam.setValue(null);
+			csvComparisonParam.getEditor().refreshParamEditor();
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -335,16 +477,10 @@ PickHandler<AbstractFaultSection> {
 					System.out.println("Min: "+minSectIndex);
 					System.out.println("Max: "+maxSectIndex);
 					System.out.println("File: "+comparisonCumMFDs.size());
-					int myNumSects = (maxSectIndex - minSectIndex) + 1;
-					if (myNumSects != comparisonCumMFDs.size()) {
-						JOptionPane.showMessageDialog(null, "Section count mismatch. CSV has "+comparisonCumMFDs.size()
-						+", geom file has "+myNumSects, "Can't use comparison CSV", JOptionPane.ERROR_MESSAGE);
-						csvComparisonParam.setValue(null);
-						csvComparisonParam.getEditor().refreshParamEditor();
-						comparisonMFDs.add(null);
-					} else {
+					if (validateComparisonCSV())
 						comparisonMFDs.add(comparisonCumMFDs.get(sectID-minSectIndex));
-					}
+					else
+						comparisonMFDs.add(null);
 				} else {
 					comparisonMFDs.add(null);
 				}
