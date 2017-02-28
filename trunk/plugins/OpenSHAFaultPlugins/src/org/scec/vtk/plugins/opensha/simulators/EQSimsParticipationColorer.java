@@ -52,7 +52,7 @@ import com.google.common.collect.Maps;
 import scratch.kevin.simulators.MFDCalc;
 import vtk.vtkCellPicker;
 
-public class EQSimParticipationColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener,
+public class EQSimsParticipationColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener,
 PickHandler<AbstractFaultSection> {
 	
 	private static final double cpt_min = 1.0e-6;
@@ -93,7 +93,7 @@ PickHandler<AbstractFaultSection> {
 		}
 	}
 
-	public EQSimParticipationColorer() {
+	public EQSimsParticipationColorer() {
 		super(getDefaultCPT(), false);
 		setCPTLog(true);
 		
