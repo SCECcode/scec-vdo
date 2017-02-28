@@ -61,6 +61,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		hardcodedInputs.add("NCAL2a_Ward_Geometry.dat");
 		hardcodedInputs.add("NCAL3a_Ward_Geometry.dat");
 		hardcodedInputs.add("NCAL4a_Ward_Geometry.dat");
+		hardcodedInputs.add("UCERF3.D3.1.1km.tri.2.flt");
 	}
 	
 	private static final String INPUT_SELECTOR_PARAM_NAME = "Input";
