@@ -41,6 +41,8 @@ import com.google.common.io.Files;
 
 public class CueAnimator {
 	
+	private static final boolean D = false;
+	
 	private Timeline timeline;
 	private vtkAnimationScene scene;
 	private vtkAnimationCue cue;
@@ -156,6 +158,7 @@ public class CueAnimator {
 	}
 	
 	public void startCue() {
+		if (D) System.out.println("startCue");
 		listener.animationStarted(isRendering());
 	}
 	
@@ -191,7 +194,9 @@ public class CueAnimator {
 	}
 	
 	public void tickCue() {
-		final double animTime = scene.GetAnimationTime();
+		final double animTime = cue.GetAnimationTime();
+		if (D) System.out.println("tickCue: cue.GetAnimationTime()="+animTime
+					+", scene.GetAnimationTime()="+scene.GetAnimationTime()+", isInPlay="+scene.IsInPlay());
 		Runnable run;
 		if (isRendering())
 			run = new TickRenderRunnable(animTime);
@@ -252,6 +257,7 @@ public class CueAnimator {
 	private Integer number = 0;
 	
 	public void endCue() {
+		if (D) System.out.println("endCue");
 		if (rendering) {
 			written = 0;
 			number = renderedFrames.size();
