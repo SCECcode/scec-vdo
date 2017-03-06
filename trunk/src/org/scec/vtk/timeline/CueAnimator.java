@@ -1,24 +1,15 @@
 package org.scec.vtk.timeline;
 
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.imageio.ImageIO;
 import javax.media.MediaLocator;
 import javax.swing.JFileChooser;
-import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 import org.opensha.commons.util.DataUtils;
@@ -28,16 +19,14 @@ import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.JpegImagesToMovie;
 
-import vtk.vtkAnimationCue;
-import vtk.vtkAnimationScene;
-import vtk.vtkCanvas;
-import vtk.vtkJPEGWriter;
-import vtk.vtkUnsignedCharArray;
-import vtk.vtkWindowToImageFilter;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
+
+import vtk.vtkAnimationCue;
+import vtk.vtkAnimationScene;
+import vtk.vtkJPEGWriter;
+import vtk.vtkWindowToImageFilter;
 
 public class CueAnimator {
 	
