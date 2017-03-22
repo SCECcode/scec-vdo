@@ -20,5 +20,10 @@ public interface FaultColorer extends Named {
 	public ParameterList getColorerParameters();
 	
 	public void setColorerChangeListener(ColorerChangeListener l);
+	
+	/**
+	 * @return Legend label, or null to use colorer title 
+	 */
+	public String getLegendLabel();
 
 }

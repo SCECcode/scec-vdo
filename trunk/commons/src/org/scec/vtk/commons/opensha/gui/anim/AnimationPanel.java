@@ -786,7 +786,8 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		MainGUI.updateRenderWindow();
 	}
 	
-	private static final Joiner legendJoin = Joiner.on(", ");
+//	private static final Joiner legendJoin = Joiner.on(", ");
+	private static final Joiner legendJoin = Joiner.on("\n");
 	
 	private synchronized void updateLegend() {
 		if (legend == null)

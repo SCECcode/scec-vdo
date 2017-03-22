@@ -414,7 +414,10 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		FaultColorer fc = getSelectedColorer();
 		CPTBasedColorer cptColor = (CPTBasedColorer)fc;
 		CPT cpt = cptColor.getCPT();
-		legend = LegendUtils.buildColorBarLegend(plugin, cpt, colorerParam.getValue(), x, y);
+		String title = fc.getLegendLabel();
+		if (title == null)
+			title = colorerParam.getValue();
+		legend = LegendUtils.buildColorBarLegend(plugin, cpt, title, x, y);
 		if (prevActor != null) {
 			// set size
 			vtkActor2D newActor = legend.getActor();

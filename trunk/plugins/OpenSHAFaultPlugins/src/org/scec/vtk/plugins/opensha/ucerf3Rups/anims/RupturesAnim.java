@@ -318,6 +318,10 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 				return Color.RED;
 			return Color.GREEN;
 		}
+		
+		public String getLegendLabel() {
+			return getName();
+		}
 	};
 	private AnimMultiColorerWrapper multiColorerWrapper;
 	

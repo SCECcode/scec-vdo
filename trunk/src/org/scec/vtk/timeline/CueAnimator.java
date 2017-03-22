@@ -1,6 +1,8 @@
 package org.scec.vtk.timeline;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +10,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.imageio.ImageIO;
 import javax.media.MediaLocator;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 
@@ -26,6 +30,8 @@ import com.google.common.io.Files;
 import vtk.vtkAnimationCue;
 import vtk.vtkAnimationScene;
 import vtk.vtkJPEGWriter;
+import vtk.vtkRenderWindow;
+import vtk.vtkUnsignedCharArray;
 import vtk.vtkWindowToImageFilter;
 
 public class CueAnimator {
@@ -169,16 +175,67 @@ public class CueAnimator {
 		}
 		@Override
 		public void run() {
+//			vtkWindowToImageFilter vtkPixelData = new vtkWindowToImageFilter();
+//			vtkPixelData.SetInput(MainGUI.getRenderWindow().getRenderWindow());
+//			vtkPixelData.ReadFrontBufferOff();
 			timeline.activateTime(animTime);
 			int[] renderSize = MainGUI.getRenderWindow().getRenderer().GetSize();
 			int width =  renderSize[0];
 			int height = renderSize[1];
 			Preconditions.checkState(width == renderWidth && height == renderHeight,
 					"Render canvas size changed during render");
+//			vtkPixelData.Modified();
+//			vtkJPEGWriter enc = new vtkJPEGWriter();
+//			enc.SetFileName("/tmp/test_image.jpg");
+//			enc.SetInputConnection(vtkPixelData.GetOutputPort());
+//			enc.Write();
 			vtkWindowToImageFilter vtkPixelData = new vtkWindowToImageFilter();
 			vtkPixelData.SetInput(MainGUI.getRenderWindow().getRenderWindow());
+			vtkPixelData.ReadFrontBufferOff();
 			vtkPixelData.Update();
+			if (D) System.out.println("Render tick, adding pixel data");
 			renderedFrames.add(vtkPixelData);
+			if (D) {
+				vtkRenderWindow rw = MainGUI.getRenderWindow().getRenderWindow();
+				vtkUnsignedCharArray data = new vtkUnsignedCharArray();
+				int front = 1;
+				rw.GetPixelData(0, 0, width-1, height-1, front, data);
+				BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+				int index = 0;
+				boolean nonZero = false;
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<width; x++) {
+						int r = data.GetValue(index++);
+						int g = data.GetValue(index++);
+						int b = data.GetValue(index++);
+						int rgb = r;
+						rgb = (rgb << 8) + g;
+						rgb = (rgb << 8) + b;
+						img.setRGB(x, y, rgb);
+						if (rgb > 0)
+							nonZero = true;
+					}
+				}
+				if (nonZero)
+					System.out.println("NON ZERO!!!");
+				JComponent component = MainGUI.getRenderWindow().getComponent();
+				BufferedImage image = new BufferedImage(
+						component.getWidth(),
+						component.getHeight(),
+						BufferedImage.TYPE_INT_RGB
+						);
+				// call the Component's paint method, using
+				// the Graphics object of the image.
+				component.paint( image.getGraphics() );
+				try {
+//					ImageIO.write(img, "png", new File("/tmp/frame.png"));
+					ImageIO.write(image, "png", new File("/tmp/frame.png"));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println("w="+width+", h="+height+", data.GetSize()="+data.GetSize());
+			}
 		}
 	}
 	
@@ -319,7 +376,7 @@ public class CueAnimator {
 					progressBar.dispose();
 				}
 			});
-			FileUtils.deleteRecursive(tempDir);
+//			FileUtils.deleteRecursive(tempDir);
 		}
 		listener.animationFinished(isRendering());
 	}
