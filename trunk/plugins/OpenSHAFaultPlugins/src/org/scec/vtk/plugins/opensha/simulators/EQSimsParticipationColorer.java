@@ -105,7 +105,7 @@ PickHandler<AbstractFaultSection> {
 	private int maxSectIndex = -1;
 	private int myNumSects = -1;
 	
-	private static CPT getDefaultSlipCPT() {
+	private static CPT getDefaultRateCPT() {
 		try {
 			CPT cpt = GMT_CPT_Files.MAX_SPECTRUM.instance();
 			cpt = cpt.rescale(-6, -2);
@@ -125,15 +125,15 @@ PickHandler<AbstractFaultSection> {
 			throw new RuntimeException(e);
 		}
 	}
-	private CPT slipCPT;
-	private boolean slipCPTLog;
+	private CPT rateCPT;
+	private boolean rateCPTLog;
 	private CPT ratioCPT = getDefaultRatioCPT();
 	private boolean ratioCPTLog = true;
 
 	public EQSimsParticipationColorer() {
-		super(getDefaultSlipCPT(), true);
-		slipCPT = getCPT();
-		slipCPTLog = isCPTLog();
+		super(getDefaultRateCPT(), true);
+		rateCPT = getCPT();
+		rateCPTLog = isCPTLog();
 		
 		params = new ParameterList();
 		magMinParam = new DoubleParameter("Min Mag", 0d, 10d);
@@ -373,12 +373,12 @@ PickHandler<AbstractFaultSection> {
 					// switching from ratio, store any custom ratio settings
 					ratioCPT = getCPT();
 					ratioCPTLog = isCPTLog();
-					setCPT(slipCPT, slipCPTLog);
+					setCPT(rateCPT, rateCPTLog);
 				}
 			} else {
 				// switching to ratio, store any current rate settings
-				slipCPT = getCPT();
-				slipCPTLog = isCPTLog();
+				rateCPT = getCPT();
+				rateCPTLog = isCPTLog();
 				setCPT(ratioCPT, ratioCPTLog);
 			}
 			fireColorerChangeEvent();

@@ -97,5 +97,9 @@ public abstract class CPTBasedColorer implements FaultColorer {
 	public int getParamColCount() {
 		return 2;
 	}
+	
+	public String getLegendLabel() {
+		return getName();
+	}
 
 }

@@ -36,8 +36,8 @@ public class LegendUtils {
 	public static LegendItem buildColorBarLegend(Plugin source, CPT cpt, String title, double x, double y) {
 		Preconditions.checkNotNull(cpt, "CPT cannot be null");
 		vtkScalarBarActor scalarBar = new vtkScalarBarActor();
-		int minValue = (int)cpt.getMinValue();
-		int maxValue = (int)cpt.getMaxValue();
+		double minValue = cpt.getMinValue();
+		double maxValue = cpt.getMaxValue();
 		Color minColor = cpt.getMinColor();
 		Color maxColor = cpt.getMaxColor();
 		int numTicks = cpt.size()+1;

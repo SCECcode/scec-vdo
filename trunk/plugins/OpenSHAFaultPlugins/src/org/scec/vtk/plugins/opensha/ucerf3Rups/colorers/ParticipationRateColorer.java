@@ -6,6 +6,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.swing.JFileChooser;
@@ -30,16 +32,25 @@ import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
+import org.opensha.commons.param.impl.EnumParameter;
+import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.DataUtils.MinMaxAveTracker;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.interp.BicubicInterpolation2D;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.earthquake.ProbEqkRupture;
+import org.opensha.sha.earthquake.ProbEqkSource;
 import org.opensha.sha.earthquake.calc.ERF_Calculator;
+import org.opensha.sha.earthquake.param.AleatoryMagAreaStdDevParam;
 import org.opensha.sha.earthquake.param.ApplyGardnerKnopoffAftershockFilterParam;
+import org.opensha.sha.earthquake.param.HistoricOpenIntervalParam;
 import org.opensha.sha.earthquake.param.IncludeBackgroundOption;
 import org.opensha.sha.earthquake.param.IncludeBackgroundParam;
+import org.opensha.sha.earthquake.param.ProbabilityModelOptions;
+import org.opensha.sha.earthquake.param.ProbabilityModelParam;
+import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.opensha.sha.magdist.IncrementalMagFreqDist;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
@@ -58,6 +69,7 @@ import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.analysis.CompoundFSSPlots.FSSRupNodesCache;
 import scratch.UCERF3.analysis.CompoundFSSPlots.MapBasedPlot;
 import scratch.UCERF3.analysis.CompoundFSSPlots.MapPlotData;
+import scratch.UCERF3.analysis.FaultSysSolutionERF_Calc;
 import scratch.UCERF3.erf.FaultSystemSolutionERF;
 import scratch.UCERF3.inversion.InversionFaultSystemSolution;
 import vtk.vtkActor;
@@ -73,20 +85,57 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 	private double max = 10d;
 	private DoubleParameter magMaxParam;
 	
+	private BooleanParameter probabilityParam;
+	private DoubleParameter probDurationParam;
+	
+	private EnumParameter<PlotType> plotTypeParam;
+	private IntegerParameter tdStartYearParam;
+	
+	private enum PlotType {
+		TIME_INDEP("Long Term Rate"),
+		TIME_DEP("UCERF3-TD Rate"),
+		RATIO("Ratio TD/TI");
+		
+		private String name;
+		private PlotType(String name) {
+			this.name = name;
+		}
+		@Override
+		public String toString() {
+			return name;
+		}
+		
+		public boolean usesTD() {
+			return this == TIME_DEP || this == RATIO;
+		}
+	}
+	
 	private FaultSystemSolution sol;
 	
-	private static final double cpt_min = 1.0e-6;
-	private static final double cpt_max = 1.0e-2;
-	
-	protected static CPT getDefaultCPT() {
+	private static CPT getDefaultRateCPT() {
 		try {
 			CPT cpt = GMT_CPT_Files.MAX_SPECTRUM.instance();
-			cpt = cpt.rescale(cpt_min, cpt_max);
+			cpt = cpt.rescale(-6, -2);
+			cpt.setNanColor(Color.GRAY);
 			return cpt;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
+	private static CPT getDefaultRatioCPT() {
+		try {
+			CPT cpt = GMT_CPT_Files.GMT_POLAR.instance();
+			cpt = cpt.rescale(-2, 2d);
+			cpt.setNanColor(Color.GRAY);
+			return cpt;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	private CPT rateCPT;
+	private boolean rateCPTLog;
+	private CPT ratioCPT = getDefaultRatioCPT();
+	private boolean ratioCPTLog = true;
 	
 	// this is for gridded seismicity display
 	private BooleanParameter displayGriddedParam;
@@ -101,8 +150,10 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 	private PluginActors actors;
 
 	public ParticipationRateColorer(PluginActors actors) {
-		super(getDefaultCPT(), false);
-		setCPTLog(true);
+		super(getDefaultRateCPT(), true);
+		rateCPT = getCPT();
+		rateCPTLog = isCPTLog();
+		
 		this.actors = actors;
 		
 		params = new ParameterList();
@@ -130,6 +181,28 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 		griddedDataOpacityParam.setValue(griddedDataOpacityParam.getDefaultValue());
 		griddedDataOpacityParam.addParameterChangeListener(this);
 		params.addParameter(griddedDataOpacityParam);
+		
+		probabilityParam = new BooleanParameter("Probabilities", false);
+		probabilityParam.addParameterChangeListener(this);
+		probabilityParam.setInfo("If selected, Poisson probabilities with the given duration. Otherwise annualized rates");
+		params.addParameter(probabilityParam);
+		
+		probDurationParam = new DoubleParameter("Duration", 1d/365.25, 100000d, "Years");
+		probDurationParam.setValue(30);
+		probDurationParam.addParameterChangeListener(this);
+		probDurationParam.getEditor().setEnabled(false);
+		params.addParameter(probDurationParam);
+		
+		plotTypeParam = new EnumParameter<PlotType>("Plot Type",
+				EnumSet.allOf(PlotType.class), PlotType.TIME_INDEP, null);
+		plotTypeParam.addParameterChangeListener(this);
+		params.addParameter(plotTypeParam);
+		
+		tdStartYearParam = new IntegerParameter("TD Start Year", 2012, 3000);
+		tdStartYearParam.setValue(new GregorianCalendar().get(GregorianCalendar.YEAR));
+		tdStartYearParam.addParameterChangeListener(this);
+		tdStartYearParam.getEditor().setEnabled(false);
+		params.addParameter(tdStartYearParam);
 	}
 	
 	@Override
@@ -137,7 +210,83 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 		if (sol == null)
 			return Double.NaN;
 		int sectIndex = fault.getId();
-		return sol.calcParticRateForSect(sectIndex, min, max);
+		return getValue(sectIndex);
+	}
+	
+	public double getValue(int sectIndex) {
+		switch (plotTypeParam.getValue()) {
+		case TIME_INDEP:
+			return getTI(sectIndex);
+		case TIME_DEP:
+			return getTD(sectIndex);
+		case RATIO:
+			double tiVal = getTI(sectIndex);
+			double tdVal = getTD(sectIndex);
+			return tdVal/tiVal;
+
+		default:
+			throw new IllegalStateException("Unknown plot type!");
+		}
+	}
+	
+	private synchronized double getTI(int sectIndex) {
+		// cached internally
+		return getProbIfApplicable(sol.calcParticRateForSect(sectIndex, min, max));
+	}
+	
+	private double[] tdProbsCache;
+	
+	private synchronized double getTD(int sectIndex) {
+//		return sol.calcParticRateForSect(sectIndex, min, max);
+		if (tdProbsCache == null) {
+			CalcProgressBar p = new CalcProgressBar("Calculating UCERF3-TD Participation Rates", "Calculating Participation Rates");
+			FaultSystemSolutionERF erf = new FaultSystemSolutionERF(sol);
+			erf.setParameter(ProbabilityModelParam.NAME, ProbabilityModelOptions.U3_PREF_BLEND);
+			erf.setParameter(AleatoryMagAreaStdDevParam.NAME, 0.0);
+			int startYear = tdStartYearParam.getValue();
+			double duration = probDurationParam.getValue();
+			erf.setParameter(HistoricOpenIntervalParam.NAME, startYear-1875d);
+			erf.getTimeSpan().setStartTime(startYear);
+			erf.getTimeSpan().setDuration(duration);
+			erf.setParameter(IncludeBackgroundParam.NAME, IncludeBackgroundOption.EXCLUDE);
+			erf.updateForecast();
+			
+			// now calculate
+			FaultSystemRupSet rupSet = sol.getRupSet();
+			List<List<Double>> rupProbs = Lists.newArrayList(); // list of probs for every rupture involving each section
+			for (int r=0; r<rupSet.getNumSections(); r++)
+				rupProbs.add(new ArrayList<Double>());
+			for (int sourceID=0; sourceID<erf.getNumFaultSystemSources(); sourceID++) {
+				int fssIndex = erf.getFltSysRupIndexForSource(sourceID);
+				Preconditions.checkState(fssIndex >= 0);
+				for (ProbEqkRupture rup : erf.getSource(sourceID)) {
+					if (rup.getMag() >= min && rup.getMag() <= max) {
+						double prob = rup.getProbability();
+						for (int s : rupSet.getSectionsIndicesForRup(fssIndex))
+							rupProbs.get(s).add(prob);
+					}
+				}
+			}
+			tdProbsCache = new double[rupSet.getNumSections()];
+			for (int s=0; s<tdProbsCache.length; s++)
+				tdProbsCache[s] = FaultSysSolutionERF_Calc.calcSummedProbs(rupProbs.get(s));
+			p.dispose();
+		}
+		double prob = tdProbsCache[sectIndex];
+		if (probabilityParam.getValue())
+			return prob;
+		double rate = -Math.log(1-prob)/probDurationParam.getValue();
+		return rate;
+	}
+	
+	private double getProbIfApplicable(double rate) {
+		// only for TI
+		if (probabilityParam.getValue()) {
+			double duration = probDurationParam.getValue();
+			double prob = 1d - Math.exp(-rate*duration);
+			return prob;
+		}
+		return rate;
 	}
 
 	@Override
@@ -172,6 +321,7 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 						JOptionPane.ERROR_MESSAGE);
 			}
 			loadedGriddedData = null;
+			tdProbsCache = null;
 		} else if (event.getParameter() == magMaxParam) {
 			double newMax = magMaxParam.getValue();
 			if (newMax > min) {
@@ -186,6 +336,7 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 						JOptionPane.ERROR_MESSAGE);
 			}
 			loadedGriddedData = null;
+			tdProbsCache = null;
 		} else if (event.getParameter() == displayGriddedParam
 				|| event.getParameter() == includeFaultsInGriddedParam
 				|| event.getParameter() == griddedDepthParam) {
@@ -199,6 +350,36 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 				griddedDataActor.Modified();
 				MainGUI.updateRenderWindow();
 			}
+		} else if (event.getParameter() == probabilityParam) {
+			probDurationParam.getEditor().setEnabled(probabilityParam.getValue() || plotTypeParam.getValue().usesTD());
+			fireColorerChangeEvent();
+		} else if (event.getParameter() == probDurationParam) {
+			tdProbsCache = null;
+			fireColorerChangeEvent();
+		} else if (event.getParameter() == plotTypeParam) {
+			if (plotTypeParam.getValue() == PlotType.TIME_INDEP || plotTypeParam.getValue() == PlotType.TIME_DEP) {
+				if (event.getOldValue().equals(PlotType.RATIO)) {
+					// switching from ratio, store any custom ratio settings
+					ratioCPT = getCPT();
+					ratioCPTLog = isCPTLog();
+					setCPT(rateCPT, rateCPTLog);
+				}
+			} else {
+				// switching to ratio, store any current rate settings
+				rateCPT = getCPT();
+				rateCPTLog = isCPTLog();
+				setCPT(ratioCPT, ratioCPTLog);
+			}
+			boolean usesTD = plotTypeParam.getValue().usesTD();
+			displayGriddedParam.getEditor().setEnabled(!usesTD);
+			if (usesTD && displayGriddedParam.getValue())
+				displayGriddedParam.setValue(false);
+			tdStartYearParam.getEditor().setEnabled(usesTD);
+			fireColorerChangeEvent();
+		} else if (event.getParameter() == tdStartYearParam) {
+			tdProbsCache = null;
+			if (plotTypeParam.getValue().usesTD())
+				fireColorerChangeEvent();
 		}
 	}
 
@@ -478,6 +659,34 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 			actors.addActor(griddedDataActor);
 			MainGUI.updateRenderWindow();
 		}
+	}
+	@Override
+	public String getLegendLabel() {
+		String label = plotTypeParam.getValue().toString();
+		
+		if (max < 9)
+			label = smartMagLabel(min)+"≤M≤"+smartMagLabel(max)+" "+label;
+		else
+			label = "M≥"+smartMagLabel(min)+" "+label;
+		
+		if (probabilityParam.getValue()) {
+			double duration = probDurationParam.getValue();
+			String probStr;
+			if (duration == (int)duration)
+				probStr = (int)duration+"yr";
+			else
+				probStr = (float)duration+"yr";
+			probStr += " Prob";
+			label = label.replace("Rate", probStr);
+		}
+		
+		return label;
+	}
+	
+	private String smartMagLabel(double mag) {
+		if (mag == (int)mag)
+			return (int)mag+"";
+		return (float)mag+"";
 	}
 
 }
