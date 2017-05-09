@@ -2,9 +2,9 @@ package org.scec.vtk.timeline;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,10 +29,6 @@ import com.google.common.io.Files;
 
 import vtk.vtkAnimationCue;
 import vtk.vtkAnimationScene;
-import vtk.vtkJPEGWriter;
-import vtk.vtkRenderWindow;
-import vtk.vtkUnsignedCharArray;
-import vtk.vtkWindowToImageFilter;
 
 public class CueAnimator {
 	
@@ -48,11 +44,13 @@ public class CueAnimator {
 	private int renderWidth;
 	private int renderHeight;
 	private File outputFile;
-	private List<vtkWindowToImageFilter> renderedFrames;
+	
+	// rendered frames which have not yet been processed
+	private Deque<BufferedImage> framesDeque;
 	
 	private Thread playThread;
 	
-	// static for persistance of current directory
+	// static for persistence of current directory
 	private static JFileChooser chooser = new JFileChooser();
 	
 	public CueAnimator(Timeline timeline, CueAnimatorListener listener) {
@@ -75,7 +73,7 @@ public class CueAnimator {
 	}
 	
 	public void render() {
-		if (renderedFrames == null || renderedFrames.isEmpty()) {
+		if (framesDeque == null || framesDeque.isEmpty()) {
 			synchronized (chooser) {
 				int ret = chooser.showSaveDialog(null);
 				if (ret == JFileChooser.APPROVE_OPTION) {
@@ -87,11 +85,11 @@ public class CueAnimator {
 					scene.SetModeToSequence();
 					scene.SetFrameRate(timeline.getFamerate());
 					
-					int[] renderSize = MainGUI.getRenderWindow().getRenderer().GetSize();
-					renderWidth =  renderSize[0];
-					renderHeight = renderSize[1];
+					JComponent component = MainGUI.getRenderWindow().getComponent();
+					renderWidth =  component.getWidth();
+					renderHeight = component.getHeight();
 					
-					renderedFrames = new ArrayList<>();
+					framesDeque = new ArrayDeque<>();
 					
 					playThread = new PlayThread();
 					playThread.start();
@@ -179,62 +177,18 @@ public class CueAnimator {
 //			vtkPixelData.SetInput(MainGUI.getRenderWindow().getRenderWindow());
 //			vtkPixelData.ReadFrontBufferOff();
 			timeline.activateTime(animTime);
-			int[] renderSize = MainGUI.getRenderWindow().getRenderer().GetSize();
-			int width =  renderSize[0];
-			int height = renderSize[1];
+			JComponent component = MainGUI.getRenderWindow().getComponent();
+			int width =  component.getWidth();
+			int height = component.getHeight();
 			Preconditions.checkState(width == renderWidth && height == renderHeight,
 					"Render canvas size changed during render");
-//			vtkPixelData.Modified();
-//			vtkJPEGWriter enc = new vtkJPEGWriter();
-//			enc.SetFileName("/tmp/test_image.jpg");
-//			enc.SetInputConnection(vtkPixelData.GetOutputPort());
-//			enc.Write();
-			vtkWindowToImageFilter vtkPixelData = new vtkWindowToImageFilter();
-			vtkPixelData.SetInput(MainGUI.getRenderWindow().getRenderWindow());
-			vtkPixelData.ReadFrontBufferOff();
-			vtkPixelData.Update();
-			if (D) System.out.println("Render tick, adding pixel data");
-			renderedFrames.add(vtkPixelData);
-			if (D) {
-				vtkRenderWindow rw = MainGUI.getRenderWindow().getRenderWindow();
-				vtkUnsignedCharArray data = new vtkUnsignedCharArray();
-				int front = 1;
-				rw.GetPixelData(0, 0, width-1, height-1, front, data);
-				BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-				int index = 0;
-				boolean nonZero = false;
-				for (int y=0; y<height; y++) {
-					for (int x=0; x<width; x++) {
-						int r = data.GetValue(index++);
-						int g = data.GetValue(index++);
-						int b = data.GetValue(index++);
-						int rgb = r;
-						rgb = (rgb << 8) + g;
-						rgb = (rgb << 8) + b;
-						img.setRGB(x, y, rgb);
-						if (rgb > 0)
-							nonZero = true;
-					}
-				}
-				if (nonZero)
-					System.out.println("NON ZERO!!!");
-				JComponent component = MainGUI.getRenderWindow().getComponent();
-				BufferedImage image = new BufferedImage(
-						component.getWidth(),
-						component.getHeight(),
-						BufferedImage.TYPE_INT_RGB
-						);
-				// call the Component's paint method, using
-				// the Graphics object of the image.
-				component.paint( image.getGraphics() );
-				try {
-//					ImageIO.write(img, "png", new File("/tmp/frame.png"));
-					ImageIO.write(image, "png", new File("/tmp/frame.png"));
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.out.println("w="+width+", h="+height+", data.GetSize()="+data.GetSize());
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			// call the Component's paint method, using
+			// the Graphics object of the image.
+			if (D) System.out.println("Render tick, painting from JComponent");
+			component.paint( image.getGraphics() );
+			synchronized (framesDeque) {
+				framesDeque.push(image);
 			}
 		}
 	}
@@ -261,12 +215,12 @@ public class CueAnimator {
 	
 	private class ImageWriteCallable implements Runnable {
 		
-		private vtkWindowToImageFilter vtkPixelData;
+		private BufferedImage image;
 		private File outputFile;
 		private CalcProgressBar progressBar;
 		
-		public ImageWriteCallable(vtkWindowToImageFilter vtkPixelData, File outputFile, CalcProgressBar progressBar) {
-			this.vtkPixelData = vtkPixelData;
+		public ImageWriteCallable(BufferedImage image, File outputFile, CalcProgressBar progressBar) {
+			this.image = image;
 			this.outputFile = outputFile;
 			this.progressBar = progressBar;
 		}
@@ -274,10 +228,7 @@ public class CueAnimator {
 		@Override
 		public void run() {
 			try{
-				vtkJPEGWriter enc = new vtkJPEGWriter();
-				enc.SetFileName(outputFile.getAbsolutePath());
-				enc.SetInputConnection(vtkPixelData.GetOutputPort());
-				enc.Write();
+				ImageIO.write(image, "jpg", outputFile);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -306,14 +257,15 @@ public class CueAnimator {
 		if (D) System.out.println("endCue");
 		if (rendering) {
 			written = 0;
-			number = renderedFrames.size();
+			number = framesDeque.size();
 			File tempDir = Files.createTempDir();
-			System.out.println("Writing "+renderedFrames.size()+" frames to "+tempDir.getAbsolutePath());
+			System.out.println("Writing "+number+" frames to "+tempDir.getAbsolutePath());
 			final CalcProgressBar progressBar = new CalcProgressBar("Rendering", "Writing frames"); // TODO
 			List<File> imageFiles = Lists.newArrayList();
 			ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			List<Future<?>> futures = Lists.newArrayList();
-			for(int i =0;i<renderedFrames.size();i++){
+			int count = 0;
+			while (!framesDeque.isEmpty()) {
 //				if (progressBar != null) {
 //					final int frame = i;
 //					SwingUtilities.invokeLater(new Runnable() {
@@ -326,12 +278,12 @@ public class CueAnimator {
 //					});
 //				}
 				// TODO just keep images in memory, never write to disk
-				File file = new File(tempDir, "Capture" + i + ".jpg");				
-				vtkWindowToImageFilter vtkPixelData = renderedFrames.get(i);
+				File file = new File(tempDir, "Capture" + count++ + ".jpg");				
+				BufferedImage image = framesDeque.removeLast();
 				imageFiles.add(file);
-				futures.add(executor.submit(new ImageWriteCallable(vtkPixelData, file, progressBar)));
+				futures.add(executor.submit(new ImageWriteCallable(image, file, progressBar)));
 			}
-			renderedFrames = null;
+			framesDeque = null;
 			executor.shutdown();
 			// wait on all tasks
 			for (Future<?> future : futures)
@@ -376,7 +328,7 @@ public class CueAnimator {
 					progressBar.dispose();
 				}
 			});
-//			FileUtils.deleteRecursive(tempDir);
+			FileUtils.deleteRecursive(tempDir);
 		}
 		listener.animationFinished(isRendering());
 	}
