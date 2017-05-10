@@ -1,5 +1,6 @@
 package org.scec.vtk.timeline.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
@@ -12,37 +13,37 @@ import javax.swing.Scrollable;
 
 import org.scec.vtk.timeline.Timeline;
 
-public class TimelineGUI extends JScrollPane {
-	
-	private static final int plugin_line_height = 30;
-	
-	private Timeline timeline;
+public class TimelineGUI extends JPanel {
 	
 	private CombinedPanel combinedPanel;
 	private TimelinePanel centerPanel;
 	private TimelineLeftPanel leftPanel;
 	
 	public TimelineGUI(Timeline timeline) {
-		this.timeline = timeline;
-		
 		centerPanel = new TimelinePanel(timeline);
 		leftPanel = new TimelineLeftPanel(timeline, centerPanel);
 		
 		combinedPanel = new CombinedPanel(leftPanel, centerPanel);
 		
-		setViewportView(combinedPanel);
-		setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		JScrollPane scroll = new JScrollPane();
+		
+		scroll.setViewportView(combinedPanel);
+		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		
 		updateSize();
 		
-		addComponentListener(new ComponentAdapter() {
+		scroll.addComponentListener(new ComponentAdapter() {
 
 			@Override
 			public void componentResized(ComponentEvent e) {
 				updateSize();
 			}
 		});
+		
+		setLayout(new BorderLayout());
+		add(scroll, BorderLayout.CENTER);
+		add(new TimelineBottomPanel(timeline), BorderLayout.SOUTH);
 	}
 	
 	private class CombinedPanel extends JPanel implements Scrollable {
@@ -135,8 +136,7 @@ public class TimelineGUI extends JScrollPane {
 		combinedPanel.updateSize();
 	}
 
-	public TimelinePanel getTimeLinePanel()
-	{
+	public TimelinePanel getTimeLinePanel() {
 		return centerPanel;
 	}
 }

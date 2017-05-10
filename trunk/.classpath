@@ -15,7 +15,6 @@
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/jmf.jar"/>
-	<classpathentry kind="lib" path="lib/opensha.jar"/>
 	<classpathentry kind="lib" path="lib/EventWebService.jar"/>
 	<classpathentry kind="lib" path="lib/sdoutl.jar"/>
 	<classpathentry kind="lib" path="lib/org-netbeans-swing-outline.jar"/>
@@ -35,5 +34,7 @@
 	<classpathentry kind="lib" path="lib/jogl-all-natives-windows-amd64.jar"/>
 	<classpathentry kind="lib" path="lib/jogl-all.jar"/>
 	<classpathentry kind="lib" path="lib/vtk.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/OpenSHA"/>
+	<classpathentry kind="lib" path="lib/jcodec-0.2.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
