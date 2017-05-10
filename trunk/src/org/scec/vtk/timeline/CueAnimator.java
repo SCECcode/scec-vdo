@@ -2,30 +2,20 @@ package org.scec.vtk.timeline;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.media.MediaLocator;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 
 import org.opensha.commons.util.DataUtils;
 import org.opensha.commons.util.ExceptionUtils;
-import org.opensha.commons.util.FileUtils;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.scec.vtk.main.MainGUI;
-import org.scec.vtk.tools.JpegImagesToMovie;
+import org.scec.vtk.timeline.render.Renderer;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 
 import vtk.vtkAnimationCue;
 import vtk.vtkAnimationScene;
@@ -45,8 +35,7 @@ public class CueAnimator {
 	private int renderHeight;
 	private File outputFile;
 	
-	// rendered frames which have not yet been processed
-	private Deque<BufferedImage> framesDeque;
+	private Renderer renderer;
 	
 	private Thread playThread;
 	
@@ -73,23 +62,29 @@ public class CueAnimator {
 	}
 	
 	public void render() {
-		if (framesDeque == null || framesDeque.isEmpty()) {
+		if (renderer == null) {
 			synchronized (chooser) {
 				int ret = chooser.showSaveDialog(null);
 				if (ret == JFileChooser.APPROVE_OPTION) {
 					outputFile = chooser.getSelectedFile();
-					if (!outputFile.getName().toLowerCase().endsWith(".mov"))
-						outputFile = new File(outputFile.getParentFile(), outputFile.getName()+".mov");
-					
-					rendering = true;
-					scene.SetModeToSequence();
-					scene.SetFrameRate(timeline.getFamerate());
+					renderer = timeline.getRenderer();
+					if (!outputFile.getName().toLowerCase().endsWith("."+renderer.getExtension()))
+						outputFile = new File(outputFile.getParentFile(), outputFile.getName()+"."+renderer.getExtension());
 					
 					JComponent component = MainGUI.getRenderWindow().getComponent();
 					renderWidth =  component.getWidth();
 					renderHeight = component.getHeight();
 					
-					framesDeque = new ArrayDeque<>();
+					int count = (int)(timeline.getMaxTime()*timeline.getFamerate()+0.5);
+					try {
+						renderer.init(outputFile, renderWidth, renderHeight, timeline.getFamerate(), count);
+					} catch (IOException e) {
+						ExceptionUtils.throwAsRuntimeException(e);
+					}
+					
+					rendering = true;
+					scene.SetModeToSequence();
+					scene.SetFrameRate(timeline.getFamerate());
 					
 					playThread = new PlayThread();
 					playThread.start();
@@ -98,6 +93,7 @@ public class CueAnimator {
 		} else {
 			Preconditions.checkState(rendering);
 			Preconditions.checkNotNull(outputFile);
+			Preconditions.checkNotNull(renderer);
 			// resume
 			playThread = new PlayThread();
 			playThread.start();
@@ -187,8 +183,10 @@ public class CueAnimator {
 			// the Graphics object of the image.
 			if (D) System.out.println("Render tick, painting from JComponent");
 			component.paint( image.getGraphics() );
-			synchronized (framesDeque) {
-				framesDeque.push(image);
+			try {
+				renderer.processFrame(image);
+			} catch (IOException e) {
+				ExceptionUtils.throwAsRuntimeException(e); // TODO exception handling
 			}
 		}
 	}
@@ -256,79 +254,84 @@ public class CueAnimator {
 	public void endCue() {
 		if (D) System.out.println("endCue");
 		if (rendering) {
-			written = 0;
-			number = framesDeque.size();
-			File tempDir = Files.createTempDir();
-			System.out.println("Writing "+number+" frames to "+tempDir.getAbsolutePath());
-			final CalcProgressBar progressBar = new CalcProgressBar("Rendering", "Writing frames"); // TODO
-			List<File> imageFiles = Lists.newArrayList();
-			ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-			List<Future<?>> futures = Lists.newArrayList();
-			int count = 0;
-			while (!framesDeque.isEmpty()) {
-//				if (progressBar != null) {
-//					final int frame = i;
+			try {
+				renderer.finalize();
+			} catch (IOException e) {
+				ExceptionUtils.throwAsRuntimeException(e);
+			}
+//			written = 0;
+//			number = framesDeque.size();
+//			File tempDir = Files.createTempDir();
+//			System.out.println("Writing "+number+" frames to "+tempDir.getAbsolutePath());
+//			final CalcProgressBar progressBar = new CalcProgressBar("Rendering", "Writing frames"); // TODO
+//			List<File> imageFiles = Lists.newArrayList();
+//			ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+//			List<Future<?>> futures = Lists.newArrayList();
+//			int count = 0;
+//			while (!framesDeque.isEmpty()) {
+////				if (progressBar != null) {
+////					final int frame = i;
+////					SwingUtilities.invokeLater(new Runnable() {
+////						
+////						@Override
+////						public void run() {
+////							progressBar.updateProgress(frame, renderedFrames.size(), "Writing frames");
+//////							progressBar.setValue(frame);
+////						}
+////					});
+////				}
+//				// TODO just keep images in memory, never write to disk
+//				File file = new File(tempDir, "Capture" + count++ + ".jpg");				
+//				BufferedImage image = framesDeque.removeLast();
+//				imageFiles.add(file);
+//				futures.add(executor.submit(new ImageWriteCallable(image, file, progressBar)));
+//			}
+//			framesDeque = null;
+//			executor.shutdown();
+//			// wait on all tasks
+//			for (Future<?> future : futures)
+//				try {
+//					future.get();
+//				} catch (Exception e1) {
 //					SwingUtilities.invokeLater(new Runnable() {
 //						
 //						@Override
 //						public void run() {
-//							progressBar.updateProgress(frame, renderedFrames.size(), "Writing frames");
-////							progressBar.setValue(frame);
+//							progressBar.setIndeterminate(false);
+//							progressBar.setVisible(false);
+//							progressBar.dispose();
 //						}
 //					});
+//					ExceptionUtils.throwAsRuntimeException(e1);
 //				}
-				// TODO just keep images in memory, never write to disk
-				File file = new File(tempDir, "Capture" + count++ + ".jpg");				
-				BufferedImage image = framesDeque.removeLast();
-				imageFiles.add(file);
-				futures.add(executor.submit(new ImageWriteCallable(image, file, progressBar)));
-			}
-			framesDeque = null;
-			executor.shutdown();
-			// wait on all tasks
-			for (Future<?> future : futures)
-				try {
-					future.get();
-				} catch (Exception e1) {
-					SwingUtilities.invokeLater(new Runnable() {
-						
-						@Override
-						public void run() {
-							progressBar.setIndeterminate(false);
-							progressBar.setVisible(false);
-							progressBar.dispose();
-						}
-					});
-					ExceptionUtils.throwAsRuntimeException(e1);
-				}
-			SwingUtilities.invokeLater(new Runnable() {
-				
-				@Override
-				public void run() {
-					progressBar.setIndeterminate(true);
-//					progressBar.setString("Writing Movie File");
-//					progressBar.setStringPainted(true);
-				}
-			});
-			JpegImagesToMovie jpeg = new JpegImagesToMovie();
-			MediaLocator m;
-			try {
-				m = new MediaLocator(outputFile.toURI().toURL());
-			} catch (MalformedURLException e) {
-				throw ExceptionUtils.asRuntimeException(e);
-			}
-			jpeg.doIt(renderWidth, renderHeight, (float)scene.GetFrameRate(), imageFiles, m);
-			System.out.println("*** Finished Generating jpgs " );
-			SwingUtilities.invokeLater(new Runnable() {
-				
-				@Override
-				public void run() {
-					progressBar.setIndeterminate(false);
-					progressBar.setVisible(false);
-					progressBar.dispose();
-				}
-			});
-			FileUtils.deleteRecursive(tempDir);
+//			SwingUtilities.invokeLater(new Runnable() {
+//				
+//				@Override
+//				public void run() {
+//					progressBar.setIndeterminate(true);
+////					progressBar.setString("Writing Movie File");
+////					progressBar.setStringPainted(true);
+//				}
+//			});
+//			JpegImagesToMovie jpeg = new JpegImagesToMovie();
+//			MediaLocator m;
+//			try {
+//				m = new MediaLocator(outputFile.toURI().toURL());
+//			} catch (MalformedURLException e) {
+//				throw ExceptionUtils.asRuntimeException(e);
+//			}
+//			jpeg.doIt(renderWidth, renderHeight, (float)scene.GetFrameRate(), imageFiles, m);
+//			System.out.println("*** Finished Generating jpgs " );
+//			SwingUtilities.invokeLater(new Runnable() {
+//				
+//				@Override
+//				public void run() {
+//					progressBar.setIndeterminate(false);
+//					progressBar.setVisible(false);
+//					progressBar.dispose();
+//				}
+//			});
+//			FileUtils.deleteRecursive(tempDir);
 		}
 		listener.animationFinished(isRendering());
 	}

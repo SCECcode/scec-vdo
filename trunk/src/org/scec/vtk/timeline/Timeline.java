@@ -2,6 +2,7 @@ package org.scec.vtk.timeline;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.scec.vtk.main.MainGUI;
@@ -12,10 +13,15 @@ import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.timeline.camera.CameraAnimator;
 import org.scec.vtk.timeline.camera.CameraAnimator.SplineType;
+import org.scec.vtk.timeline.render.H264Renderer;
+import org.scec.vtk.timeline.render.ImageSequenceRenderer;
+import org.scec.vtk.timeline.render.MP4JPEGSequenceRenderer;
+import org.scec.vtk.timeline.render.MP4PNGSequenceRenderer;
+import org.scec.vtk.timeline.render.Renderer;
 
 import com.google.common.base.Preconditions;
 
-public class Timeline implements StatefulPlugin{
+public class Timeline implements StatefulPlugin {
 	
 	private static final boolean D = false;
 	
@@ -37,6 +43,8 @@ public class Timeline implements StatefulPlugin{
 	
 	private double maxTime = 15d;
 	private double fps = 30;
+	private Renderer renderer;
+	private List<Renderer> availableRenderers;
 	
 	private boolean isLive = true; // can be set to false for external GUI tests;
 
@@ -57,6 +65,15 @@ public class Timeline implements StatefulPlugin{
 		currentActivatedKeys = new ArrayList<>();
 		
 		pluginChangeListeners = new ArrayList<>();
+		
+		availableRenderers = new ArrayList<>();
+		availableRenderers.add(new MP4PNGSequenceRenderer());
+		availableRenderers.add(new H264Renderer());
+		availableRenderers.add(new MP4JPEGSequenceRenderer());
+		availableRenderers.add(ImageSequenceRenderer.getPNG());
+		availableRenderers.add(ImageSequenceRenderer.getJPEG());
+		availableRenderers = Collections.unmodifiableList(availableRenderers);
+		renderer = availableRenderers.get(0);
 	}
 	
 	public synchronized void addPlugin(Plugin p, PluginActors actors) {
@@ -315,6 +332,19 @@ public class Timeline implements StatefulPlugin{
 	public void setFramerate(double fps) {
 		Preconditions.checkState(fps > 0);
 		this.fps = fps;
+	}
+	
+	public void setRenderer(Renderer renderer) {
+		Preconditions.checkState(availableRenderers.contains(renderer), "Unknown renderer: %s", renderer);
+		this.renderer = renderer;
+	}
+	
+	public Renderer getRenderer() {
+		return renderer;
+	}
+	
+	public List<Renderer> getAvailableRenderers() {
+		return availableRenderers;
 	}
 
 	@Override
