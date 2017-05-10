@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -30,6 +32,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -61,6 +64,8 @@ import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.plugins.Plugins;
 
+import com.google.common.base.Preconditions;
+
 import vtk.vtkActor;
 import vtk.vtkActor2D;
 import vtk.vtkCamera;
@@ -87,7 +92,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private int xCenter = BORDER_SIZE / 2;
 	private int yCenter = BORDER_SIZE / 2;
 	private ViewRange viewRange;
-	public boolean resize = false;
 	private static final Logger log = Logger.getLogger(MainGUI.class);
 	// In the static constructor we load in the native code.
 	// The libraries must be in your path to work.
@@ -105,10 +109,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	// TODO why static?
 	public static MainMenu mainMenu;
-
-	// TODO why static?
-	// TODO this should be a plugin
-	public static PoliticalBoundariesGUI pbGUI;
 
 	// TODO why static???
 	private static JPanel pluginGUIPanel;
@@ -217,26 +217,19 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 			@Override
 			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-
-
 			}
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
 				renderWindow.getRenderer().Render();
 			}
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-				if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
-				{
+				if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 					//TODO: change start cam coordinates to be as per the region assigned by default they are set for California
 					//reset view position to default 
-					if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0)
-					{
+					if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
 						vtkCamera tmpCam = new vtkCamera();
 
 						tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
@@ -245,20 +238,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 						renderWindow.getRenderer().SetActiveCamera(tmpCam);
 						renderWindow.getRenderer().ResetCameraClippingRange();
 						renderWindow.getComponent().repaint();				    		
-					}
-				}
-				if(e.getKeyCode() == KeyEvent.VK_SPACE)
-				{
-					if(renderWindow.getRenderer().GetViewProps().IsItemPresent(focalPointActor)!=0)
-					{
-						if(focalPointActor.GetVisibility()==0)
-						{ 
-							focalPointActor.VisibilityOn();
-							focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
-						}
-						else
-							focalPointActor.VisibilityOff();
-						renderWindow.getComponent().repaint();	 	
 					}
 				}
 			}
@@ -270,9 +249,19 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 		final boolean clickDebug = false;
 
-		// Show the point on the sphere the mouse is hovering over in the status bar
 		renderWindow.getComponent().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// released
+				if (focalPointActor.GetVisibility() == 1)
+					updateFocalPointLocation();
+			}
+
 			public void mousePressed(MouseEvent e) {
+				// this is needed otherwise for some reason focus can never be regained by the render window
+				// which causes key events to be ignored after focus is lost
+				renderWindow.getComponent().requestFocus();
+				
 				int[] clickPos = renderWindow.getRenderWindowInteractor().GetEventPosition();
 				int height = renderWindow.getComponent().getHeight();
 				int calcY = (height - e.getY()) - 1;
@@ -321,7 +310,39 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			throw new RuntimeException("Unable to get available plugins", ioe);
 		}
 		
-		
+		this.addComponentListener(new ComponentAdapter() {
+
+			@Override
+			public void componentResized(ComponentEvent e) {
+				if (targetDims != null) {
+					// we asked for a change
+					System.out.println("Resized! "+getWidth()+"x"+getHeight());
+					if (targetDims.getWidth() != getWidth() || targetDims.getHeight() != getHeight()) {
+						JOptionPane.showMessageDialog(Info.getMainGUI(),
+							"Screen is not large enough for selected resolution. Select a lower resolution and try agin",
+							"Coundn't Resize Window", JOptionPane.ERROR_MESSAGE);
+					}
+					targetDims = null;
+				}
+			}
+		});
+	}
+	
+	public void setFocalPointVisible(boolean visible) {
+		int newVis = visible ? 1 : 0;
+		int curVis = focalPointActor.GetVisibility();
+		if (newVis != curVis) {
+			focalPointActor.SetVisibility(newVis);
+			if (visible)
+				updateFocalPointLocation();
+			updateRenderWindow();
+			renderWindow.getComponent().repaint();
+		}
+	}
+	
+	public void updateFocalPointLocation() {
+		focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
+		focalPointActor.Modified();
 	}
 	
 	public TimelineGUI getTimelineGUI() {
@@ -900,5 +921,30 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		for (PluginActors actors : mainMenu.getActivatedPluginActors())
 			currentLegends.addAll(actors.getLegends());
 		return currentLegends;
+	}
+	
+	private Dimension targetDims;
+	
+	public void resizeViewer(int width, int height) {
+		int curWindowWidth = getWidth();
+		int curWindowHeight = getHeight();
+		int curViewerWidth = renderWindow.getComponent().getWidth();
+		int curViewerHeight = renderWindow.getComponent().getHeight();
+		Preconditions.checkState(curWindowHeight > curViewerHeight);
+		Preconditions.checkState(curWindowWidth > curViewerWidth);
+		int widthBuffer = curWindowWidth - curViewerWidth;
+		int heightBuffer = curWindowHeight - curViewerHeight;
+		int newWindowWidth = width + widthBuffer;
+		int newWindowHeight = height + heightBuffer;
+		System.out.println("Resiging viewer to "+width+"x"+height+". Current: "+curViewerWidth+"x"+curViewerHeight
+					+". Buffer: "+widthBuffer+"x"+heightBuffer);
+		setSize(newWindowWidth, newWindowHeight);
+		renderWindow.getComponent().setSize(width, height);
+		updateRenderWindow();
+		renderWindow.getComponent().validate();
+		int newViewerWidth = renderWindow.getComponent().getWidth();
+		int newViewerHeight = renderWindow.getComponent().getHeight();
+		System.out.println("Resized. New dims: "+newViewerWidth+"x"+newViewerHeight);
+		targetDims = new Dimension(newWindowWidth, newWindowHeight);
 	}
 }
