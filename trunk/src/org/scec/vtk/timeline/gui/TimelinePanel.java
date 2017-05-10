@@ -437,7 +437,7 @@ implements MouseListener, MouseMotionListener, AnimationTimeListener, TimelinePl
 			double time = getTime(e.getX());
 			if (pluginIndex == INDEX_TAG_HEADER) {
 				// clicked header, go to that time
-				System.out.println("Going to time "+time);
+				System.out.println("Going to time "+(float)time);
 				timeline.activateTime(time);
 			} else if (pluginIndex == INDEX_TAG_CAMERA) {
 				// create a camera key

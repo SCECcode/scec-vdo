@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opensha.commons.util.DataUtils;
 import org.opensha.commons.util.ExceptionUtils;
@@ -61,15 +62,17 @@ public class CueAnimator {
 		scene.AddCue(cue);
 	}
 	
-	public void render() {
+	public boolean render() {
 		if (renderer == null) {
 			synchronized (chooser) {
+				String ext = timeline.getRenderer().getExtension();
+				chooser.setFileFilter(new FileNameExtensionFilter(ext.toUpperCase()+" File", ext));
 				int ret = chooser.showSaveDialog(null);
 				if (ret == JFileChooser.APPROVE_OPTION) {
 					outputFile = chooser.getSelectedFile();
 					renderer = timeline.getRenderer();
 					if (!outputFile.getName().toLowerCase().endsWith("."+renderer.getExtension()))
-						outputFile = new File(outputFile.getParentFile(), outputFile.getName()+"."+renderer.getExtension());
+						outputFile = new File(outputFile.getParentFile(), outputFile.getName()+"."+ext);
 					
 					JComponent component = MainGUI.getRenderWindow().getComponent();
 					renderWidth =  component.getWidth();
@@ -88,6 +91,8 @@ public class CueAnimator {
 					
 					playThread = new PlayThread();
 					playThread.start();
+				} else {
+					return false;
 				}
 			}
 		} else {
@@ -98,7 +103,7 @@ public class CueAnimator {
 			playThread = new PlayThread();
 			playThread.start();
 		}
-		
+		return true;
 	}
 	
 	public boolean isRendering() {

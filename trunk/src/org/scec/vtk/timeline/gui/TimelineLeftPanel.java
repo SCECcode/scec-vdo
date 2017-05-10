@@ -256,13 +256,13 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == renderButton) {
-				if (animator != null) {
+				if (animator != null)
 					Preconditions.checkState(animator.isRendering());
-					animator.render();
-				} else {
+				else
 					animator = new CueAnimator(timeline, this);
-					animator.render();
-				}
+				if (!animator.render())
+					// canceled
+					animator = null;
 			} else if (e.getSource() == playButton) {
 				if (animator == null)
 					animator = new CueAnimator(timeline, this);
