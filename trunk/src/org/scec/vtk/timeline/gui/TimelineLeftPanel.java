@@ -23,6 +23,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -360,9 +361,10 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		private JTextField frameRateField;
 		private JComboBox<SplineType> splineBox;
 		private JComboBox<Renderer> renderBox;
-		private JComponent renderPanel;
 		
 		private JPanel renderSettingsPanel;
+		
+		private RenderSizePanel sizePanel;
 		
 		public TimelineSettingsPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -378,6 +380,8 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			JLabel splineLabel = new JLabel("Camera Spline Type:  ");
 			splineBox = new JComboBox<SplineType>(SplineType.values());
 			addRow(splineLabel, splineBox);
+			
+			add(new JSeparator(JSeparator.HORIZONTAL));
 			
 			JLabel renderLabel = new JLabel("Renderer:  ");
 			renderBox = new JComboBox<Renderer>();
@@ -398,6 +402,11 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			}
 			add(renderSettingsPanel);
 			
+			add(new JSeparator(JSeparator.HORIZONTAL));
+			
+			sizePanel = new RenderSizePanel(timeline);
+			add(sizePanel);
+			
 			updateFromTimeline();
 		}
 		
@@ -410,6 +419,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 				renderBox.setModel(new DefaultComboBoxModel<>(timeline.getAvailableRenderers().toArray(new Renderer[0])));
 			renderBox.setSelectedItem(timeline.getRenderer());
 			updateRenderPanel();
+			sizePanel.updateFromWindow();
 		}
 		
 		private void updateRenderPanel() {

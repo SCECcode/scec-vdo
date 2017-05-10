@@ -76,6 +76,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem saveItemOBJ;
 	private MenuItem resizeWindow;
 	private ResizeWindowDialog srcInfoDialog;
+	private CheckboxMenuItem focalPointItem;
 
 	static Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	// TODO why are these static?
@@ -94,6 +95,16 @@ public class MainMenu implements ActionListener, ItemListener{
 		Menu displayMenu = new Menu();
 		displayMenu.setLabel("Display");
 		displayMenu.setName("Display");
+		focalPointItem = new CheckboxMenuItem("Focal Point", false);
+		Menu trainingMenu = getCreateSubMenu(displayMenu, "Training");
+		trainingMenu.add(focalPointItem);
+		focalPointItem.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				Info.getMainGUI().setFocalPointVisible(focalPointItem.getState());
+			}
+		});
 		menuBar.add(displayMenu);
 		
 
@@ -510,27 +521,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				menu.add((CheckboxMenuItem)mi);
 
 			} else {
-
-				// Try to find the submenu
-				Menu submenu = null;
-				for (int i = 0; i < (menu).getItemCount(); i++) {
-					MenuItem candidate = menu.getItem(i);
-					if (candidate != null && candidate instanceof Menu) {
-						if (((Menu) candidate).getName().equalsIgnoreCase(
-								submenuName)) {
-							submenu = (Menu) candidate;
-							break;
-						}
-					}
-				}
-
-				// If the submenu was not found, add it
-				if (submenu == null) {
-					submenu = new Menu();
-					submenu.setLabel(submenuName);
-					submenu.setName(submenuName);
-					menu.add(submenu);
-				}
+				Menu submenu = getCreateSubMenu(menu, submenuName);
 
 				// Add the item to the submenu
 				submenu.add(mi);
@@ -539,6 +530,27 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 	}
 
+	private Menu getCreateSubMenu(Menu menu, String submenuName) {
+		// Try to find the submenu
+		Menu submenu = null;
+		for (int i = 0; i < (menu).getItemCount(); i++) {
+			MenuItem candidate = menu.getItem(i);
+			if (candidate != null && candidate instanceof Menu) {
+				if (((Menu) candidate).getName().equalsIgnoreCase(
+						submenuName)) {
+					return (Menu) candidate;
+				}
+			}
+		}
+
+		// If the submenu was not found, add it
+		submenu = new Menu();
+		submenu.setLabel(submenuName);
+		submenu.setName(submenuName);
+		menu.add(submenu);
+		
+		return submenu;
+	}
 
 	public void activatePlugin(String id) {
 		try {

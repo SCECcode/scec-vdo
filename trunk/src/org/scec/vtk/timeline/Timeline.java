@@ -40,11 +40,11 @@ public class Timeline implements StatefulPlugin {
 	private List<AnimationTimeListener> timeListeners;
 	private List<TimelinePluginChangeListener> pluginChangeListeners;
 	
-	
 	private double maxTime = 15d;
 	private double fps = 30;
 	private Renderer renderer;
 	private List<Renderer> availableRenderers;
+//	private Dimension renderDimensions;
 	
 	private boolean isLive = true; // can be set to false for external GUI tests;
 
@@ -267,6 +267,10 @@ public class Timeline implements StatefulPlugin {
 	 */
 	public void setLive(boolean isLive) {
 		this.isLive = isLive;
+	}
+	
+	public boolean isLive() {
+		return isLive;
 	}
 	
 	public int getNumPlugins() {

@@ -129,18 +129,18 @@ public class ResizeWindowDialog extends JDialog implements ActionListener {
 			//System.out.println(option);
 			if(option =="1080p" )
 			{
-				if(Integer.parseInt(heightText.getText()) < 1080 && Integer.parseInt(widthText.getText()) < 1920 && !Info.getMainGUI().resize)
-				{
-					System.out.println("Adjusting");
-					Info.getMainGUI().setSize(Info.getMainGUI().getWidth(),Info.getMainGUI().getHeight()+1);
-					Info.getMainGUI().resize = true;
-					MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
-					Info.getMainGUI().setSize(Info.getMainGUI().getWidth(),Info.getMainGUI().getHeight()-1);
-					Info.getMainGUI().updateRenderWindow();
-				}	
+//				if(Integer.parseInt(heightText.getText()) < 1080 && Integer.parseInt(widthText.getText()) < 1920)
+//				{
+//					System.out.println("Adjusting");
+//					Info.getMainGUI().setSize(Info.getMainGUI().getWidth(),Info.getMainGUI().getHeight()+1);
+////					Info.getMainGUI().resize = true;
+//					MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
+//					Info.getMainGUI().setSize(Info.getMainGUI().getWidth(),Info.getMainGUI().getHeight()-1);
+//					Info.getMainGUI().updateRenderWindow();
+//				}	
 				heightText.setText("1080");
 				widthText.setText("1920");
-				MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
+//				MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
 			}
 			if(option =="720p" )
 			{
@@ -155,10 +155,11 @@ public class ResizeWindowDialog extends JDialog implements ActionListener {
 			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
 		}
 		if (src == this.ok) {
-			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
+//			MainGUI.getRenderWindow().setSize(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
+			Info.getMainGUI().resizeViewer(Integer.parseInt(widthText.getText()), Integer.parseInt(heightText.getText()));
 		} else if (src == this.cancel) {
 			this.cancelled = true;
-			MainGUI.getRenderWindow().getComponent().setSize(oldSize);
+//			MainGUI.getRenderWindow().getComponent().setSize(oldSize);
 		}
 		//System.out.println(MainGUI.getRenderWindow().getWidth() + "," + MainGUI.getRenderWindow().getHeight());
 		this.setVisible(false);
