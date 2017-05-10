@@ -1,10 +1,13 @@
 package org.scec.vtk.timeline.gui;
 
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
@@ -12,9 +15,11 @@ import java.util.HashSet;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -43,6 +48,7 @@ import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.TimelinePluginChangeListener;
 import org.scec.vtk.timeline.VisibilityKeyFrame;
 import org.scec.vtk.timeline.camera.CameraAnimator.SplineType;
+import org.scec.vtk.timeline.render.Renderer;
 
 import com.google.common.base.Preconditions;
 
@@ -348,11 +354,15 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		
 	}
 	
-	private class TimelineSettingsPanel extends JPanel {
+	private class TimelineSettingsPanel extends JPanel implements ItemListener {
 		
 		private JTextField timeField;
 		private JTextField frameRateField;
 		private JComboBox<SplineType> splineBox;
+		private JComboBox<Renderer> renderBox;
+		private JComponent renderPanel;
+		
+		private JPanel renderSettingsPanel;
 		
 		public TimelineSettingsPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -369,6 +379,25 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			splineBox = new JComboBox<SplineType>(SplineType.values());
 			addRow(splineLabel, splineBox);
 			
+			JLabel renderLabel = new JLabel("Renderer:  ");
+			renderBox = new JComboBox<Renderer>();
+			renderBox.addItemListener(this);
+			addRow(renderLabel, renderBox);
+			renderSettingsPanel = new JPanel();
+			renderSettingsPanel.setLayout(new CardLayout());
+			renderSettingsPanel.setMinimumSize(new Dimension(200, 30));
+			for (Renderer r : timeline.getAvailableRenderers()) {
+				JComponent renderPanel = r.getSettingsComponent();
+				if (renderPanel == null) {
+					renderPanel = new JPanel();
+					renderPanel.setPreferredSize(new Dimension(200, 30));
+					renderPanel.setMinimumSize(renderPanel.getPreferredSize());
+					renderPanel.setSize(renderPanel.getPreferredSize());
+				}
+				renderSettingsPanel.add(renderPanel, r.getName());
+			}
+			add(renderSettingsPanel);
+			
 			updateFromTimeline();
 		}
 		
@@ -376,6 +405,19 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			timeField.setText(TimelinePanel.timeMinorLabelFormat.format(timeline.getMaxTime()).replaceAll("s", ""));
 			frameRateField.setText((float)timeline.getFamerate()+"");
 			splineBox.setSelectedItem(timeline.getCameraSplineType());
+			if (renderBox.getItemCount() == 0)
+				// renderers don't change, only do this once
+				renderBox.setModel(new DefaultComboBoxModel<>(timeline.getAvailableRenderers().toArray(new Renderer[0])));
+			renderBox.setSelectedItem(timeline.getRenderer());
+			updateRenderPanel();
+		}
+		
+		private void updateRenderPanel() {
+//			System.out.println("Updating render panel");
+			CardLayout cl = (CardLayout)renderSettingsPanel.getLayout();
+			cl.show(renderSettingsPanel, renderBox.getItemAt(renderBox.getSelectedIndex()).getName());
+			invalidate();
+			validate();
 		}
 		
 		public void updateTimeline() {
@@ -390,6 +432,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			timeline.setMaxTime(maxTime);
 			timeline.setFramerate(fps);
 			timeline.setCameraSplineType(type);
+			timeline.setRenderer(renderBox.getItemAt(renderBox.getSelectedIndex()));
 		}
 		
 		private void addRow(Component... components) {
@@ -398,6 +441,11 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			for (Component component : components)
 				panel.add(component);
 			add(panel);
+		}
+
+		@Override
+		public void itemStateChanged(ItemEvent arg0) {
+			updateRenderPanel();
 		}
 		
 	}
