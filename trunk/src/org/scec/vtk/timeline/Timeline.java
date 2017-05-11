@@ -1,5 +1,6 @@
 package org.scec.vtk.timeline;
 
+import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +45,7 @@ public class Timeline implements StatefulPlugin {
 	private double fps = 30;
 	private Renderer renderer;
 	private List<Renderer> availableRenderers;
-//	private Dimension renderDimensions;
+	private Dimension renderDimensions;
 	
 	private boolean isLive = true; // can be set to false for external GUI tests;
 
@@ -271,6 +272,18 @@ public class Timeline implements StatefulPlugin {
 	
 	public boolean isLive() {
 		return isLive;
+	}
+	
+	/**
+	 * Set custom render dimensions, or null to use the current viewer dimensions
+	 * @param renderDimensions
+	 */
+	public void setRenderDimensions(Dimension renderDimensions) {
+		this.renderDimensions = renderDimensions;
+	}
+	
+	public Dimension getRenderDimensions() {
+		return renderDimensions;
 	}
 	
 	public int getNumPlugins() {

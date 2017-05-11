@@ -1,5 +1,6 @@
 package org.scec.vtk.timeline;
 
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.opensha.commons.util.DataUtils;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
+import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.timeline.render.Renderer;
 
@@ -20,10 +22,17 @@ import com.google.common.base.Preconditions;
 
 import vtk.vtkAnimationCue;
 import vtk.vtkAnimationScene;
+import vtk.vtkRenderWindow;
+import vtk.vtkUnsignedCharArray;
+import vtk.vtkWindowToImageFilter;
 
 public class CueAnimator {
 	
-	private static final boolean D = false;
+	private static final boolean D = true;
+	
+	// if true, uses the component's paint method to render
+	// if false, uses VTK's rendering classes
+	private static final boolean JAVA_COMPONENT_RENDER = true;
 	
 	private Timeline timeline;
 	private vtkAnimationScene scene;
@@ -37,6 +46,7 @@ public class CueAnimator {
 	private File outputFile;
 	
 	private Renderer renderer;
+	private Dimension origDimensions;
 	
 	private Thread playThread;
 	
@@ -74,9 +84,17 @@ public class CueAnimator {
 					if (!outputFile.getName().toLowerCase().endsWith("."+renderer.getExtension()))
 						outputFile = new File(outputFile.getParentFile(), outputFile.getName()+"."+ext);
 					
-					JComponent component = MainGUI.getRenderWindow().getComponent();
-					renderWidth =  component.getWidth();
-					renderHeight = component.getHeight();
+					origDimensions = getCurrentSize();
+					if (timeline.getRenderDimensions() != null) {
+						Dimension dims = timeline.getRenderDimensions();
+						forceViewerSize(dims);
+					}
+					
+					Dimension dims = getCurrentSize();
+					renderWidth = dims.width;
+					renderHeight = dims.height;
+					
+					if (D) System.out.println("Rendering movie with dimensions "+renderWidth+"x"+renderHeight);
 					
 					int count = (int)(timeline.getMaxTime()*timeline.getFamerate()+0.5);
 					try {
@@ -99,11 +117,38 @@ public class CueAnimator {
 			Preconditions.checkState(rendering);
 			Preconditions.checkNotNull(outputFile);
 			Preconditions.checkNotNull(renderer);
+			
+			origDimensions = getCurrentSize();
+			if (timeline.getRenderDimensions() != null) {
+				Dimension dims = timeline.getRenderDimensions();
+				forceViewerSize(dims);
+			}
+			
 			// resume
 			playThread = new PlayThread();
 			playThread.start();
 		}
 		return true;
+	}
+	
+	private void forceViewerSize(Dimension dims) {
+		System.out.println("Force resizing viewer to "+dims.width+"x"+dims.height);
+		JComponent comp = MainGUI.getRenderWindow().getComponent();
+		comp.setSize(dims);
+		comp.setPreferredSize(dims);
+		comp.setMinimumSize(dims);
+		comp.setMaximumSize(dims);
+		int newViewerWidth = comp.getWidth();
+		int newViewerHeight = comp.getHeight();
+		System.out.println("Force resized. New dims: "+newViewerWidth+"x"+newViewerHeight);
+	}
+	
+	private void clearForcedVeiwerSize(Dimension origDims) {
+		JComponent comp = MainGUI.getRenderWindow().getComponent();
+		comp.setPreferredSize(null);
+		comp.setMinimumSize(null);
+		comp.setMaximumSize(null);
+		comp.setSize(origDims);
 	}
 	
 	public boolean isRendering() {
@@ -149,6 +194,9 @@ public class CueAnimator {
 	public void pause() {
 		if (isScenePlaying())
 			scene.Stop();
+		
+		if (rendering && timeline.getRenderDimensions() != null && origDimensions != null)
+			clearForcedVeiwerSize(origDimensions);
 	}
 	
 	public void startCue() {
@@ -167,6 +215,20 @@ public class CueAnimator {
 		}
 	}
 	
+	private Dimension getCurrentSize() {
+		int width, height;
+		if (JAVA_COMPONENT_RENDER) {
+			JComponent component = MainGUI.getRenderWindow().getComponent();
+			width =  component.getWidth();
+			height = component.getHeight();
+		} else {
+			int[] renderSize = MainGUI.getRenderWindow().getRenderer().GetSize();
+			width =  renderSize[0];
+			height = renderSize[1];
+		}
+		return new Dimension(width, height);
+	}
+	
 	private class TickRenderRunnable implements Runnable {
 		private double animTime;
 		public TickRenderRunnable(double animTime) {
@@ -174,20 +236,77 @@ public class CueAnimator {
 		}
 		@Override
 		public void run() {
+			if (D) System.out.println("Rending frame at "+animTime);
 //			vtkWindowToImageFilter vtkPixelData = new vtkWindowToImageFilter();
 //			vtkPixelData.SetInput(MainGUI.getRenderWindow().getRenderWindow());
 //			vtkPixelData.ReadFrontBufferOff();
 			timeline.activateTime(animTime);
-			JComponent component = MainGUI.getRenderWindow().getComponent();
-			int width =  component.getWidth();
-			int height = component.getHeight();
-			Preconditions.checkState(width == renderWidth && height == renderHeight,
+			Dimension dims = getCurrentSize();
+			Preconditions.checkState(dims.width == renderWidth && dims.height == renderHeight,
 					"Render canvas size changed during render");
-			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			// call the Component's paint method, using
-			// the Graphics object of the image.
-			if (D) System.out.println("Render tick, painting from JComponent");
-			component.paint( image.getGraphics() );
+			BufferedImage image = new BufferedImage(dims.width, dims.height, BufferedImage.TYPE_INT_RGB);
+			if (JAVA_COMPONENT_RENDER) {
+				// call the Component's paint method, using
+				// the Graphics object of the image.
+				if (D) System.out.println("Render tick, painting from JComponent");
+				MainGUI.getRenderWindow().getComponent().paint(image.getGraphics());
+			} else {
+				if (D) System.out.println("Render tick, grabbing frame the VTK way");
+				vtkRenderWindow rw = MainGUI.getRenderWindow().getRenderWindow();
+				vtkUnsignedCharArray data = new vtkUnsignedCharArray();
+				int front = 1;
+				rw.GetPixelData(0, 0, dims.width-1, dims.height-1, front, data);
+				int index = 0;
+				boolean nonZero = false;
+				for (int y=0; y<dims.height; y++) {
+					for (int x=0; x<dims.width; x++) {
+						int r = data.GetValue(index++);
+						int g = data.GetValue(index++);
+						int b = data.GetValue(index++);
+						int rgb = r;
+						rgb = (rgb << 8) + g;
+						rgb = (rgb << 8) + b;
+						image.setRGB(x, (dims.height-1)-y, rgb);
+						if (rgb > 0)
+							nonZero = true;
+					}
+				}
+//				vtkWindowToImageFilter vtkPixelData = new vtkWindowToImageFilter();
+//				vtkPixelData.SetInput(MainGUI.getRenderWindow().getRenderWindow());
+//				vtkPixelData.ReadFrontBufferOff();
+//				vtkPixelData.Update();
+//				vtkPixelData.GetOutput().get
+				/*
+				 vtkWindowToImageFilter vtkPixelData = new vtkWindowToImageFilter();
+			vtkPixelData.SetInput(MainGUI.getRenderWindow().getRenderWindow());
+			vtkPixelData.ReadFrontBufferOff();
+			vtkPixelData.Update();
+			if (D) System.out.println("Render tick, adding pixel data");
+			renderedFrames.add(vtkPixelData);
+			if (D) {
+				vtkRenderWindow rw = MainGUI.getRenderWindow().getRenderWindow();
+				vtkUnsignedCharArray data = new vtkUnsignedCharArray();
+				int front = 1;
+				rw.GetPixelData(0, 0, width-1, height-1, front, data);
+				BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+				int index = 0;
+				boolean nonZero = false;
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<width; x++) {
+						int r = data.GetValue(index++);
+						int g = data.GetValue(index++);
+						int b = data.GetValue(index++);
+						int rgb = r;
+						rgb = (rgb << 8) + g;
+						rgb = (rgb << 8) + b;
+						img.setRGB(x, y, rgb);
+						if (rgb > 0)
+							nonZero = true;
+					}
+				}
+				 */
+			}
+			if (D) System.out.println("Render tick done, processing frame");
 			try {
 				renderer.processFrame(image);
 			} catch (IOException e) {
@@ -216,46 +335,6 @@ public class CueAnimator {
 		}
 	}
 	
-	private class ImageWriteCallable implements Runnable {
-		
-		private BufferedImage image;
-		private File outputFile;
-		private CalcProgressBar progressBar;
-		
-		public ImageWriteCallable(BufferedImage image, File outputFile, CalcProgressBar progressBar) {
-			this.image = image;
-			this.outputFile = outputFile;
-			this.progressBar = progressBar;
-		}
-
-		@Override
-		public void run() {
-			try{
-				ImageIO.write(image, "jpg", outputFile);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			synchronized (written) {
-				written++;
-				if (progressBar != null) {
-					SwingUtilities.invokeLater(new Runnable() {
-						
-						@Override
-						public void run() {
-							progressBar.updateProgress(written, number, "Writing frames");
-//							progressBar.setValue(frame);
-						}
-					});
-				}
-			}
-		}
-		
-	}
-	
-	private Integer written = 0;
-	private Integer number = 0;
-	
 	public void endCue() {
 		if (D) System.out.println("endCue");
 		if (rendering) {
@@ -264,79 +343,9 @@ public class CueAnimator {
 			} catch (IOException e) {
 				ExceptionUtils.throwAsRuntimeException(e);
 			}
-//			written = 0;
-//			number = framesDeque.size();
-//			File tempDir = Files.createTempDir();
-//			System.out.println("Writing "+number+" frames to "+tempDir.getAbsolutePath());
-//			final CalcProgressBar progressBar = new CalcProgressBar("Rendering", "Writing frames"); // TODO
-//			List<File> imageFiles = Lists.newArrayList();
-//			ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-//			List<Future<?>> futures = Lists.newArrayList();
-//			int count = 0;
-//			while (!framesDeque.isEmpty()) {
-////				if (progressBar != null) {
-////					final int frame = i;
-////					SwingUtilities.invokeLater(new Runnable() {
-////						
-////						@Override
-////						public void run() {
-////							progressBar.updateProgress(frame, renderedFrames.size(), "Writing frames");
-//////							progressBar.setValue(frame);
-////						}
-////					});
-////				}
-//				// TODO just keep images in memory, never write to disk
-//				File file = new File(tempDir, "Capture" + count++ + ".jpg");				
-//				BufferedImage image = framesDeque.removeLast();
-//				imageFiles.add(file);
-//				futures.add(executor.submit(new ImageWriteCallable(image, file, progressBar)));
-//			}
-//			framesDeque = null;
-//			executor.shutdown();
-//			// wait on all tasks
-//			for (Future<?> future : futures)
-//				try {
-//					future.get();
-//				} catch (Exception e1) {
-//					SwingUtilities.invokeLater(new Runnable() {
-//						
-//						@Override
-//						public void run() {
-//							progressBar.setIndeterminate(false);
-//							progressBar.setVisible(false);
-//							progressBar.dispose();
-//						}
-//					});
-//					ExceptionUtils.throwAsRuntimeException(e1);
-//				}
-//			SwingUtilities.invokeLater(new Runnable() {
-//				
-//				@Override
-//				public void run() {
-//					progressBar.setIndeterminate(true);
-////					progressBar.setString("Writing Movie File");
-////					progressBar.setStringPainted(true);
-//				}
-//			});
-//			JpegImagesToMovie jpeg = new JpegImagesToMovie();
-//			MediaLocator m;
-//			try {
-//				m = new MediaLocator(outputFile.toURI().toURL());
-//			} catch (MalformedURLException e) {
-//				throw ExceptionUtils.asRuntimeException(e);
-//			}
-//			jpeg.doIt(renderWidth, renderHeight, (float)scene.GetFrameRate(), imageFiles, m);
-//			System.out.println("*** Finished Generating jpgs " );
-//			SwingUtilities.invokeLater(new Runnable() {
-//				
-//				@Override
-//				public void run() {
-//					progressBar.setIndeterminate(false);
-//					progressBar.setVisible(false);
-//					progressBar.dispose();
-//				}
-//			});
-//			FileUtils.deleteRecursive(tempDir);
+			if (timeline.getRenderDimensions() != null) {
+				clearForcedVeiwerSize(origDimensions);
+			}
 		}
 		listener.animationFinished(isRendering());
 	}
