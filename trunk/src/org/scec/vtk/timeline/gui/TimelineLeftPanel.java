@@ -364,7 +364,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		
 		private JPanel renderSettingsPanel;
 		
-		private RenderSizePanel sizePanel;
+		private ViewerSizePanel sizePanel;
 		
 		public TimelineSettingsPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -404,7 +404,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			
 			add(new JSeparator(JSeparator.HORIZONTAL));
 			
-			sizePanel = new RenderSizePanel(timeline);
+			sizePanel = new ViewerSizePanel(timeline);
 			add(sizePanel);
 			
 			updateFromTimeline();
@@ -419,7 +419,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 				renderBox.setModel(new DefaultComboBoxModel<>(timeline.getAvailableRenderers().toArray(new Renderer[0])));
 			renderBox.setSelectedItem(timeline.getRenderer());
 			updateRenderPanel();
-			sizePanel.updateFromWindow();
+			sizePanel.updateFromTimeline();
 		}
 		
 		private void updateRenderPanel() {
@@ -443,6 +443,8 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			timeline.setFramerate(fps);
 			timeline.setCameraSplineType(type);
 			timeline.setRenderer(renderBox.getItemAt(renderBox.getSelectedIndex()));
+			
+			sizePanel.updateTimeline();
 		}
 		
 		private void addRow(Component... components) {
