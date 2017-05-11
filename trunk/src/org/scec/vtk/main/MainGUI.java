@@ -319,7 +319,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 					System.out.println("Resized! "+getWidth()+"x"+getHeight());
 					if (targetDims.getWidth() != getWidth() || targetDims.getHeight() != getHeight()) {
 						JOptionPane.showMessageDialog(Info.getMainGUI(),
-							"Screen is not large enough for selected resolution. Select a lower resolution and try agin",
+							"Screen is not large enough for selected resolution. Select a lower resolution and try agin."
+							+ "\nYou can still render movies larger than screen resolution using the render settings dialog.",
 							"Coundn't Resize Window", JOptionPane.ERROR_MESSAGE);
 					}
 					targetDims = null;
@@ -926,10 +927,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private Dimension targetDims;
 	
 	public void resizeViewer(int width, int height) {
+		JComponent comp = renderWindow.getComponent();
 		int curWindowWidth = getWidth();
 		int curWindowHeight = getHeight();
-		int curViewerWidth = renderWindow.getComponent().getWidth();
-		int curViewerHeight = renderWindow.getComponent().getHeight();
+		int curViewerWidth = comp.getWidth();
+		int curViewerHeight = comp.getHeight();
 		Preconditions.checkState(curWindowHeight > curViewerHeight);
 		Preconditions.checkState(curWindowWidth > curViewerWidth);
 		int widthBuffer = curWindowWidth - curViewerWidth;
@@ -937,13 +939,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		int newWindowWidth = width + widthBuffer;
 		int newWindowHeight = height + heightBuffer;
 		System.out.println("Resiging viewer to "+width+"x"+height+". Current: "+curViewerWidth+"x"+curViewerHeight
-					+". Buffer: "+widthBuffer+"x"+heightBuffer);
+				+". Buffer: "+widthBuffer+"x"+heightBuffer);
 		setSize(newWindowWidth, newWindowHeight);
-		renderWindow.getComponent().setSize(width, height);
+		comp.setSize(width, height);
 		updateRenderWindow();
-		renderWindow.getComponent().validate();
-		int newViewerWidth = renderWindow.getComponent().getWidth();
-		int newViewerHeight = renderWindow.getComponent().getHeight();
+		//			renderWindow.getComponent().validate();
+		int newViewerWidth = comp.getWidth();
+		int newViewerHeight = comp.getHeight();
 		System.out.println("Resized. New dims: "+newViewerWidth+"x"+newViewerHeight);
 		targetDims = new Dimension(newWindowWidth, newWindowHeight);
 	}

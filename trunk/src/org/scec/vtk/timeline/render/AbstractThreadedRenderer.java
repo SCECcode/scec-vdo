@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.opensha.commons.util.ExceptionUtils;
 
@@ -30,16 +33,44 @@ public abstract class AbstractThreadedRenderer implements Renderer {
 	
 	private boolean threadLocalProcessing = false;
 	
+	// if >0, will block on processFrame when this many are pending (prevents loading too many in memory before flushing)
+	private static final int MAX_FRAMES_PENDING = 100;
+	
 	/* (non-Javadoc)
 	 * @see org.scec.vtk.timeline.render.Renderer#init(java.io.File, int, int, int)
 	 */
 	@Override
 	public final void init(File outputFile, int width, int height, double fps, int count) throws IOException {
-		exec = Executors.newSingleThreadExecutor();
+		if (MAX_FRAMES_PENDING > 0) {
+			exec = new ThreadPoolExecutor(1, 1,
+                    0L, TimeUnit.MILLISECONDS,
+                    new LimitedQueue<Runnable>(MAX_FRAMES_PENDING));
+		} else {
+			exec = Executors.newSingleThreadExecutor();
+		}
 		futures = Lists.newArrayList();
 		doInit(outputFile, width, height, fps, count);
 		index = 0;
 		this.count = count;
+	}
+	
+	public static class LimitedQueue<E> extends LinkedBlockingQueue<E>  {
+	    public LimitedQueue(int maxSize) {
+	        super(maxSize);
+	    }
+
+	    @Override
+	    public boolean offer(E e)  {
+	        // turn offer() and add() into a blocking calls (unless interrupted)
+	        try {
+	            put(e);
+	            return true;
+	        } catch(InterruptedException ie) {
+	            Thread.currentThread().interrupt();
+	        }
+	        return false;
+	    }
+
 	}
 	
 	protected abstract void doInit(File outputFile, int width, int height, double fps, int count) throws IOException;

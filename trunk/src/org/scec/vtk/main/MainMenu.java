@@ -3,6 +3,7 @@ package org.scec.vtk.main;
 import java.awt.CheckboxMenuItem;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
@@ -25,6 +26,7 @@ import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -37,27 +39,22 @@ import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.plugins.StatefulPlugin;
-import org.scec.vtk.plugins.utils.components.ResizeWindowDialog;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
-
-import com.google.common.base.Preconditions;
+import org.scec.vtk.timeline.gui.ViewerSizePanel;
 
 import vtk.vtkActor;
 import vtk.vtkActorCollection;
 import vtk.vtkAppendPolyData;
-import vtk.vtkCanvas;
 import vtk.vtkDoubleArray;
 import vtk.vtkOBJExporter;
-import vtk.vtkObject;
-import vtk.vtkPanel;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
-import vtk.vtkRenderWindow;
-import vtk.rendering.jogl.vtkJoglCanvasComponent;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
+
+import com.google.common.base.Preconditions;
 
 
 public class MainMenu implements ActionListener, ItemListener{
@@ -75,7 +72,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem saveItemVTK;
 	private MenuItem saveItemOBJ;
 	private MenuItem resizeWindow;
-	private ResizeWindowDialog srcInfoDialog;
+	private ViewerSizePanel sizePanel;
 	private CheckboxMenuItem focalPointItem;
 
 	static Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
@@ -368,12 +365,16 @@ public class MainMenu implements ActionListener, ItemListener{
 			else {
 				System.out.println("Unhandled event");
 			}
-		}
-		else if(eventSource == resizeWindow)
-			{
-				this.srcInfoDialog = new ResizeWindowDialog(Info.getMainGUI());
-				System.out.println("Initial: " + MainGUI.getRenderWindow().getComponent().getWidth() + "," + MainGUI.getRenderWindow().getComponent().getHeight());
+		} else if(eventSource == resizeWindow) {
+			if (sizePanel == null)
+				sizePanel = new ViewerSizePanel(null); // null means this isn't render mode, but rather actual size mode
+			int val = JOptionPane.showConfirmDialog(
+					Info.getMainGUI(), sizePanel, "Resizve Viewer", JOptionPane.OK_CANCEL_OPTION);
+			if (val == JOptionPane.OK_OPTION) {
+				Dimension dims = sizePanel.getCurDims();
+				Info.getMainGUI().resizeViewer(dims.width, dims.height);
 			}
+		}
 	}
 
 	private void saveXMLFile(Document document,Element root,String destinationData) {
