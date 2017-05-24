@@ -28,7 +28,7 @@ import vtk.vtkWindowToImageFilter;
 
 public class CueAnimator {
 	
-	private static final boolean D = true;
+	private static final boolean D = false;
 	
 	// if true, uses the component's paint method to render
 	// if false, uses VTK's rendering classes
