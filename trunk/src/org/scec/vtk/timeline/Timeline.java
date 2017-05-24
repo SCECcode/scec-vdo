@@ -68,8 +68,8 @@ public class Timeline implements StatefulPlugin {
 		pluginChangeListeners = new ArrayList<>();
 		
 		availableRenderers = new ArrayList<>();
-		availableRenderers.add(new H264Renderer());
-		availableRenderers.add(new MP4PNGSequenceRenderer());
+		availableRenderers.add(new H264Renderer()); // worse than PNG (which is lossless and often smaller), but plays everywhere
+		availableRenderers.add(new MP4PNGSequenceRenderer()); // lossless, doesn't play in Quicktime
 		availableRenderers.add(new MP4JPEGSequenceRenderer());
 		availableRenderers.add(ImageSequenceRenderer.getPNG());
 		availableRenderers.add(ImageSequenceRenderer.getJPEG());
