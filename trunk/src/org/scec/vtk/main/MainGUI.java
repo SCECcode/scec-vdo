@@ -949,4 +949,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		System.out.println("Resized. New dims: "+newViewerWidth+"x"+newViewerHeight);
 		targetDims = new Dimension(newWindowWidth, newWindowHeight);
 	}
+	
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				new MainGUI();
+			}
+		});
+	}
 }
