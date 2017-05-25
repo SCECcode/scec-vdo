@@ -150,7 +150,7 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	public static final double optimalSurfacePoints = 691200.0;
 	public static final double optimalImagePoints = 1843200.0;
 	private String imageError;
-	private static final String wms_url = "http://www.nasa.network.com/wms";
+	private static final String wms_url = "https://data.worldwind.arc.nasa.gov/wms";
 	
 	Logger log = Logger.getLogger(MapSetCreatePluginGUI.class);
 	
