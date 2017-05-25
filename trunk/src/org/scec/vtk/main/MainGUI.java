@@ -85,9 +85,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private final int BORDER_SIZE = 10;
 	//	private static JFrame frame ;
 	private static vtkJoglPanelComponent  renderWindow;
-	private static JTabbedPane pluginTabPane;
+	private JTabbedPane pluginTabPane;
 	//Create Main Panel
-	public static JPanel mainPanel;
+	public JPanel mainPanel;
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
 	private int yCenter = BORDER_SIZE / 2;
@@ -107,25 +107,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 	private static File getCWD;
 
-	// TODO why static?
-	public static MainMenu mainMenu;
+	public MainMenu mainMenu;
 
-	// TODO why static???
-	private static JPanel pluginGUIPanel;
-	private static JScrollPane pluginGUIScrollPane;
-	private static JSplitPane pluginSplitPane;
+	private JPanel pluginGUIPanel;
+	private JScrollPane pluginGUIScrollPane;
+	private JSplitPane pluginSplitPane;
 	private int xeBorder=0;
 	private int ysBorder=0;
-	private GraticuleGUI gridGUI;
-	GraticulePlugin gridPlugin;
-	vtkActor tempGlobeScene = new vtkActor();
-	vtkActor2D labelActor =new vtkActor2D();
-	vtkActor pointActor = new 
-			vtkActor();
+	private vtkActor tempGlobeScene = new vtkActor();
 	private boolean gridDisplay = true;
-	private DrawingToolsGUI drawingTool;
-	private DrawingToolsPlugin drawingToolPlugin;
-	private double[] pointerPosition;
 //	private ScriptingPlugin scriptingPluginObj;
 	
 	private Timeline timeline;
@@ -142,13 +132,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			0.276911132961531,
 			0.8447615350850914};//up
 
-	vtkActor focalPointActor = new vtkActor();
-	vtkPropPicker  picker =new vtkPropPicker();
+	private vtkActor focalPointActor = new vtkActor();
 	
 	private ArrayList<PluginActorsChangeListener> actorsChangeListeners = new ArrayList<>();
 
 	public MainGUI() {
-
+		Prefs.init();
 		renderWindow = new vtkJoglPanelComponent();
 		
 		mainPanel = new JPanel(new BorderLayout());
@@ -190,8 +179,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		timeline = new Timeline();
 		timelineGUI = new TimelineGUI(timeline);
 		mainMenu.setupTimeline(timeline, timelineGUI);
-		
-		
 
 		vtkCamera tmpCam = new vtkCamera();
 
@@ -287,7 +274,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 						System.out.println("Actor: (null)");
 				}
 				// if we picked a pick enabled actor, fire off a pick event
-				// DON'T REMOVE THIS when playing with the highlighting stuff you're doing below please!
 				if (cellPicker.GetActor() instanceof PickEnabledActor<?>) {
 					PickEnabledActor<?> actor = (PickEnabledActor<?>)cellPicker.GetActor();
 					// TODO check to see that the actor belongs to the currently visible plugin, if not ignore pick
@@ -353,30 +339,22 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public Timeline getTimeline() {
 		return timeline;
 	}
-
-	public void setPointerPosition(double[] ds)
-	{
-		pointerPosition = ds;
-	}
-	public double[] getPointerPosition()
-	{
-		return pointerPosition;
-	}
+	
 	public static File getRootPluginDir(){
 		return  new File( getCWD() + File.separator+ "data");
 	}
+	
 	public static File getCWD(){
 
 		if(getCWD==null)
 		{
-			getCWD=new File(System.getProperty("user.dir"));
+			getCWD = new File(System.getProperty("user.dir"));
 		}
 		//System.out.println("user.dir is: " + System.getProperty("user.dir"));
 		return getCWD;
 	}
 
-	private void addDefaultActors()
-	{
+	private void addDefaultActors() {
 		// render window locks up and won't repaint if there are zero actors. add a blank actor to prevent this
 		vtkActor blankActor = new vtkActor();
 		renderWindow.getRenderer().AddActor(blankActor);
@@ -422,10 +400,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 
 	public vtkActor getGrid() {
-		// TODO Auto-generated method stub
 		return this.tempGlobeScene;
 	}
-
 
 	private void setUpPluginTabs() {
 		pluginGUIPanel.add(pluginTabPane);
@@ -434,9 +410,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		pluginGUIScrollPane = new JScrollPane(pluginGUIPanel);
 		//		pluginSplitPane = null;
 	}
+	
 	//create frame and tabbed pane in main window
-	private void setMainFrame()
-	{	
+	private void setMainFrame() {	
 		this.setTitle("SCEC VDO VTK");
 		this.setMenuBar(mainMenu.getMenuBar());
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -448,8 +424,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		this.setVisible(true);
 
 	}
-	public JPanel getmainFrame()
-	{
+	public JPanel getmainFrame() {
 		return mainPanel;
 	}
 	//viewRange
@@ -462,7 +437,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 
 	public void addPluginGUI(String id, String title, JComponent gui) {
-
 		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin"
 				&& id != "org.scec.vdo.drawingToolsPlugin") {
 			//Logger
@@ -540,21 +514,18 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 
 	private boolean isPluginGuiShowing() {
-		// TODO Auto-generated method stub
 		return (pluginTabPane.getTabCount() > 0);
 	}
 
 
 	//update renderwindow and focus on actor
-	public static void updateRenderWindow(vtkActor actor)
-	{
+	public static void updateRenderWindow(vtkActor actor) {
 		renderWindow.Render();
 		renderWindow.getRenderer().ResetCamera(actor.GetBounds());
 		//renderWindow.repaint(); 
 	}
 	//just update renderwindow
-	public static void updateRenderWindow()
-	{
+	public static void updateRenderWindow() {
 		//updateActors(getActorToAllActors());
 		renderWindow.Render();
 		renderWindow.getComponent().repaint();
@@ -572,8 +543,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		updateCanvasSize();
 		SwingUtilities.updateComponentTreeUI(this);
 	}
+	
 	public void updateCanvasSize() {
-
 		canvasSize = getSize();
 		xCenter = (int) canvasSize.getWidth() / 2;
 		yCenter = (int) canvasSize.getHeight() / 2;
@@ -609,25 +580,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		// Get the id of the selected plugin
 		String selectedPlugin = c.getName();
 	}
-	/*public void componentHidden(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void componentMoved(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void componentResized(ComponentEvent e) {
-		/*if (showNavMap) {
-			viewPlatform.setPlatformGeometry(getHUDGeometry());
-			you.setRedDot(keyBehv.getFocalPoint());
-		}*/
-	/*updateCanvasSize();
-	}
-	public void componentShown(ComponentEvent e) {
-	}*/
 
 
 

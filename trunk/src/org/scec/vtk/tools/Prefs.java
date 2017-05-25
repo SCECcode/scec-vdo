@@ -168,9 +168,9 @@ public class Prefs {
      * @return the data library directory path
      */
     public static String getLibLoc() {
-//    	System.out.println("libloc"+ prefs.get("LIB",defaultLibLocation));
-//    	System.out.flush();
-        return prefs.get("LIB",defaultLibLocation);
+    	System.out.println("libloc"+ prefs.get("LIB",defaultLibLocation));
+    	System.out.flush();
+        return prefs.get("LIB", defaultLibLocation);
     }
     
     public static String getDefaultLocation()
