@@ -40,7 +40,7 @@ public abstract class AbstractMP4Renderer extends AbstractThreadedRenderer {
 		// force to be even, required for h264
 		this.width = width - width % 2;
 		this.height = height - height % 2;
-		if (D) System.out.println("Creating h.264 encoder, size="+this.width+"x"+this.height+" (orig "+width+"x"+height+")");
+		if (D) System.out.println("Creating MP4 encoder, size="+this.width+"x"+this.height+" (orig "+width+"x"+height+")");
 		this.fps = getRationalFPS(fps);
 		if (D) System.out.println("Input fps="+fps+". Rational: "+this.fps.getNum()+"/"+this.fps.getDen());
 		//		enc = new SequenceEncoder8Bit(NIOUtils.writableChannel(outputFile), r);
