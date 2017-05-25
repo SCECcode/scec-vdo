@@ -690,7 +690,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		//masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
 		try {
 			//call usgs service to obtain earthquake catalog
-			service = new EventWebService(new URL("http://earthquake.usgs.gov/fdsnws/event/1/"));
+			service = new EventWebService(new URL("https://earthquake.usgs.gov/fdsnws/event/1/"));
 		} catch (MalformedURLException e) {
 			ExceptionUtils.throwAsRuntimeException(e);
 		}
