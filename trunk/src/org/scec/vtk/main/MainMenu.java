@@ -75,12 +75,11 @@ public class MainMenu implements ActionListener, ItemListener{
 	private ViewerSizePanel sizePanel;
 	private CheckboxMenuItem focalPointItem;
 
-	static Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
-	// TODO why are these static?
-	static Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
-	static Map<Plugin, PluginActors> pluginActors = new HashMap<>();
-	static Map<String, Plugin> activePlugins = new HashMap<String, Plugin>();
-	private static Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
+	Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
+	Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
+	Map<Plugin, PluginActors> pluginActors = new HashMap<>();
+	Map<String, Plugin> activePlugins = new HashMap<String, Plugin>();
+	private Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
 	public MainMenu(){
@@ -453,11 +452,11 @@ public class MainMenu implements ActionListener, ItemListener{
 		timelineFrame.setVisible(visible);
 	}
 
-	public static  Map<String, Plugin> getActivePlugins() {
+	public Map<String, Plugin> getActivePlugins() {
 		return activePlugins;
 	}
 
-	public  Map<String, Plugin> getLoadedPluginsAsMap() {
+	public Map<String, Plugin> getLoadedPluginsAsMap() {
 		return loadedPlugins;
 	}
 
@@ -656,7 +655,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		Plugin plugin = loadedPlugins.remove(id);
 		plugin.unload();
 	}
-	public static void updateMenu(String id){
+	public void updateMenu(String id){
 		CheckboxMenuItem mi = pluginMenuItems.get(id);
 		mi.setState(false);
 
