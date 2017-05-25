@@ -85,7 +85,7 @@ public class Prefs {
         }
         // initialize default library location
         defaultLibLocation = 
-        	System.getProperty("user.home") + platformFileSeparator + "ScecVideoPrefs";
+        	System.getProperty("user.home") + platformFileSeparator + ".scec_vdo";
         initialized = true;
     }
     
@@ -168,8 +168,8 @@ public class Prefs {
      * @return the data library directory path
      */
     public static String getLibLoc() {
-    	System.out.println("libloc"+ prefs.get("LIB",defaultLibLocation));
-    	System.out.flush();
+//    	System.out.println("libloc"+ prefs.get("LIB",defaultLibLocation));
+//    	System.out.flush();
         return prefs.get("LIB", defaultLibLocation);
     }
     
