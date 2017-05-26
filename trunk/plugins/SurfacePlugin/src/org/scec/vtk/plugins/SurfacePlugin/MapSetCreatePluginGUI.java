@@ -838,7 +838,7 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 			//image file info
 			   temp.addImageInfo(new ImageInfo(imageName, temp.getImageFilePath(), ul, lr, meshType));
 			//create surface plus texture
-			   if(temp.getSurfaceFilePath()!="-")
+			   if(!temp.getSurfaceFilePath().equals("-"))
 			{
 				   temp.addGeographicSurfaceInfo(new GeographicSurfaceInfo(temp.getSurfaceFilePath(), ul, lr));
 				   ipg.display(temp.getGeoInfo(),temp.getImageInfo());
