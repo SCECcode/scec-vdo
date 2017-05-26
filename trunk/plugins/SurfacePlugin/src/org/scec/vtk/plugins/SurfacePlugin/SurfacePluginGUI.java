@@ -496,7 +496,8 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				imageData[4] = 0; //Altitude
 
 				String surfaceTemp="-";
-				String imageTemp="CAlDEM_new"; // image name
+//				String imageTemp="CAlDEM_new"; // image name
+				String imageTemp="CAlDEM_old"; // image name
 				String imageExt=".png"; //image file extension type
 				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
 				System.out.println("Loaded File Path: "+loadedFilePath);
@@ -731,7 +732,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 					//textureCoordinates.InsertTuple2(num,(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)));//, xForm[2]);
 					pts.InsertPoint(pointIndex,xForm);
 
-					System.out.println("(" + lat + ", " + lon + ") = texture (" + longRatio + ", " + (lati/(float)latIncrements) + ")");
+//					System.out.println("(" + lat + ", " + lon + ") = texture (" + longRatio + ", " + (lati/(float)latIncrements) + ")");
 
 					//Point 2
 					height = (firstLineOfData[j]/200.0+altitude);
@@ -741,7 +742,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 					pts.InsertPoint(pointIndex+1,xForm);
 					textureCoordinates.InsertTuple2( pointIndex+1, longRatio,(lati+1)/(float)latIncrements);
 
-					System.out.println("(" + lat + ", " + lon + ") = texture (" + longRatio + ", " + (lati/(float)latIncrements) + ")");
+//					System.out.println("(" + lat + ", " + lon + ") = texture (" + longRatio + ", " + (lati/(float)latIncrements) + ")");
 
 					
 					triangleStrip.GetPointIds().SetId(stripIndex,pointIndex);	
@@ -878,13 +879,16 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		{
 			for(double j=rightLon;j>leftLon;j--)
 			{
-
+				//We put this in instead of using i-1, j-1 everywhere
+				//for cases in which the width and/or height aren't an integer number of degrees
+				double nextLat = Math.max(i-1, lowerLat);
+				double nextLon = Math.max(j-1, leftLon);
+				
 				vtkPolygon polygon = new vtkPolygon();
 				polygon.GetPointIds().SetNumberOfIds(4);
-				points.InsertNextPoint(Transform.transformLatLon(i-1, j));
+				points.InsertNextPoint(Transform.transformLatLon(nextLat, j));
 				u=(leftLon-(j))/(leftLon-rightLon);
-				v=(lowerLat-(i-1))/(lowerLat-upperLat);
-//				 System.out.println("(" + (i-1) + ", " + j + ") = texture (" + u + ", " + v + ")");
+				v=(lowerLat-nextLat)/(lowerLat-upperLat);
 				u=clampTextureCoord(u);
 				v=clampTextureCoord(v);
 				textureCoordinates.InsertNextTuple2(u,v);
@@ -899,8 +903,8 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				textureCoordinates.InsertNextTuple2(u,v);
 				polygon.GetPointIds().SetId(1, ptCount++);
 
-				points.InsertNextPoint(Transform.transformLatLon(i, j-1));
-				u=(leftLon-(j-1))/(leftLon-rightLon);
+				points.InsertNextPoint(Transform.transformLatLon(i, nextLon));
+				u=(leftLon-nextLon)/(leftLon-rightLon);
 				v=(lowerLat-i)/(lowerLat-upperLat);
 //				 System.out.println("(" + (i) + ", " + (j-1) + ") = texture (" + u + ", " + v + ")");
 				u=clampTextureCoord(u);
@@ -908,9 +912,9 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				textureCoordinates.InsertNextTuple2(u,v);
 				polygon.GetPointIds().SetId(2, ptCount++);
 
-				points.InsertNextPoint(Transform.transformLatLon(i-1, j-1));
-				u=(leftLon-(j-1))/(leftLon-rightLon);
-				v=(lowerLat-(i-1))/(lowerLat-upperLat);
+				points.InsertNextPoint(Transform.transformLatLon(nextLat, nextLon));
+				u=(leftLon-nextLon)/(leftLon-rightLon);
+				v=(lowerLat-nextLat)/(lowerLat-upperLat);
 //				 System.out.println("(" + (i-1) + ", " + (j-1) + ") = texture (" + u + ", " + v + ")");
 				u=clampTextureCoord(u);
 				v=clampTextureCoord(v);
