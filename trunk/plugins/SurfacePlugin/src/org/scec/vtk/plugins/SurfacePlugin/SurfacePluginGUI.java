@@ -731,6 +731,8 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 					//textureCoordinates.InsertTuple2(num,(float)((lon-w)/(e-w)), (float)((lat-s)/(n-s)));//, xForm[2]);
 					pts.InsertPoint(pointIndex,xForm);
 
+					System.out.println("(" + lat + ", " + lon + ") = texture (" + longRatio + ", " + (lati/(float)latIncrements) + ")");
+
 					//Point 2
 					height = (firstLineOfData[j]/200.0+altitude);
 					lat = (s+(i+1)*latStep);
@@ -739,10 +741,15 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 					pts.InsertPoint(pointIndex+1,xForm);
 					textureCoordinates.InsertTuple2( pointIndex+1, longRatio,(lati+1)/(float)latIncrements);
 
+					System.out.println("(" + lat + ", " + lon + ") = texture (" + longRatio + ", " + (lati/(float)latIncrements) + ")");
+
+					
 					triangleStrip.GetPointIds().SetId(stripIndex,pointIndex);	
 					triangleStrip.GetPointIds().SetId(stripIndex+1,pointIndex+1);
 					pointIndex+=2;
 					stripIndex+=2;
+					
+					
 				} catch (Exception ex) {
 					System.out.println("Exception " + ex);
 					System.out.println("i=" + i + " j=" + j);
@@ -751,7 +758,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 			}
 			cells.InsertNextCell(triangleStrip);
 		}
-
+		
 		vtkPolyData triangleStripPolydata =new vtkPolyData();
 		triangleStripPolydata.SetPoints(pts);
 		triangleStripPolydata.SetStrips(cells);
@@ -854,7 +861,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		vtkPoints points = new vtkPoints();
 		vtkDoubleArray textureCoordinates = new vtkDoubleArray();
 		textureCoordinates.SetName("TextureCoordinates");
-		textureCoordinates.SetNumberOfComponents(3);
+		textureCoordinates.SetNumberOfComponents(2);
 		vtkCellArray polygons = new vtkCellArray();
 
 		double upperLat = upperLeft[0];
@@ -877,36 +884,36 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 				points.InsertNextPoint(Transform.transformLatLon(i-1, j));
 				u=(leftLon-(j))/(leftLon-rightLon);
 				v=(lowerLat-(i-1))/(lowerLat-upperLat);
+//				 System.out.println("(" + (i-1) + ", " + j + ") = texture (" + u + ", " + v + ")");
 				u=clampTextureCoord(u);
-				v=clampTextureCoord(v);;
-				// System.out.println(k+","+u);
+				v=clampTextureCoord(v);
 				textureCoordinates.InsertNextTuple2(u,v);
 				polygon.GetPointIds().SetId(0, ptCount++);
 
 				points.InsertNextPoint(Transform.transformLatLon(i, j));
 				u=(leftLon-j)/(leftLon-rightLon);
 				v=(lowerLat-i)/(lowerLat-upperLat);
+//				 System.out.println("(" + (i) + ", " + j + ") = texture (" + u + ", " + v + ")");
 				u=clampTextureCoord(u);
 				v=clampTextureCoord(v);
-				// System.out.println(k+","+u);
 				textureCoordinates.InsertNextTuple2(u,v);
 				polygon.GetPointIds().SetId(1, ptCount++);
 
 				points.InsertNextPoint(Transform.transformLatLon(i, j-1));
 				u=(leftLon-(j-1))/(leftLon-rightLon);
 				v=(lowerLat-i)/(lowerLat-upperLat);
+//				 System.out.println("(" + (i) + ", " + (j-1) + ") = texture (" + u + ", " + v + ")");
 				u=clampTextureCoord(u);
 				v=clampTextureCoord(v);
-				// System.out.println(k+","+u);
 				textureCoordinates.InsertNextTuple2(u,v);
 				polygon.GetPointIds().SetId(2, ptCount++);
 
 				points.InsertNextPoint(Transform.transformLatLon(i-1, j-1));
 				u=(leftLon-(j-1))/(leftLon-rightLon);
 				v=(lowerLat-(i-1))/(lowerLat-upperLat);
+//				 System.out.println("(" + (i-1) + ", " + (j-1) + ") = texture (" + u + ", " + v + ")");
 				u=clampTextureCoord(u);
 				v=clampTextureCoord(v);
-				// System.out.println(k+","+u);
 				textureCoordinates.InsertNextTuple2(u,v);
 				polygon.GetPointIds().SetId(3, ptCount++);
 				polygons.InsertNextCell(polygon);
@@ -923,7 +930,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		//Create a mapper and actor
 		vtkPolyDataMapper mapper =new vtkPolyDataMapper();
 		mapper.SetInputData(polygonPolyData);
-		//mapper.ScalarVisibilityOff();
+//		mapper.ScalarVisibilityOff();
 		vtkActor actor = new vtkActor();
 		actor.SetMapper(mapper);
 		actor.SetTexture(texture);
