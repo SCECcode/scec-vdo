@@ -93,7 +93,6 @@ public class PoliticalBoundariesGUI implements ActionListener{
 		createCheckBoxes("Oceania", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
 		createCheckBoxes("South America", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
 		createCheckBoxes("United States", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,true);
-		createCheckBoxes("Scott's Continent", this.upperCheckBoxButtons, this.politicalBoundarySubPanelUpper, itemListenerUpper,false);
 
 		addPanelToMainPanel(this.politicalBoundarySubPanelUpper);
 
