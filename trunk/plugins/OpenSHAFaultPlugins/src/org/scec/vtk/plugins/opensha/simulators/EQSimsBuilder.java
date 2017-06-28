@@ -1,24 +1,21 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
-import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.opensha.commons.data.NameIDPairing;
 import org.opensha.commons.data.NamedComparator;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
@@ -26,28 +23,22 @@ import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
-import org.opensha.commons.util.cpt.CPT;
-import org.opensha.commons.util.cpt.CPTVal;
+import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
-import org.opensha.sha.simulators.SimulatorEvent;
-import org.opensha.sha.simulators.RectangularElement;
 import org.opensha.sha.simulators.SimulatorElement;
+import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.iden.MagRangeRuptureIdentifier;
 import org.opensha.sha.simulators.iden.RuptureIdentifier;
 import org.opensha.sha.simulators.parsers.EQSIMv06FileReader;
 import org.opensha.sha.simulators.parsers.RSQSimFileReader;
-import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultIDComparator;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.tools.Prefs;
-
-import com.google.common.base.Preconditions;
 
 public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener {
 	
@@ -167,16 +158,56 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		System.out.println("done.");
 	}
 	
-	private File getCacheFile(String fName) throws IOException {
-		// first see if it's cached
-		File file = new File(dataDir.getAbsolutePath() + File.separator + fName);
-		if (file.exists())
-			return file;
-		// if we got this far, we need to download and cache it
-		URL url = new URL("http://opensha.usc.edu/data/simulators/"+fName);
-		downloadURL(url, file);
-		return file;
+	private File getCachePath(String fName) {
+		return new File(dataDir.getAbsolutePath() + File.separator + fName);
 	}
+	
+	private boolean isFileCached(String fName) {
+		return getCachePath(fName).exists();
+	}
+	
+	private void downloadGeomAsynchronous(final String fName) {
+		final CalcProgressBar progress = new CalcProgressBar(null, "Downloading...",
+				"Downloading selected geometry file.This requires an active internet connection.", false);
+//		progress.setModal(true);
+		progress.setIndeterminate(true);
+		progress.setVisible(true);
+		final File file = getCachePath(fName);
+		final Runnable fireRunnable = new Runnable() {
+			
+			@Override
+			public void run() {
+				progress.setVisible(false);
+				fireTreeChangeEvent();
+			}
+		};
+		Runnable downloadRunnable = new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					URL url = new URL("http://opensha.usc.edu/data/simulators/"+fName);
+					downloadURL(url, file);
+					// fire tree change event in EDT
+					SwingUtilities.invokeLater(fireRunnable);
+				} catch (IOException e) {
+					ExceptionUtils.throwAsRuntimeException(e);
+				}
+			}
+		};
+		new Thread(downloadRunnable).start();
+	}
+	
+//	private File getCacheFile(String fName) throws IOException {
+//		// first see if it's cached
+//		File file = new File(dataDir.getAbsolutePath() + File.separator + fName);
+//		if (file.exists())
+//			return file;
+//		// if we got this far, we need to download and cache it
+//		URL url = new URL("http://opensha.usc.edu/data/simulators/"+fName);
+//		downloadURL(url, file);
+//		return file;
+//	}
 
 	@Override
 	public void buildTree(DefaultMutableTreeNode root) {
@@ -193,16 +224,23 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			if (eventFileParam.getValue() == null)
 				eventFileParam.setDefaultInitialDir(file.getParentFile());
 		} else {
-			try {
-				file = getCacheFile(input);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+//			try {
+				if (isFileCached(input)) {
+					file = getCachePath(input);
+				} else {
+					// load asynchronous
+					fireNewGeometry(null);
+					downloadGeomAsynchronous(input); // will fire new tree change event when done
+					return;
+				}
+//			} catch (IOException e) {
+//				throw ExceptionUtils.asRuntimeException(e);
+//			}
 		}
 		try {
 			elements = loadGeometry(file);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw ExceptionUtils.asRuntimeException(e);
 		}
 		eventFileParam.setValue(null);
 		
