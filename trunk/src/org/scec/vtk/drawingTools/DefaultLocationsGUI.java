@@ -69,7 +69,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private DrawingToolsGUI guiparent;
 // We took out the ability to search for a city within this tab as we have a better search
 // functionality in its own tab. I'll leave this commented out in case at any point in the future
-// we decide it is worthwhile to have a search that doesn't require internet access.
+//we decide it is worthwhile to have a search that doesn't require internet access.
 //	private JButton searchButton = new JButton("Go!");
 //	private JTextField searchCity = new JTextField();
 	
