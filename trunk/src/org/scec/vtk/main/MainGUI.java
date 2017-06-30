@@ -5,6 +5,7 @@ import java.awt.CheckboxMenuItem;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -37,12 +38,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 
 import org.apache.log4j.Logger;
 import org.scec.vtk.commons.legend.LegendItem;
@@ -85,8 +91,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private final int BORDER_SIZE = 10;
 	//	private static JFrame frame ;
 	private static vtkJoglPanelComponent  renderWindow;
+	//pluginTabPane contains tabs with all plugins
 	private JTabbedPane pluginTabPane;
-	//Create Main Panel
+	//Create Main Panel/ Main panel contains toolBar and VTK rendered 3D image; 
 	public JPanel mainPanel;
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
@@ -108,9 +115,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private static File getCWD;
 
 	public MainMenu mainMenu;
-
+	//pluginGUIPanel contains searchBar and pluginTabPane
 	private JPanel pluginGUIPanel;
+	//pluginGUIScrollPane contains the scroll bar.
 	private JScrollPane pluginGUIScrollPane;
+	//pluginSplitPane splits mainPanel and pluginGUIPanel
 	private JSplitPane pluginSplitPane;
 	private int xeBorder=0;
 	private int ysBorder=0;
@@ -120,6 +129,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	
 	private Timeline timeline;
 	private TimelineGUI timelineGUI;
+	
+	private JTextField searchBar;
+	private JPanel searchBarGUI;
+	
+	private JToolBar toolBar;
+	private JPanel toolBarGUI;
 
 	//default starting cam coordinates
 	double[] camCord = {7513.266063258975,
@@ -135,14 +150,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private vtkActor focalPointActor = new vtkActor();
 	
 	private ArrayList<PluginActorsChangeListener> actorsChangeListeners = new ArrayList<>();
+	
 
 	public MainGUI() {
 		Prefs.init();
 		renderWindow = new vtkJoglPanelComponent();
 		
+
 		mainPanel = new JPanel(new BorderLayout());
 		
-
 		renderWindow.getRenderer().SetBackground(0,0,0);
 		
 		// this should enable depth peeling, but doesn't seem to work. at least for Kevin on linux.
@@ -154,20 +170,24 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 ////		renderWindow.getRenderer().SetOcclusionRatio(0.1);
 //		renderWindow.getRenderer().SetMaximumNumberOfPeels(1000);
 //		renderWindow.getRenderer().SetOcclusionRatio(0);
-
 		mainMenu = new MainMenu();
+		
+		pluginGUIPanel = new JPanel(new BorderLayout());
+		
 
-		pluginGUIPanel = new JPanel();
 		pluginTabPane =  new JTabbedPane();
-
+	//	pluginTabPane.setPreferredSize(new Dimension(100, 600));
+		//Set up all default GUI elements
 		Info.setMainGUI(this);
 		setUpPluginTabs();
+		//setUpSearchBar();
+		//setUpToolBar();
 
 		pluginSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainPanel, pluginGUIScrollPane);
 		pluginSplitPane.setOneTouchExpandable(false);
 		pluginSplitPane.setResizeWeight(1);
 		pluginSplitPane.setDividerLocation(0.5);
-
+		
 		//Set preferred sizes
 		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
 		pluginGUIScrollPane.setMinimumSize(d);
@@ -175,7 +195,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		Dimension minimumSize = new Dimension(100, 50);
 		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		renderWindow.getComponent().setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
-
 		timeline = new Timeline();
 		timelineGUI = new TimelineGUI(timeline);
 		mainMenu.setupTimeline(timeline, timelineGUI);
@@ -234,7 +253,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		final vtkCellPicker cellPicker = new vtkCellPicker();
 		cellPicker.SetTolerance(0.001);
 		
-		final boolean clickDebug = false;
+		final boolean clickDebug = true;
 
 		renderWindow.getComponent().addMouseListener(new MouseAdapter() {
 			@Override
@@ -403,8 +422,26 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		return this.tempGlobeScene;
 	}
 
+	private void setUpToolBar() {
+		toolBar = new JToolBar();
+		JButton test = new JButton("what is up");
+		JButton test2 = new JButton("hello im button dos");
+		toolBar.add(test);
+		toolBar.add(test2);
+		toolBarGUI = new JPanel(new BorderLayout());
+		toolBarGUI.add(toolBar, BorderLayout.CENTER);
+		mainPanel.add(toolBarGUI, BorderLayout.PAGE_START);
+	}
+	
+	private void setUpSearchBar() {
+		searchBar = new JTextField();
+		searchBarGUI = new JPanel(new BorderLayout());
+		searchBarGUI.add(searchBar, BorderLayout.CENTER);
+		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_START);
+	}
 	private void setUpPluginTabs() {
-		pluginGUIPanel.add(pluginTabPane);
+		//pluginTabPane.setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+		pluginGUIPanel.add(pluginTabPane, BorderLayout.PAGE_START);
 		pluginTabPane.addChangeListener((ChangeListener) this);
 		pluginTabPane.setBorder(BorderFactory.createEtchedBorder());
 		pluginGUIScrollPane = new JScrollPane(pluginGUIPanel);
@@ -453,7 +490,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		allPanel.add(Box.createVerticalGlue());
 		allPanel.add(new JPanel());
 		JScrollPane pluginTab = new JScrollPane(allPanel);
-		pluginTab.setName(id);		
+		pluginTab.setName(id);
 
 		// Add the tab to the tab panel
 		pluginTabPane.addTab(title, pluginTab);
@@ -757,7 +794,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		private static final long serialVersionUID = 1L;
 
 		/**
-		 * @see JCheckBoxMenuItem#JCheckBoxMenuItem()
+		 * @see MenuItem#JCheckBoxMenuItem()
 		 */
 		public StayOpenCheckBoxMenuItem() {
 			super();
@@ -903,6 +940,23 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 	
 	public static void main(String[] args) {
+		try {
+            // Set System L&F
+			UIManager.setLookAndFeel(
+            UIManager.getSystemLookAndFeelClassName());
+		} 
+		catch (UnsupportedLookAndFeelException e) {
+			// handle exception
+		}
+		catch (ClassNotFoundException e) {
+			// handle exception
+		}
+		catch (InstantiationException e) {
+			// handle exception
+	    }
+	    catch (IllegalAccessException e) {
+	       // handle exception
+	    }
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				new MainGUI();
