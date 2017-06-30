@@ -94,6 +94,8 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	private int  numText =0;
 	private Vector<DrawingTool> drawingToolsArray ;
 	private Vector<DrawingTool> highwayToolsArray;
+	
+	private SelectLocations testLocPanel;
 
 	public DrawingToolsGUI(PluginActors pluginActors){
 		pluginActors.addActor(appendActors.getAppendedActor());
@@ -104,6 +106,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		this.drawingToolTable = new DrawingToolsTable(this);
 		this.highwayToolTable = new DrawingToolsTable(this);
 		defaultLocations = new DefaultLocationsGUI(this);
+		testLocPanel = new SelectLocations();
 		JScrollPane drawingToolSubPanelUpper = new JScrollPane();
 		drawingToolSubPanelUpper.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		drawingToolSubPanelUpper.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);

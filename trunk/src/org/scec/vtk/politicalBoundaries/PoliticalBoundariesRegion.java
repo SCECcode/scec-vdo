@@ -101,7 +101,6 @@ public class PoliticalBoundariesRegion  {
 				while (line!=null){
 					dataLine = new StringTokenizer(line);
 					temp[0] = dataLine.nextToken();	temp[1] = dataLine.nextToken();		
-					
 					//Upon reaching "segment", add to the current highway all the coordinates just
 					//read in and check to see if the next segment belongs to a new highway
 					if (temp[0].equals("segment"))
