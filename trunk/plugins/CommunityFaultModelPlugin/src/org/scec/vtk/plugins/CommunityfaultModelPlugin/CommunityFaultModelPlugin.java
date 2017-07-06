@@ -65,6 +65,8 @@ public class CommunityFaultModelPlugin extends ActionPlugin implements StatefulP
 		f3DGui = new CommunityFaultModelGUI(getPluginActors());
 		guidisplayed = true;
 		setActors();
+		
+		
 		return f3DGui;
 	}
 	public void unload()
@@ -95,5 +97,6 @@ public class CommunityFaultModelPlugin extends ActionPlugin implements StatefulP
 		if(state==null)
 			state = new CommunityFaultModelPluginState(this.f3DGui);
 		return state;
+		
 	}
 }

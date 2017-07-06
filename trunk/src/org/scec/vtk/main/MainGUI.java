@@ -137,7 +137,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private JPanel toolBarGUI;
 
 	//default starting cam coordinates
-	double[] camCord = {7513.266063258975,
+	static double[] camCord = {7513.266063258975,
 			-4588.568400980608,
 			6246.237592377226,//position
 			4375.8873291015625,
@@ -236,14 +236,21 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 					//TODO: change start cam coordinates to be as per the region assigned by default they are set for California
 					//reset view position to default 
 					if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
-						vtkCamera tmpCam = new vtkCamera();
+						//vtkCamera tmpCam = new vtkCamera();
 
-						tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
-						tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
-						tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
-						renderWindow.getRenderer().SetActiveCamera(tmpCam);
+						//tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
+						//tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
+						//tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
+						//renderWindow.getRenderer().SetActiveCamera(tmpCam);
+						renderWindow.getRenderer().GetActiveCamera().SetPosition(camCord[0],camCord[1],camCord[2]);
+						renderWindow.getRenderer().GetActiveCamera().SetFocalPoint(camCord[3],camCord[4],camCord[5]);
+						renderWindow.getRenderer().GetActiveCamera().SetViewUp(camCord[6],camCord[7],camCord[8]);
+						
+						System.out.println("esc 0");
 						renderWindow.getRenderer().ResetCameraClippingRange();
-						renderWindow.getComponent().repaint();				    		
+						System.out.println("esc 1");
+						renderWindow.getComponent().repaint();
+						System.out.println("esc 2");
 					}
 				}
 			}
@@ -411,6 +418,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		mainMenu.availablePlugins.put(ids.get(2), pluginInfo.get(2));
 		mainMenu.activatePlugin(ids.get(2));
 		
+		
+
+		
 		pluginTabPane.setSelectedIndex(0);
 	}
 	
@@ -491,6 +501,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		allPanel.add(new JPanel());
 		JScrollPane pluginTab = new JScrollPane(allPanel);
 		pluginTab.setName(id);
+
 
 		// Add the tab to the tab panel
 		pluginTabPane.addTab(title, pluginTab);

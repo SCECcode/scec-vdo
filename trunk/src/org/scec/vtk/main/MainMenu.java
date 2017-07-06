@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
+import java.awt.Button;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -22,10 +23,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
@@ -39,6 +44,7 @@ import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.plugins.StatefulPlugin;
+import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.timeline.gui.ViewerSizePanel;
@@ -72,13 +78,15 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem saveItemVTK;
 	private MenuItem saveItemOBJ;
 	private MenuItem resizeWindow;
+	private MenuItem escapeWindow; 
 	private ViewerSizePanel sizePanel;
 	private CheckboxMenuItem focalPointItem;
 
 	Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
+	
 	Map<Plugin, PluginActors> pluginActors = new HashMap<>();
-	Map<String, Plugin> activePlugins = new HashMap<String, Plugin>();
+	Map<String, Plugin> activePlugins = new HashMap<String, Plugin>(); //is this data structure accurately describing the current plug ins???
 	private Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
@@ -88,6 +96,11 @@ public class MainMenu implements ActionListener, ItemListener{
 		setupFileMenu();
 
 		// manually add Display menu so that it is second from the left
+		Menu escapeMenu = new Menu();
+//		Button escape = new Button("escape");
+		escapeMenu.setLabel("Escape");
+		escapeMenu.setName("Escape");
+		
 		Menu displayMenu = new Menu();
 		displayMenu.setLabel("Display");
 		displayMenu.setName("Display");
@@ -101,10 +114,12 @@ public class MainMenu implements ActionListener, ItemListener{
 				Info.getMainGUI().setFocalPointVisible(focalPointItem.getState());
 			}
 		});
+		//JMenuBar escapeMenu; 
 		menuBar.add(displayMenu);
-		
-
+//		menuBar.add(escape);
+		///menuBar.add(escapeMenu); 
 		setupWindowMenu();
+		//escapeM();
 	}
 
 
@@ -121,6 +136,11 @@ public class MainMenu implements ActionListener, ItemListener{
 		menuBar.add(windowMenu);
 		windowMenu.addActionListener(this);
 		this.resizeWindow.addActionListener(this);
+		
+		//escape experiment
+		escapeWindow = new MenuItem("Recenter image");
+		windowMenu.add(escapeWindow); 
+		escapeWindow.addActionListener(this);
 	}
 
 
@@ -229,7 +249,8 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 		
 	}
-	public void openVTKObj()
+	
+public void openVTKObj()
 	{
 
 
@@ -335,9 +356,11 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 		else if(eventSource == saveItem)
 		{
-			JFileChooser chooser = new JFileChooser();
-			int ret = chooser.showSaveDialog(Info.getMainGUI());
-			if (ret == JFileChooser.APPROVE_OPTION) {
+			System.out.println("Saving norm file");
+			JFileChooser chooser = new JFileChooser(); //making a file
+			int ret = chooser.showSaveDialog(Info.getMainGUI()); //is this function accurately describing the image that the user sees???
+			if (ret == JFileChooser.APPROVE_OPTION) {//once user hits save -- we start to process the data to a file
+				
 				Document document = DocumentHelper.createDocument();
 				Element root = document.addElement("root");
 				File file = chooser.getSelectedFile();
@@ -345,16 +368,37 @@ public class MainMenu implements ActionListener, ItemListener{
 
 				Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
 						loadedPlugins.values());
+				
+				int stateCntr= 0; //statecounter 
+				
+				/*for(PluginActors i:pluginActors.forEach(action);)){
+					System.out.println("Actor Plugin #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
+
+				}*/
+				getLoadedPluginsAsMap(); 
+				
+				for (Entry<Plugin, PluginActors> entry : pluginActors.entrySet())
+				{
+				    System.out.println(entry.getKey() + "/" + entry.getValue());
+				}
+				
 				for(Plugin pluginDescriptor:pluginDescriptors)
 				{
 
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
-					if (plugin instanceof StatefulPlugin) {
+					if (plugin instanceof StatefulPlugin) { //what plug ins are not Stateful plugins??
+						
+						
+						System.out.println("Stateful plug-in #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
+						
+						stateCntr++;
 						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
 						//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
 						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
 
 					}
+					
+						
 				}
 				//save timeline state
 				Element pluginNameElement = root.addElement("Timeline-Plugin");
@@ -364,6 +408,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			else {
 				System.out.println("Unhandled event");
 			}
+		System.out.println("done saving");
 		} else if(eventSource == resizeWindow) {
 			if (sizePanel == null)
 				sizePanel = new ViewerSizePanel(null); // null means this isn't render mode, but rather actual size mode
@@ -373,8 +418,32 @@ public class MainMenu implements ActionListener, ItemListener{
 				Dimension dims = sizePanel.getCurDims();
 				Info.getMainGUI().resizeViewer(dims.width, dims.height);
 			}
+			
 		}
+		else if(eventSource==escapeWindow)
+		{
+			if(Info.getMainGUI().getRenderWindow().getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
+				//vtkCamera tmpCam = new vtkCamera();
+				
+				//tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
+				//tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
+				//tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
+				//renderWindow.getRenderer().SetActiveCamera(tmpCam);
+				Info.getMainGUI().getRenderWindow().getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
+				Info.getMainGUI().getRenderWindow().getRenderer().GetActiveCamera().SetFocalPoint(MainGUI.camCord[3], MainGUI.camCord[4],MainGUI.camCord[5]);
+				Info.getMainGUI().getRenderWindow().getRenderer().GetActiveCamera().SetViewUp(MainGUI.camCord[6], MainGUI.camCord[7],MainGUI.camCord[8]);
+				
+				System.out.println("esc2.0 0");
+				Info.getMainGUI().getRenderWindow().getRenderer().ResetCameraClippingRange();
+				System.out.println("esc2.0 1");
+				Info.getMainGUI().getRenderWindow().getComponent().repaint();
+				System.out.println("esc2.0 2");
+		}
+		
 	}
+			
+		}
+	
 
 	private void saveXMLFile(Document document,Element root,String destinationData) {
 		// TODO Auto-generated method stub
@@ -457,6 +526,10 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 
 	public Map<String, Plugin> getLoadedPluginsAsMap() {
+		for (Entry<String, Plugin> entry : loadedPlugins.entrySet())
+		{
+		    System.out.println(entry.getKey() + "/" + entry.getValue());
+		}
 		return loadedPlugins;
 	}
 
