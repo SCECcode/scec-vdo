@@ -73,6 +73,7 @@ public class Timeline implements StatefulPlugin {
 		availableRenderers.add(new MP4JPEGSequenceRenderer());
 		availableRenderers.add(ImageSequenceRenderer.getPNG());
 		availableRenderers.add(ImageSequenceRenderer.getJPEG());
+		//availableRenderers.add(ImageSequenceRenderer.getGIF());
 		availableRenderers = Collections.unmodifiableList(availableRenderers);
 		renderer = availableRenderers.get(0);
 	}
