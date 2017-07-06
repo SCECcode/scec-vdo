@@ -240,7 +240,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 					renderButton.setEnabled(false);
 				}
 				pauseButton.setEnabled(animator.isScenePlaying());
-				stopButton.setEnabled(true);
+				stopButton.setEnabled(true); //changed to false.. originally true
 			}
 		}
 		
