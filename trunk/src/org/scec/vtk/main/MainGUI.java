@@ -95,6 +95,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private JTabbedPane pluginTabPane;
 	//Create Main Panel/ Main panel contains toolBar and VTK rendered 3D image; 
 	public JPanel mainPanel;
+	
+	public JFrame wizFrame;
+	
+	
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
 	private int yCenter = BORDER_SIZE / 2;
@@ -339,7 +343,16 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				}
 			}
 		});
-	}
+	
+	//Wizard GUI to run with main
+	wizFrame = new JFrame();
+	Wizard wizGui = new Wizard(mainMenu, this);
+    wizFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    wizFrame.getContentPane().add(wizGui);
+    wizFrame.setSize(550, 200);
+    wizFrame.setLocationRelativeTo(null);
+    wizFrame.setVisible(true);
+}
 	
 	public void setFocalPointVisible(boolean visible) {
 		int newVis = visible ? 1 : 0;
