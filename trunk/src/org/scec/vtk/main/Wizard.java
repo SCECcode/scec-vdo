@@ -14,7 +14,7 @@ public class Wizard extends JPanel {
 
    private static final String TITLE_TEXT = "Welcome to SCEC-VDO";
    private static final int TITLE_POINTS = 22;
-   public Wizard(MainMenu mainMenu, MainGUI mainGUI) {
+   public Wizard(final MainMenu mainMenu, final MainGUI mainGUI) {
 	   JPanel mainPanel = new JPanel();
 	   mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
