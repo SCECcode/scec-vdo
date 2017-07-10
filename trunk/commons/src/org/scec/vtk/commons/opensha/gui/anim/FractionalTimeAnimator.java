@@ -22,8 +22,8 @@ public class FractionalTimeAnimator {
 		this.timeCalc = timeCalc;
 		
 		curStep = animPanel.getCurrentStep();
-		totTimeMillis = timeCalc.getAnimTimeUntil(0l, anim.getNumSteps()-1);
-		long curTimeMillis = timeCalc.getAnimTimeUntil(0l, curStep);
+		totTimeMillis = (long)(timeCalc.getAnimTimeUntil(0l, anim.getNumSteps()-1)*1000d+0.5);
+		long curTimeMillis = (long)(timeCalc.getAnimTimeUntil(0l, curStep)*1000d+0.5);
 		curFractTime = (double)curTimeMillis/(double)totTimeMillis;
 	}
 	
