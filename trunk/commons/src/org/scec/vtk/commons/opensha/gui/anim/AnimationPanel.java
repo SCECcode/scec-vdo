@@ -420,7 +420,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		
 		// calculate step
 		if (isTimeBasedEnabled()) {
-			curStep = getTimeCalc().getStepForAnimTime(curAnimTime);
+			curStep = getTimeCalc().getStepForAnimTimeSecs(curAnimTime);
 			curAbsTime = getTimeCalc().getAbsoluteTime(curAnimTime);
 		} else {
 			curStep = curSliderVal - 1;
@@ -516,9 +516,8 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		} else {
 			// calculate animation time
 			StepTimeCalculator timeCalc = getTimeCalc();
-			long millis = timeCalc.getAnimTimeUntil(0l, step);
 			// anim time in secs for this step
-			curAnimTime = millis/1000d;
+			curAnimTime = timeCalc.getAnimTimeUntil(0l, step);
 			
 			// calculate slider value for step
 			if (isTimeBasedEnabled()) {

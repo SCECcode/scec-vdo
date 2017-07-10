@@ -51,13 +51,13 @@ public class AnimThread extends Thread {
 		int currentStep = animPanel.getCurrentStep();
 		long start = System.currentTimeMillis();
 		if (currentStep > 0)
-			start -= timeCalc.getAnimTimeUntil(0l, currentStep);
+			start -= (long)(timeCalc.getAnimTimeUntil(0l, currentStep)*1000d+0.5);
 		
 		long millisEnd;
 		if (timeBased)
 			millisEnd = (long)(durationSeconds*1000l+0.5);
 		else
-			millisEnd = timeCalc.getAnimTimeUntil(0l, anim.getNumSteps()-1);
+			millisEnd = (long)(timeCalc.getAnimTimeUntil(0l, anim.getNumSteps()-1)*1000d+0.5);
 		
 		int newStep;
 		boolean stepsLeft;
@@ -75,7 +75,7 @@ public class AnimThread extends Thread {
 					break;
 			}
 			if (D) System.out.println("curStep = "+currentStep+". it's been " + millis + " milis (end = "+millisEnd+")!");
-			newStep = timeCalc.getStepForAnimTime(currentStep, millis);
+			newStep = timeCalc.getStepForAnimTime(currentStep, ((double)millis)/1000d);
 			if (D) System.out.println("newStep = " + newStep+", numSteps = "+anim.getNumSteps());
 			if (newStep <= currentStep) {
 				if (timeBased) {
@@ -83,7 +83,7 @@ public class AnimThread extends Thread {
 					animPanel.setCurrentAnimTime(millis/1000d);
 					EventManager.flushRenders();
 				}
-				long sleepTime = timeCalc.getAnimTimeUntil(millis, currentStep+1);
+				long sleepTime = (long)(timeCalc.getAnimTimeUntil(millis, currentStep+1)*1000d+0.5);
 				if (timeBased && sleepTime > max_sleep_millis_time_based)
 					sleepTime = max_sleep_millis_time_based;
 				if (sleepTime > 1) {
@@ -103,7 +103,7 @@ public class AnimThread extends Thread {
 				currentStep = 0;
 				start = System.currentTimeMillis();
 				if (currentStep > 0)
-					start -= timeCalc.getAnimTimeUntil(0l, currentStep);
+					start -= (long)(timeCalc.getAnimTimeUntil(0l, currentStep)*1000d+0.5);
 			}
 		}
 		if (D) System.out.println("ending anim loop");

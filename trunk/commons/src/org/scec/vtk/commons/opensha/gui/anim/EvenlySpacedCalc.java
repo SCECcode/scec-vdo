@@ -25,20 +25,9 @@ public class EvenlySpacedCalc implements StepTimeCalculator {
 			absDuration = duration;
 		}
 	}
-	
-	@Override
-	public int getStepForAnimTime(long milis) {
-		return getStepForAnimTime(-1, milis);
-	}
 
 	@Override
-	public int getStepForAnimTime(int prevStep, long milis) {
-		double secs = milis / 1000d;
-		return getStepForAnimTime(prevStep, secs);
-	}
-
-	@Override
-	public int getStepForAnimTime(double secs) {
+	public int getStepForAnimTimeSecs(double secs) {
 		return getStepForAnimTime(-1, secs);
 	}
 	
@@ -49,9 +38,9 @@ public class EvenlySpacedCalc implements StepTimeCalculator {
 	}
 	
 	@Override
-	public long getAnimTimeUntil(long milis, int currentStep) {
+	public double getAnimTimeUntil(double secs, int currentStep) {
 		double secsForNext = currentStep * duration / maxStep;
-		return (long)(secsForNext * 1000l) - milis;
+		return secsForNext - secs;
 	}
 
 	@Override
