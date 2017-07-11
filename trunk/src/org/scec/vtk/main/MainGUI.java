@@ -2,6 +2,7 @@ package org.scec.vtk.main;
 
 import java.awt.BorderLayout;
 import java.awt.CheckboxMenuItem;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -71,6 +72,7 @@ import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.plugins.Plugins;
 
 import com.google.common.base.Preconditions;
+import com.ibm.media.bean.multiplayer.ImageButton;
 
 import vtk.vtkActor;
 import vtk.vtkActor2D;
@@ -121,6 +123,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public MainMenu mainMenu;
 	//pluginGUIPanel contains searchBar and pluginTabPane
 	private JPanel pluginGUIPanel;
+	private JPanel helpPanel;
 	//pluginGUIScrollPane contains the scroll bar.
 	private JScrollPane pluginGUIScrollPane;
 	//pluginSplitPane splits mainPanel and pluginGUIPanel
@@ -177,6 +180,30 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		mainMenu = new MainMenu();
 		
 		pluginGUIPanel = new JPanel(new BorderLayout());
+		helpPanel = new JPanel();
+		helpPanel.setLayout(new FlowLayout());
+		
+//		 b = new JButton();
+//	        b.setBackground(Color.black);
+//	      
+//	        b.setIcon(img);
+
+		//ImageIcon info = new ImageIcon("C:\\Users\\intern\\Desktop\\Info2");
+//	    JButton button = new JButton(water);
+		Icon icon = UIManager.getIcon("OptionPane.informationIcon");
+		JButton helpButton = new JButton(icon);
+
+//		JButton helpButton = new JButton("?");
+//		helpButton.setBackground(Color.black);
+//		helpButton.setSize(60, 40);
+//		  ImageIcon img = new ImageIcon("C:\\Users\\intern\\Desktop\\Info");
+//		  helpButton.setIcon(img);
+		  
+		helpPanel.add(helpButton);
+		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
+		
+		
+		
 		
 
 		pluginTabPane =  new JTabbedPane();
@@ -345,13 +372,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	//Wizard GUI to run with main
 	wizFrame = new JFrame();
 	Wizard wizGui = new Wizard(mainMenu, this);
-    wizFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    wizFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+    
     wizFrame.getContentPane().add(wizGui);
-    wizFrame.setSize(550, 200);
+    wizFrame.setSize(550, 140);
     wizFrame.setLocationRelativeTo(null);
     wizFrame.setVisible(true);
-}
-	
+	}
+
 	public void setFocalPointVisible(boolean visible) {
 		int newVis = visible ? 1 : 0;
 		int curVis = focalPointActor.GetVisibility();
@@ -443,6 +472,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		return this.tempGlobeScene;
 	}
 
+	
+	@SuppressWarnings("unused")
 	private void setUpToolBar() {
 		toolBar = new JToolBar();
 		JButton centerImage = new JButton("C");
@@ -490,8 +521,31 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		searchBar = new JTextField();
 		searchBarGUI = new JPanel(new BorderLayout());
 		searchBarGUI.add(searchBar, BorderLayout.CENTER);
-		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_START);
+		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
+		
+		
 	}
+	
+//	@SuppressWarnings("unused")
+//	public JPanel makebuttonPanel1() {
+//		searchBarGUI = new JPanel();
+//		searchBar = new JButton("?");
+//		searchBarGUI.add(searchBar, BorderLayout.CENTER);
+//		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
+//		
+//		return pluginGUIPanel;
+	//}
+//		buttonPanel.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+//		JButton help = new JButton("?"); // "button
+//		graticuleappsProp_help.addActionListener(this);
+//		graticuleappsProp_help.setActionCommand("?");
+//		buttonPanel.setFlowlayout();
+		
+		
+//		
+//		
+	
+	
 	private void setUpPluginTabs() {
 		//pluginTabPane.setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		pluginGUIPanel.add(pluginTabPane, BorderLayout.PAGE_START);
@@ -517,6 +571,16 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public JPanel getmainFrame() {
 		return mainPanel;
 	}
+	
+//	@SuppressWarnings("unused")
+//	public JPanel makebuttonPanel1() {
+//		searchBarGUI = new JPanel();
+//		searchBar = new JButton("?");
+//		searchBarGUI.add(searchBar, BorderLayout.CENTER);
+//		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
+//		
+//		return mainPanel;
+	//}
 	//viewRange
 	public void setViewRange(ViewRange viewRange) {
 		this.viewRange = viewRange;
@@ -698,6 +762,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			pluginID = id;
 
 			//make JLabel read titles from JTabbedPane
+			
 			JLabel label = new JLabel() {
 				public String getText() {
 					int i = pane.indexOfTabComponent(ButtonTabComponent.this);
@@ -761,7 +826,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 		}
 
-		private final MouseListener buttonMouseListener = new MouseAdapter() {
+		private final MouseListener buttonMouseListener = new MouseAdapter(){
+		
+		
 			public void mouseEntered(MouseEvent e) {
 				Component component = e.getComponent();
 				if (component instanceof AbstractButton) {
@@ -770,7 +837,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 					button.setIcon(redIcon);
 				}
 			}
-
+		
 			public void mouseExited(MouseEvent e) {
 				Component component = e.getComponent();
 				if (component instanceof AbstractButton) {
@@ -780,7 +847,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				}
 			}
 		};
-	}
+		};
+	
 
 	private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 
