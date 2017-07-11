@@ -7,7 +7,6 @@ import org.scec.vtk.main.MainMenu;
 
 import javax.swing.*;
 
-import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
