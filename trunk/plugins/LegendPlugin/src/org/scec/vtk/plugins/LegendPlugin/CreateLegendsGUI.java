@@ -317,7 +317,7 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == up){
-			
+			//System.out.println("up was hit");
 			
 			table.setRowHeight(table.getRowHeight()+1);
 		}
@@ -627,12 +627,15 @@ public class CreateLegendsGUI extends JDialog implements ActionListener, ChangeL
 
 		
 		if (e.getSource() == moveUp){
+			
+			
 			if((!table.isShowing())||(table.getRowCount()==0)){
 				return;
 			}
 			if (table.getSelectedRow()==0){
 				return;
 			}
+			
 			DefaultTableModel model2 = (DefaultTableModel) this.table.getModel();
 			model2.moveRow(table.getSelectedRow(),table.getSelectedRow(),table.getSelectedRow() -1);
 			table.setRowSelectionInterval(table.getSelectedRow()-1, table.getSelectedRow()-1);

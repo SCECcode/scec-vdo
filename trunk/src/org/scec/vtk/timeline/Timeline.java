@@ -29,7 +29,8 @@ public class Timeline implements StatefulPlugin {
 	private KeyFrameList cameraKeys;
 	private CameraAnimator cameraAnim;
 	
-	private List<Plugin> plugins;
+	
+	public List<Plugin> plugins;
 	// used to hide a plugin completely regardless of keyframes
 	private List<Boolean> pluginsDisplayed;
 	// used to freeze a plugin at it's current state, never activating another keyframe until unfrozen

@@ -48,6 +48,9 @@ import org.scec.vtk.plugins.utils.components.ImageFileChooser;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 
 import com.google.common.base.Preconditions;
+import com.jogamp.newt.event.MouseAdapter;
+import com.jogamp.newt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import vtk.vtkActor2D;
 import vtk.vtkColorTransferFunction;
@@ -159,7 +162,7 @@ PluginActorsChangeListener {
 		lowerButtonPanel.add(editButton);
 		lowerButtonPanel.add(removeButton);
 		listPanel.add(lowerButtonPanel);
-
+		
 //		add(scalePanel);
 		add(listPanel);
 		
@@ -302,6 +305,7 @@ PluginActorsChangeListener {
 		}
 		else if (source == moveUpButton)
 		{
+			System.out.println("move up");
 			LegendItem legend = legendSelectList.getSelectedValue();
 			if (legend != null)
 				moveLegend(legend, 0, 5);
@@ -327,6 +331,7 @@ PluginActorsChangeListener {
 	private void moveLegend(LegendItem legend, double x, double y)
 	{
 		vtkActor2D actor = legend.getActor();
+		
 		double[] position = actor.GetPosition();
 		if (actor instanceof vtkScalarBarActor)
 			// TODO figure out why things are different for scalar bars and remove this hack
@@ -533,4 +538,6 @@ PluginActorsChangeListener {
 			}
 		}
 	}
+
+
 }

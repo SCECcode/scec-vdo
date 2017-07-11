@@ -55,7 +55,6 @@ public class TimelinePluginState implements PluginState{
 
 	@Override
 	public void load() {
-		parent.setFramerate(frameRate);
 		parent.setMaxTime(totalAnimationDuration);
 		parent.setCameraSplineType(SplineType.valueOf(splineIndex));
 		for(int i=0;i<numPlugins;i++)
