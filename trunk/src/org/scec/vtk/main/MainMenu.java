@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
-import java.awt.Button;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -26,11 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
@@ -48,6 +44,7 @@ import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.timeline.gui.ViewerSizePanel;
+import org.scec.vtk.main.Help;
 
 import vtk.vtkActor;
 import vtk.vtkActorCollection;
@@ -71,6 +68,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem saveItem;
 	private MenuItem appExit;
 	private Menu windowMenu ;
+	private Menu helpMenu;
 	private Timeline timeline;
 	private TimelineGUI timelineGUI;
 	private JFrame timelineFrame;
@@ -78,6 +76,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem saveItemVTK;
 	private MenuItem saveItemOBJ;
 	private MenuItem resizeWindow;
+	private MenuItem tutorial;
 	private MenuItem escapeWindow; 
 	private ViewerSizePanel sizePanel;
 	private CheckboxMenuItem focalPointItem;
@@ -90,16 +89,13 @@ public class MainMenu implements ActionListener, ItemListener{
 	private Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
-	public MainMenu(){
+	public MainMenu(final Help help){
 		//Creates the main menu bar.
 		menuBar = new MenuBar();
 		setupFileMenu();
 
+		
 		// manually add Display menu so that it is second from the left
-		Menu escapeMenu = new Menu();
-//		Button escape = new Button("escape");
-		escapeMenu.setLabel("Escape");
-		escapeMenu.setName("Escape");
 		
 		Menu displayMenu = new Menu();
 		displayMenu.setLabel("Display");
@@ -114,12 +110,8 @@ public class MainMenu implements ActionListener, ItemListener{
 				Info.getMainGUI().setFocalPointVisible(focalPointItem.getState());
 			}
 		});
-		//JMenuBar escapeMenu; 
 		menuBar.add(displayMenu);
-//		menuBar.add(escape);
-		///menuBar.add(escapeMenu); 
 		setupWindowMenu();
-		//escapeM();
 	}
 
 
@@ -136,19 +128,22 @@ public class MainMenu implements ActionListener, ItemListener{
 		menuBar.add(windowMenu);
 		windowMenu.addActionListener(this);
 		this.resizeWindow.addActionListener(this);
-		
-		//escape experiment
-		escapeWindow = new MenuItem("Recenter image");
-		windowMenu.add(escapeWindow); 
-		escapeWindow.addActionListener(this);
 	}
-
-
 	public MenuBar getMenuBar()
 	{
 		return menuBar;
 	}
-
+	private void helpMenu() {
+		helpMenu = new Menu();
+		helpMenu.setLabel("Help");
+		helpMenu.setName("Help");
+		
+		tutorial = new MenuItem("User Guide");
+		helpMenu.add(tutorial);
+		menuBar.add(helpMenu);
+		helpMenu.addActionListener(this);
+		this.tutorial.addActionListener(this);
+	}
 	public void setupTimeline(Timeline timeline, TimelineGUI timelineGUI) {
 		Preconditions.checkState(this.timeline == null, "Timeline already initialized!");
 		this.timeline = timeline;
@@ -169,6 +164,10 @@ public class MainMenu implements ActionListener, ItemListener{
 		timelineItem.addItemListener(this);
 
 		menu.add(timelineItem);
+		
+		//Help Menu in nav bar
+		helpMenu();
+		
 	}
 
 	private void setupFileMenu() {
@@ -487,13 +486,18 @@ public void openVTKObj()
 			if (sizePanel == null)
 				sizePanel = new ViewerSizePanel(null); // null means this isn't render mode, but rather actual size mode
 			int val = JOptionPane.showConfirmDialog(
-					Info.getMainGUI(), sizePanel, "Resizve Viewer", JOptionPane.OK_CANCEL_OPTION);
+					Info.getMainGUI(), sizePanel, "Resize Viewer", JOptionPane.OK_CANCEL_OPTION);
 			if (val == JOptionPane.OK_OPTION) {
 				Dimension dims = sizePanel.getCurDims();
 				Info.getMainGUI().resizeViewer(dims.width, dims.height);
 			}
 			
 		}
+		//**********************************************
+		else if(eventSource == tutorial) {
+			Help.main(null);
+			}
+		
 		else if(eventSource==escapeWindow)
 		{
 			if(MainGUI.getRenderWindow().getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
