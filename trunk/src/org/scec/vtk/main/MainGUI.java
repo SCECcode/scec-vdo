@@ -177,35 +177,18 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 ////		renderWindow.getRenderer().SetOcclusionRatio(0.1);
 //		renderWindow.getRenderer().SetMaximumNumberOfPeels(1000);
 //		renderWindow.getRenderer().SetOcclusionRatio(0);
-		mainMenu = new MainMenu();
+		mainMenu = new MainMenu(null);
 		
 		pluginGUIPanel = new JPanel(new BorderLayout());
 		helpPanel = new JPanel();
 		helpPanel.setLayout(new FlowLayout());
 		
-//		 b = new JButton();
-//	        b.setBackground(Color.black);
-//	      
-//	        b.setIcon(img);
-
-		//ImageIcon info = new ImageIcon("C:\\Users\\intern\\Desktop\\Info2");
-//	    JButton button = new JButton(water);
 		Icon icon = UIManager.getIcon("OptionPane.informationIcon");
 		JButton helpButton = new JButton(icon);
-
-//		JButton helpButton = new JButton("?");
-//		helpButton.setBackground(Color.black);
-//		helpButton.setSize(60, 40);
-//		  ImageIcon img = new ImageIcon("C:\\Users\\intern\\Desktop\\Info");
-//		  helpButton.setIcon(img);
-		  
+  //HELP BUTTON
 		helpPanel.add(helpButton);
 		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
 		
-		
-		
-		
-
 		pluginTabPane =  new JTabbedPane();
 	//	pluginTabPane.setPreferredSize(new Dimension(100, 600));
 		//Set up all default GUI elements
