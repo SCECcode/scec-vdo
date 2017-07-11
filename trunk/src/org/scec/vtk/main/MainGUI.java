@@ -185,7 +185,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		Info.setMainGUI(this);
 		setUpPluginTabs();
 		//setUpSearchBar();
-		//setUpToolBar();
+		setUpToolBar();
 
 		pluginSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainPanel, pluginGUIScrollPane);
 		pluginSplitPane.setOneTouchExpandable(false);
@@ -250,11 +250,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 						renderWindow.getRenderer().GetActiveCamera().SetFocalPoint(camCord[3],camCord[4],camCord[5]);
 						renderWindow.getRenderer().GetActiveCamera().SetViewUp(camCord[6],camCord[7],camCord[8]);
 						
-						System.out.println("esc 0");
 						renderWindow.getRenderer().ResetCameraClippingRange();
-						System.out.println("esc 1");
 						renderWindow.getComponent().repaint();
-						System.out.println("esc 2");
+						
 					}
 				}
 			}
@@ -264,7 +262,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		final vtkCellPicker cellPicker = new vtkCellPicker();
 		cellPicker.SetTolerance(0.001);
 		
-		final boolean clickDebug = true;
+		final boolean clickDebug = false;
 
 		renderWindow.getComponent().addMouseListener(new MouseAdapter() {
 			@Override
@@ -447,10 +445,42 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	private void setUpToolBar() {
 		toolBar = new JToolBar();
-		JButton test = new JButton("what is up");
-		JButton test2 = new JButton("hello im button dos");
-		toolBar.add(test);
-		toolBar.add(test2);
+		JButton centerImage = new JButton("C");
+		centerImage.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) { 
+				System.out.println("LOOK at Me");
+				
+				if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
+					renderWindow.getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
+					renderWindow.getRenderer().GetActiveCamera().SetFocalPoint(MainGUI.camCord[3], MainGUI.camCord[4],MainGUI.camCord[5]);
+					renderWindow.getRenderer().GetActiveCamera().SetViewUp(MainGUI.camCord[6], MainGUI.camCord[7],MainGUI.camCord[8]);
+					
+					renderWindow.getRenderer().ResetCameraClippingRange();
+					renderWindow.getComponent().repaint();
+					
+			}
+			  } 
+		});
+		
+		
+		JButton zoomIn = new JButton("+");
+		zoomIn.addActionListener(new ActionListener() { 
+			  public void actionPerformed(ActionEvent e) { 
+			    
+			  } 
+		} );
+		
+		JButton zoomOut = new JButton("-");
+		zoomOut.addActionListener(new ActionListener() { 
+			  public void actionPerformed(ActionEvent e) { 
+			    
+			  } 
+		} );
+		
+		
+		toolBar.add(centerImage);
+		toolBar.add(zoomIn);
+		toolBar.add(zoomOut);
 		toolBarGUI = new JPanel(new BorderLayout());
 		toolBarGUI.add(toolBar, BorderLayout.CENTER);
 		mainPanel.add(toolBarGUI, BorderLayout.PAGE_START);

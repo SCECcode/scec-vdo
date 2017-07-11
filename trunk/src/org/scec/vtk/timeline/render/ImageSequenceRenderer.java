@@ -36,7 +36,7 @@ public class ImageSequenceRenderer extends AbstractThreadedRenderer {
 		return new ImageSequenceRenderer("jpg", "JPEG Sequence", true, 90);
 	}
 	
-	/*public static ImageSequenceRenderer getGIF() {
+ /*public static ImageSequenceRenderer getGIF() {
 		return new ImageSequenceRenderer("gif", "GIF Sequence", true, 90);
 	} */
 
@@ -100,33 +100,15 @@ public class ImageSequenceRenderer extends AbstractThreadedRenderer {
 	protected void doProcessFrame(BufferedImage img) throws IOException {
 		File outputFile = new File(outputDir, prefix+"_"+getNumStr(index)+"."+extension);
 		if (D) System.out.print("Writing frame "+index+" to "+outputFile.getName());
-		ImageOutputStream outputStream = new FileImageOutputStream(outputFile);
+		ImageOutputStream outputStream = new FileImageOutputStream(outputFile);	
 		writer.setOutput(outputStream);
 		IIOImage outputImage = new IIOImage(img, null, null);
 		writer.write(null, outputImage, writeParam);
 		index++;
 		if (D) System.out.println("DONE");
 		
-	     
-		
-		/** coomparar este pedazo de codigo con el de arriba 
-		 * http://elliot.kroo.net/software/java/GifSequenceWriter/GifSequenceWriter.java
-		 * // create a new BufferedOutputStream with the last argument
-      ImageOutputStream output = 
-        new FileImageOutputStream(new File(args[args.length - 1]));
-      
-      // create a gif sequence with the type of the first image, 1 second
-      // between frames, which loops continuously
-      GifSequenceWriter writer = 
-        new GifSequenceWriter(output, firstImage.getType(), 1, false);
-      
-      // write out the first image to our sequence...
-      writer.writeToSequence(firstImage);
-      for(int i=1; i<args.length-1; i++) {
-        BufferedImage nextImage = ImageIO.read(new File(args[i]));
-        writer.writeToSequence(nextImage);
-      }
-		 */
+	   
+		 
 	}
 
 	@Override
@@ -135,3 +117,4 @@ public class ImageSequenceRenderer extends AbstractThreadedRenderer {
 	}
 
 }
+
