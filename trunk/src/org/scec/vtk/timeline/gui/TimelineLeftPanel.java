@@ -351,6 +351,14 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			System.out.println("Finished");
 			animator = null;
 			setButtonsEnabledEDT();
+			resetState();
+			// call function that resets display to true
+		}
+		
+		public void resetState() {
+			for (Plugin plugin: timeline.plugins) {
+				timeline.setDisplayed(plugin, true);
+			}
 		}
 		
 	}

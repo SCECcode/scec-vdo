@@ -22,6 +22,7 @@ public class CheckAllTable extends JPanel {
     private DataModel dataModel;
     private JTable table;
     private DefaultListSelectionModel selectionModel;
+    private TableModelListener tableListener;
     private Filter filter;
     JTextField searchBar;
     
@@ -62,6 +63,7 @@ public class CheckAllTable extends JPanel {
         		return c;
         	}
         };
+        this.tableListener = tableListener;
         table.getModel().addTableModelListener(tableListener);
         table.getColumnModel().getColumn(0).setMaxWidth(30);
         table.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
@@ -82,7 +84,18 @@ public class CheckAllTable extends JPanel {
         sorter.setRowFilter(filter);
         table.setRowSorter(sorter);
     }
+    public Object[][] getData() {
+    	return DATA;
+    }
+    public void setDataModel(Object[][] data, String[] columnHeader) {
+    	DataModel newDataModel = new DataModel(DATA, columnHeader);
+    	table.setModel(newDataModel);
+    	table.getModel().addTableModelListener(tableListener);
+    }
     
+    public void setCheckBox(boolean value, int row, int column) {
+    	table.setValueAt(value, row, column);
+    }
     DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
     	Border padding = BorderFactory.createEmptyBorder(0, 0, 0, 0);
     	@Override

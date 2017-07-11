@@ -46,7 +46,7 @@ public class Prefs {
     private static int defaultStriping_g = 240;
     private static int defaultStriping_b = 255;
     
-    private static int defaultPluginWidth = 300;
+    private static int defaultPluginWidth = 500;
     private static int defaultPluginHeight = 650;
     
     private static int defaultMainWidth = 720;
