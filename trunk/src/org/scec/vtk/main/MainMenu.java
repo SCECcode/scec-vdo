@@ -189,8 +189,8 @@ public class MainMenu implements ActionListener, ItemListener{
 
 		this.fileMenu.add(fileOpen);
 		this.fileMenu.add(saveItem);
-		this.fileMenu.add(saveItemVTK);
-		this.fileMenu.add(saveItemOBJ);
+		//this.fileMenu.add(saveItemVTK);
+		//this.fileMenu.add(saveItemOBJ);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(appExit);
 
@@ -328,7 +328,6 @@ public class MainMenu implements ActionListener, ItemListener{
 	
 public void openVTKObj()
 	{
-
 
 		vtkPolyDataReader reader =new vtkPolyDataReader();
 		reader.SetFileName("testAll.vtk");
@@ -474,7 +473,6 @@ public void openVTKObj()
 
 					}
 					
-						
 				}
 				//save timeline state
 				Element pluginNameElement = root.addElement("Timeline-Plugin");
@@ -498,22 +496,13 @@ public void openVTKObj()
 		}
 		else if(eventSource==escapeWindow)
 		{
-			if(Info.getMainGUI().getRenderWindow().getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
-				//vtkCamera tmpCam = new vtkCamera();
+			if(MainGUI.getRenderWindow().getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
+				MainGUI.getRenderWindow().getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
+				MainGUI.getRenderWindow().getRenderer().GetActiveCamera().SetFocalPoint(MainGUI.camCord[3], MainGUI.camCord[4],MainGUI.camCord[5]);
+				MainGUI.getRenderWindow().getRenderer().GetActiveCamera().SetViewUp(MainGUI.camCord[6], MainGUI.camCord[7],MainGUI.camCord[8]);
 				
-				//tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
-				//tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
-				//tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
-				//renderWindow.getRenderer().SetActiveCamera(tmpCam);
-				Info.getMainGUI().getRenderWindow().getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
-				Info.getMainGUI().getRenderWindow().getRenderer().GetActiveCamera().SetFocalPoint(MainGUI.camCord[3], MainGUI.camCord[4],MainGUI.camCord[5]);
-				Info.getMainGUI().getRenderWindow().getRenderer().GetActiveCamera().SetViewUp(MainGUI.camCord[6], MainGUI.camCord[7],MainGUI.camCord[8]);
-				
-				System.out.println("esc2.0 0");
-				Info.getMainGUI().getRenderWindow().getRenderer().ResetCameraClippingRange();
-				System.out.println("esc2.0 1");
-				Info.getMainGUI().getRenderWindow().getComponent().repaint();
-				System.out.println("esc2.0 2");
+				MainGUI.getRenderWindow().getRenderer().ResetCameraClippingRange();
+				MainGUI.getRenderWindow().getComponent().repaint();
 		}
 		
 	}
