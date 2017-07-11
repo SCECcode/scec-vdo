@@ -50,7 +50,7 @@ public class Prefs {
     private static int defaultPluginHeight = 650;
     
     private static int defaultMainWidth = 720;
-    private static int defaultMainHeight = 780;
+    private static int defaultMainHeight = 810;
     //private static int defaultTotalWidth = defaultMainWidth + defaultPluginWidth;
     
     private static int os;
