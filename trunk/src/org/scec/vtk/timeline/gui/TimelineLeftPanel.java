@@ -338,6 +338,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		public void animationStarted(boolean rendering) {
 			System.out.println("Started");
 			setButtonsEnabledEDT();
+			resetState();
 		}
 
 		@Override
