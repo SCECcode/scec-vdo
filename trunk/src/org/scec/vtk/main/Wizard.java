@@ -16,7 +16,10 @@ public class Wizard extends JPanel {
 
    private static final String TITLE_TEXT = "Welcome to SCEC-VDO";
    private static final int TITLE_POINTS = 22;
+   Boolean dontShow = false;
    public Wizard(final MainMenu mainMenu, final MainGUI mainGUI) {
+	   
+	   
 	   JPanel mainPanel = new JPanel();
 	   mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 //	   mainPanel.setSize(370, 130);
@@ -30,7 +33,41 @@ public class Wizard extends JPanel {
 	   
 	   JPanel southBtnPanel = new JPanel(layout);
 	  southBtnPanel.setLayout(new GridLayout(2,1,10,10));
-	   
+	  
+	  
+	  /*
+		 * Anon inner class: AutoSaver
+		 * purpose: save the state on a time increment
+		 * 
+		 * to change the time increment just change the Thread.sleep(yourNum) value
+		 * 
+		 * essetianally, this is just a thread off the GUI thread to do tasks while the GUI 
+		 * runs smoothly. it could be a template to run any concurrent tasks... like loading files, assets, etc....
+		 * 
+		 * */
+		class AutoSaver extends SwingWorker<Integer, Void>{
+			
+			@Override 
+			public Integer doInBackground() {
+				System.out.println("start of  dobackground()");
+				  
+				while(true){
+					
+					try {
+						Thread.sleep(5000);
+						System.out.println("AutoSave");
+						mainMenu.autoSave();
+						//mainMenu.autoSaveState();
+					} catch (InterruptedException e) {
+						
+						e.printStackTrace();
+					}
+				}
+			}
+
+		}
+	  
+		final AutoSaver auto = new AutoSaver();
 	   
 	   //Open an existing file using function from mainMenu
 	   JButton openButton = new JButton("Open Existing Project");
@@ -39,7 +76,8 @@ public class Wizard extends JPanel {
 		          mainMenu.open();
 		    	  //close frame after selection has been made
 		          mainGUI.wizFrame.setVisible(false);
-		          
+		          if(!dontShow)
+		        	  auto.execute();
 		        }
 		    });
 
@@ -50,6 +88,8 @@ public class Wizard extends JPanel {
 		    	  mainMenu.save();
 		    	  //close frame after selection has been made
 		          mainGUI.wizFrame.setVisible(false);
+		          if(!dontShow)
+		        	  auto.execute();
 		      }
 		    });
 	   
@@ -60,6 +100,7 @@ public class Wizard extends JPanel {
 		      public void actionPerformed(ActionEvent ae) {
 //		    	  mainMenu.save();
 //		    	  close frame after selection has been made
+		    	  
 		          mainGUI.wizFrame.setVisible(false);
 	
 		      }
