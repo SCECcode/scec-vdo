@@ -214,6 +214,9 @@ public class MainMenu implements ActionListener, ItemListener{
 	public void save(){
 		JFileChooser chooser = new JFileChooser();
 		int ret = chooser.showSaveDialog(Info.getMainGUI());
+		if (ret == JFileChooser.CANCEL_OPTION) {
+			Info.getMainGUI().wizFrame.setVisible(true);
+			}
 		if (ret == JFileChooser.APPROVE_OPTION) {
 			Document document = DocumentHelper.createDocument();
 			Element root = document.addElement("root");
@@ -234,6 +237,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				}
 			}
 			//save timeline state
+			Info.getMainGUI().wizFrame.setVisible(false);
 			Element pluginNameElement = root.addElement("Timeline-Plugin");
 			timeline.getState().toXML(pluginNameElement);
 			saveXMLFile(document, root, destinationData);
@@ -324,6 +328,9 @@ public class MainMenu implements ActionListener, ItemListener{
 		JFileChooser chooser = new JFileChooser();
 		MainGUI.class.getConstructors();
 		int ret = chooser.showOpenDialog(Info.getMainGUI());
+		if (ret == JFileChooser.CANCEL_OPTION) {
+			Info.getMainGUI().wizFrame.setVisible(true);
+			}
 		if (ret == JFileChooser.APPROVE_OPTION) {
 			File file = chooser.getSelectedFile();
 			currFileName = file.getPath();
@@ -355,6 +362,7 @@ public class MainMenu implements ActionListener, ItemListener{
 					}
 				}
 				//open timeline state
+				Info.getMainGUI().wizFrame.setVisible(false);
 				Element pluginNameElement = root.element("Timeline-Plugin");
 				timeline.getState().fromXML(pluginNameElement);
 				timeline.getState().load();
@@ -581,6 +589,7 @@ public void openVTKObj()
 		//**********************************************
 		else if(eventSource == tutorial) {
 			Help.main(null);
+			//ALEJANDRO
 			}
 		
 		else if(eventSource==escapeWindow)
