@@ -29,6 +29,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+//import org.w3c.dom.Document;
+
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -44,6 +49,7 @@ import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.timeline.gui.ViewerSizePanel;
+import org.xml.sax.SAXException;
 import org.scec.vtk.main.Help;
 
 import vtk.vtkActor;
@@ -82,6 +88,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private CheckboxMenuItem focalPointItem;
 	private String currFileName;
 	private Document currDoc;
+	static public Boolean Wizard;
 
 	Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
@@ -92,7 +99,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
 	public MainMenu(final Help help){
-		
+		getState();
 		currFileName = "";
 		//Creates the main menu bar.
 		menuBar = new MenuBar();
@@ -256,6 +263,60 @@ public class MainMenu implements ActionListener, ItemListener{
 		Element pluginNameElement = root.addElement("Timeline-Plugin");
 		timeline.getState().toXML(pluginNameElement);
 		saveXMLFile(document, root, currFileName);
+	}
+	
+	
+	public void getState(){
+		
+		try{
+			SAXReader reader = new SAXReader();
+			Document document = reader.read("src/org/scec/vtk/main/SCEC-VDO_STATUS.xml");
+			Element root = document.getRootElement();
+			for ( Iterator i = root.elementIterator(); i.hasNext(); ) {
+				Element status = (Element) i.next();
+				if(status.getName().equalsIgnoreCase("Wizard")){
+					if(status.getData().toString().equalsIgnoreCase("True")){
+						Wizard = true;
+					}
+					else {
+						Wizard = false;
+					}
+				}
+			}
+		}catch( DocumentException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public  void updateWizard(Boolean wiz){
+		try{
+			SAXReader reader = new SAXReader();
+			Document document = reader.read("src/org/scec/vtk/main/SCEC-VDO_STATUS.xml");
+			Element root = document.getRootElement();
+			for ( Iterator i = root.elementIterator(); i.hasNext(); ) {
+				Element status = (Element) i.next();
+				if(status.getName().equalsIgnoreCase("Wizard")){
+					status.detach();
+					if(wiz){
+						Element wizTru = root.addElement("Wizard");
+						wizTru.setText("True");
+					}
+					else {
+						System.out.println("setting wizard to false? ");
+						Element wizTru = root.addElement("Wizard");
+						wizTru.setText("False");
+						System.out.println("root.asXML() in updateWizard: " + root.asXML());
+
+					}
+
+				}
+			}
+			saveXMLFile(document, root, "src/org/scec/vtk/main/SCEC-VDO_STATUS.xml");	
+		}catch( DocumentException e){
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
 	//Function for Wizard GUI
@@ -540,8 +601,12 @@ public void openVTKObj()
 
 	private void saveXMLFile(Document document,Element root,String destinationData) {
 		// TODO Auto-generated method stub
+		
+		System.out.println("document.toString() inside saveXMLFile(): " + document.toString());
 		XMLWriter writer = null;
 		try {
+			System.out.println("destinationData: " + destinationData);
+			System.out.println("root.asXML() inside saveXMLFile(): " + root.asXML());
 			writer = new XMLWriter(
 					new FileWriter( destinationData)
 					);

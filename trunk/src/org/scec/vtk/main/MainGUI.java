@@ -348,16 +348,20 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			}
 		});
 	
-	//Wizard GUI to run with main
-	wizFrame = new JFrame();
-	Wizard wizGui = new Wizard(mainMenu, this);
-//    wizFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+	if(MainMenu.Wizard){
+		//Wizard GUI to run with main
+		wizFrame = new JFrame();
+		Wizard wizGui = new Wizard(mainMenu, this);
+//	    wizFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    
-    wizFrame.getContentPane().add(wizGui);
-    wizFrame.setSize(550, 140);
-    wizFrame.setLocationRelativeTo(null);
-    wizFrame.setVisible(true);
+	    
+	    wizFrame.getContentPane().add(wizGui);
+	    wizFrame.setSize(550, 140);
+	    wizFrame.setLocationRelativeTo(null);
+	    wizFrame.setVisible(true);
+	}
+	
 	}
 
 	public void setFocalPointVisible(boolean visible) {
@@ -1042,8 +1046,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	
 	
 	
-	
 	public static void main(String[] args) {
+		
 		try {
             // Set System L&F
 			UIManager.setLookAndFeel(
@@ -1067,4 +1071,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			}
 		});
 	}
+	
+	
+	
 }
