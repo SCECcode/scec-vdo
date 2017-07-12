@@ -45,28 +45,28 @@ public class PoliticalBoundariesPluginState implements PluginState {
 	public void load() {
 		// call methods to update based on the properties captured //might also want to put swing invoke and wait
 
-		for(int j= 0; j < parent.getPoliticalBoundarySubPanelLowerTab().getTabCount(); j++)
-		{
-			JScrollPane sp = (JScrollPane)  parent.getPoliticalBoundarySubPanelLowerTab().getComponentAt(j);
-			JViewport vp = (JViewport) sp.getComponent(0);
-			JPanel p = (JPanel) vp.getComponent(0);
-			unselectLowerCheckBox(p);
-
-			for(int k = 0; k < filePath.size(); k++)
-			{	
-				if(containComponent(p, filePath.get(k)))
-				{
-					int segIndex = findIndex(p, filePath.get(k));
-					int actorIndex = parent.getLowerCheckBoxButtons().indexOf(p.getComponent(segIndex));//
-					vtkActor actor = parent.getPoliticalBoundaries().get(actorIndex);
-					actor.VisibilityOn();
-					JCheckBox comp = (JCheckBox) p.getComponent(segIndex);
-					comp.setSelected(true);
-
-				}
-
-			}
-		}
+//		for(int j= 0; j < parent.getPoliticalBoundarySubPanelLowerTab().getTabCount(); j++)
+//		{
+//			JScrollPane sp = (JScrollPane)  parent.getPoliticalBoundarySubPanelLowerTab().getComponentAt(j);
+//			JViewport vp = (JViewport) sp.getComponent(0);
+//			JPanel p = (JPanel) vp.getComponent(0);
+//			unselectLowerCheckBox(p);
+//
+//			for(int k = 0; k < filePath.size(); k++)
+//			{	
+//				if(containComponent(p, filePath.get(k)))
+//				{
+//					int segIndex = findIndex(p, filePath.get(k));
+//					int actorIndex = parent.getLowerCheckBoxButtons().indexOf(p.getComponent(segIndex));//
+//					vtkActor actor = parent.getPoliticalBoundaries().get(actorIndex);
+//					actor.VisibilityOn();
+//					JCheckBox comp = (JCheckBox) p.getComponent(segIndex);
+//					comp.setSelected(true);
+//
+//				}
+//
+//			}
+//		}
 
 	}
 
