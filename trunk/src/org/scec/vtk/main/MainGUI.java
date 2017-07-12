@@ -42,6 +42,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuKeyEvent;
@@ -250,12 +251,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 					//TODO: change start cam coordinates to be as per the region assigned by default they are set for California
 					//reset view position to default 
 					if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
-						//vtkCamera tmpCam = new vtkCamera();
-
-						//tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
-						//tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
-						//tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
-						//renderWindow.getRenderer().SetActiveCamera(tmpCam);
+					
 						renderWindow.getRenderer().GetActiveCamera().SetPosition(camCord[0],camCord[1],camCord[2]);
 						renderWindow.getRenderer().GetActiveCamera().SetFocalPoint(camCord[3],camCord[4],camCord[5]);
 						renderWindow.getRenderer().GetActiveCamera().SetViewUp(camCord[6],camCord[7],camCord[8]);
@@ -1043,6 +1039,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		System.out.println("Resized. New dims: "+newViewerWidth+"x"+newViewerHeight);
 		targetDims = new Dimension(newWindowWidth, newWindowHeight);
 	}
+	
+	
+	
 	
 	public static void main(String[] args) {
 		try {

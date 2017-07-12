@@ -80,6 +80,8 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem escapeWindow; 
 	private ViewerSizePanel sizePanel;
 	private CheckboxMenuItem focalPointItem;
+	private String currFileName;
+	private Document currDoc;
 
 	Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
@@ -90,6 +92,8 @@ public class MainMenu implements ActionListener, ItemListener{
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
 	public MainMenu(final Help help){
+		
+		currFileName = "";
 		//Creates the main menu bar.
 		menuBar = new MenuBar();
 		setupFileMenu();
@@ -208,6 +212,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			Element root = document.addElement("root");
 			File file = chooser.getSelectedFile();
 			String destinationData =  file.getPath();//Prefs.getLibLoc() + File.separator;
+			currFileName = destinationData;
 
 			Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
 					loadedPlugins.values());
@@ -217,7 +222,6 @@ public class MainMenu implements ActionListener, ItemListener{
 				Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 				if (plugin instanceof StatefulPlugin) {
 					Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
-					//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
 					((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
 
 				}
@@ -232,6 +236,28 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 	}
 	
+	
+	public void autoSave(){
+		Document document = DocumentHelper.createDocument();
+		Element root = document.addElement("root");
+		Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
+				loadedPlugins.values());
+		for(Plugin pluginDescriptor:pluginDescriptors)
+		{
+
+			Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+			if (plugin instanceof StatefulPlugin) {
+				Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
+				((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
+
+			}
+		}
+		//save timeline state
+		Element pluginNameElement = root.addElement("Timeline-Plugin");
+		timeline.getState().toXML(pluginNameElement);
+		saveXMLFile(document, root, currFileName);
+	}
+	
 	//Function for Wizard GUI
 	public void open(){
 		JFileChooser chooser = new JFileChooser();
@@ -239,10 +265,12 @@ public class MainMenu implements ActionListener, ItemListener{
 		int ret = chooser.showOpenDialog(Info.getMainGUI());
 		if (ret == JFileChooser.APPROVE_OPTION) {
 			File file = chooser.getSelectedFile();
+			currFileName = file.getPath();
 			SAXReader reader = new SAXReader();
 			try {
 				Document document = reader.read(file.getPath());
 				Element root = document.getRootElement();
+				System.out.println("document.toString(): " + document.toString());
 				// iterate through child elements of root
 				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 						availablePlugins.values());
@@ -445,10 +473,6 @@ public void openVTKObj()
 				
 				int stateCntr= 0; //statecounter 
 				
-				/*for(PluginActors i:pluginActors.forEach(action);)){
-					System.out.println("Actor Plugin #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
-
-				}*/
 				getLoadedPluginsAsMap(); 
 				
 				for (Entry<Plugin, PluginActors> entry : pluginActors.entrySet())
@@ -533,21 +557,7 @@ public void openVTKObj()
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		//		// Pretty print the document to System.out
-		//		OutputFormat format = OutputFormat.createPrettyPrint();
-		//		try {
-		//			writer = new XMLWriter( System.out, format );
-		//		} catch (UnsupportedEncodingException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}
-		//		try {
-		//			writer.write( document );
-		//		} catch (IOException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}
+				
 	}
 
 

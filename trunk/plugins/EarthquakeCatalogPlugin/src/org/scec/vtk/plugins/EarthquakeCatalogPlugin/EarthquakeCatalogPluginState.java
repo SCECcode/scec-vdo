@@ -75,8 +75,16 @@ public class EarthquakeCatalogPluginState implements PluginState {
 			System.out.println("scaling:"+cat.getScaling());
 			transparency.add(cat.getTransparency());
 			visibility.add(eqc.isDisplayed());
+			//sibility.add(cat.isDisplayed());
+			System.out.println("cat.isDisplayed: " + cat.isDisplayed());
+
 			geometry.add(eqc.getGeometry());
-			valuesBy.add(eqc.getValuesBy());
+			System.out.println("cat.getGeometry() " + cat.getGeometry());
+
+		    valuesBy.add(eqc.getValuesBy());
+			System.out.println("cat.getValuesBy() " + cat.getValuesBy());
+
+
 			catalogs.add(cat);
 		}
 	}

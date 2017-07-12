@@ -122,7 +122,7 @@ public class CatalogTable extends JTable {
     
     /**
      * Adds a catalog to the table.
-     * 
+     * abra cadabra patas de cabra
      * @param catalog to add
      */
     public void addCatalog(EQCatalog catalog) {
@@ -153,7 +153,7 @@ public class CatalogTable extends JTable {
     
     /**
      * Selects the given <code>EQCatalog</code> object.
-     * 
+     * my andaconda donmt want none uin l;esd 
      * @param object to select
      */
     public void setSelected(EQCatalog object) {
@@ -193,6 +193,7 @@ public class CatalogTable extends JTable {
     
     //****************************************
     //     PRIVATE METHODS
+   
     //****************************************
 
 
