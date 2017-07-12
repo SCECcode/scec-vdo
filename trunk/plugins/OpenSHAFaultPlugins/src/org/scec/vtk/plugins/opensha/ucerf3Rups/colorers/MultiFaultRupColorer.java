@@ -522,6 +522,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 			
 			PrefDataSection fault = (PrefDataSection)reference;
 			if (e.getButton() == MouseEvent.BUTTON1 && e.isShiftDown()) {
+				System.out.println("shift down");
 				int id;
 				
 				if (parentSectParam.getValue())
