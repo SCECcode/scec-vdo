@@ -75,8 +75,6 @@ public class Wizard extends JPanel {
 	   openButton.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent ae) {
 		          mainMenu.open();
-		    	  //close frame after selection has been made
-		          mainGUI.wizFrame.setVisible(false);
 		          if(!dontShow)
 		        	  auto.execute();
 		        }
@@ -88,7 +86,6 @@ public class Wizard extends JPanel {
 		      public void actionPerformed(ActionEvent ae) {
 		    	  mainMenu.save();
 		    	  //close frame after selection has been made
-		          mainGUI.wizFrame.setVisible(false);
 		          if(!dontShow)
 		        	  auto.execute();
 		      }
