@@ -83,6 +83,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem saveItemOBJ;
 	private MenuItem resizeWindow;
 	private MenuItem tutorial;
+	private MenuItem wizardActivation;
 	private MenuItem escapeWindow; 
 	private ViewerSizePanel sizePanel;
 	private CheckboxMenuItem focalPointItem;
@@ -154,6 +155,13 @@ public class MainMenu implements ActionListener, ItemListener{
 		menuBar.add(helpMenu);
 		helpMenu.addActionListener(this);
 		this.tutorial.addActionListener(this);
+		
+		wizardActivation = new MenuItem("Wizard Display");
+		helpMenu.add(wizardActivation);
+		this.wizardActivation.addActionListener(this);
+		
+		
+	
 	}
 	public void setupTimeline(Timeline timeline, TimelineGUI timelineGUI) {
 		Preconditions.checkState(this.timeline == null, "Timeline already initialized!");

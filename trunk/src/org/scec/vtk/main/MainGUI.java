@@ -1073,5 +1073,5 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 	
 	
-	
+
 }
