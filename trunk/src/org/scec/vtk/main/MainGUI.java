@@ -188,7 +188,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		helpPanel = new JPanel();
 		helpPanel.setLayout(new FlowLayout());
 		
-		Icon icon = UIManager.getIcon("OptionPane.informationIcon");
+		Icon icon = UIManager.getIcon("OptionPane.questionIcon");
 		JButton helpButton = new JButton(icon);
   //HELP BUTTON
 		helpPanel.add(helpButton);
