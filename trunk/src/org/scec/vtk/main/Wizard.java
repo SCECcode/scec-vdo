@@ -100,7 +100,7 @@ public class Wizard extends JPanel {
 //		    	  close frame after selection has been made
 		    	  MainMenu.Wizard = false;
 		    	  mainMenu.updateWizard(false);
-		        //  mainGUI.wizFrame.setVisible(false);
+		          mainGUI.wizFrame.setVisible(false);
 	
 		      }
 		    });

@@ -78,6 +78,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private Timeline timeline;
 	private TimelineGUI timelineGUI;
 	private JFrame timelineFrame;
+	private JFrame frame;
 	private CheckboxMenuItem timelineItem;
 	private MenuItem saveItemVTK;
 	private MenuItem saveItemOBJ;
@@ -156,7 +157,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		helpMenu.addActionListener(this);
 		this.tutorial.addActionListener(this);
 		
-		wizardActivation = new MenuItem("Wizard Display");
+		wizardActivation = new MenuItem("Activate Wizard");
 		helpMenu.add(wizardActivation);
 		this.wizardActivation.addActionListener(this);
 		
@@ -599,6 +600,13 @@ public void openVTKObj()
 			Help.main(null);
 			//ALEJANDRO
 			}
+		else if(eventSource == wizardActivation){
+			
+			frame = new JFrame ();
+			JOptionPane.showMessageDialog(
+					frame,  "You set Wizard to display upon launching SCEC-VDO");
+			//ESTHER
+		}
 		
 		else if(eventSource==escapeWindow)
 		{
