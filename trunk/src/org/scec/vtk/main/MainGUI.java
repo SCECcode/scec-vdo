@@ -47,7 +47,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.table.TableModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -65,6 +68,7 @@ import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.PluginInfo;
+import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
@@ -440,10 +444,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		pluginInfo.get(2).setPluginClass("org.scec.vtk.drawingTools.DrawingToolsPlugin");	
 		mainMenu.availablePlugins.put(ids.get(2), pluginInfo.get(2));
 		mainMenu.activatePlugin(ids.get(2));
-		
-		
-
-		
 		pluginTabPane.setSelectedIndex(0);
 	}
 	
@@ -575,7 +575,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	public void addPluginGUI(String id, String title, JComponent gui) {
 		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin"
-				&& id != "org.scec.vdo.drawingToolsPlugin") {
+				&& id != "org.scec.vdo.drawingToolsPlugin" && id !="org.scec.vdo.landmarksPlugin") {
 			//Logger
 			log.debug("Cannot add gui for inactive plugin " + id);
 			return;
@@ -595,7 +595,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 		// Add the tab to the tab panel
 		pluginTabPane.addTab(title, pluginTab);
-		if(id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin" && id != "org.scec.vdo.drawingToolsPlugin")
+		if(id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin" && id != "org.scec.vdo.drawingToolsPlugin" && id != "org.scec.vdo.landmarksPlugin")
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
 		else
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);

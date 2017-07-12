@@ -35,9 +35,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 
 import org.scec.vtk.main.Info;
+import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.tools.Transform;
 
 import oracle.spatial.geometry.JGeometry;
@@ -95,6 +98,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	private boolean countiesLoaded = false;
 	boolean dt = false;
 	
+	
 	public DefaultLocationsGUI(DrawingToolsGUI guiparent) {
 		this.guiparent = guiparent;
 		this.drawingToolTable = guiparent.getDrawingToolTable();
@@ -125,7 +129,6 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					PresetLocationGroup tempGroup = new PresetLocationGroup();
 					
 					tempGroup.file = files[i];
-					
 					String tempName = files[i].getName();
 					tempName = tempName.substring(0, tempName.lastIndexOf("."));
 					tempName = tempName.replace('_', ' ');
@@ -152,7 +155,6 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		}
 		
 		// Assemble main Default Locations Panel 
-
 		this.add(northPanel, BorderLayout.NORTH);
 		this.add(defaultScrollPane,BorderLayout.CENTER);
 	}
@@ -178,7 +180,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					//System.out.println(locations.elementAt(j).getTextString() + "," + this.drawingToolTable.getValueAt(i, 0));
 					if(locations.elementAt(j).getTextString().equals(this.drawingToolTable.getValueAt(i, 0)))
 					{
-						System.out.println("Removing:" + locations.elementAt(j).getTextString());
+						//System.out.println("Removing:" + locations.elementAt(j).getTextString());
 						this.drawingToolTable.setRowSelectionInterval(i,i);
 						guiparent.removeTextActors();
 						defaultLocationsStartIndex=i;
