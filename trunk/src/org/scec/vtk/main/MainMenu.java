@@ -157,7 +157,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		helpMenu.addActionListener(this);
 		this.tutorial.addActionListener(this);
 		
-		wizardActivation = new MenuItem("Activate Wizard");
+		wizardActivation = new MenuItem("Toggle Wizard");
 		helpMenu.add(wizardActivation);
 		this.wizardActivation.addActionListener(this);
 		
@@ -279,7 +279,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 	
 	
-	public void getState(){
+	public boolean getState(){
 		
 		try{
 			SAXReader reader = new SAXReader();
@@ -290,15 +290,18 @@ public class MainMenu implements ActionListener, ItemListener{
 				if(status.getName().equalsIgnoreCase("Wizard")){
 					if(status.getData().toString().equalsIgnoreCase("True")){
 						Wizard = true;
+						return true;
 					}
 					else {
 						Wizard = false;
+						return false;
 					}
 				}
 			}
 		}catch( DocumentException e){
 			e.printStackTrace();
 		}
+		return true;
 	}
 	
 	public  void updateWizard(Boolean wiz){
@@ -603,8 +606,19 @@ public void openVTKObj()
 		else if(eventSource == wizardActivation){
 			
 			frame = new JFrame ();
-			JOptionPane.showMessageDialog(
-					frame,  "You set Wizard to display upon launching SCEC-VDO");
+			Boolean toggle = getState();
+			if (!toggle) {
+				Wizard = true;
+				updateWizard(true);
+				JOptionPane.showMessageDialog(
+						frame,  "You set Wizard to display upon launching SCEC-VDO");
+			}
+			else {
+				Wizard = false;
+				updateWizard(false);
+				JOptionPane.showMessageDialog(
+						frame,  "You set Wizard to not display upon launching SCEC-VDO");
+			}
 			//ESTHER
 		}
 		
