@@ -163,6 +163,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	
 	private ArrayList<PluginActorsChangeListener> actorsChangeListeners = new ArrayList<>();
 	
+	vtkCamera cam = new vtkCamera();
 
 	public MainGUI() {
 		Prefs.init();
@@ -218,11 +219,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		timelineGUI = new TimelineGUI(timeline);
 		mainMenu.setupTimeline(timeline, timelineGUI);
 
-		vtkCamera tmpCam = new vtkCamera();
+		
 
-		tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
-		tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
-		tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
+		cam.SetPosition(camCord[0],camCord[1],camCord[2]);
+		cam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
+		cam.SetViewUp(camCord[6],camCord[7],camCord[8]);
 
 		vtkSphereSource focalPoint = new vtkSphereSource();
 		focalPoint.SetRadius(20);
@@ -232,7 +233,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		renderWindow.getRenderer().AddActor(focalPointActor);
 		focalPointActor.VisibilityOff();
 
-		renderWindow.getRenderer().SetActiveCamera(tmpCam);
+		renderWindow.getRenderer().SetActiveCamera(cam);
 		renderWindow.getRenderer().ResetCameraClippingRange();
 		focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
 		focalPointActor.Modified();
@@ -480,14 +481,19 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		JButton zoomIn = new JButton("+");
 		zoomIn.addActionListener(new ActionListener() { 
 			  public void actionPerformed(ActionEvent e) { 
-			    
+			    cam.Zoom(1.2);
+			    renderWindow.getRenderer().ResetCameraClippingRange();
+			    renderWindow.getComponent().repaint();
+			    		
 			  } 
 		} );
 		
 		JButton zoomOut = new JButton("-");
 		zoomOut.addActionListener(new ActionListener() { 
 			  public void actionPerformed(ActionEvent e) { 
-			    
+				  cam.Zoom(.8);
+				  renderWindow.getRenderer().ResetCameraClippingRange();
+				  renderWindow.getComponent().repaint();
 			  } 
 		} );
 		
@@ -988,7 +994,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		renderWindow.getRenderer().AddActor(legend.getActor());
 		for (PluginActorsChangeListener l : actorsChangeListeners)
 			l.legendAdded(legend);
-	}
+	}	
 
 	@Override
 	public void legendRemoved(LegendItem legend) {
