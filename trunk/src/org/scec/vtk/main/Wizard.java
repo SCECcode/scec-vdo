@@ -14,6 +14,7 @@ import java.awt.GridLayout;
 @SuppressWarnings("serial")
 public class Wizard extends JPanel {
 
+	private JFrame frame;
    private static final String TITLE_TEXT = "Welcome to SCEC-VDO";
    private static final int TITLE_POINTS = 22;
    Boolean dontShow = false;
@@ -91,17 +92,25 @@ public class Wizard extends JPanel {
 		      }
 		    });
 	   
-	   JCheckBox checkBox = new JCheckBox("Do not show me this again");
+	   JCheckBox checkBox = new JCheckBox("Never show this again");
 	   checkBox.setLayout(new FlowLayout());
 	   
 	   checkBox.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent ae) {
 //		    	  mainMenu.save();
 //		    	  close frame after selection has been made
+		    	  mainGUI.wizFrame.setVisible(false);
+		    	  JOptionPane.showMessageDialog(
+							frame,  "You have permanently disabled the Wizard."
+									+ " If you wish to reactivate it, go to Help menu  and click on 'Toggle Wizard'");
+		    	  
+//		    	  frame.addActionListener(new ActionListener(){
+//				public void actionPerformed(ActionEvent ae) {
 		    	  MainMenu.Wizard = false;
 		    	  mainMenu.updateWizard(false);
-		          mainGUI.wizFrame.setVisible(false);
-	
+//		          mainGUI.wizFrame.setVisible(false);
+//				} 
+//		      });
 		      }
 		    });
 	   
