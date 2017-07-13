@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -460,10 +462,18 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	@SuppressWarnings("unused")
 	private void setUpToolBar() {
 		toolBar = new JToolBar();
-		JButton centerImage = new JButton("C");
+		JButton centerImage = new JButton();
+		try {
+			File file = new File("resources/Center.png");
+		    Image img = ImageIO.read(file);
+		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
+		    centerImage.setIcon(new ImageIcon(img));
+		  } catch (IOException ex) {
+			
+		    System.out.println("centerImage: " + ex);
+		  }
 		centerImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) { 
-				System.out.println("LOOK at Me");
 				
 				if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
 					renderWindow.getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
@@ -478,7 +488,16 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		});
 		
 		
-		JButton zoomIn = new JButton("+");
+		JButton zoomIn = new JButton();
+		
+		try {
+			File file = new File("resources/zoomIn.png");
+		    Image img = ImageIO.read(file);
+		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
+		    zoomIn.setIcon(new ImageIcon(img));
+		  } catch (IOException ex) {
+		    System.out.println("zoomIn: " + ex);
+		  }
 		zoomIn.addActionListener(new ActionListener() { 
 			  public void actionPerformed(ActionEvent e) { 
 			    cam.Zoom(1.2);
@@ -488,7 +507,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			  } 
 		} );
 		
-		JButton zoomOut = new JButton("-");
+		JButton zoomOut = new JButton();
+		try {
+			File file = new File("resources/zoomOut.png");
+		    Image img = ImageIO.read(file);
+		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
+		    zoomOut.setIcon(new ImageIcon(img));
+		  } catch (IOException ex) {
+		    System.out.println("zoomOut: " +  ex);
+		  }
 		zoomOut.addActionListener(new ActionListener() { 
 			  public void actionPerformed(ActionEvent e) { 
 				  cam.Zoom(.8);
