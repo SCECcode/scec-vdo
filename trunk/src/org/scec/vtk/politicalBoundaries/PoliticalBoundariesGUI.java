@@ -3,7 +3,6 @@ package org.scec.vtk.politicalBoundaries;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -13,16 +12,12 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
@@ -32,10 +27,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
-import org.jpedal.utils.sleep;
-import org.omg.CORBA.PUBLIC_MEMBER;
-import org.scec.vtk.commons.opensha.tree.events.ColorChangeListener;
-import org.scec.vtk.drawingTools.DisplayAttributes;
 import org.scec.vtk.drawingTools.DrawingTool;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
@@ -49,12 +40,6 @@ import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 import org.scec.vtk.tools.actors.AppendActors;
 
-import com.sun.javafx.tk.Toolkit.Task;
-
-import javafx.scene.layout.Border;
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.DBFReaderJGeom;
-import oracle.spatial.util.ShapefileReaderJGeom;
 import vtk.vtkActor;
 import vtk.vtkActor2D;
 import vtk.vtkCellArray;
@@ -67,7 +52,6 @@ import vtk.vtkPointSetToLabelHierarchy;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
-import vtk.vtkProp;
 import vtk.vtkStringArray;
 
 public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeListener{
