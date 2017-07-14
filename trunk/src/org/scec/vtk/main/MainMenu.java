@@ -28,12 +28,7 @@ import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-//import org.w3c.dom.Document;
-
+import javax.swing.JScrollPane;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -49,7 +44,6 @@ import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.timeline.gui.ViewerSizePanel;
-import org.xml.sax.SAXException;
 import org.scec.vtk.main.Help;
 
 import vtk.vtkActor;
@@ -74,7 +68,6 @@ public class MainMenu implements ActionListener, ItemListener{
 	private MenuItem saveItem;
 	private MenuItem appExit;
 	private Menu windowMenu ;
-	private Menu helpMenu;
 	private Timeline timeline;
 	private TimelineGUI timelineGUI;
 	private JFrame timelineFrame;
@@ -89,8 +82,9 @@ public class MainMenu implements ActionListener, ItemListener{
 	private ViewerSizePanel sizePanel;
 	private CheckboxMenuItem focalPointItem;
 	private String currFileName;
-	private Document currDoc;
 	static public Boolean Wizard;
+	static public Menu helpMenu;
+	public JFrame helpFrame;
 
 	Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
@@ -100,7 +94,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
-	public MainMenu(final Help help){
+	public MainMenu(){
 		getState();
 		currFileName = "";
 		//Creates the main menu bar.
@@ -146,11 +140,12 @@ public class MainMenu implements ActionListener, ItemListener{
 	{
 		return menuBar;
 	}
+	
+	//Help button on menu bar
 	private void helpMenu() {
 		helpMenu = new Menu();
 		helpMenu.setLabel("Help");
 		helpMenu.setName("Help");
-		
 		tutorial = new MenuItem("User Guide");
 		helpMenu.add(tutorial);
 		menuBar.add(helpMenu);
@@ -160,8 +155,6 @@ public class MainMenu implements ActionListener, ItemListener{
 		wizardActivation = new MenuItem("Toggle Wizard");
 		helpMenu.add(wizardActivation);
 		this.wizardActivation.addActionListener(this);
-		
-		
 	
 	}
 	public void setupTimeline(Timeline timeline, TimelineGUI timelineGUI) {
@@ -185,7 +178,7 @@ public class MainMenu implements ActionListener, ItemListener{
 
 		menu.add(timelineItem);
 		
-		//Help Menu in nav bar
+		//Add help menu in menu bar
 		helpMenu();
 		
 	}
@@ -255,8 +248,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			System.out.println("Unhandled event");
 		}
 	}
-	
-	
+
 	public void autoSave(){
 		Document document = DocumentHelper.createDocument();
 		Element root = document.addElement("root");
@@ -599,9 +591,16 @@ public void openVTKObj()
 			
 		}
 		//**********************************************
+		//Function for calling the userGuide
 		else if(eventSource == tutorial) {
-			Help.main(null);
-			//ALEJANDRO
+			helpFrame = new JFrame("SCEC VDO User Guide");
+			Help helpGUI = new Help();
+			JScrollPane sp = new JScrollPane(helpGUI);
+		    helpFrame.getContentPane().add(sp);
+		    helpFrame.setSize(550, 500);
+		    helpFrame.setLocationRelativeTo(null);
+		    helpFrame.setVisible(true);
+		    helpFrame.setAlwaysOnTop(true);
 			}
 		else if(eventSource == wizardActivation){
 			
@@ -619,7 +618,6 @@ public void openVTKObj()
 				JOptionPane.showMessageDialog(
 						frame,  "You set Wizard to not display upon launching SCEC-VDO");
 			}
-			//ESTHER
 		}
 		
 		else if(eventSource==escapeWindow)
@@ -707,7 +705,7 @@ public void openVTKObj()
 	public Map<String, Plugin> getActivePlugins() {
 		return activePlugins;
 	}
-
+ 
 	public Map<String, Plugin> getLoadedPluginsAsMap() {
 		for (Entry<String, Plugin> entry : loadedPlugins.entrySet())
 		{
