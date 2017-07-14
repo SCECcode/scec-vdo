@@ -8,9 +8,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
+import javax.swing.table.TableModel;
 
 import org.dom4j.Element;
 import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.utils.components.CheckAllTable;
+import org.scec.vtk.plugins.utils.components.TreeNode;
 
 import vtk.vtkActor;
 
@@ -29,44 +32,77 @@ public class PoliticalBoundariesPluginState implements PluginState {
 	void copyLatestCatalogDetails()
 	{
 		filePath.clear();
-
-
-		for (JCheckBox box: parent.getLowerCheckBoxButtons())
-		{
-			if (box.isSelected())
-			{
-				filePath.add(box.getText());
+	
+		TreeNode<CheckAllTable> treeRoot = parent.root;
+		
+		for (TreeNode<CheckAllTable> node : treeRoot) {
+			CheckAllTable table = node.data;
+			TableModel list = table.getTable().getModel();
+			for(int i = 0; i < list.getRowCount(); i ++){
+				if((Boolean)list.getValueAt(i, 0)){
+					filePath.add((String)list.getValueAt(i, 1));
+					System.out.println("Name: " + list.getValueAt(i, 1) + " | checked:  " + list.getValueAt(i, 0)  );
+				}
+				
 			}
 		}
 
 	}
 
+	
+	
+	private static String createIndent(int depth) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < depth; i++) {
+			sb.append(' ');
+		}
+		return sb.toString();
+	}
+	
+	
+	
 	@Override
 	public void load() {
-		// call methods to update based on the properties captured //might also want to put swing invoke and wait
+		
+		
+		TreeNode<CheckAllTable> treeRoot = parent.root;
+		
+		for (TreeNode<CheckAllTable> node : treeRoot) {
+			CheckAllTable table = node.data;
+			TableModel list = table.getTable().getModel();
+			for(int i = 0; i < list.getRowCount(); i ++){
+				for(int j = 0 ; j < filePath.size(); j++){
+					if(((String)list.getValueAt(i, 1)).equalsIgnoreCase(filePath.get(j))){
+						list.setValueAt(true, i, 0);
+					}
+				}
+				
+				
+			}
+		}
 
-//		for(int j= 0; j < parent.getPoliticalBoundarySubPanelLowerTab().getTabCount(); j++)
-//		{
-//			JScrollPane sp = (JScrollPane)  parent.getPoliticalBoundarySubPanelLowerTab().getComponentAt(j);
-//			JViewport vp = (JViewport) sp.getComponent(0);
-//			JPanel p = (JPanel) vp.getComponent(0);
-//			unselectLowerCheckBox(p);
-//
-//			for(int k = 0; k < filePath.size(); k++)
-//			{	
-//				if(containComponent(p, filePath.get(k)))
-//				{
-//					int segIndex = findIndex(p, filePath.get(k));
-//					int actorIndex = parent.getLowerCheckBoxButtons().indexOf(p.getComponent(segIndex));//
-//					vtkActor actor = parent.getPoliticalBoundaries().get(actorIndex);
-//					actor.VisibilityOn();
-//					JCheckBox comp = (JCheckBox) p.getComponent(segIndex);
-//					comp.setSelected(true);
-//
-//				}
-//
-//			}
-//		}
+		/*for(int j= 0; j < parent.getPoliticalBoundarySubPanelLowerTab().getTabCount(); j++)
+		{
+			JScrollPane sp = (JScrollPane)  parent.getPoliticalBoundarySubPanelLowerTab().getComponentAt(j);
+			JViewport vp = (JViewport) sp.getComponent(0);
+			JPanel p = (JPanel) vp.getComponent(0);
+			unselectLowerCheckBox(p);
+
+			for(int k = 0; k < filePath.size(); k++)
+			{	
+				if(containComponent(p, filePath.get(k)))
+				{
+					int segIndex = findIndex(p, filePath.get(k));
+					int actorIndex = parent.getLowerCheckBoxButtons().indexOf(p.getComponent(segIndex));//
+					vtkActor actor = parent.getPoliticalBoundaries().get(actorIndex);
+					actor.VisibilityOn();
+					JCheckBox comp = (JCheckBox) p.getComponent(segIndex);
+					comp.setSelected(true);
+
+				}
+
+			}
+		}*/
 
 	}
 
