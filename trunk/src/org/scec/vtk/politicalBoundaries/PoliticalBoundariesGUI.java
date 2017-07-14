@@ -85,7 +85,7 @@ public class PoliticalBoundariesGUI implements ActionListener{
 										{Boolean.FALSE, "North America"},
 										{Boolean.FALSE, "Oceania"},
 										{Boolean.FALSE, "South America"},
-										{Boolean.TRUE, "United States"}};
+										{Boolean.FALSE, "United States"}};
 	
 	private String[][] regionFileNames = {{"United States","us_complete.txt"},
 									{"Africa","africa.txt"}, 
@@ -144,11 +144,12 @@ public class PoliticalBoundariesGUI implements ActionListener{
 		this.politicalBoundaryMainPanel.add(tablePanel);
 		//Add subregions and landmarks
 		for (int i = 0; i < regionFileNames.length; i++) {
-			//boolean defaultSelection = (regionFileNames[i][0] == "United States");
 			ArrayList<String> subRegions = loadRegion(regionFileNames[i][1], false);
 			CheckAllTable subRegionTable = setUpTable(subRegions, regionFileNames[i][0], subRegionListener, new ColorListener());
 			TreeNode<CheckAllTable> subRegionNode = root.addChild(subRegionTable);
 			if(subRegionTable.getTitle() == "United States") {
+				//Set california default;
+				subRegionNode.data.getTable().getModel().setValueAt(true, 4, 0);
 				ArrayList<String> CALandmarkGroups = fileParser.loadCALandmarkGroups();
 				CheckAllTable CALandmarksTable = setUpTable(CALandmarkGroups, "California", checkNextTableListener, new ColorNextTable());
 				CALandmarksTable.getTable().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -178,7 +179,6 @@ public class PoliticalBoundariesGUI implements ActionListener{
 		table.addColorButton(colorListener);
 		return table;
 	}
-
 	/**
 	 * Add vtkActors
 	 */
