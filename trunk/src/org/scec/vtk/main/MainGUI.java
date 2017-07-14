@@ -6,7 +6,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -101,13 +99,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	//	private static JFrame frame ;
 	private static vtkJoglPanelComponent  renderWindow;
 	//pluginTabPane contains tabs with all plugins
-	private JTabbedPane pluginTabPane;
+	private static JTabbedPane pluginTabPane;
 	//Create Main Panel/ Main panel contains toolBar and VTK rendered 3D image; 
 	public JPanel mainPanel;
 	
 	public JFrame wizFrame;
-	
-	
+	public JFrame helpFrame;
+
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
 	private int yCenter = BORDER_SIZE / 2;
@@ -165,7 +163,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	
 	private ArrayList<PluginActorsChangeListener> actorsChangeListeners = new ArrayList<>();
 	
-	vtkCamera cam = new vtkCamera();
 
 	public MainGUI() {
 		Prefs.init();
@@ -187,15 +184,50 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 //		renderWindow.getRenderer().SetOcclusionRatio(0);
 		mainMenu = new MainMenu();
 		
+		//HELP BUTTON
 		pluginGUIPanel = new JPanel(new BorderLayout());
 		helpPanel = new JPanel();
 		helpPanel.setLayout(new FlowLayout());
-		
 		Icon icon = UIManager.getIcon("OptionPane.questionIcon");
 		JButton helpButton = new JButton(icon);
-  //HELP BUTTON
 		helpPanel.add(helpButton);
 		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
+		helpButton.addActionListener(new ActionListener() {
+		      public void actionPerformed(ActionEvent ae) {
+					helpFrame = new JFrame("SCEC VDO User Guide");
+					Help helpGUI = new Help();
+					JScrollPane sp = new JScrollPane(helpGUI);
+				    helpFrame.getContentPane().add(sp);
+				    helpFrame.setSize(550, 500);
+				    helpFrame.setLocationRelativeTo(null);
+				    helpFrame.setVisible(true);
+				    helpFrame.setAlwaysOnTop(true);
+		    	    if (pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Political Boundaries")) {
+		    			helpGUI.scrollToReference("PoliticalBoundaries");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Graticule")) {
+		    			helpGUI.scrollToReference("Graticule");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Drawing Tools")) {
+		    			helpGUI.scrollToReference("DrawingTools");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("ShakeMap Plugin")) {
+		    			helpGUI.scrollToReference("ShakeMap");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Surface Plugin")) {
+		    			helpGUI.scrollToReference("Surface");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Earthquake Catalog Plugin")) {
+		    			helpGUI.scrollToReference("EarthquakeCatalog");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Legend Plugin")) {
+		    			helpGUI.scrollToReference("Legend");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Earthquake Simulators")) {
+		    			helpGUI.scrollToReference("Simulators");
+		    	    }
+		      }
+		    });
 		
 		pluginTabPane =  new JTabbedPane();
 	//	pluginTabPane.setPreferredSize(new Dimension(100, 600));
@@ -221,11 +253,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		timelineGUI = new TimelineGUI(timeline);
 		mainMenu.setupTimeline(timeline, timelineGUI);
 
-		
+		vtkCamera tmpCam = new vtkCamera();
 
-		cam.SetPosition(camCord[0],camCord[1],camCord[2]);
-		cam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
-		cam.SetViewUp(camCord[6],camCord[7],camCord[8]);
+		tmpCam.SetPosition(camCord[0],camCord[1],camCord[2]);
+		tmpCam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
+		tmpCam.SetViewUp(camCord[6],camCord[7],camCord[8]);
 
 		vtkSphereSource focalPoint = new vtkSphereSource();
 		focalPoint.SetRadius(20);
@@ -235,7 +267,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		renderWindow.getRenderer().AddActor(focalPointActor);
 		focalPointActor.VisibilityOff();
 
-		renderWindow.getRenderer().SetActiveCamera(cam);
+		renderWindow.getRenderer().SetActiveCamera(tmpCam);
 		renderWindow.getRenderer().ResetCameraClippingRange();
 		focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
 		focalPointActor.Modified();
@@ -462,18 +494,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	@SuppressWarnings("unused")
 	private void setUpToolBar() {
 		toolBar = new JToolBar();
-		JButton centerImage = new JButton();
-		try {
-			File file = new File("resources/Center.png");
-		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-		    centerImage.setIcon(new ImageIcon(img));
-		  } catch (IOException ex) {
-			
-		    System.out.println("centerImage: " + ex);
-		  }
+		JButton centerImage = new JButton("C");
 		centerImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) { 
+				System.out.println("LOOK at Me");
 				
 				if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
 					renderWindow.getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
@@ -488,39 +512,17 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		});
 		
 		
-		JButton zoomIn = new JButton();
-		
-		try {
-			File file = new File("resources/zoomIn.png");
-		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-		    zoomIn.setIcon(new ImageIcon(img));
-		  } catch (IOException ex) {
-		    System.out.println("zoomIn: " + ex);
-		  }
+		JButton zoomIn = new JButton("+");
 		zoomIn.addActionListener(new ActionListener() { 
 			  public void actionPerformed(ActionEvent e) { 
-			    cam.Zoom(1.2);
-			    renderWindow.getRenderer().ResetCameraClippingRange();
-			    renderWindow.getComponent().repaint();
-			    		
+			    
 			  } 
 		} );
 		
-		JButton zoomOut = new JButton();
-		try {
-			File file = new File("resources/zoomOut.png");
-		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-		    zoomOut.setIcon(new ImageIcon(img));
-		  } catch (IOException ex) {
-		    System.out.println("zoomOut: " +  ex);
-		  }
+		JButton zoomOut = new JButton("-");
 		zoomOut.addActionListener(new ActionListener() { 
 			  public void actionPerformed(ActionEvent e) { 
-				  cam.Zoom(.8);
-				  renderWindow.getRenderer().ResetCameraClippingRange();
-				  renderWindow.getComponent().repaint();
+			    
 			  } 
 		} );
 		
@@ -541,26 +543,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 		
 	}
-	
-//	@SuppressWarnings("unused")
-//	public JPanel makebuttonPanel1() {
-//		searchBarGUI = new JPanel();
-//		searchBar = new JButton("?");
-//		searchBarGUI.add(searchBar, BorderLayout.CENTER);
-//		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
-//		
-//		return pluginGUIPanel;
-	//}
-//		buttonPanel.setAlignmentX(JPanel.LEFT_ALIGNMENT);
-//		JButton help = new JButton("?"); // "button
-//		graticuleappsProp_help.addActionListener(this);
-//		graticuleappsProp_help.setActionCommand("?");
-//		buttonPanel.setFlowlayout();
-		
-		
-//		
-//		
-	
 	
 	private void setUpPluginTabs() {
 		//pluginTabPane.setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
@@ -588,15 +570,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		return mainPanel;
 	}
 	
-//	@SuppressWarnings("unused")
-//	public JPanel makebuttonPanel1() {
-//		searchBarGUI = new JPanel();
-//		searchBar = new JButton("?");
-//		searchBarGUI.add(searchBar, BorderLayout.CENTER);
-//		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
-//		
-//		return mainPanel;
-	//}
+
 	//viewRange
 	public void setViewRange(ViewRange viewRange) {
 		this.viewRange = viewRange;
@@ -1021,7 +995,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		renderWindow.getRenderer().AddActor(legend.getActor());
 		for (PluginActorsChangeListener l : actorsChangeListeners)
 			l.legendAdded(legend);
-	}	
+	}
 
 	@Override
 	public void legendRemoved(LegendItem legend) {
@@ -1080,7 +1054,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	
 	
 	public static void main(String[] args) {
-		
+
 		try {
             // Set System L&F
 			UIManager.setLookAndFeel(
@@ -1106,5 +1080,5 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 	
 	
-
+	
 }
