@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -48,6 +51,7 @@ import org.scec.vtk.tools.actors.AppendActors;
 
 import com.sun.javafx.tk.Toolkit.Task;
 
+import javafx.scene.layout.Border;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.DBFReaderJGeom;
 import oracle.spatial.util.ShapefileReaderJGeom;
@@ -66,7 +70,7 @@ import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
 import vtk.vtkStringArray;
 
-public class PoliticalBoundariesGUI implements ActionListener{
+public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeListener{
 	private JPanel politicalBoundaryMainPanel;
 	private JPanel tablePanel;
 	private ArrayList<vtkActor> actorPoliticalBoundariesSegments;
@@ -78,6 +82,8 @@ public class PoliticalBoundariesGUI implements ActionListener{
 	AppendActors appendActors = new AppendActors();
 	private ColorButton colorDrawingToolsButton;
 	private SingleColorChooser colorChooser;
+	private JProgressBar progbar;
+	private Task task;
 	
 	private Object[][] regionTableData = {{Boolean.FALSE, "Africa"},
 										{Boolean.FALSE, "Asia"},
@@ -99,6 +105,37 @@ public class PoliticalBoundariesGUI implements ActionListener{
 	PoliticalBoundariesFileParser fileParser;
 	ArrayList<DrawingTool> allActiveDrawings;
 	
+	 class Task extends SwingWorker<Void, Void> {
+	        /*
+	         * Main task. Executed in background thread.
+	         */
+	        @Override
+	        public Void doInBackground() {
+//	        	//done = false;
+//	    		int progress = 0;
+//	            //Initialize progress property.
+//	            setProgress(progress);
+//	            for (int i = 0; i < 100; i++) {      
+//	            	progress += 1; 
+//	            	setProgress(progress);
+//	            	  try {
+//	                      Thread.sleep(100);
+//	                  } catch (InterruptedException e) {}
+//	            }
+	    		return null;
+	        }
+	        
+	        /*
+	         * Executed in event dispatching thread
+	         */
+	        @Override
+	        public void done() {
+	        	setProgress(100);
+	        }
+
+	    }
+		
+	
 	public PoliticalBoundariesGUI(PluginActors pluginActors){
 		//Plugin actors are something. TODO: Explain this
 		this.pluginActors = pluginActors;
@@ -115,6 +152,12 @@ public class PoliticalBoundariesGUI implements ActionListener{
 		this.actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
 		allSubRegionNames = new ArrayList<String>();
 		
+		progbar = new JProgressBar(0, 100);
+		progbar.setValue(0);
+		progbar.setStringPainted(true);
+		
+
+		
 		//Add color button for changing map color
 //		colorDrawingToolsButton = new ColorButton(this, "Change color of selected Text(s)");
 //		colorDrawingToolsButton.setEnabled(true);
@@ -123,7 +166,7 @@ public class PoliticalBoundariesGUI implements ActionListener{
 	
 	public void createMainPanel() {
 		//Main panel contains tablePanel	
-		politicalBoundaryMainPanel = new JPanel(new GridLayout(0,1));
+		politicalBoundaryMainPanel = new JPanel(new BorderLayout());
 		politicalBoundaryMainPanel.setName("Political Boundaries");
 		dMainPanel = new Dimension(Prefs.getPluginWidth(),Prefs.getPluginHeight());
 		politicalBoundaryMainPanel.setPreferredSize(dMainPanel);
@@ -170,6 +213,11 @@ public class PoliticalBoundariesGUI implements ActionListener{
 		}
 		regionTable.addControlColumn(forwardClickListener, ">", root);
 		regionTable.addColorButton(new ColorNextTable());
+		JPanel progbarPanel = new JPanel(new BorderLayout());
+		//progbarPanel.setPreferredSize(new Dimension(300, 100));
+		progbarPanel.add(progbar);
+		
+		politicalBoundaryMainPanel.add(progbarPanel, BorderLayout.PAGE_END);
 		return this.politicalBoundaryMainPanel;
 	}
 	
@@ -386,6 +434,7 @@ public class PoliticalBoundariesGUI implements ActionListener{
     	public void tableChanged(TableModelEvent e) {
     		int row = e.getFirstRow();
     		int column = e.getColumn();
+    		
     		if (column == 0) {
     			TableModel model = (TableModel) e.getSource();
     			String landmarkName = (String) model.getValueAt(row, column+1);
@@ -455,19 +504,53 @@ public class PoliticalBoundariesGUI implements ActionListener{
 	
 	TableModelListener checkNextTableListener = new TableModelListener() {
 		@Override
-		public void tableChanged(TableModelEvent e) {
-			int row = e.getFirstRow();
-			int column = e.getColumn();
+		public void tableChanged(final TableModelEvent e) {
+			final int row = e.getFirstRow();
+			final int column = e.getColumn();
 			if (column == 0) {
-				TableModel model = (TableModel) e.getSource();
-				String subTableName = (String) model.getValueAt(row, column+1);
-				final Boolean checked = (Boolean) model.getValueAt(row, column);
-				final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
-				for (int i = 0 ; i < nextTableNode.data.getTable().getRowCount(); i++) {
-					nextTableNode.data.getTable().setValueAt(checked, i, 0);
-				}
+				task = new Task() {
+					@Override
+					public Void doInBackground() {
+						TableModel model = (TableModel) e.getSource();
+						String subTableName = (String) model.getValueAt(row, column+1);
+						System.out.println("subtable name: " + subTableName);
+						final Boolean checked = (Boolean) model.getValueAt(row, column);
+						final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
+						for (int i = 0 ; i < nextTableNode.data.getTable().getRowCount(); i++) {
+							nextTableNode.data.getTable().setValueAt(checked, i, 0);
+							//updates every 5
+							if (i % 1000 == 0) {
+								setProgress((int)Math.ceil((((float)i/(float)nextTableNode.data.getTable().getRowCount()) * 100)));
+//							  try {
+//	    	                      Thread.sleep(1);
+//	    	                  } catch (InterruptedException e) {}
+							}
+						}
+						return null;
+					}
+					
+				};
+					
+				task.addPropertyChangeListener(new PropertyChangeListener() {
+						@Override
+						public void propertyChange(PropertyChangeEvent evt) {
+					        if ("progress" == evt.getPropertyName()) {
+					            int progress = (Integer) evt.getNewValue();
+					            progbar.setValue(progress);
+					            System.out.println(progbar.getValue());
+					        } 
+							
+						}
+				});
+				task.execute();
 			}
-		}
+//				TableModel model = (TableModel) e.getSource();
+//				String subTableName = (String) model.getValueAt(row, column+1);
+//				final Boolean checked = (Boolean) model.getValueAt(row, column);
+//				final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
+//				for (int i = 0 ; i < nextTableNode.data.getTable().getRowCount(); i++) {
+//					nextTableNode.data.getTable().setValueAt(checked, i, 0);
+				}
 	};
 	
 	TableModelListener subRegionListener = new TableModelListener() {
@@ -644,6 +727,14 @@ public class PoliticalBoundariesGUI implements ActionListener{
 	{
 		ArrayList<JCheckBox> upperCheckBoxButtons = new ArrayList<JCheckBox>();
 		return upperCheckBoxButtons;
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		  int progress = (Integer) evt.getNewValue();
+	      progbar.setValue(progress);
+          System.out.println(progbar.getValue());
+		
 	}
 
 }

@@ -193,6 +193,7 @@ TableModelListener, PropertyChangeListener
          */
         @Override
         public void done() {
+        	setProgress(100);
         }
 
     }
@@ -698,10 +699,9 @@ TableModelListener, PropertyChangeListener
 		    					fault.setFaultActor(actor);
 		    					actor.GetProperty().SetRepresentationToWireframe();
 		    					pluginActors.addActor(actor);
+		    					if (i % (loadedRows.size() / 20) == 0) {
 		    					setProgress((int)Math.ceil((((float)i/(float)loadedRows.size()) * 100)));
-		    	            	  try {
-		    	                      Thread.sleep(1);
-		    	                  } catch (InterruptedException e) {}
+		    					}
 		    				}
 		    				MainGUI.updateRenderWindow();
 		    			}
@@ -712,7 +712,6 @@ TableModelListener, PropertyChangeListener
 		    task.addPropertyChangeListener(new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
-					System.out.println(progbar.getValue());
 			        if ("progress" == evt.getPropertyName()) {
 			            int progress = (Integer) evt.getNewValue();
 			            progbar.setValue(progress);
