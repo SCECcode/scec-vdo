@@ -105,10 +105,7 @@ public class ImageSequenceRenderer extends AbstractThreadedRenderer {
 		IIOImage outputImage = new IIOImage(img, null, null);
 		writer.write(null, outputImage, writeParam);
 		index++;
-		if (D) System.out.println("DONE");
-		
-	   
-		 
+		if (D) System.out.println("DONE");	 
 	}
 
 	@Override
