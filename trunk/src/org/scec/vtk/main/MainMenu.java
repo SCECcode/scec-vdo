@@ -94,7 +94,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
-	public MainMenu(){
+	public MainMenu(Object object){
 		getState();
 		currFileName = "";
 		//Creates the main menu bar.
