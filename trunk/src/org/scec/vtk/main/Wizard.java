@@ -18,10 +18,8 @@ public class Wizard extends JPanel {
    private static final String TITLE_TEXT = "Welcome to SCEC-VDO";
    private static final int TITLE_POINTS = 22;
    Boolean dontShow = false;
-   private MainMenu mainMenu;
    public Wizard(final MainMenu mainMenu, final MainGUI mainGUI) {
 	   
-	   this.mainMenu = mainMenu;
 	   JPanel mainPanel = new JPanel();
 	   mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 //	   mainPanel.setSize(370, 130);
@@ -118,7 +116,7 @@ public class Wizard extends JPanel {
 	   southBtnPanel.add(openButton);
 	   southBtnPanel.add(createButton);
 	   southBtnPanel.add(checkBox, FlowLayout.RIGHT);
-	   
+
 	   
       JPanel titlePanel = new JPanel();
       titlePanel.add(titleLabel);
