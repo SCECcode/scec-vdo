@@ -144,8 +144,8 @@ public class PoliticalBoundariesGUI implements ActionListener{
 		this.politicalBoundaryMainPanel.add(tablePanel);
 		//Add subregions and landmarks
 		for (int i = 0; i < regionFileNames.length; i++) {
-			boolean defaultSelection = (regionFileNames[i][0] == "United States");
-			ArrayList<String> subRegions = loadRegion(regionFileNames[i][1], defaultSelection);
+			//boolean defaultSelection = (regionFileNames[i][0] == "United States");
+			ArrayList<String> subRegions = loadRegion(regionFileNames[i][1], false);
 			CheckAllTable subRegionTable = setUpTable(subRegions, regionFileNames[i][0], subRegionListener, new ColorListener());
 			TreeNode<CheckAllTable> subRegionNode = root.addChild(subRegionTable);
 			if(subRegionTable.getTitle() == "United States") {
