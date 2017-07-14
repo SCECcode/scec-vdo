@@ -185,7 +185,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 ////		renderWindow.getRenderer().SetOcclusionRatio(0.1);
 //		renderWindow.getRenderer().SetMaximumNumberOfPeels(1000);
 //		renderWindow.getRenderer().SetOcclusionRatio(0);
-		mainMenu = new MainMenu(null);
+		mainMenu = new MainMenu();
 		
 		pluginGUIPanel = new JPanel(new BorderLayout());
 		helpPanel = new JPanel();
