@@ -21,6 +21,7 @@ public class LegendItem {
 		this.source = source;
 		this.title = title;
 		this.imagePath = null;
+		
 	}
 	
 	public LegendItem(vtkActor2D actor, Plugin source, String title, String imagePath) {
