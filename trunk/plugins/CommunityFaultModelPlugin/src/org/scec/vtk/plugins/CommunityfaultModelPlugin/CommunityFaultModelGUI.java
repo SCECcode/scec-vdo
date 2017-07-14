@@ -3,8 +3,12 @@ package org.scec.vtk.plugins.CommunityfaultModelPlugin;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -15,6 +19,7 @@ import java.util.ArrayList;
 
 
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -22,15 +27,18 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.netlib.util.intW;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.utils.DataAccessor;
@@ -46,6 +54,9 @@ import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
+
+import com.sun.media.ui.ProgressBar;
+
 import vtk.vtkActor;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3DPickBehavior;
@@ -61,7 +72,7 @@ import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.TSurfImport;
 public class CommunityFaultModelGUI  extends JPanel implements 
 ActionListener, 
 ListSelectionListener, 
-TableModelListener 
+TableModelListener, PropertyChangeListener 
 {
 
 	private static final long serialVersionUID = 1L;
@@ -85,7 +96,14 @@ TableModelListener
 	// notes panel adjustable components
 	private JPanel    propsNotesPanel;
 	private JTextArea faultNotes;
-
+	
+	// progress bar
+	private JProgressBar progbar;
+	private Task task;
+	//private int progress;
+	// determines whether given task is finished
+	private boolean done;
+	
 	// accessible panels
 	private JTabbedPane propsTabbedPane;
 
@@ -123,12 +141,16 @@ TableModelListener
 	 * Then this GUI reads that directory and pre-loads the T-Surf file names into the GUI
 	 * @param cfmFilesDirectory
 	 */
-	public CommunityFaultModelGUI(String cfmFilesDirectory, String groupName, PluginActors actors) {
+	public CommunityFaultModelGUI(String cfmFilesDirectory, final String groupName, PluginActors actors) {
 		super();
+		
+
+		
 		initialize(actors);
 		//this.groupList.dedeleteGroupgroupName);
+
 		File dir = new File(cfmFilesDirectory);
-		// only inlcude files which have .ts extension
+		// only include files which have .ts extension
 		File[] f = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File dirName, String name) {
 				if(name.endsWith(".ts")) return true;
@@ -136,13 +158,45 @@ TableModelListener
 			}
 		});
 		if (f != null) {
-			TSurfImport tsImport = new TSurfImport(this, f);
-			ArrayList newObjects = tsImport.processFiles(false, groupName);
+			final TSurfImport tsImport = new TSurfImport(this, f);
+			ArrayList<Fault3D> newObjects = tsImport.processFiles(false, groupName);
 			if (newObjects.size() > 0) {
 				this.faultTable.addFaults(newObjects);
 			}
 		}
 	}
+	
+	
+
+    class Task extends SwingWorker<Void, Void> {
+        /*
+         * Main task. Executed in background thread.
+         */
+        @Override
+        public Void doInBackground() {
+        	//done = false;
+    		int progress = 0;
+            //Initialize progress property.
+            setProgress(progress);
+            for (int i = 0; i < 100; i++) {      
+            	progress += 1; 
+            	setProgress(progress);
+            	  try {
+                      Thread.sleep(100);
+                  } catch (InterruptedException e) {}
+            }
+    		return null;
+        }
+        
+        /*
+         * Executed in event dispatching thread
+         */
+        @Override
+        public void done() {
+        }
+
+    }
+	
 
 	private void initialize(PluginActors actors) {
 		this.pluginActors = actors;
@@ -159,13 +213,23 @@ TableModelListener
 		this.propsTabbedPane.setBorder(BorderFactory.createEmptyBorder(0,10,0,10));
 		this.propsTabbedPane.add(getGroupsPanel());
 		this.propsTabbedPane.add(getNotesPanel());
+		
+		progbar = new JProgressBar(0, 100);
+		progbar.setValue(0);
+		progbar.setStringPainted(true);
 
 		// assemble lower pane
 		JPanel lowerPane = new JPanel();
 		lowerPane.setLayout(new BoxLayout(lowerPane,BoxLayout.PAGE_AXIS));
 		lowerPane.add(this.propsTabbedPane);
+		
+		JPanel progressPanel = new JPanel();
+		progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.LINE_AXIS));
+		progressPanel.add(progbar);
+		
 
 		// add lower pane to gui
+		add(progressPanel, BorderLayout.BEFORE_FIRST_LINE);
 		add(lowerPane, BorderLayout.PAGE_END);
 
 		// other initializations
@@ -287,7 +351,7 @@ TableModelListener
 		this.filterButton.addActionListener(this);
 		bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(this.filterButton);
-
+ 
 		return bar;
 	}
 
@@ -567,7 +631,7 @@ TableModelListener
 				this.fileChooser = new DataFileChooser(this, "Import Fault Files", true,new File(MainGUI.getRootPluginDir() + File.separator + "Faults"));
 			}
 			this.fileChooser.setCurrentFilter("ts", "GoCAD (*.ts)");
-			File[] f = this.fileChooser.getFiles();
+			final File[] f = this.fileChooser.getFiles();
 			addFaultsFromFile(f);
 		} 
 		else if (src == this.remFaultsButton) {
@@ -612,29 +676,53 @@ TableModelListener
 
 	}
 
-	public void addFaultsFromFile(File[] f) {
+	public void addFaultsFromFile(final File[] f) {
 		// TODO Auto-generated method stub
-		if (f != null) {
-			TSurfImport tsImport = new TSurfImport(this, f);
-			ArrayList<Fault3D> newObjects = tsImport.processFiles();
-			if (newObjects.size() > 0) {
-				this.faultTable.addFaults(newObjects);
-				this.faultTable.getRowCount();
-				//reloading as the faults are sorted alphabetically 
-				List loadedRows = this.faultTable.getLibraryModel().getAllObjects();
-				for(int i = 0; i < loadedRows.size(); i++)
-				{
-					Fault3D  fault =(Fault3D) loadedRows.get(i);
-					System.out.println("Adding "+fault.getDisplayName());
-					PickEnabledActor<Fault3D> actor = new PickEnabledActor<Fault3D>(getPickHandler(), fault);
-					actor.SetMapper(fault.getFaultMapper());//.GetMapper());
-					fault.setFaultActor(actor);
-					actor.GetProperty().SetRepresentationToWireframe();
-					pluginActors.addActor(actor);
+		final TSurfImport tsImport = new TSurfImport(this, f);
+		 task = new Task(){
+		    	@Override
+		    	public Void doInBackground() {
+		    		if (f != null) {
+		    			ArrayList<Fault3D> newObjects = tsImport.processFiles();
+		    			if (newObjects.size() > 0) {
+		    				faultTable.addFaults(newObjects);
+		    				faultTable.getRowCount();
+		    				//reloading as the faults are sorted alphabetically 
+		    				final List loadedRows = faultTable.getLibraryModel().getAllObjects();
+		    				for(int i = 0; i < loadedRows.size(); i++)
+		    				{
+		    					Fault3D  fault =(Fault3D) loadedRows.get(i);
+		    					System.out.println("Adding "+fault.getDisplayName());
+		    					PickEnabledActor<Fault3D> actor = new PickEnabledActor<Fault3D>(getPickHandler(), fault);
+		    					actor.SetMapper(fault.getFaultMapper());//.GetMapper());
+		    					fault.setFaultActor(actor);
+		    					actor.GetProperty().SetRepresentationToWireframe();
+		    					pluginActors.addActor(actor);
+		    					setProgress((int)Math.ceil((((float)i/(float)loadedRows.size()) * 100)));
+		    	            	  try {
+		    	                      Thread.sleep(1);
+		    	                  } catch (InterruptedException e) {}
+		    				}
+		    				MainGUI.updateRenderWindow();
+		    			}
+		    		}
+		    		return null;
+		    	}
+		    };
+		    task.addPropertyChangeListener(new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					System.out.println(progbar.getValue());
+			        if ("progress" == evt.getPropertyName()) {
+			            int progress = (Integer) evt.getNewValue();
+			            progbar.setValue(progress);
+			            System.out.println(progbar.getValue());
+			            repaint();
+			        } 
+					
 				}
-				MainGUI.updateRenderWindow();
-			}
-		}
+			});
+		    task.execute();
 	}
 
 	public void setColor(Fault3D fault, Color newColor) {
@@ -691,5 +779,13 @@ TableModelListener
 		Info.getMainGUI().updateRenderWindow();
 	}
 
+
+	@Override
+    public void propertyChange(PropertyChangeEvent evt) {
+		  int progress = (Integer) evt.getNewValue();
+	      progbar.setValue(progress);
+         // System.out.println(progbar.getValue());
+          repaint();
+	}
 }
 
