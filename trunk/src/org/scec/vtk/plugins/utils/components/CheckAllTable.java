@@ -13,10 +13,13 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import org.scec.vtk.main.Info;
+
 import com.lowagie.text.Row;
 import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import jdk.internal.org.objectweb.asm.tree.IntInsnNode;
+import sun.swing.table.DefaultTableCellHeaderRenderer;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.border.*;
@@ -136,7 +139,7 @@ public class CheckAllTable extends JPanel {
     
     private void setTableProperties() {
     	//Insert properties for rendering 
-    	table.getColumnModel().getColumn(0).setMaxWidth(30);
+    	table.getColumnModel().getColumn(0).setMaxWidth(60);
     	table.getColumnModel().getColumn(1).setCellRenderer(textRenderer);
         table.setIntercellSpacing(new Dimension(0,0));
         table.setShowGrid(false);
@@ -145,6 +148,21 @@ public class CheckAllTable extends JPanel {
         table.setPreferredScrollableViewportSize(new Dimension(250, 175));
         //Center table title
         TableCellRenderer rendererFromHeader = table.getTableHeader().getDefaultRenderer();
+//        table.getTableHeader().setDefaultRenderer(new DefaultTableCellHeaderRenderer() {
+//        	 @Override
+//        	    public Component getTableCellRendererComponent(
+//        	            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//        	        DefaultTableCellHeaderRenderer rendererComponent = (DefaultTableCellHeaderRenderer)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+//        	        if (column == 0) {
+//        	            rendererComponent.setForeground(Color.red);
+//        	        } else {
+//        	            rendererComponent.setForeground(table.getTableHeader().getForeground());
+//        	        }
+//        	        rendererComponent.setF
+//
+//        	        return rendererComponent;
+//        	    }
+//        });
         JLabel headerLabel = (JLabel) rendererFromHeader;
         headerLabel.setHorizontalAlignment(JLabel.CENTER);
         //Add scrolling
@@ -172,7 +190,7 @@ public class CheckAllTable extends JPanel {
     	dataModel.addColumn("", controlSymbols);
         table.getColumnModel().getColumn(2).setCellRenderer(forwardArrowRenderer);
     	table.addMouseMotionListener(hoverListener);
-    	table.getColumnModel().getColumn(0).setMaxWidth(30);
+    	table.getColumnModel().getColumn(0).setMaxWidth(60);
     	table.getColumnModel().getColumn(1).setCellRenderer(textRenderer);
     	table.getColumnModel().getColumn(2).setMaxWidth(30);
     }
@@ -189,7 +207,6 @@ public class CheckAllTable extends JPanel {
     public void addButtonToControlPanel(JButton button, ActionListener actionListener) {
     	button.addActionListener(actionListener);
     	controlPanel.add(button);
-    	
     }
 
     DefaultTableCellRenderer textRenderer = new DefaultTableCellRenderer() {
@@ -263,12 +280,21 @@ public class CheckAllTable extends JPanel {
      * @author intern
      *
      */
-    private class ControlPanel extends JPanel {
+    public void addColorButton(ActionListener actionListener) {
+    	ColorButton colorDrawingToolsButton = new ColorButton(actionListener, "Change color");
+    	colorDrawingToolsButton.setEnabled(true);
+    	controlPanel.add(colorDrawingToolsButton, FlowLayout.LEFT);
+    }
+    public class ControlPanel extends JPanel {
         public ControlPanel() {
-//           / this.add(new JLabel("Selection:"));
-            this.add(new JButton(new SelectionAction("Deselect", false)));
-            this.add(new JButton(new SelectionAction("Select", true)));
-        	this.add(new JLabel("Search:"));
+        	this.setLayout(new FlowLayout(FlowLayout.LEADING));
+        	JButton selectButton = new JButton(new SelectionAction("Select", true));
+        	JButton deselectButton = new JButton(new SelectionAction("Deselect", false));
+        	this.add(selectButton, FlowLayout.LEFT);
+            this.add(deselectButton, FlowLayout.LEFT);
+        	
+        	this.add(Box.createRigidArea(new Dimension(90, 0)));
+
         	KeyListener keyListener = new KeyListener() {
         		@Override
         		public void keyTyped(KeyEvent e) {
@@ -290,8 +316,9 @@ public class CheckAllTable extends JPanel {
         			
         		}
         	};
-            searchBar = new JTextField(10);
+            searchBar = new JTextField(25);
     		searchBar.addKeyListener(keyListener);
+        	this.add(new JLabel("Search:"));
     		this.add(searchBar);
         }
     }
