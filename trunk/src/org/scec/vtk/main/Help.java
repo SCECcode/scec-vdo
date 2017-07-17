@@ -18,12 +18,7 @@ public class Help extends JEditorPane{
 	public static String curr;
 	public Help() {
         //User Guide
-        InputStream is = null;
-		try {
-			is = new FileInputStream("Z:\\Grand Challenge\\SCEC-VDO Team\\userGuide.html");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} 
+		InputStream is = this.getClass().getResourceAsStream("userGuide.html"); 
 		
         BufferedReader reader = new BufferedReader(new InputStreamReader(is)); 
         String line = null;
