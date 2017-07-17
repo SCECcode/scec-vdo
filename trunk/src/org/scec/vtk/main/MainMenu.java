@@ -142,7 +142,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 	
 	//Help button on menu bar
-	private void helpMenu() {
+	void helpMenu() {
 		helpMenu = new Menu();
 		helpMenu.setLabel("Help");
 		helpMenu.setName("Help");
