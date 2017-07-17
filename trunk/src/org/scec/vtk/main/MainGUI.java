@@ -77,6 +77,7 @@ import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.plugins.Plugins;
+import org.scec.vtk.main.Help;
 
 import com.google.common.base.Preconditions;
 import com.ibm.media.bean.multiplayer.ImageButton;
@@ -106,7 +107,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public JPanel mainPanel;
 	
 	public JFrame wizFrame;
-	
+	public JFrame helpFrame;
 	
 	private Dimension canvasSize = new Dimension();
 	private int xCenter = BORDER_SIZE / 2;
@@ -193,10 +194,46 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 		Icon icon = UIManager.getIcon("OptionPane.questionIcon");
 		JButton helpButton = new JButton(icon);
-  //HELP BUTTON
 		helpPanel.add(helpButton);
 		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
-		
+		helpButton.addActionListener(new ActionListener() {
+		      public void actionPerformed(ActionEvent ae) {
+					helpFrame = new JFrame("SCEC VDO User Guide");
+					Help helpGUI = new Help();
+					JScrollPane sp = new JScrollPane(helpGUI);
+				    helpFrame.getContentPane().add(sp);
+				    helpFrame.setSize(550, 500);
+				    helpFrame.setLocationRelativeTo(null);
+				    helpFrame.setVisible(true);
+				    helpFrame.setAlwaysOnTop(true);
+		    	    if (pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Political Boundaries")) {
+		    			helpGUI.scrollToReference("PoliticalBoundaries");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Graticule")) {
+		    			helpGUI.scrollToReference("Graticule");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Drawing Tools")) {
+		    			helpGUI.scrollToReference("DrawingTools");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("ShakeMap Plugin")) {
+		    			helpGUI.scrollToReference("ShakeMap");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Surface Plugin")) {
+		    			helpGUI.scrollToReference("Surface");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Earthquake Catalog Plugin")) {
+		    			helpGUI.scrollToReference("EarthquakeCatalog");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Legend Plugin")) {
+		    			helpGUI.scrollToReference("Legend");
+		    	    }
+		    	    else if(pluginTabPane.getTitleAt(pluginTabPane.getSelectedIndex()).equals("Earthquake Simulators")) {
+		    			helpGUI.scrollToReference("Simulators");
+		    	    }
+		      }
+		    });
+  //HELP BUTTON
+
 		pluginTabPane =  new JTabbedPane();
 	//	pluginTabPane.setPreferredSize(new Dimension(100, 600));
 		//Set up all default GUI elements
