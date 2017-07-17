@@ -15,7 +15,6 @@ import javax.swing.text.html.StyleSheet;
 
 @SuppressWarnings("serial")
 public class Help extends JEditorPane{
-//	public static String curr;
 	public Help() {
         //User Guide
 		InputStream is = this.getClass().getResourceAsStream("userGuide.html"); 
@@ -46,7 +45,6 @@ public class Help extends JEditorPane{
         setText(fileAsString);
         setCaretPosition(0);
         getHyperlinkListeners();
-//        scrollToReference(curr);
         addHyperlinkListener(new HyperlinkListener() {
             @Override 
             public void hyperlinkUpdate(final HyperlinkEvent pE) {
@@ -58,11 +56,5 @@ public class Help extends JEditorPane{
                 }
             }
         });
-        // Styles for HTML
-        StyleSheet styleSheet = kit.getStyleSheet();
-        styleSheet.addRule("div { float:top; top:0; width: 100%; }");
-        styleSheet.addRule("body {color:#000; font-family:times; margin-right: 1000em; }");
-        styleSheet.addRule("h1 {color: blue;}");
-        styleSheet.addRule("h2 {color: red;}");
       }
   }
