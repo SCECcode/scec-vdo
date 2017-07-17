@@ -610,13 +610,13 @@ public void openVTKObj()
 				Wizard = true;
 				updateWizard(true);
 				JOptionPane.showMessageDialog(
-						frame,  "You set Wizard to display upon launching SCEC-VDO");
+						frame,  "Wizard has been enabled.\nIt will appear the next time you open SCEC-VDO");
 			}
 			else {
 				Wizard = false;
 				updateWizard(false);
 				JOptionPane.showMessageDialog(
-						frame,  "You set Wizard to not display upon launching SCEC-VDO");
+						frame,  "Wizard has been disabled. \nIt will not appear the next time you open SCEC-VDO");
 			}
 		}
 		
