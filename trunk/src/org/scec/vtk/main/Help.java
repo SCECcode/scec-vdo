@@ -15,11 +15,10 @@ import javax.swing.text.html.StyleSheet;
 
 @SuppressWarnings("serial")
 public class Help extends JEditorPane{
-	public static String curr;
+//	public static String curr;
 	public Help() {
         //User Guide
 		InputStream is = this.getClass().getResourceAsStream("userGuide.html"); 
-		
         BufferedReader reader = new BufferedReader(new InputStreamReader(is)); 
         String line = null;
 		try {
@@ -47,7 +46,7 @@ public class Help extends JEditorPane{
         setText(fileAsString);
         setCaretPosition(0);
         getHyperlinkListeners();
-        scrollToReference(curr);
+//        scrollToReference(curr);
         addHyperlinkListener(new HyperlinkListener() {
             @Override 
             public void hyperlinkUpdate(final HyperlinkEvent pE) {
