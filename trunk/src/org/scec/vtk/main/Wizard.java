@@ -99,8 +99,9 @@ public class Wizard extends JPanel {
 //		    	  close frame after selection has been made
 		    	  mainGUI.wizFrame.setVisible(false);
 		    	  JOptionPane.showMessageDialog(
-							frame,  "You have permanently disabled the Wizard."
-									+ " If you wish to reactivate it, go to Help menu  and click on 'Toggle Wizard'");
+							frame,  "You have disabled the Wizard."
+									+ "\nTo reactivate it, go to the 'Help' menu and click on 'Toggle Wizard'"
+									+ "\n\nNote: AutoSave will also be disabled.");
 		    	  
 //		    	  frame.addActionListener(new ActionListener(){
 //				public void actionPerformed(ActionEvent ae) {
