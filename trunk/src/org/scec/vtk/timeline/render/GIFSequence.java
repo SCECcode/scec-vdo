@@ -170,7 +170,6 @@ public class GIFSequence {
 				File file = new File(path);
 				
 				ImageOutputStream output =  new FileImageOutputStream(file);
-				System.out.println("file: " + file.getAbsolutePath());
 				
 				// create a gif sequence with the type of the first image, 1 second
 			      // between frames, which loops continuously
@@ -185,6 +184,8 @@ public class GIFSequence {
 			      
 			      writer.close();
 			      output.close();
+				  System.out.println("file Created: " + file.getAbsolutePath() + "\n");
+
 				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
