@@ -49,7 +49,9 @@ import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.TimelinePluginChangeListener;
 import org.scec.vtk.timeline.VisibilityKeyFrame;
 import org.scec.vtk.timeline.camera.CameraAnimator.SplineType;
+import org.scec.vtk.timeline.render.ImageSequenceRenderer;
 import org.scec.vtk.timeline.render.Renderer;
+import org.scec.vtk.timeline.render.GIFSequence;
 
 import com.google.common.base.Preconditions;
 
@@ -63,6 +65,8 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 	private Map<Plugin, PluginPanel> pluginPanels;
 	
 	private double curTime;
+	public double maxTime;
+	public double fps;
 	
 	static final int panelWidth = 270;
 	
@@ -353,7 +357,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			animator = null;
 			setButtonsEnabledEDT();
 			resetState();
-			// call function that resets display to true
+			
 		}
 		
 		public void resetState() {
@@ -380,6 +384,7 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 			
 			JLabel timeLabel = new JLabel("Total time (s):  ");
 			timeField = new JTextField(10);
+
 			addRow(timeLabel, timeField);
 			
 			JLabel frameRateLabel = new JLabel("Frames Per Second:  ");
@@ -440,10 +445,14 @@ class TimelineLeftPanel extends JPanel implements TimelinePluginChangeListener, 
 		}
 		
 		public void updateTimeline() {
-			double maxTime = Double.parseDouble(timeField.getText());
+		    maxTime = Double.parseDouble(timeField.getText());
+			System.out.println("maxTime: " + maxTime);
+
 			Preconditions.checkState(maxTime >= TimelinePanel.minorTickInterval,
 					"Max time must be >= "+TimelinePanel.minorTickInterval);
-			double fps = Double.parseDouble(frameRateField.getText());
+			fps = Double.parseDouble(frameRateField.getText());
+			System.out.println("fps: " + fps);
+
 			Preconditions.checkState(fps > 1, "Framerate must be >= 1 fps");
 			SplineType type = (SplineType) splineBox.getSelectedItem();
 			Preconditions.checkNotNull(type, "Null SplineType");

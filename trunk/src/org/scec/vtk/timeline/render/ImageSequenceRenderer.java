@@ -36,9 +36,6 @@ public class ImageSequenceRenderer extends AbstractThreadedRenderer {
 		return new ImageSequenceRenderer("jpg", "JPEG Sequence", true, 90);
 	}
 	
- /*public static ImageSequenceRenderer getGIF() {
-		return new ImageSequenceRenderer("gif", "GIF Sequence", true, 90);
-	} */
 
 
 	ImageSequenceRenderer(String extension, String name, boolean showQuality, int defaultQuality) {
@@ -95,7 +92,7 @@ public class ImageSequenceRenderer extends AbstractThreadedRenderer {
 	}
 
 	
-	//esta es la funcion que corre cuando se esta creando el output FILE (RENDERING)
+	
 	@Override
 	protected void doProcessFrame(BufferedImage img) throws IOException {
 		File outputFile = new File(outputDir, prefix+"_"+getNumStr(index)+"."+extension);
