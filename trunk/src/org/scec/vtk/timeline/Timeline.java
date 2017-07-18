@@ -19,7 +19,7 @@ import org.scec.vtk.timeline.render.ImageSequenceRenderer;
 import org.scec.vtk.timeline.render.MP4JPEGSequenceRenderer;
 import org.scec.vtk.timeline.render.MP4PNGSequenceRenderer;
 import org.scec.vtk.timeline.render.Renderer;
-
+import org.scec.vtk.timeline.render.GIFRenderer;
 import com.google.common.base.Preconditions;
 
 public class Timeline implements StatefulPlugin {
@@ -48,6 +48,8 @@ public class Timeline implements StatefulPlugin {
 	private List<Renderer> availableRenderers;
 	private Dimension renderDimensions;
 	
+	GIFRenderer gif;
+	
 	private boolean isLive = true; // can be set to false for external GUI tests;
 
 	private TimelinePluginState state;
@@ -74,7 +76,12 @@ public class Timeline implements StatefulPlugin {
 		availableRenderers.add(new MP4JPEGSequenceRenderer());
 		availableRenderers.add(ImageSequenceRenderer.getPNG());
 		availableRenderers.add(ImageSequenceRenderer.getJPEG());
-		//availableRenderers.add(ImageSequenceRenderer.getGIF());
+		
+		gif  = new GIFRenderer("gif", "GIF File");
+		availableRenderers.add(gif);
+
+		
+
 		availableRenderers = Collections.unmodifiableList(availableRenderers);
 		renderer = availableRenderers.get(0);
 	}
@@ -342,6 +349,8 @@ public class Timeline implements StatefulPlugin {
 		this.maxTime = maxTime;
 		for (AnimationTimeListener l : timeListeners)
 			l.animationBoundsChanged(maxTime);
+		
+		gif.setMaxTime(maxTime);
 	}
 	
 	public double getFamerate() {
@@ -351,6 +360,7 @@ public class Timeline implements StatefulPlugin {
 	public void setFramerate(double fps) {
 		Preconditions.checkState(fps > 0);
 		this.fps = fps;
+		gif.setFps(fps);
 	}
 	
 	public void setRenderer(Renderer renderer) {
