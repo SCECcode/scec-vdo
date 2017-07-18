@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import org.jfree.data.time.TimeSeriesTableModel;
 import org.scec.vtk.main.Info;
 
 import com.lowagie.text.Row;
@@ -49,10 +50,11 @@ public class CheckAllTable extends JPanel {
     //Intermediate Table
     public CheckAllTable(ArrayList<String> data, String title, TableModelListener tableListener) {
     	super(new BorderLayout());
-    	DATA =new Object[data.size()][2];
+    	DATA =new Object[data.size()][3];
     	for (int i = 0; i < data.size(); i++) {
 			DATA[i][0] = Boolean.FALSE;
 			DATA[i][1] = data.get(i);
+			DATA[i][2] = Color.white;
 		}
     	initTable(title, tableListener);
     }
@@ -64,10 +66,11 @@ public class CheckAllTable extends JPanel {
     }
     public CheckAllTable(ArrayList<String> data, String title) {
     	super(new BorderLayout());
-    	DATA =new Object[data.size()][2];
+    	DATA =new Object[data.size()][3];
     	for (int i = 0; i < data.size(); i++) {
 			DATA[i][0] = Boolean.FALSE;
 			DATA[i][1] = data.get(i);
+			DATA[i][2] = Color.white;
 		}
     	
     	TableModelListener tableListener = new TableModelListener() {
@@ -101,13 +104,12 @@ public class CheckAllTable extends JPanel {
     	TITLE = title;
         this.setLayout(new BorderLayout());
         this.setOpaque(false);
-        String[] COLUMN_HEADERS = {" < ", title};
+        String[] COLUMN_HEADERS = {" < ", title, ""};
         dataModel = new DataModel(DATA, COLUMN_HEADERS);
         //Add control panel
         controlPanel = new ControlPanel();
         controlPanel.setOpaque(false);
         controlPanel.setBorder(BorderFactory.createEmptyBorder());
-      //  controlPanel.setBackground(Color.cyan);
         this.add(controlPanel, BorderLayout.NORTH);
         
         childrenTables = new ArrayList<CheckAllTable>();
@@ -145,6 +147,7 @@ public class CheckAllTable extends JPanel {
     	//Insert properties for rendering 
     	table.getColumnModel().getColumn(0).setMaxWidth(60);
     	table.getColumnModel().getColumn(1).setCellRenderer(textRenderer);
+    	table.getColumnModel().getColumn(2).setMaxWidth(0);
         table.setIntercellSpacing(new Dimension(0,0));
         table.setShowGrid(false);
         table.setRowHeight(25);
@@ -169,7 +172,16 @@ public class CheckAllTable extends JPanel {
     	table.getModel().addTableModelListener(tableListener);
     }
     
-    
+    public void addColorColumn() {
+    	Object[] colors = new Object[table.getRowCount()];
+//    	for (int row = 0 ; row < controlSymbols.length; row++) {
+//    		if (hasSubTable(row, tableNode))
+//    			controlSymbols[row] = controlSymbol;
+//    		else
+//    			controlSymbols[row] = "";
+//    	}
+    	dataModel.addColumn("");
+    }
     public void addControlColumn(MouseAdapter mouseListener, String controlSymbol, TreeNode<CheckAllTable> tableNode) {
     	table.addMouseListener(mouseListener);
     	Object[] controlSymbols = new Object[table.getRowCount()];
@@ -180,12 +192,16 @@ public class CheckAllTable extends JPanel {
     			controlSymbols[row] = "";
     	}
     	dataModel.addColumn("", controlSymbols);
-        table.getColumnModel().getColumn(2).setCellRenderer(forwardArrowRenderer);
+        table.getColumnModel().getColumn(table.getColumnCount()-1).setCellRenderer(forwardArrowRenderer);
+        //table.removeColumn(table.getColumnModel().getColumn(2));
+        table.getColumnModel().getColumn(2).setMaxWidth(0);
+        table.getColumnModel().getColumn(2).setPreferredWidth(0);
+        table.getColumnModel().getColumn(2).setMinWidth(0);
     	table.addMouseMotionListener(hoverListener);
     	table.setBorder(BorderFactory.createEmptyBorder());
     	table.getColumnModel().getColumn(0).setMaxWidth(60);
     	table.getColumnModel().getColumn(1).setCellRenderer(textRenderer);
-    	table.getColumnModel().getColumn(2).setMaxWidth(30);
+    	table.getColumnModel().getColumn(table.getColumnCount()-1).setMaxWidth(30);
     	TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
     	sorter.setRowFilter(filter);
         sorter.setSortable(0 , false);
