@@ -119,7 +119,11 @@ MouseListener
 	private static int a_c	= GridBagConstraints.CENTER;           // anchor center
 	private static int a_r	= GridBagConstraints.LINE_END;         // anchor right
 	private static int f	= GridBagConstraints.NONE;               // fill none
-
+	
+	//private boolean done=false ; 
+	//private Task task;
+	
+	
 	// catalog library panel accessible components
 	private JPanel			libraryPanel;
 	//protected CatalogTable	catalogTable;
@@ -216,6 +220,8 @@ MouseListener
 	public static ArrayList<EQCatalog> eqCatalogs = new ArrayList<>();
 	
 	private LegendItem scalarBar;
+	
+	
 
 	// init data store
 	static {
@@ -235,6 +241,35 @@ MouseListener
 	}
 	
 
+	
+	// for progress bar
+/*
+	class Task extends SwingWorker<Void, Void> {
+        @Override
+        public Void doInBackground() {
+            
+            int progress = 0;
+            //Initialize progress property.
+            setProgress(0);
+            while (progress < 100) {
+                //Sleep for up to one second.
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignore) {}
+                //Make random progress.
+                progress += 1;
+                setProgress(Math.min(progress, 100));
+            }
+            return null;
+        }
+
+        @Override
+        public void done() {
+            setCursor(null); //turn off the wait cursor
+        }
+    } 
+*/
+
 	public static ArrayList<Earthquake> getEarthquakes() {
 		return earthquakes;
 	}
@@ -247,7 +282,16 @@ MouseListener
 
 	public  EarthquakeCatalogPluginGUI(EarthquakeCatalogPlugin plugin){
 		super();
+		
+		//Where the GUI is constructed:
+
+		progbar = new JProgressBar(0, 100);
+		//progressBar = new JProgressBar(0, task.getLengthOfTask());
+		progbar.setValue(0);
+		progbar.setStringPainted(true);
+
 		this.plugin = plugin;
+		
 		pluginActors = plugin.getPluginActors();
 		pickHandler = new EQPickBehavior();
 		setLayout(new BorderLayout());
@@ -330,7 +374,7 @@ MouseListener
 	public void setDisplayPanel(EQCatalog catalog) {
 
 		// display buttons are set to respond to user actions and are
-		// en/disabled in reponse to ActionEvents.
+		// en/disabled in response to ActionEvents.
 
 		// set values first for components that do not change access to others
 		//this.dispProp_slider.setSelectedIndex(catalog.getScaling());
@@ -1067,7 +1111,12 @@ MouseListener
 		return cat.getActors();
 	}
 	public void actionPerformed(ActionEvent e) {
-
+		
+		//setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		//done = false;
+		//task = new Task();
+		//task.addPropertyChangeListener(this);
+	    //task.execute();
 		Object src = e.getSource();
 		new vtkAnimationScene();
 		if (src == newInternetSourceButton){
@@ -1145,6 +1194,7 @@ MouseListener
 			}
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			setColGradient(cat,newColor);
+			
 			
 		}
 

@@ -25,6 +25,7 @@ public class TimelineBottomPanel extends JPanel implements AnimationTimeListener
 	private static final String renderDoneText = "Render Complete";
 	private boolean rendering = false;
 	
+	
 	private double maxTime;
 	
 	public TimelineBottomPanel(Timeline timeline) {
@@ -108,6 +109,7 @@ public class TimelineBottomPanel extends JPanel implements AnimationTimeListener
 		renderProgress.setString(renderDoneText);
 		renderProgress.setIndeterminate(false);
 		renderProgress.setValue(renderProgress.getMaximum());
+		
 	}
 
 }
