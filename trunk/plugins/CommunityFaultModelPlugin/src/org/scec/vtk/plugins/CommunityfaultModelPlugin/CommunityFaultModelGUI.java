@@ -102,7 +102,6 @@ TableModelListener, PropertyChangeListener
 	private Task task;
 	//private int progress;
 	// determines whether given task is finished
-	private boolean done;
 	
 	// accessible panels
 	private JTabbedPane propsTabbedPane;
@@ -167,32 +166,24 @@ TableModelListener, PropertyChangeListener
 	}
 	
 	
-
-    class Task extends SwingWorker<Void, Void> {
+	/*
+	 * defines tasks to be done while updating JProgressBar
+	 */
+    public class Task extends SwingWorker<Void, Void> {
         /*
          * Main task. Executed in background thread.
          */
         @Override
         public Void doInBackground() {
-        	//done = false;
-    		int progress = 0;
-            //Initialize progress property.
-            setProgress(progress);
-            for (int i = 0; i < 100; i++) {      
-            	progress += 1; 
-            	setProgress(progress);
-            	  try {
-                      Thread.sleep(100);
-                  } catch (InterruptedException e) {}
-            }
     		return null;
         }
         
         /*
-         * Executed in event dispatching thread
+         * Sets progress bar to 100% when task is completed
          */
         @Override
         public void done() {
+        	// updates progress bar
         	setProgress(100);
         }
 
@@ -207,7 +198,7 @@ TableModelListener, PropertyChangeListener
 				Prefs.getPluginWidth(), Prefs.getPluginHeight()));
 
 		// add library to gui
-		add(getFaultLibraryPanel(), BorderLayout.CENTER);
+		add(getFaultLibraryPanel(), BorderLayout.PAGE_START);
 
 		// assemble properties tabbed pane
 		this.propsTabbedPane = new JTabbedPane();
@@ -215,6 +206,7 @@ TableModelListener, PropertyChangeListener
 		this.propsTabbedPane.add(getGroupsPanel());
 		this.propsTabbedPane.add(getNotesPanel());
 		
+		// initializes progress bar
 		progbar = new JProgressBar(0, 100);
 		progbar.setValue(0);
 		progbar.setStringPainted(true);
@@ -224,14 +216,15 @@ TableModelListener, PropertyChangeListener
 		lowerPane.setLayout(new BoxLayout(lowerPane,BoxLayout.PAGE_AXIS));
 		lowerPane.add(this.propsTabbedPane);
 		
+		// adds progress bar to GUI
 		JPanel progressPanel = new JPanel();
 		progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.LINE_AXIS));
 		progressPanel.add(progbar);
 		
 
 		// add lower pane to gui
-		add(progressPanel, BorderLayout.BEFORE_FIRST_LINE);
-		add(lowerPane, BorderLayout.PAGE_END);
+		add(lowerPane, BorderLayout.CENTER);
+		add(progressPanel, BorderLayout.PAGE_END);
 
 		// other initializations
 		pickHandler = new Fault3DPickBehavior();
@@ -355,7 +348,8 @@ TableModelListener, PropertyChangeListener
  
 		return bar;
 	}
-
+	
+	
 	private JPanel getGroupsPanel() {
 
 		// set up panel
@@ -431,6 +425,9 @@ TableModelListener, PropertyChangeListener
 	}
 
 	// perhaps this should be static
+	/*
+	 * Allows user to edit/add information to a given fault
+	 */
 	private void runObjectInfoDialog(ArrayList objects) {
 		ObjectInfoDialog oid = getSourceInfoDialog();
 		if (objects.size() == 1) {
@@ -582,7 +579,8 @@ TableModelListener, PropertyChangeListener
 		/////////////////////////
 		// FAULT DISPLAY PANEL //
 		/////////////////////////
-
+		
+		// toggles visibility of selected faults
 		if (src == this.showFaultsButton) {
 			libModel.setLoadedStateForRows(true, this.faultTable.getSelectedRows());
 			processTableSelectionChange();
@@ -596,6 +594,7 @@ TableModelListener, PropertyChangeListener
 			}
 			Info.getMainGUI().updateRenderWindow();
 		} 
+		
 		else if (src == this.meshFaultsButton) {
 			libModel.toggleMeshStateForRows(this.faultTable.getSelectedRows());
 			
@@ -609,6 +608,7 @@ TableModelListener, PropertyChangeListener
 			
 			MainGUI.updateRenderWindow();
 		} 
+		// changes colors of selected faults
 		else if (src == this.colorFaultsButton) {
 			if (this.colorChooser == null) {
 				this.colorChooser = new SingleColorChooser(this);
@@ -624,9 +624,11 @@ TableModelListener, PropertyChangeListener
 				MainGUI.updateRenderWindow();
 			}
 		} 
+		// allows user to add information to a given fault
 		else if (src == this.editFaultsButton) {
 			runObjectInfoDialog(this.faultTable.getSelected());
 		} 
+		// adds faults to table
 		else if (src == this.addFaultsButton) {
 			if (this.fileChooser == null) {
 				this.fileChooser = new DataFileChooser(this, "Import Fault Files", true,new File(MainGUI.getRootPluginDir() + File.separator + "Faults"));
@@ -635,6 +637,7 @@ TableModelListener, PropertyChangeListener
 			final File[] f = this.fileChooser.getFiles();
 			addFaultsFromFile(f);
 		} 
+		// removes faults from table
 		else if (src == this.remFaultsButton) {
 			int[] selectedRows = this.faultTable.getSelectedRows();
 			ArrayList<Fault3D> selectedFaults = faultTable.getSelected();
@@ -676,12 +679,20 @@ TableModelListener, PropertyChangeListener
 
 
 	}
-
+	
+	/*
+	 * Imports selected faults from a file and displays them
+	 * Responsible for updating the progress bar
+	 */
 	public void addFaultsFromFile(final File[] f) {
-		// TODO Auto-generated method stub
 		final TSurfImport tsImport = new TSurfImport(this, f);
 		 task = new Task(){
 		    	@Override
+		    	/*
+		    	 * (non-Javadoc)
+		    	 * Loads faults while updating progress bar
+		    	 * @see org.scec.vtk.plugins.CommunityfaultModelPlugin.CommunityFaultModelGUI.Task#doInBackground()
+		    	 */
 		    	public Void doInBackground() {
 		    		if (f != null) {
 		    			ArrayList<Fault3D> newObjects = tsImport.processFiles();
@@ -695,10 +706,11 @@ TableModelListener, PropertyChangeListener
 		    					Fault3D  fault =(Fault3D) loadedRows.get(i);
 		    					System.out.println("Adding "+fault.getDisplayName());
 		    					PickEnabledActor<Fault3D> actor = new PickEnabledActor<Fault3D>(getPickHandler(), fault);
-		    					actor.SetMapper(fault.getFaultMapper());//.GetMapper());
+		    					actor.SetMapper(fault.getFaultMapper());
 		    					fault.setFaultActor(actor);
 		    					actor.GetProperty().SetRepresentationToWireframe();
 		    					pluginActors.addActor(actor);
+		    					// updates progress bar according to how many faults are selected
 		    					if (i % (loadedRows.size() / 20) == 0) {
 		    					setProgress((int)Math.ceil((((float)i/(float)loadedRows.size()) * 100)));
 		    					}
@@ -715,7 +727,7 @@ TableModelListener, PropertyChangeListener
 			        if ("progress" == evt.getPropertyName()) {
 			            int progress = (Integer) evt.getNewValue();
 			            progbar.setValue(progress);
-			            System.out.println(progbar.getValue());
+			            System.out.println("Progress: " + progbar.getValue());
 			            repaint();
 			        } 
 					
@@ -780,10 +792,13 @@ TableModelListener, PropertyChangeListener
 
 
 	@Override
+	/*
+	 * Updates progress bar 
+	 */
     public void propertyChange(PropertyChangeEvent evt) {
 		  int progress = (Integer) evt.getNewValue();
 	      progbar.setValue(progress);
-         // System.out.println(progbar.getValue());
+	      System.out.println("Progress: " + progbar.getValue());
           repaint();
 	}
 }
