@@ -13,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -36,6 +38,7 @@ import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -148,7 +151,8 @@ MouseListener
 	private JLabel catProp_numEventsVal;
 	private JLabel catProp_sourceVal;
 
-	
+	//progress bar
+	public static JProgressBar progbar;
 
 	// display properties panel adjustable components
 	private JPanel          propsDisplayPanel;
@@ -174,6 +178,7 @@ MouseListener
 	private JRadioButton    dispProp_gradDepth;				// "Depth" radio button
 	private JRadioButton    dispProp_gradMag;				// "Magnitude" radio button
 	
+	
 	// Earthquake Transparency
 	private JSlider transparencySlider;
 	private  JLabel transLabel;
@@ -181,8 +186,7 @@ MouseListener
 	// accessory windows and dialogs
 	private GradientColorChooser colorChooser;
 	protected ObjectInfoDialog srcInfoDialog;
-
-	public static JProgressBar progbar;
+	
 	public static JLabel progLabel;
 	private CatalogTable catalogTable;
 
@@ -229,6 +233,7 @@ MouseListener
 		if (!(file = new File(sourceStore)).exists()) file.mkdirs();
 		if (!(file = new File(displayStore)).exists()) file.mkdirs();
 	}
+	
 
 	public static ArrayList<Earthquake> getEarthquakes() {
 		return earthquakes;
@@ -263,9 +268,13 @@ MouseListener
 		JPanel lowerPane = new JPanel();
 		lowerPane.setLayout(new BoxLayout(lowerPane,BoxLayout.PAGE_AXIS));
 		lowerPane.add(this.propsTabbedPane);
-
+		
+		
+		//fix 
 		add(upperPane, BorderLayout.CENTER);
 		add(lowerPane, BorderLayout.PAGE_END);
+		
+		
 		// now load any data
 		try {
 			this.catalogTable.loadCatalogs();
@@ -398,6 +407,7 @@ MouseListener
 	//	this.editLibraryCatButton	= new EditButton(this, "Edit catalog name or metadata");
 	//	this.remLibraryCatButton	= new RemoveButton(this, "Remove catalog from SCEC-VDO");
 		this.helpButton				= new HelpButton(this, "Help");
+		
 
 		JPanel bar = new JPanel();
 		bar.setLayout(new BoxLayout(bar,BoxLayout.LINE_AXIS));
@@ -989,8 +999,9 @@ MouseListener
 		updateActorsAndRender(cat);
 
 	}
-	private void updateActorsAndRender(EQCatalog cat) {
+	private void updateActorsAndRender(final EQCatalog cat) {
 		// TODO make this not disgusting please. it's not a branch group anymore. and it should at leass
+		
 		for (vtkActor actor : cat.getActors())
 			pluginActors.addActor(actor);
 		MainGUI.updateRenderWindow();
@@ -1178,41 +1189,76 @@ MouseListener
 		}}
 
 	
-	public void setCatalogVisible(EQCatalog cat, int geometry,boolean visible) {
+	public void setCatalogVisible(final EQCatalog cat, final int geometry,final boolean visible) {
 		// TODO Auto-generated method stub
-		vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
-		vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
-		System.out.println(geometry);
-		System.out.println(visible);
-		if(geometry==0)
-		{
-			if(visible)
-			{
-				actorPoints.VisibilityOn();
-				actorSpheres.VisibilityOff();
-			}
-			else
-			{
-				actorPoints.VisibilityOff();
-				actorSpheres.VisibilityOff();
-			}
-		}
-		else if(geometry==1 )
-		{
-			if(visible)
-			{
-				actorPoints.VisibilityOff();
-				actorSpheres.VisibilityOn();
-			}
-			else
-			{
-				actorPoints.VisibilityOff();
-				actorSpheres.VisibilityOff();
-			}
-		}
 	
-		updateActorsAndRender(cat);
+				vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
+				vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
+				System.out.println(geometry);
+				System.out.println(visible);
+				if(geometry==0)
+				{
+					if(visible)
+					{
+						actorPoints.VisibilityOn();
+						actorSpheres.VisibilityOff();
+					}
+					else
+					{
+						actorPoints.VisibilityOff();
+						actorSpheres.VisibilityOff();
+					}
+				}
+				else if(geometry==1 )
+				{
+					if(visible)
+					{
+						actorPoints.VisibilityOff();
+						actorSpheres.VisibilityOn();
+					}
+					else
+					{
+						actorPoints.VisibilityOff();
+						actorSpheres.VisibilityOff();
+					}
+				}
+			
+				updateActorsAndRender(cat);
+		
 	}
+		
+//		vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
+//		vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
+//		System.out.println(geometry);
+//		System.out.println(visible);
+//		if(geometry==0)
+//		{
+//			if(visible)
+//			{
+//				actorPoints.VisibilityOn();
+//				actorSpheres.VisibilityOff();
+//			}
+//			else
+//			{
+//				actorPoints.VisibilityOff();
+//				actorSpheres.VisibilityOff();
+//			}
+//		}
+//		else if(geometry==1 )
+//		{
+//			if(visible)
+//			{
+//				actorPoints.VisibilityOff();
+//				actorSpheres.VisibilityOn();
+//			}
+//			else
+//			{
+//				actorPoints.VisibilityOff();
+//				actorSpheres.VisibilityOff();
+//			}
+//		}
+//	
+//		updateActorsAndRender(cat);
 	public void setColGradient(EQCatalog cat,Color[] newColor) {
 		// TODO Auto-generated method stub
 		if(newColor!=null){
@@ -1322,4 +1368,5 @@ MouseListener
 	public boolean isTrueTimeSelected(){
 		return trueTime.isSelected();
 	}
+	
 }

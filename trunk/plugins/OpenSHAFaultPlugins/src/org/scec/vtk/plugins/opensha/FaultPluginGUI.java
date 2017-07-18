@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -45,6 +46,8 @@ import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickHandler;
+
+import com.sun.jmx.snmp.tasks.Task;
 
 public class FaultPluginGUI extends JSplitPane {
 	

@@ -507,9 +507,6 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 							//updates every 5
 							if (i % 1000 == 0) {
 								setProgress((int)Math.ceil((((float)i/(float)nextTableNode.data.getTable().getRowCount()) * 100)));
-//							  try {
-//	    	                      Thread.sleep(1);
-//	    	                  } catch (InterruptedException e) {}
 							}
 						}
 						return null;
@@ -693,10 +690,10 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		  int progress = (Integer) evt.getNewValue();
-	      progbar.setValue(progress);
-          System.out.println(progbar.getValue());
-		
+	      if ("progress" == evt.getPropertyName()) {
+	            int progress = (Integer) evt.getNewValue();
+	            progbar.setValue(progress);
+	            System.out.println(progbar.getValue());
+	      }
 	}
-
 }

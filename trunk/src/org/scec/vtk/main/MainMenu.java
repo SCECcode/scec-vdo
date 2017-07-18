@@ -83,6 +83,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private CheckboxMenuItem focalPointItem;
 	private String currFileName;
 	static public Boolean Wizard;
+	static public Boolean saved = false;
 	static public Menu helpMenu;
 	public JFrame helpFrame;
 
@@ -225,6 +226,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			File file = chooser.getSelectedFile();
 			String destinationData =  file.getPath();//Prefs.getLibLoc() + File.separator;
 			currFileName = destinationData;
+			saved = true;
 
 			Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
 					loadedPlugins.values());
@@ -247,6 +249,43 @@ public class MainMenu implements ActionListener, ItemListener{
 		else {
 			System.out.println("Unhandled event");
 		}
+	}
+	
+	public void saveForToolbar() {
+		JFileChooser chooser = new JFileChooser();
+		int ret = chooser.showSaveDialog(Info.getMainGUI());
+		if (ret == JFileChooser.APPROVE_OPTION) {
+			Document document = DocumentHelper.createDocument();
+			Element root = document.addElement("root");
+			File file = chooser.getSelectedFile();
+			String destinationData =  file.getPath();//Prefs.getLibLoc() + File.separator;
+			currFileName = destinationData;
+			saved = true;
+
+			Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
+					loadedPlugins.values());
+			for(Plugin pluginDescriptor:pluginDescriptors)
+			{
+
+				Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+				if (plugin instanceof StatefulPlugin) {
+					Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
+					((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
+
+				}
+			}
+			//save timeline state
+			Element pluginNameElement = root.addElement("Timeline-Plugin");
+			timeline.getState().toXML(pluginNameElement);
+			saveXMLFile(document, root, destinationData);
+		}
+		else {
+			System.out.println("Unhandled event");
+		}
+	}
+	
+	public Boolean isSaved() {
+		return saved;
 	}
 
 	public void autoSave(){
@@ -343,6 +382,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				Document document = reader.read(file.getPath());
 				Element root = document.getRootElement();
 				System.out.println("document.toString(): " + document.toString());
+				saved = true;
 				// iterate through child elements of root
 				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 						availablePlugins.values());
@@ -367,6 +407,53 @@ public class MainMenu implements ActionListener, ItemListener{
 				}
 				//open timeline state
 				Info.getMainGUI().wizFrame.setVisible(false);
+				Element pluginNameElement = root.element("Timeline-Plugin");
+				timeline.getState().fromXML(pluginNameElement);
+				timeline.getState().load();
+				timelineGUI.getTimeLinePanel().timelinePluginsChanged();
+			} catch (DocumentException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	public void openForToolbar() {
+		JFileChooser chooser = new JFileChooser();
+		MainGUI.class.getConstructors();
+		int ret = chooser.showOpenDialog(Info.getMainGUI());
+		if (ret == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();
+			currFileName = file.getPath();
+			SAXReader reader = new SAXReader();
+			try {
+				Document document = reader.read(file.getPath());
+				Element root = document.getRootElement();
+				System.out.println("document.toString(): " + document.toString());
+				saved = true;
+				// iterate through child elements of root
+				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
+						availablePlugins.values());
+				for(PluginInfo pluginDescriptor:pluginDescriptors) {
+					//System.out.println(pluginDescriptor.getName());
+					for (Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
+						Element pluginNameElement = (Element) i.next();
+						try {
+							if(!activePlugins.containsKey(pluginDescriptor.getId()))
+								activatePlugin(pluginDescriptor.getId());
+							Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+							if (plugin instanceof StatefulPlugin) {
+								((StatefulPlugin)plugin).getState().fromXML(pluginNameElement);
+
+								((StatefulPlugin)plugin).getState().load();
+							}
+						} catch (Exception e1) {
+							System.err.println("WARNING: Error loading plugin state from XML: "+pluginDescriptor.getName());
+							e1.printStackTrace();
+						}
+					}
+				}
+				//open timeline state
 				Element pluginNameElement = root.element("Timeline-Plugin");
 				timeline.getState().fromXML(pluginNameElement);
 				timeline.getState().load();
