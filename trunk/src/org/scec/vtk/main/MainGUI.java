@@ -220,6 +220,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		//helpPanel.setColor(Color.white);
 		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
 		pluginGUIPanel.setBorder(BorderFactory.createEmptyBorder());
+		
 		helpButton.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent ae) {
 					helpFrame = new JFrame("SCEC VDO User Guide");
@@ -415,6 +416,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			}
 		});
 	
+		// checks to see if Wizard enabled
 		if(MainMenu.Wizard){
 			//Wizard GUI to run with main
 			wizFrame = new JFrame();
@@ -590,12 +592,17 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	
 	@SuppressWarnings("unused")
+	/*
+	 * Adds buttons to toolbar, adds toolbar to GUI
+	 */
 	private void setUpToolBar() {
 		toolBar = new JToolBar();
 		//toolBar.setLayout(new BorderLayout());
 		//toolBar.setSize(new Dimension(200, 20));
 		JButton centerImage = new JButton();
 		try {
+			// sets hover text
+			centerImage.setToolTipText("Center Image");
 			File file = new File("resources/Center.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -622,6 +629,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		JButton zoomIn = new JButton();
 		
 		try {
+			// sets hover text
+			zoomIn.setToolTipText("Zoom In");
 			File file = new File("resources/zoomIn.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -640,6 +649,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 		JButton zoomOut = new JButton();
 		try {
+			// sets hover text
+			zoomOut.setToolTipText("Zoom Out");
 			File file = new File("resources/zoomOut.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -658,6 +669,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		JButton save = new JButton();
 		
 		try {
+			// sets hover text
+			save.setToolTipText("Save file");
 			File file = new File("resources/save.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -666,11 +679,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		    System.out.println("zoomOut: " +  ex);
 		  }
 		save.addActionListener(new ActionListener() { 
-			  public void actionPerformed(ActionEvent e) { 
+			  public void actionPerformed(ActionEvent e) {
+				 // checks whether file has been created
 				 if (mainMenu.isSaved()) {
 					 mainMenu.autoSave();
 				 }
 				 else {
+					 // creates new file
 					 mainMenu.saveForToolbar();
 				 }
 			  } 
@@ -679,6 +694,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		JButton open = new JButton();
 		
 		try {
+			// sets hover text
+			open.setToolTipText("Open a file");
 			File file = new File("resources/open.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -693,17 +710,19 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		} );
 		
 		
-		//hey
+		//adds buttons to toolbar
 		toolBar.add(centerImage);
 		toolBar.add(zoomIn);
 		toolBar.add(zoomOut);
 		toolBar.add(save);
 		toolBar.add(open);
 		toolBar.setOpaque(false);
+		
 		toolBarGUI = new JPanel(new BorderLayout());
 		toolBarGUI.add(toolBar, BorderLayout.CENTER);
 		toolBarGUI.setOpaque(false);
 		toolBarGUI.setBorder(new EmptyBorder(5, 0, 1, 0));
+		
 		mainPanel.add(toolBarGUI, BorderLayout.PAGE_START);
 	}
 	
