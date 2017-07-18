@@ -75,6 +75,9 @@ public class PoliticalBoundariesPluginState implements PluginState {
 					if(((String)list.getValueAt(i, 1)).equalsIgnoreCase(filePath.get(j))){
 						list.setValueAt(true, i, 0);
 					}
+					else{
+						list.setValueAt(false, i, 0);
+					}
 				}
 				
 				

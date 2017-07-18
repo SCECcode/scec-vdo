@@ -589,6 +589,7 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 						if (!colorNextTable) {
 							if (allSubRegionNames.contains(subTableName)) {
 								actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(subTableName)).GetProperty().SetColor(Info.convertColor(newColor));
+								table.getModel().setValueAt(newColor ,table.convertRowIndexToModel(i), 2);
 							}
 							if (allActiveDrawings != null) {
 								for (int k = 0; k < allActiveDrawings.size(); k++) {
