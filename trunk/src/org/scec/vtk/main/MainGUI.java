@@ -4,9 +4,19 @@ import java.awt.BorderLayout;
 import java.awt.CheckboxMenuItem;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,9 +27,11 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.GeneralPath;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -51,11 +63,17 @@ import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.plaf.basic.BasicGraphicsUtils;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.table.TableModel;
+import javax.swing.text.View;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-
+import javax.swing.border.EmptyBorder;
 
 import org.apache.log4j.Logger;
 import org.scec.vtk.commons.legend.LegendItem;
@@ -81,7 +99,10 @@ import org.scec.vtk.main.Help;
 
 import com.google.common.base.Preconditions;
 import com.ibm.media.bean.multiplayer.ImageButton;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
+import javafx.scene.Parent;
+import javafx.scene.layout.Border;
 import vtk.vtkActor;
 import vtk.vtkActor2D;
 import vtk.vtkCamera;
@@ -171,10 +192,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public MainGUI() {
 		Prefs.init();
 		renderWindow = new vtkJoglPanelComponent();
-		
-
 		mainPanel = new JPanel(new BorderLayout());
-		
+		mainPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
 		renderWindow.getRenderer().SetBackground(0,0,0);
 		
 		// this should enable depth peeling, but doesn't seem to work. at least for Kevin on linux.
@@ -195,7 +214,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		Icon icon = UIManager.getIcon("OptionPane.questionIcon");
 		JButton helpButton = new JButton(icon);
 		helpPanel.add(helpButton);
+		helpPanel.setOpaque(true);
+		//helpPanel.setColor(Color.white);
 		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
+		pluginGUIPanel.setBorder(BorderFactory.createEmptyBorder());
 		helpButton.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent ae) {
 					helpFrame = new JFrame("SCEC VDO User Guide");
@@ -233,9 +255,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		      }
 		    });
   //HELP BUTTON
-
 		pluginTabPane =  new JTabbedPane();
-	//	pluginTabPane.setPreferredSize(new Dimension(100, 600));
+		//pluginTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+		pluginTabPane.setUI(tabbedPaneUI);
 		//Set up all default GUI elements
 		Info.setMainGUI(this);
 		setUpPluginTabs();
@@ -251,6 +273,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
 		pluginGUIScrollPane.setMinimumSize(d);
 		pluginGUIScrollPane.setPreferredSize(d);
+		pluginTabPane.setBorder(new EmptyBorder(0, 5, 5, 5));
 		Dimension minimumSize = new Dimension(100, 50);
 		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		renderWindow.getComponent().setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
@@ -392,22 +415,87 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			}
 		});
 	
-		
-	if(MainMenu.Wizard){
-		//Wizard GUI to run with main
-		wizFrame = new JFrame();
-		Wizard wizGui = new Wizard(mainMenu, this);
-//	    wizFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		if(MainMenu.Wizard){
+			//Wizard GUI to run with main
+			wizFrame = new JFrame();
+			Wizard wizGui = new Wizard(mainMenu, this);
+			wizFrame.getContentPane().add(wizGui);
+			wizFrame.setSize(550, 140);
+			wizFrame.setLocationRelativeTo(null);
+			wizFrame.setVisible(true);
+		}
 
-	    
-	    wizFrame.getContentPane().add(wizGui);
-	    wizFrame.setSize(550, 140);
-	    wizFrame.setLocationRelativeTo(null);
-	    wizFrame.setVisible(true);
 	}
-	
-	}
+	final Color selectedTabColor = new Color(239,239,239);
+    final Color tabBackgroundColor = Color.LIGHT_GRAY;
+    final Color tabBorderColor = Color.LIGHT_GRAY;
 
+	BasicTabbedPaneUI tabbedPaneUI = new BasicTabbedPaneUI() {
+		private final Insets borderInsets = new Insets(-2, -6, -6, -6);
+        @Override
+        protected Insets getContentBorderInsets(int tabPlacement) {
+            return borderInsets;
+        }
+        @Override
+        protected Insets getTabInsets(int tabPlacement, int tabIndex)  {
+        	return new Insets(3, 6, 3, 6);
+        }
+		@Override protected void paintContentBorder(Graphics g,
+                int tabPlacement,
+                int selectedIndex) {
+		}
+		@Override protected void paintTabBorder(
+				Graphics g, int tabPlacement, int tabIndex,
+				int x, int y, int w, int h, boolean isSelected) {
+		}
+		@Override protected void paintFocusIndicator(
+				Graphics g, int tabPlacement, Rectangle[] rects, int tabIndex,
+				Rectangle iconRect, Rectangle textRect, boolean isSelected) {
+		}
+		@Override protected void paintContentBorderTopEdge(
+				Graphics g, int tabPlacement, int selectedIndex,
+				int x, int y, int w, int h) {
+			super.paintContentBorderTopEdge(g, tabPlacement, selectedIndex, x, y, w, h);
+			Rectangle selRect = getTabBounds(selectedIndex, calcRect);
+			Graphics2D g2 = (Graphics2D) g.create();
+			g2.setColor(Color.cyan);
+			g2.drawLine(selRect.x - 2, y, selRect.x + selRect.width + 2, y);
+			g2.dispose();
+		}
+		@Override protected void paintTabBackground(
+				Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h,
+				boolean isSelected) {
+
+			Graphics2D g2 = (Graphics2D) g.create();
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+			int a = isSelected ? 0 : 1;
+
+			GeneralPath shape = new GeneralPath();
+			shape.moveTo(x - 3, y + h);
+			shape.lineTo(x + 3, y + a);
+			shape.lineTo(x + w - 3, y + a);
+			shape.lineTo(x + w + 3, y + h);
+			shape.closePath();
+			g2.setColor(isSelected ? selectedTabColor : tabBackgroundColor);
+			g2.fill(shape);
+
+			GeneralPath border = new GeneralPath();
+			if (isSelected || tabIndex == 0) {
+				border.moveTo(x - 3, y + h - 1);
+			} else {
+				border.moveTo(x + 3, y + h - 1);
+				border.lineTo(x, (y + h - 1) / 2);
+			}
+			border.lineTo(x + 3, y + a);
+			border.lineTo(x + w - 3, y + a);
+			border.lineTo(x + w + 3, y + h - 1);
+
+			g2.setColor(tabBorderColor);
+			g2.draw(border);
+			g2.dispose();
+		}
+	};
 	public void setFocalPointVisible(boolean visible) {
 		int newVis = visible ? 1 : 0;
 		int curVis = focalPointActor.GetVisibility();
@@ -419,6 +507,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			renderWindow.getComponent().repaint();
 		}
 	}
+	
 	
 	public void updateFocalPointLocation() {
 		focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
@@ -516,7 +605,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 					renderWindow.getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
 					renderWindow.getRenderer().GetActiveCamera().SetFocalPoint(MainGUI.camCord[3], MainGUI.camCord[4],MainGUI.camCord[5]);
 					renderWindow.getRenderer().GetActiveCamera().SetViewUp(MainGUI.camCord[6], MainGUI.camCord[7],MainGUI.camCord[8]);
-					
 					renderWindow.getRenderer().ResetCameraClippingRange();
 					renderWindow.getComponent().repaint();
 					
@@ -565,8 +653,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		toolBar.add(centerImage);
 		toolBar.add(zoomIn);
 		toolBar.add(zoomOut);
+		toolBar.setOpaque(false);
 		toolBarGUI = new JPanel(new BorderLayout());
 		toolBarGUI.add(toolBar, BorderLayout.CENTER);
+		toolBarGUI.setOpaque(false);
+		toolBarGUI.setBorder(new EmptyBorder(1, 0, 1, 0));
 		mainPanel.add(toolBarGUI, BorderLayout.PAGE_START);
 	}
 	
@@ -603,8 +694,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		//pluginTabPane.setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		pluginGUIPanel.add(pluginTabPane, BorderLayout.PAGE_START);
 		pluginTabPane.addChangeListener((ChangeListener) this);
-		pluginTabPane.setBorder(BorderFactory.createEtchedBorder());
+		pluginTabPane.setBorder(BorderFactory.createEmptyBorder());
 		pluginGUIScrollPane = new JScrollPane(pluginGUIPanel);
+		pluginGUIScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		//		pluginSplitPane = null;
 	}
 	
@@ -656,10 +748,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		// Create a new plugin tab
 		JPanel allPanel = new JPanel();
 		allPanel.setLayout(new BoxLayout(allPanel, BoxLayout.PAGE_AXIS));
+		allPanel.setBorder(BorderFactory.createEmptyBorder());
 		allPanel.add(gui);
-		allPanel.add(Box.createVerticalGlue());
-		allPanel.add(new JPanel());
+		allPanel.setOpaque (false); //
+	    allPanel.setFocusable (false);
+		//allPanel.add(Box.createVerticalGlue());
+		//allPanel.add(new JPanel());
 		JScrollPane pluginTab = new JScrollPane(allPanel);
+		pluginTab.setBorder(BorderFactory.createEmptyBorder());
+		pluginTab.setOpaque(false);
 		pluginTab.setName(id);
 
 
@@ -674,9 +771,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 //		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
 //			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
 
-		pluginTabPane.repaint();
-
 		SwingUtilities.updateComponentTreeUI(this);
+		pluginTabPane.setUI(tabbedPaneUI);
+		pluginTabPane.repaint();
+		//pluginTabPane.set
 	}
 
 	public boolean removePluginGUI(String id) {
@@ -1117,7 +1215,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	
 	
 	public static void main(String[] args) {
-		
 		try {
             // Set System L&F
 			UIManager.setLookAndFeel(
@@ -1135,6 +1232,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	    catch (IllegalAccessException e) {
 	       // handle exception
 	    }
+		UIManager.put("TabbedPane.tabsOverlapBorder", true);
+
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				new MainGUI();

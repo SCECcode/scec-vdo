@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -22,11 +23,18 @@ import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
+
+import org.netlib.util.booleanW;
+import org.jpedal.utils.sleep;
+import org.omg.CORBA.PUBLIC_MEMBER;
+import org.scec.vtk.commons.opensha.tree.events.ColorChangeListener;
+import org.scec.vtk.drawingTools.DisplayAttributes;
 import org.scec.vtk.drawingTools.DrawingTool;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
@@ -58,7 +66,6 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 	private JPanel politicalBoundaryMainPanel;
 	private JPanel tablePanel;
 	private ArrayList<vtkActor> actorPoliticalBoundariesSegments;
-	private ArrayList<vtkActor> landmarkActors;
 	private ArrayList<String> allSubRegionNames;
 	Dimension dMainPanel;
 	public static vtkActor mainFocusReginActor = new vtkActor();
@@ -121,7 +128,7 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 		
 	
 	public PoliticalBoundariesGUI(PluginActors pluginActors){
-		//Plugin actors are something. TODO: Explain this
+		//Plugin actors handle the display of vtk objects
 		this.pluginActors = pluginActors;
 		this.pluginActors.addActor(appendActors.getAppendedActor());
 		createMainPanel();
@@ -131,21 +138,15 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 		//Upper panel contains regions
 		this.tablePanel = new JPanel();
 		this.tablePanel.setLayout(new BoxLayout(this.tablePanel, BoxLayout.Y_AXIS));
+		this.tablePanel.setOpaque(false);
 		
-		//List of "actors" TODO: Explain this
+		//List of "actors" 
 		this.actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
 		allSubRegionNames = new ArrayList<String>();
-		
+
 		progbar = new JProgressBar(0, 100);
 		progbar.setValue(0);
 		progbar.setStringPainted(true);
-		
-
-		
-		//Add color button for changing map color
-//		colorDrawingToolsButton = new ColorButton(this, "Change color of selected Text(s)");
-//		colorDrawingToolsButton.setEnabled(true);
-//		tablePanel.add(colorDrawingToolsButton);
 	}
 	
 	public void createMainPanel() {
@@ -172,31 +173,31 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 		//Add subregions and landmarks
 		for (int i = 0; i < regionFileNames.length; i++) {
 			ArrayList<String> subRegions = loadRegion(regionFileNames[i][1], false);
-			CheckAllTable subRegionTable = setUpTable(subRegions, regionFileNames[i][0], subRegionListener, new ColorListener());
+			CheckAllTable subRegionTable = setUpTable(subRegions, regionFileNames[i][0], subRegionListener, new ColorListener(false));
 			TreeNode<CheckAllTable> subRegionNode = root.addChild(subRegionTable);
 			if(subRegionTable.getTitle() == "United States") {
 				//Set california default;
 				subRegionNode.data.getTable().getModel().setValueAt(true, 4, 0);
 				ArrayList<String> CALandmarkGroups = fileParser.loadCALandmarkGroups();
-				CheckAllTable CALandmarksTable = setUpTable(CALandmarkGroups, "California", checkNextTableListener, new ColorNextTable());
+				CheckAllTable CALandmarksTable = setUpTable(CALandmarkGroups, "California", checkNextTableListener, new ColorListener(true));
 				CALandmarksTable.getTable().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				TreeNode<CheckAllTable> CALandmarksNode = subRegionNode.addChild(CALandmarksTable);
 				for (int j = 0; j <  CALandmarkGroups.size(); j++) {
 					final PresetLocationGroup landmarkData = fileParser.loadLandmarkData(CALandmarkGroups.get(j));
-					CheckAllTable landmarkDataTable = setUpTable(landmarkData.locationNames, CALandmarkGroups.get(j), new LandmarkListener(landmarkData), new ColorListener());
+					CheckAllTable landmarkDataTable = setUpTable(landmarkData.locationNames, CALandmarkGroups.get(j), new LandmarkListener(landmarkData), new ColorListener(false));
 					CALandmarksNode.addChild(landmarkDataTable);
 				}
 				CALandmarksTable.addControlColumn(forwardClickListener, ">", CALandmarksNode);
 			}
 			if(subRegionTable.getTitle() == "North America") {
 				ArrayList<String> MexicoLandmarks = fileParser.loadMexicoLandmarkGroups();
-				CheckAllTable MexicoLandmarksTable = setUpTable(MexicoLandmarks, "Mexico", checkNextTableListener, new ColorNextTable());
+				CheckAllTable MexicoLandmarksTable = setUpTable(MexicoLandmarks, "Mexico", checkNextTableListener, new ColorListener(true));
 				subRegionNode.addChild(MexicoLandmarksTable);
 			}
 			subRegionTable.addControlColumn(forwardClickListener, ">", subRegionNode);
 		}
 		regionTable.addControlColumn(forwardClickListener, ">", root);
-		regionTable.addColorButton(new ColorNextTable());
+		regionTable.addColorButton(new ColorListener(true));
 		JPanel progbarPanel = new JPanel(new BorderLayout());
 		//progbarPanel.setPreferredSize(new Dimension(300, 100));
 		progbarPanel.add(progbar);
@@ -559,12 +560,18 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 			}
 		}
 	};
-	
-	class ColorNextTable implements ActionListener {
-		public ColorNextTable() {}
+
+	class ColorListener implements ActionListener {
+		private PresetLocationGroup landmarkData;
+		private boolean colorNextTable = false;
+		public ColorListener(PresetLocationGroup landmarkData) {
+			this.landmarkData = landmarkData;
+		}
+		public ColorListener(boolean colorNextTable) {
+			this.colorNextTable = colorNextTable;
+		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
 			ColorButton target = (ColorButton) e.getSource();
     	 	final ControlPanel cp = (ControlPanel) target.getParent();
     	 	final CheckAllTable targetPanel = (CheckAllTable) cp.getParent();
@@ -577,66 +584,33 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 				for (int i = 0; i < table.getModel().getRowCount(); i++) {
 					if (table.getSelectionModel().isSelectedIndex(i)) {
 						String subTableName = (String) table.getModel().getValueAt(table.convertRowIndexToModel(i), 1);
-			    	 	final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
-			    	 	for (int j = 0 ; j < nextTableNode.data.getTable().getRowCount(); j++) {
-							String nextTableName = (String) nextTableNode.data.getTable().getModel().getValueAt(j, 1);
-							if (allSubRegionNames.contains(nextTableName)) {
-								actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(nextTableName)).GetProperty().SetColor(Info.convertColor(newColor));
+						if (!colorNextTable) {
+							if (allSubRegionNames.contains(subTableName)) {
+								actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(subTableName)).GetProperty().SetColor(Info.convertColor(newColor));
 							}
 							if (allActiveDrawings != null) {
 								for (int k = 0; k < allActiveDrawings.size(); k++) {
-									if (nextTableName.equals(allActiveDrawings.get(k).getTextString())) {
+									if (subTableName.equals(allActiveDrawings.get(k).getTextString())) {
 										allActiveDrawings.get(k).setColor(newColor);
 										setColor(allActiveDrawings.get(k), newColor);
 									}
 								}
 							}
 						}
-					}
-				}
-			}
-			Info.getMainGUI().updateRenderWindow();
-		}
-	}
-
-	class ColorListener implements ActionListener {
-		private PresetLocationGroup landmarkData;
-		public ColorListener(PresetLocationGroup landmarkData) {
-			this.landmarkData = landmarkData;
-		}
-		public ColorListener() {
-			
-		}
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			ColorButton target = (ColorButton) e.getSource();
-    	 	final ControlPanel cp = (ControlPanel) target.getParent();
-    	 	final CheckAllTable targetPanel = (CheckAllTable) cp.getParent();
-    	 	JTable table = targetPanel.getTable();
-			if (colorChooser == null) {
-				colorChooser = new SingleColorChooser(colorDrawingToolsButton);
-			}
-			Color newColor = colorChooser.getColor();
-			if (newColor != null) {
-				for (int i = 0; i < table.getModel().getRowCount(); i++) {
-					if (table.getSelectionModel().isSelectedIndex(i)) {
-						String subTableName = (String) table.getModel().getValueAt(table.convertRowIndexToModel(i), 1);
-						if (allSubRegionNames.contains(subTableName)) {
-							actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(subTableName)).GetProperty().SetColor(Info.convertColor(newColor));
-						}
-//						if (landmarkData != null) {
-//							for (int j = 0; j < landmarkData.locationNames.size(); j++) {
-//								if (subTableName.equals(landmarkData.locationNames.get(j))) {
-//									setColor(landmarkData.locations.get(j), newColor);
-//									landmarkData.locations.get(j).setColor(newColor);
-//								}
-//							}
-//						}
-						if (allActiveDrawings != null) {
-							for (int k = 0; k < allActiveDrawings.size(); k++) {
-								if (subTableName.equals(allActiveDrawings.get(k).getTextString())) {
-									allActiveDrawings.get(k).setColor(newColor);
-									setColor(allActiveDrawings.get(k), newColor);
+						else {
+				    	 	final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
+				    	 	for (int j = 0 ; j < nextTableNode.data.getTable().getRowCount(); j++) {
+								String nextTableName = (String) nextTableNode.data.getTable().getModel().getValueAt(j, 1);
+								if (allSubRegionNames.contains(nextTableName)) {
+									actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(nextTableName)).GetProperty().SetColor(Info.convertColor(newColor));
+								}
+								if (allActiveDrawings != null) {
+									for (int k = 0; k < allActiveDrawings.size(); k++) {
+										if (nextTableName.equals(allActiveDrawings.get(k).getTextString())) {
+											allActiveDrawings.get(k).setColor(newColor);
+											setColor(allActiveDrawings.get(k), newColor);
+										}
+									}
 								}
 							}
 						}
