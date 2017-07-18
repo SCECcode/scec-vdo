@@ -47,7 +47,7 @@ public class GIFRenderer extends AbstractThreadedRenderer {
 		this.extension = "gif";
 		this.name = name;
 		tFrames =  (int)(fps*maxTime);
-		frameCntr = 0;
+		frameCntr = -1;
 		GIFoutputFileName = "GIFName";
 		Frames = new Vector<BufferedImage>();
 		
@@ -110,20 +110,7 @@ public class GIFRenderer extends AbstractThreadedRenderer {
 	
 	
 	protected void doProcessFrame(BufferedImage img) throws IOException {
-		/*
-		 * 
-	    File outputFile = new File(outputDir, prefix+"_"+getNumStr(index)+"."+extension);
-		if (D) System.out.print("Writing frame "+index+" to "+outputFile.getName());
-		ImageOutputStream outputStream = new FileImageOutputStream(outputFile);	
-		writer.setOutput(outputStream);
-		IIOImage outputImage = new IIOImage(img, null, null);
-		writer.write(null, outputImage, writeParam);
-		index++;
-		if (D){
-			System.out.println(" DONE");
-			
-		}
-		 */
+		
 		
 		Frames.add(img);
 		
@@ -131,17 +118,17 @@ public class GIFRenderer extends AbstractThreadedRenderer {
 		frameCntr++;
 		if (D){
 			
-			System.out.println(" DONE");
-			//gifsequence.gifFunction(Frames, name);
-			//Frames.clear();
+			System.out.println("Done processing frame " + frameCntr);
 		}
-		if (frameCntr == (int)maxTime*fps){ //use timeField and frameRateField for this if (Multiply them
+		if (frameCntr == (int)maxTime*fps){ //multiply the frames per second with maxtime
 			
 			//a gif is created when the animation is finished 
+			System.out.println("Creating gif...");
 			GIFSequence.gifFunction(GIFRenderer.Frames, GIFoutputFileName, GIFoutputFilePath);
 			Frames.clear();
-			frameCntr=0;
-			index=0;
+			//System.out.println("frameCntr: " + frameCntr);
+			frameCntr=-1;
+			
 			
 		}
 		
