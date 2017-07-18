@@ -76,6 +76,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 
 import org.apache.log4j.Logger;
+import org.opensha.sha.gui.beans.EqkRupSelectorGuiBean;
 import org.scec.vtk.commons.legend.LegendItem;
 //import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
 //import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
@@ -588,6 +589,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	@SuppressWarnings("unused")
 	private void setUpToolBar() {
 		toolBar = new JToolBar();
+		//toolBar.setLayout(new BorderLayout());
+		//toolBar.setSize(new Dimension(200, 20));
 		JButton centerImage = new JButton();
 		try {
 			File file = new File("resources/Center.png");
@@ -649,10 +652,50 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			  } 
 		} );
 		
+		JButton save = new JButton();
+		
+		try {
+			File file = new File("resources/save.png");
+		    Image img = ImageIO.read(file);
+		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
+		    save.setIcon(new ImageIcon(img));
+		  } catch (IOException ex) {
+		    System.out.println("zoomOut: " +  ex);
+		  }
+		save.addActionListener(new ActionListener() { 
+			  public void actionPerformed(ActionEvent e) { 
+				 if (mainMenu.isSaved()) {
+					 mainMenu.autoSave();
+				 }
+				 else {
+					 mainMenu.saveForToolbar();
+				 }
+			  } 
+		} );
+		
+		JButton open = new JButton();
+		
+		try {
+			File file = new File("resources/open.png");
+		    Image img = ImageIO.read(file);
+		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
+		    open.setIcon(new ImageIcon(img));
+		  } catch (IOException ex) {
+		    System.out.println("zoomOut: " +  ex);
+		  }
+		open.addActionListener(new ActionListener() { 
+			  public void actionPerformed(ActionEvent e) { 
+				  mainMenu.openForToolbar();
+			  } 
+		} );
+		
+		
 		//hey
 		toolBar.add(centerImage);
 		toolBar.add(zoomIn);
 		toolBar.add(zoomOut);
+		toolBar.add(save);
+		toolBar.add(open);
 		toolBar.setOpaque(false);
 		toolBarGUI = new JPanel(new BorderLayout());
 		toolBarGUI.add(toolBar, BorderLayout.CENTER);
