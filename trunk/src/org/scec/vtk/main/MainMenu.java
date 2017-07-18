@@ -255,6 +255,10 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 	}
 	
+	/*
+	 * saves new file, leaves out wizard functionality
+	 */
+	
 	public void saveForToolbar() {
 		JFileChooser chooser = new JFileChooser();
 		int ret = chooser.showSaveDialog(Info.getMainGUI());
@@ -262,7 +266,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			Document document = DocumentHelper.createDocument();
 			Element root = document.addElement("root");
 			File file = chooser.getSelectedFile();
-			String destinationData =  file.getPath();//Prefs.getLibLoc() + File.separator;
+			String destinationData =  file.getPath();
 			currFileName = destinationData;
 			saved = true;
 
@@ -288,9 +292,16 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 	}
 	
+	/*
+	 * Checks whether file has been saved
+	 */
 	public Boolean isSaved() {
 		return saved;
 	}
+	
+	/*
+	 * Saves without creating a new file
+	 */
 
 	public void autoSave(){
 		Document document = DocumentHelper.createDocument();
@@ -422,6 +433,9 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 	}
 	
+	/*
+	 * opens new file, leaves out wizard functionality
+	 */
 	public void openForToolbar() {
 		JFileChooser chooser = new JFileChooser();
 		MainGUI.class.getConstructors();
