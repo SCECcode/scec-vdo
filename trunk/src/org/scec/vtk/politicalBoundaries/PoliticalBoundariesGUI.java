@@ -203,7 +203,7 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 		//progbarPanel.setPreferredSize(new Dimension(300, 100));
 		progbarPanel.add(progbar);
 		
-		politicalBoundaryMainPanel.add(progbarPanel, BorderLayout.PAGE_END);
+		//politicalBoundaryMainPanel.add(progbarPanel, BorderLayout.PAGE_END);
 		return this.politicalBoundaryMainPanel;
 	}
 	
@@ -458,9 +458,10 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
     		int col = target.columnAtPoint(e.getPoint());
     		if (col == 0) {
     			tablePanel.remove(targetTable);
+    			currentTableNode.parent.data.renderTableHeader();
     			tablePanel.add(currentTableNode.parent.data);
     			tablePanel.revalidate(); 
-    			tablePanel.repaint();//repaint a JFrame jframe in this case 
+    			tablePanel.repaint();
     		}
     	}
     };
@@ -474,16 +475,18 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
     		TreeNode<CheckAllTable> currentTableNode = findTableNode(root, targetTable);
     		int row = target.getSelectedRow();
     		int col = target.columnAtPoint(e.getPoint());
-    		if (e.getClickCount() == 2 || col == targetTable.getTable().getColumnCount()-1) {
-    			final String subTableName = (String)target.getValueAt(row, 1);
-    			for (TreeNode<CheckAllTable> node : currentTableNode) {
-    	    		if (node.data.getTitle().equals(subTableName)) {
-    	    			tablePanel.remove(targetTable);
-    	    			tablePanel.add(node.data);
-    	    		}
-    	    	}
-    			tablePanel.revalidate(); 
-    			tablePanel.repaint();//repaint a JFrame jframe in this case 
+    		if (col != 0) {
+    			if (e.getClickCount() == 2 || col == targetTable.getTable().getColumnCount()-1) {
+    				final String subTableName = (String)target.getValueAt(row, 1);
+    				for (TreeNode<CheckAllTable> node : currentTableNode) {
+    					if (node.data.getTitle().equals(subTableName)) {
+    						tablePanel.remove(targetTable);
+    						tablePanel.add(node.data);
+    					}
+    				}
+    				tablePanel.revalidate(); 
+    				tablePanel.repaint();
+    			}
     		}
     	}
     };

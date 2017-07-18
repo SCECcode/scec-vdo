@@ -1,12 +1,9 @@
 package org.scec.vtk.main;
 
-import java.awt.CheckboxMenuItem;
+
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -24,9 +21,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
+import java.util.*;
 
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import org.apache.log4j.Logger;
@@ -62,29 +65,29 @@ import com.google.common.base.Preconditions;
 
 public class MainMenu implements ActionListener, ItemListener{
 
-	private MenuBar menuBar;
-	private Menu fileMenu;
-	private MenuItem fileOpen;
-	private MenuItem saveItem;
-	private MenuItem appExit;
-	private Menu windowMenu ;
+	private JMenuBar menuBar;
+	private JMenu fileMenu;
+	private JMenuItem fileOpen;
+	private JMenuItem saveItem;
+	private JMenuItem appExit;
+	private JMenu windowMenu ;
 	private Timeline timeline;
 	private TimelineGUI timelineGUI;
 	private JFrame timelineFrame;
 	private JFrame frame;
-	private CheckboxMenuItem timelineItem;
-	private MenuItem saveItemVTK;
-	private MenuItem saveItemOBJ;
-	private MenuItem resizeWindow;
-	private MenuItem tutorial;
-	private MenuItem wizardActivation;
-	private MenuItem escapeWindow; 
+	private JCheckBoxMenuItem timelineItem;
+	private JMenuItem saveItemVTK;
+	private JMenuItem saveItemOBJ;
+	private JMenuItem resizeWindow;
+	private JMenuItem tutorial;
+	private JMenuItem wizardActivation;
+	private JMenuItem escapeWindow; 
 	private ViewerSizePanel sizePanel;
-	private CheckboxMenuItem focalPointItem;
+	private JCheckBoxMenuItem focalPointItem;
 	private String currFileName;
 	static public Boolean Wizard;
+	static public JMenu helpMenu;
 	static public Boolean saved = false;
-	static public Menu helpMenu;
 	public JFrame helpFrame;
 
 	Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
@@ -92,24 +95,25 @@ public class MainMenu implements ActionListener, ItemListener{
 	
 	Map<Plugin, PluginActors> pluginActors = new HashMap<>();
 	Map<String, Plugin> activePlugins = new HashMap<String, Plugin>(); //is this data structure accurately describing the current plug ins???
-	private Map<String, CheckboxMenuItem> pluginMenuItems = new HashMap<String, CheckboxMenuItem>();
+	Map<String, JCheckBoxMenuItem> pluginMenuItems;
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
 	public MainMenu(Object object){
 		getState();
 		currFileName = "";
 		//Creates the main menu bar.
-		menuBar = new MenuBar();
+		menuBar = new JMenuBar();
 		setupFileMenu();
+		pluginMenuItems = new HashMap<>();
 
 		
 		// manually add Display menu so that it is second from the left
 		
-		Menu displayMenu = new Menu();
+		JMenu displayMenu = new JMenu();
 		displayMenu.setLabel("Display");
 		displayMenu.setName("Display");
-		focalPointItem = new CheckboxMenuItem("Focal Point", false);
-		Menu trainingMenu = getCreateSubMenu(displayMenu, "Training");
+		focalPointItem = new JCheckBoxMenuItem("Focal Point", false);
+		JMenu trainingMenu = getCreateSubMenu(displayMenu, "Training");
 		trainingMenu.add(focalPointItem);
 		focalPointItem.addItemListener(new ItemListener() {
 			
@@ -125,35 +129,35 @@ public class MainMenu implements ActionListener, ItemListener{
 
 	private void setupWindowMenu() {
 		// TODO Auto-generated method stub
-		windowMenu = new Menu();
+		windowMenu = new JMenu();
 		windowMenu.setLabel("Window");
 		windowMenu.setName("Window");
 	
 		
 		
-		resizeWindow = new MenuItem("Resize render window");
+		resizeWindow = new JMenuItem("Resize render window");
 		windowMenu.add(resizeWindow);
 		menuBar.add(windowMenu);
 		windowMenu.addActionListener(this);
 		this.resizeWindow.addActionListener(this);
 	}
-	public MenuBar getMenuBar()
+	public JMenuBar getMenuBar()
 	{
 		return menuBar;
 	}
 	
 	//Help button on menu bar
-	void helpMenu() {
-		helpMenu = new Menu();
+	private void helpMenu() {
+		helpMenu = new JMenu();
 		helpMenu.setLabel("Help");
 		helpMenu.setName("Help");
-		tutorial = new MenuItem("User Guide");
+		tutorial = new JMenuItem("User Guide");
 		helpMenu.add(tutorial);
 		menuBar.add(helpMenu);
 		helpMenu.addActionListener(this);
 		this.tutorial.addActionListener(this);
 		
-		wizardActivation = new MenuItem("Toggle Wizard");
+		wizardActivation = new JMenuItem("Toggle Wizard");
 		helpMenu.add(wizardActivation);
 		this.wizardActivation.addActionListener(this);
 	
@@ -163,17 +167,17 @@ public class MainMenu implements ActionListener, ItemListener{
 		this.timeline = timeline;
 		this.timelineGUI = timelineGUI;
 
-		Menu menu = getMenuByName("Render");
+		JMenu menu = getMenuByName("Render");
 
 		// If the menu was not found, then create it. A plugin could use this menu name which is why we check ahead of time
 		if (menu == null) {
-			menu = new Menu();
+			menu = new JMenu();
 			menu.setLabel("Render");
 			menu.setName("Render");
 			menuBar.add(menu);
 		}
 
-		timelineItem = new CheckboxMenuItem("Timeline");
+		timelineItem = new JCheckBoxMenuItem("Timeline");
 		timelineItem.setName("Timeline");
 		timelineItem.addItemListener(this);
 
@@ -186,12 +190,12 @@ public class MainMenu implements ActionListener, ItemListener{
 
 	private void setupFileMenu() {
 		//File menu - save and open a scene.
-		fileMenu = new Menu("File");
-		fileOpen = new MenuItem("Open...");
-		saveItem = new MenuItem("Save state...");
-		saveItemVTK = new MenuItem("Save as VTK...");
-		saveItemOBJ = new MenuItem("Save as OBJ...");
-		appExit = new MenuItem("Quit");
+		fileMenu = new JMenu("File");
+		fileOpen = new JMenuItem("Open...");
+		saveItem = new JMenuItem("Save state...");
+		saveItemVTK = new JMenuItem("Save as VTK...");
+		saveItemOBJ = new JMenuItem("Save as OBJ...");
+		appExit = new JMenuItem("Quit");
 
 		fileMenu.addActionListener(this);
 		this.saveItem.addActionListener(this);
@@ -697,13 +701,13 @@ public void openVTKObj()
 				Wizard = true;
 				updateWizard(true);
 				JOptionPane.showMessageDialog(
-						frame,  "Wizard has been enabled.\nIt will appear the next time you open SCEC-VDO");
+						frame,  "You set Wizard to display upon launching SCEC-VDO");
 			}
 			else {
 				Wizard = false;
 				updateWizard(false);
 				JOptionPane.showMessageDialog(
-						frame,  "Wizard has been disabled. \nIt will not appear the next time you open SCEC-VDO");
+						frame,  "You set Wizard to not display upon launching SCEC-VDO");
 			}
 		}
 		
@@ -756,8 +760,8 @@ public void openVTKObj()
 		Object eventSource = e.getSource();
 		if (eventSource == timelineItem) {
 			setTimelineVisible(timelineItem.getState());
-		} else if (eventSource instanceof CheckboxMenuItem) {
-			CheckboxMenuItem jmi = (CheckboxMenuItem) eventSource;
+		} else if (eventSource instanceof JCheckBoxMenuItem) {
+			JCheckBoxMenuItem jmi = (JCheckBoxMenuItem) eventSource;
 			if (jmi.getState()) {
 				activatePlugin(jmi.getName());
 			} else {
@@ -820,13 +824,15 @@ public void openVTKObj()
 		}
 	}
 
-	private Menu getMenuByName(String menuName) {
+	private JMenu getMenuByName(String menuName) {
 		// Try to find the menu
 		for (int i = 0; i < menuBar.getMenuCount(); i++) {
-			Menu candidate = menuBar.getMenu(i);
-			if (candidate != null
-					&& candidate.getName().equalsIgnoreCase(menuName)) {
-				return candidate;
+			JMenu candidate = menuBar.getMenu(i);
+			if (candidate != null)
+				if(candidate.getName() != null) {
+					if(candidate.getName().equalsIgnoreCase(menuName)){
+						return candidate;
+					}
 			}
 		}
 		return null;
@@ -837,18 +843,18 @@ public void openVTKObj()
 		if (info.hasMenu()) {
 
 			// Create a menu item
-			CheckboxMenuItem mi = new CheckboxMenuItem(info.getShortName());
+			JCheckBoxMenuItem mi = new JCheckBoxMenuItem(info.getShortName());
 			mi.setName(info.getId());
 			mi.addItemListener(this);
 			// Add to the list
 			pluginMenuItems.put(info.getId(), mi);
 
 			final String menuName = info.getMenuName();
-			Menu menu = getMenuByName(menuName);
+			JMenu menu = getMenuByName(menuName);
 
 			// If the menu was not found, then create it
 			if (menu == null) {
-				menu = new Menu();
+				menu = new JMenu();
 				menu.setLabel(menuName);
 				menu.setName(menuName);
 				menuBar.add(menu);
@@ -859,10 +865,10 @@ public void openVTKObj()
 
 				// If the plugin does not specify a submenu,
 				// then add it to the regular menu
-				menu.add((CheckboxMenuItem)mi);
+				menu.add((JCheckBoxMenuItem)mi);
 
 			} else {
-				Menu submenu = getCreateSubMenu(menu, submenuName);
+				JMenu submenu = getCreateSubMenu(menu, submenuName);
 
 				// Add the item to the submenu
 				submenu.add(mi);
@@ -871,21 +877,21 @@ public void openVTKObj()
 		}
 	}
 
-	private Menu getCreateSubMenu(Menu menu, String submenuName) {
+	private JMenu getCreateSubMenu(JMenu menu, String submenuName) {
 		// Try to find the submenu
-		Menu submenu = null;
+		JMenu submenu = null;
 		for (int i = 0; i < (menu).getItemCount(); i++) {
-			MenuItem candidate = menu.getItem(i);
-			if (candidate != null && candidate instanceof Menu) {
-				if (((Menu) candidate).getName().equalsIgnoreCase(
+			JMenuItem candidate = menu.getItem(i);
+			if (candidate != null && candidate instanceof JMenu) {
+				if (((JMenu) candidate).getName().equalsIgnoreCase(
 						submenuName)) {
-					return (Menu) candidate;
+					return (JMenu) candidate;
 				}
 			}
 		}
 
 		// If the submenu was not found, add it
-		submenu = new Menu();
+		submenu = new JMenu();
 		submenu.setLabel(submenuName);
 		submenu.setName(submenuName);
 		menu.add(submenu);
@@ -905,7 +911,7 @@ public void openVTKObj()
 			if (loadedPlugins.containsKey(id)) {
 
 				// Update menu
-				CheckboxMenuItem mi = pluginMenuItems.get(id);
+				JCheckBoxMenuItem mi = pluginMenuItems.get(id);
 				if(mi!=null)
 					mi.setState(true);
 
@@ -997,7 +1003,7 @@ public void openVTKObj()
 		plugin.unload();
 	}
 	public void updateMenu(String id){
-		CheckboxMenuItem mi = pluginMenuItems.get(id);
+		JCheckBoxMenuItem mi = pluginMenuItems.get(id);
 		mi.setState(false);
 
 		// Passivate plugin
