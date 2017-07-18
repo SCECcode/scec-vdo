@@ -174,6 +174,7 @@ public class CheckAllTable extends JPanel {
     	DataModel newDataModel = new DataModel(DATA, columnHeader);
     	table.setModel(newDataModel);
     	table.getModel().addTableModelListener(tableListener);
+    	//lol
     }
     
     public void addControlColumn(MouseAdapter mouseListener, String controlSymbol, TreeNode<CheckAllTable> tableNode) {
