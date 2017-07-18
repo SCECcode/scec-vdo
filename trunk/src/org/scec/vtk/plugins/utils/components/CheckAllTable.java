@@ -99,11 +99,15 @@ public class CheckAllTable extends JPanel {
      */
     private void initTable(String title, TableModelListener tableListener) {
     	TITLE = title;
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
+        this.setOpaque(false);
         String[] COLUMN_HEADERS = {" < ", title};
         dataModel = new DataModel(DATA, COLUMN_HEADERS);
         //Add control panel
         controlPanel = new ControlPanel();
+        controlPanel.setOpaque(false);
+        controlPanel.setBorder(BorderFactory.createEmptyBorder());
+      //  controlPanel.setBackground(Color.cyan);
         this.add(controlPanel, BorderLayout.NORTH);
         
         childrenTables = new ArrayList<CheckAllTable>();
@@ -122,7 +126,7 @@ public class CheckAllTable extends JPanel {
         };
 
         table.getModel().addTableModelListener(tableListener);
-        table.setBorder(BorderFactory.createEmptyBorder());
+  
         
         selectionModel = (DefaultListSelectionModel) table.getSelectionModel();
         selectionModel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -148,25 +152,13 @@ public class CheckAllTable extends JPanel {
         table.setPreferredScrollableViewportSize(new Dimension(250, 175));
         //Center table title
         TableCellRenderer rendererFromHeader = table.getTableHeader().getDefaultRenderer();
-//        table.getTableHeader().setDefaultRenderer(new DefaultTableCellHeaderRenderer() {
-//        	 @Override
-//        	    public Component getTableCellRendererComponent(
-//        	            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-//        	        DefaultTableCellHeaderRenderer rendererComponent = (DefaultTableCellHeaderRenderer)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-//        	        if (column == 0) {
-//        	            rendererComponent.setForeground(Color.red);
-//        	        } else {
-//        	            rendererComponent.setForeground(table.getTableHeader().getForeground());
-//        	        }
-//        	        rendererComponent.setF
-//
-//        	        return rendererComponent;
-//        	    }
-//        });
         JLabel headerLabel = (JLabel) rendererFromHeader;
+        headerLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 17));
         headerLabel.setHorizontalAlignment(JLabel.CENTER);
         //Add scrolling
-        this.add(new JScrollPane(table), BorderLayout.CENTER);
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        tableScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        this.add(tableScrollPane, BorderLayout.CENTER);
     }
     public Object[][] getData() {
     	return DATA;
@@ -190,9 +182,14 @@ public class CheckAllTable extends JPanel {
     	dataModel.addColumn("", controlSymbols);
         table.getColumnModel().getColumn(2).setCellRenderer(forwardArrowRenderer);
     	table.addMouseMotionListener(hoverListener);
+    	table.setBorder(BorderFactory.createEmptyBorder());
     	table.getColumnModel().getColumn(0).setMaxWidth(60);
     	table.getColumnModel().getColumn(1).setCellRenderer(textRenderer);
     	table.getColumnModel().getColumn(2).setMaxWidth(30);
+    	TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
+    	sorter.setRowFilter(filter);
+        sorter.setSortable(0 , false);
+        table.setRowSorter(sorter);
     }
     
     public boolean hasSubTable(int row, TreeNode<CheckAllTable> tableNode) {
@@ -287,12 +284,12 @@ public class CheckAllTable extends JPanel {
     }
     public class ControlPanel extends JPanel {
         public ControlPanel() {
+        	this.setBorder(BorderFactory.createEmptyBorder());
         	this.setLayout(new FlowLayout(FlowLayout.LEADING));
         	JButton selectButton = new JButton(new SelectionAction("Select", true));
         	JButton deselectButton = new JButton(new SelectionAction("Deselect", false));
         	this.add(selectButton, FlowLayout.LEFT);
             this.add(deselectButton, FlowLayout.LEFT);
-        	
         	this.add(Box.createRigidArea(new Dimension(90, 0)));
 
         	KeyListener keyListener = new KeyListener() {
