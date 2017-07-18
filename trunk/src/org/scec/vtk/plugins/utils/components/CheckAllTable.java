@@ -34,6 +34,7 @@ public class CheckAllTable extends JPanel {
 	private Object[][] DATA;
 	private String TITLE;
     private static final int CHECK_COL = 0;
+    private static final int COLOR_COL = 2;
     private DataModel dataModel;
     private JTable table;
     private DefaultListSelectionModel selectionModel;
@@ -120,7 +121,7 @@ public class CheckAllTable extends JPanel {
         		TableCellRenderer renderer, int row, int column) {
         		Component c = super.prepareRenderer(renderer, row, column);
         		JComponent jc = (JComponent)c;
-        		if (!isRowSelected(row)) {
+        		if (!isRowSelected(row) && column != 2) {
         			c.setBackground(row % 2 == 0 ? getBackground() : new Color(240, 254, 255));
         		}
         		return c;
@@ -128,11 +129,9 @@ public class CheckAllTable extends JPanel {
         };
 
         table.getModel().addTableModelListener(tableListener);
-  
         
         selectionModel = (DefaultListSelectionModel) table.getSelectionModel();
         selectionModel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        
         
         //Add searching functionality using a filter
         filter = new Filter();
@@ -141,6 +140,9 @@ public class CheckAllTable extends JPanel {
         sorter.setSortable(0, false);
         table.setRowSorter(sorter);
         setTableProperties();
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        tableScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        this.add(tableScrollPane, BorderLayout.CENTER);
     }
     
     private void setTableProperties() {
@@ -148,40 +150,32 @@ public class CheckAllTable extends JPanel {
     	table.getColumnModel().getColumn(0).setMaxWidth(60);
     	table.getColumnModel().getColumn(1).setCellRenderer(textRenderer);
     	table.getColumnModel().getColumn(2).setMaxWidth(0);
+    	table.getColumnModel().getColumn(2).setMinWidth(0);
+    	table.getColumnModel().getColumn(2).setPreferredWidth(0);
         table.setIntercellSpacing(new Dimension(0,0));
         table.setShowGrid(false);
         table.setRowHeight(25);
         table.setShowHorizontalLines(false);
         table.setPreferredScrollableViewportSize(new Dimension(250, 175));
         //Center table title
+        renderTableHeader();
+    }
+    
+    public void renderTableHeader() {
         TableCellRenderer rendererFromHeader = table.getTableHeader().getDefaultRenderer();
         JLabel headerLabel = (JLabel) rendererFromHeader;
         headerLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 17));
         headerLabel.setHorizontalAlignment(JLabel.CENTER);
-        //Add scrolling
-        JScrollPane tableScrollPane = new JScrollPane(table);
-        tableScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        this.add(tableScrollPane, BorderLayout.CENTER);
+        table.getTableHeader().setReorderingAllowed(false);
+        table.getTableHeader().setResizingAllowed(false);
     }
-    public Object[][] getData() {
-    	return DATA;
-    }
+    
     public void setDataModel(Object[][] data, String[] columnHeader) {
     	DataModel newDataModel = new DataModel(DATA, columnHeader);
     	table.setModel(newDataModel);
     	table.getModel().addTableModelListener(tableListener);
     }
     
-    public void addColorColumn() {
-    	Object[] colors = new Object[table.getRowCount()];
-//    	for (int row = 0 ; row < controlSymbols.length; row++) {
-//    		if (hasSubTable(row, tableNode))
-//    			controlSymbols[row] = controlSymbol;
-//    		else
-//    			controlSymbols[row] = "";
-//    	}
-    	dataModel.addColumn("");
-    }
     public void addControlColumn(MouseAdapter mouseListener, String controlSymbol, TreeNode<CheckAllTable> tableNode) {
     	table.addMouseListener(mouseListener);
     	Object[] controlSymbols = new Object[table.getRowCount()];
@@ -193,19 +187,9 @@ public class CheckAllTable extends JPanel {
     	}
     	dataModel.addColumn("", controlSymbols);
         table.getColumnModel().getColumn(table.getColumnCount()-1).setCellRenderer(forwardArrowRenderer);
-        //table.removeColumn(table.getColumnModel().getColumn(2));
-        table.getColumnModel().getColumn(2).setMaxWidth(0);
-        table.getColumnModel().getColumn(2).setPreferredWidth(0);
-        table.getColumnModel().getColumn(2).setMinWidth(0);
-    	table.addMouseMotionListener(hoverListener);
-    	table.setBorder(BorderFactory.createEmptyBorder());
-    	table.getColumnModel().getColumn(0).setMaxWidth(60);
-    	table.getColumnModel().getColumn(1).setCellRenderer(textRenderer);
-    	table.getColumnModel().getColumn(table.getColumnCount()-1).setMaxWidth(30);
-    	TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
-    	sorter.setRowFilter(filter);
-        sorter.setSortable(0 , false);
-        table.setRowSorter(sorter);
+        table.getColumnModel().getColumn(table.getColumnCount()-1).setMaxWidth(30);
+        table.addMouseMotionListener(hoverListener);
+        setTableProperties();
     }
     
     public boolean hasSubTable(int row, TreeNode<CheckAllTable> tableNode) {
@@ -221,6 +205,7 @@ public class CheckAllTable extends JPanel {
     	button.addActionListener(actionListener);
     	controlPanel.add(button);
     }
+    
 
     DefaultTableCellRenderer textRenderer = new DefaultTableCellRenderer() {
     	Border padding = BorderFactory.createEmptyBorder(0, 10, 0, 0);
@@ -231,6 +216,7 @@ public class CheckAllTable extends JPanel {
     		super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
     				row, column);
     		setBorder(padding);
+    		table.getModel().getValueAt(row, 2);
     		return this;
     	}
     };

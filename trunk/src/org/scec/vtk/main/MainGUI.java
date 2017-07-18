@@ -50,6 +50,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -257,7 +258,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		    });
   //HELP BUTTON
 		pluginTabPane =  new JTabbedPane();
-		//pluginTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+		pluginTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		pluginTabPane.setUI(tabbedPaneUI);
 		//Set up all default GUI elements
 		Info.setMainGUI(this);
@@ -267,6 +268,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 		pluginSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainPanel, pluginGUIScrollPane);
 		pluginSplitPane.setOneTouchExpandable(false);
+		pluginSplitPane.setBorder(BorderFactory.createEmptyBorder());
 		pluginSplitPane.setResizeWeight(1);
 		pluginSplitPane.setDividerLocation(0.5);
 		
@@ -274,15 +276,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
 		pluginGUIScrollPane.setMinimumSize(d);
 		pluginGUIScrollPane.setPreferredSize(d);
-		pluginTabPane.setBorder(new EmptyBorder(0, 5, 5, 5));
+		pluginTabPane.setBorder(new EmptyBorder(2, 5, 5, 5));
 		Dimension minimumSize = new Dimension(100, 50);
 		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		renderWindow.getComponent().setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		timeline = new Timeline();
 		timelineGUI = new TimelineGUI(timeline);
 		mainMenu.setupTimeline(timeline, timelineGUI);
-
-		
 
 		cam.SetPosition(camCord[0],camCord[1],camCord[2]);
 		cam.SetFocalPoint(camCord[3],camCord[4],camCord[5]);
@@ -301,7 +301,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
 		focalPointActor.Modified();
 		renderWindow.getComponent().setFocusable(true);
-
 		renderWindow.getComponent().addKeyListener(new KeyListener() {
 
 			@Override
@@ -432,7 +431,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
     final Color tabBorderColor = Color.LIGHT_GRAY;
 
 	BasicTabbedPaneUI tabbedPaneUI = new BasicTabbedPaneUI() {
-		private final Insets borderInsets = new Insets(-2, -6, -6, -6);
+		private final Insets borderInsets = new Insets(-5, 0, 0, 0);
         @Override
         protected Insets getContentBorderInsets(int tabPlacement) {
             return borderInsets;
@@ -440,6 +439,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
         @Override
         protected Insets getTabInsets(int tabPlacement, int tabIndex)  {
         	return new Insets(3, 6, 3, 6);
+        }
+        @Override
+        protected Insets getTabAreaInsets(int tabPlacement) {
+        	return new Insets(5, 5, 5, 5);
         }
 		@Override protected void paintContentBorder(Graphics g,
                 int tabPlacement,
@@ -700,7 +703,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		toolBarGUI = new JPanel(new BorderLayout());
 		toolBarGUI.add(toolBar, BorderLayout.CENTER);
 		toolBarGUI.setOpaque(false);
-		toolBarGUI.setBorder(new EmptyBorder(1, 0, 1, 0));
+		toolBarGUI.setBorder(new EmptyBorder(5, 0, 1, 0));
 		mainPanel.add(toolBarGUI, BorderLayout.PAGE_START);
 	}
 	
@@ -746,7 +749,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	//create frame and tabbed pane in main window
 	private void setMainFrame() {	
 		this.setTitle("SCEC VDO VTK");
-		this.setMenuBar(mainMenu.getMenuBar());
+		this.setJMenuBar(mainMenu.getMenuBar());
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setSize(new Dimension(Prefs.getTotalWidth(), Prefs.getMainHeight()));
 		this.setContentPane(pluginSplitPane);
@@ -795,11 +798,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		allPanel.add(gui);
 		allPanel.setOpaque (false); //
 	    allPanel.setFocusable (false);
-		//allPanel.add(Box.createVerticalGlue());
-		//allPanel.add(new JPanel());
+		allPanel.add(Box.createVerticalGlue());
+		allPanel.add(new JPanel());
 		JScrollPane pluginTab = new JScrollPane(allPanel);
+		pluginTab.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		pluginTab.setBorder(BorderFactory.createEmptyBorder());
-		pluginTab.setOpaque(false);
+		//pluginTab.setOpaque(true);
+		//pluginTab.setColor(Color.white);
 		pluginTab.setName(id);
 
 
@@ -974,7 +979,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			JButton button = new TabButton();
 			add(button);
 			//add more space to the top of the component
-			setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
+			setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		}
 
 		private class TabButton extends JButton implements ActionListener {
@@ -984,7 +989,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			private static final long serialVersionUID = 1L;
 
 			public TabButton() {
-				int size = 17;
+				int size = 13;
 				setPreferredSize(new Dimension(size, size));
 				setToolTipText("close this tab");
 				//Make the button looks the same for all Laf's
@@ -1275,8 +1280,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	    catch (IllegalAccessException e) {
 	       // handle exception
 	    }
-		UIManager.put("TabbedPane.tabsOverlapBorder", true);
-
+	//	UIManager.put("PopupMenu.border", BorderFactory.createLineBorder(Color.red, 4));
+		UIManager.put("Menu.border", BorderFactory.createEmptyBorder(2, 4, 2, 4));
+		UIManager.put("MenuBar.border", BorderFactory.createEmptyBorder(1, 3, 2, 3));
+		UIManager.put("MenuItem.border", BorderFactory.createEmptyBorder(2, 4, 2, 4));
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
