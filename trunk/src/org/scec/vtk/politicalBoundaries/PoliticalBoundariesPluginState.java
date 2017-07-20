@@ -1,5 +1,6 @@
 package org.scec.vtk.politicalBoundaries;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,6 +16,7 @@ import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.plugins.utils.components.TreeNode;
 
+
 import vtk.vtkActor;
 
 
@@ -29,6 +31,14 @@ public class PoliticalBoundariesPluginState implements PluginState {
 		filePath = new ArrayList<>();
 	}
 
+	/*
+	 * copyLatestCatalogDetails()
+	 * 		This function traverses through the table tree structure
+	 * 		If there is a selected piece on the menu, it will be marked
+	 * 		as true on TableModel 
+	 * 		
+	 */
+	
 	void copyLatestCatalogDetails()
 	{
 		System.out.println("inside copyLatestCatalogDetails()");
@@ -42,7 +52,10 @@ public class PoliticalBoundariesPluginState implements PluginState {
 			for(int i = 0; i < list.getRowCount(); i ++){
 				if((Boolean)list.getValueAt(i, 0)){
 					filePath.add((String)list.getValueAt(i, 1));
-					System.out.println("Name: " + list.getValueAt(i, 1) + " | checked:  " + list.getValueAt(i, 0)  );
+					System.out.println("Name: " + list.getValueAt(i, 1) + " | color:  " + list.getValueAt(i, 2).toString()  );
+					Color c = (Color)list.getValueAt(i, 2);
+					filePath.add(Integer.toString(c.hashCode()));
+					
 				}
 				
 			}
@@ -92,7 +105,11 @@ public class PoliticalBoundariesPluginState implements PluginState {
 				for(int j = 0 ; j < filePath.size(); j++){
 					if(((String)list.getValueAt(i, 1)).equalsIgnoreCase(filePath.get(j))){
 						list.setValueAt(true, i, 0);
-						System.out.println(list.getValueAt(i, 0) + (String) list.getValueAt(i, 1));
+						j++;
+						list.setValueAt(new Color(Integer.parseInt(filePath.get(j))), i, 2);
+						
+						System.out.println("PoliBoun: " + list.getValueAt(i, 1 ) + " Color: " + list.getValueAt(i, 2));
+						
 					}
 					
 				}
