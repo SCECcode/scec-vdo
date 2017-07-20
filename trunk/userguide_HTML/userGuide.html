@@ -3,8 +3,30 @@
 <head>
 <style>
 
+.navbar {
+  overflow: hidden;
+  background-color: #50526d;
+  position: fixed;
+  top: 0;
+  left:0;
+  width: 100%;
+}
 
-body {color:#000; font-family:calibri;}
+.navbar a {
+  float: left;
+  display: block;
+  color: #ffffff;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.navbar a:hover {
+    background-color: #adaec6;
+    color: black;
+}
+body {margin-top:120px; color:#000; font-family:calibri;  padding: 10px;}
 h1 {color: blue;}
 h2 {color: red;}
 h3 {color: black; font-size: 100}
@@ -18,448 +40,440 @@ table {column-gap: 40px;}
 
 <h1><center>SCEC VDO User Guide</center></h1>
 
-<img src="images/Try2.jpg">
-<!--  C:/Users/intern/workspace/scec_vdo_vtk/resources/zoomOut.png  -->
+<center><img src="images/SCECVDOLogo.png"></center>
+
+<div class="navbar"><a href="#MenuOptions">Menu Options</a>
+<a href="#3DViewer">3D Viewer</a>
+<a href="#PluginPanel">Plugin Panel</a>
+<a href="#FocalPoint">Focal Point</a>
+<a href="#Timeline">Timeline</a>
+<a href="#Surface">Surface</a>
+<a href="#ShakeMap">ShakeMap</a>
+<a href="#PoliticalBoundaries">Political Boundaries</a></td>
+<a href="#Graticule">Graticule</a>
+<a href="#Simulators">Simulators</a>
+<a href="#DrawingTools">Drawing Tools</a>
+<a href="#EarthquakeCatalog">Earthquake Catalog</a>
+<a href="#Legend">Legend</a>
+<a href="#Scripting">Scripting</a>
+<a href="#CreatingAnimations">Creating Animations</a>
+<a href="#ExportRenders">Export Renders</a></div>
+
+<div id="MenuOptions"></div>
+</br></br></br></br></br></br></br>
+
+<h1>Menu Options</h1>
+
 <table>
-  
-    <colspan="2">
+<tr>
+    <td><ul><li>While working on a project, users can save</br>
+the current state of SCEC-VDO and resume</br>
+at a later time by selecting <i>File -> Save state.</i>
+</li></br>
 
-  <tr>   
-    <td><a href="#MenuOptions">Menu Options</a></td>
-    <td></td>
-    
-    <td><a href="#3DViewer">3D Viewer</a></td>
-<td></td>
-
-    <td><a href="#PluginPanel">Plugin Panel</a></td>
-<td></td>
-
-    <td><a href="#FocalPoint">Focal Point</a></td>
-  </tr>
-  <tr>   
-    <td><a href="#Timeline">Timeline</a></td>
-<td></td>
- 
-    <td><a href="#Surface">Surface</a></td>
-<td></td>
-
-    <td><a href="#ShakeMap">ShakeMap</a></td>
-<td></td>
-
-    <td><a href="#PoliticalBoundaries">Political Boundaries</a></td>
-  </tr>
-  <tr>  
-    <td><a href="#Graticule">Graticule</a></td>
-<td></td>
-
-    <td><a href="#Simulators">Simulators</a></td>
-<td></td>
- 
-    <td><a href="#DrawingTools">Drawing Tools</a></td>
-<td></td>
-
-    <td><a href="#EarthquakeCatalog">Earthquake Catalog</a></td>
-  </tr>
-  <tr>   
-    <td><a href="#Legend">Legend</a></td>
-<td></td>
-
-    <td><a href="#Scripting">Scripting</a></td>
-<td></td>
-
-    <td><a href="#CreatingAnimations">Creating Animations</a></td>
-<td></td>
-
-    <td><a href="#ExportRenders">Export Renders</a></td>
-  </tr>
-</table>
-
-
-<h1 id="MenuOptions"><h1><a name="MenuOptions">Menu Options</a></h1>
-
-<ul><li>While working on a project, users can save 
-the current state of SCEC-VDO and resume 
-at a later time by selecting 
-
-<b><i>File -> Save state.</b></i></li></br>
-
-<li>To resume a project from an earlier time,
-select <b><i>File > Open.</b></i> Locate and select the
+<li>To resume a project from an earlier time,</br>
+select <b><i>File > Open.</b></i> Locate and select the</br>
 name of your project.</li></br>
-
-<li>By selecting <b><i>Display</b></i>, users have access to the following plugins:</li></br>
+</td>
+    <td><img src="images/MenuOption 1.png" style="width:354px;height:208px;"></td>
+   
+  </tr>
+  <tr>
+    <td><li>By selecting <b><i>Display</b></i>, users have access to </br>the following plugins:</li></br>
 
  <ul>
 <li type="square"><b><i>Earthquake> Earthquake Catalog</li></b></i>
 <li type="square"><b><i>Faults > Community Fault Model</li></b></i>
 <li type="square"><b><i>GIS Hazus Events > GIS Hazus Events</li></b></i>
 <li type="square"><b><i>Earthquake> Legend > Legend</li></b></i>
-<li type="square"><b><i>Earthquake> Earthquake Simulators > Earthquake
+<li type="square"><b><i>Earthquake> Earthquake Simulators > Earthquake</br>
 Simulators</li></b></i>
 <li type="square"><b><i>Earthquake> ShakeMap > ShakeMap</li></b></i>
 <li type="square"><b><i>Earthquake> Surface -> Surface.</li></b></i></br>
-</ul>
-  <li>Creating animations in SCEC-VDO is
-controlled by the Timeline plugin which
-allows users to display data from plugins
-onto the map. To access this plugin, select <b><i>Render > Timeline.</b></i></li></p>
+</ul></td>
+    <td><img src="images/MenuOption 2.png" style="width:354px;height:208px;"></td>
+    
+  </tr>
+  <tr>
+    <td><li>Creating animations in SCEC-VDO is</br>
+controlled by the Timeline plugin which</br>
+allows users to display data from plugins</br>
+onto the map. To access this plugin, select </br><b><i>Render > Timeline.</b></i></li></p></td>
+    <td><img src="images/MenuOption 3.png" style="width:354px;height:208px;"></td>
+ 
+  </tr>
+  </table>
 
 <div><a href="#Menu">Back to top</a></div>
 
-</ul></p>
+</ul>
+<div id="3DViewer"></div>
+</br></br></br></br></br></br></br>
 
-<div id="3DViewer"><h1><a name="3DViewer">3-D Viewer</a></h1>
-
-<ul>
-
-<li>The 3-D Viewer enables the user to
-view data both above and below the
-Earth’s surface at any angle. </li></br>
-
-<li>Changes made through plugins are
-automatically updated onto the
+<table>
+<tr><td><h1>3-D Viewer</h1></td></tr>
+<tr><td>
+<ul><li>The 3-D Viewer enables the user to</br>
+view data both above and below the</br>
+Earthâ€™s surface at any angle. </li></br>
+<li>Changes made through plugins are</br>
+automatically updated onto the</br>
 map. </li></br>
+</ul></td>
+<td><img src="images/3D Viewer.png" style="width:250px;height:300px;"></br>UCERF3 Earthquake Simulator Slip Rates</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td><img src="images/3D Viewer 2.png" style="width:250px;height:300px;"></br>UCERF3 Earthquake Catalog</td>
+  </tr>
+  </table>
 
-</ul></div>
-<div id="PluginPanel"><h1><a name="PluginPanel">Plugin Panel</a></h1>
-<ul>
-<li>Plugins enable the user to display
-and manipulate information onto
+
+</div>
+<div id="PluginPanel"></div>
+</br></br></br></br></br></br></br>
+<h1>Plugin Panel</h1>
+
+<table>
+<tr>
+    <td><ul>
+<li>Plugins enable the user to display</br>
+and manipulate information onto</br>
 their project. </li></br>
 
-<li>All active plugins can be found on
+<li>All active plugins can be found on</br>
 the right panel of SCEC-VDO. </li></br>
 
-<li>Active plugins are identified with a
-blue highlight at the top of the
+<li>Active plugins are identified with a</br>
+blue highlight at the top of the</br>
 panel.</li></br>
 
-<li>All changes made within a plugin will
-automatically update the project and
-display on the 3-D Viewer. </li></br></br>
+<li>All changes made within a plugin will</br>
+automatically update the project and</br>
+display on the 3-D Viewer. </li>
+</ul>
 
-Note: Each plugin is described
-in detail in the plugin
-section.
+</td>
+    <td><img src="images/PluginPanel 1.png" style="width:250px;height:350px;"></td>
+   
+  </tr>
+  <tr>
+    <td><img src="images/PluginPanel 3.png" style="width:254px;height:208px;"></td>
+    <td><img src="images/PluginPanel 2.png" style="width:250px;height:350px;"></td>
+  </tr>
+  </table>
+
 
 </ul></div>
 
-<div id="FocalPoint"><h1><a name="FocalPoint">Focal Point</a></h1>
 
-<ul>
 
-The focal point is the center of the
-user’s perspective. When navigating
-SCEC-VDO, users are able to go
-beneath the earth’s surface and view
+<div id="FocalPoint"></div>
+</br></br></br></br></br></br>
+
+<table><tr><td><h1>Focal Point</h1></td></tr>
+<tr><td>The focal point is the center of the</br>
+userâ€™s perspective. When navigating</br>
+SCEC-VDO, users are able to go</br>
+beneath the earthâ€™s surface and view</br>
 earthquakes in depth.</br></br>
+<b>Add a focal point: </b><i>Display>Training</br>>Focal Point.</i></br>
+<img src="images/Focal Point 2.png" style="width:304px;height:208px;"></br></br>
+In the case where the user is lost or</br>
+out of perspective, press the ESC</br>
+button to return to the default view.</br>
+</td>
+    <td><img src="images/Focal Point 1.png" style="width:350px;height:500px;"></td>
+    <td colspan = 2><img src="images/Focal Point 3.png" style="width:700px;height:280px;"></td>
+  </tr>
+<tr>
+  <td><img src="images/UI 1.png" style="width:250px;height:300px;"></br><b>Default View</b></td>
+<td><img src="images/UI 3.png" style="width:250px;height:300px;"></br><b>Zoom In/Out (Scroll Wheel):</b></br>Zoom in and out of a specific area of the </br>map by scrolling the mouse wheel.</td></td>
+</tr>
+<tr><td>
+  <img src="images/UI 2.png" style="width:250px;height:300px;"></br><b>Translate (Left Click Drag):</b></br>Translating will change the user's</br>perspective of the map by <b>holding</b> the</br> left mouse button and <b>dragging</b> in </br>different directions.</td></br>
+<td><img src="images/UI 4.png" style="width:250px;height:300px;"></br><b>Move:</b></br>Move the map either by holding <b>Shift + </br>Left Mouse Click Drag</b> or <b>Scroll Wheel </br>Drag.</b>
+</td></tr>
+  </table></div>
 
-<b>Add a focal point:</b><i>Display>Training>Focal Point.</i></br></br>
-
-In the case where the user is lost or
-out of perspective, press the ESC
-button to return to the default view.</br></br></br>
-
-<b>Controls</b></br></br>
-<li><b>ESC</b>: Reset Focal Point
-<li><b>Scroll Wheel Click + Drag:</b>: Translate
-Focal Point
-<li><b>Left Click + Drag:</b>: Rotate About Focal
-Point
-<li><b>Right Click + Drag Or Scroll Wheel:</b>: Zoom In/Out
-<li><b>CTRL + Left Click Drag:</b>: Roll Map</br></br></br>
-
-
-Note: Losing your focal
-point occurs very
-frequently.
-</ul></div>
 
 <div><a href="#Menu">Back to top</a></div>
 
-<div id="Timeline"><h1><a name="Timeline">Timeline Overview</a></h1>
-
+<div id="Timeline"></div>
+</br></br></br></br></br></br></br>
+<h1>Timeline Overview</h1>
 <ul>
-
-Intuitively animate data over time with key frames, easily navigate camera positions, and turn
-data sets ON or OFF throughout the process. The Timeline plugin is the graphical interface that
-controls the process to create animated videos and then export the project as an MPEG-4 file.</br></br>
+Intuitively animate data over time with key frames, easily navigate camera positions, and turn</br>
+data sets ON or OFF throughout the process. The Timeline plugin is the graphical interface that</br>
+controls the process to create animated videos and then export the project as an MPEG-4 file.</br>
+</br>
+<img src="images/Timeline 1.png" style="width:950px;height:300px;"></br>
+<img src="images/Image2.png" style="width:750px;height:400px;">
 
 </ul></div>
 
+<div id="Surface"></div>
+</br></br></br></br></br></br></br>
+<table>
+<tr><td><h1>Surface</h1></td></tr>
+<tr><td><ul><b><i> What is Surface?</b></i></br></br></br>
 
-<div id="Surface"><a name="Surface"><h1>Surface</a></h1>
-
-<ul>
-
-<b><i> What is Surface?</b></i></br></br></br>
-
-The Surface plugin enables the user to
-display parts of the uppermost layer of
+The Surface plugin enables the user to</br>
+display parts of the uppermost layer of</br>
 the earth and illustrate in more detail.</br></br></br>
 
-View multiple surfaces including the
-World, California, and Japan. (See
-Appendix for full list of available
-surfaces). Each surface provides unique
+View multiple surfaces including the</br>
+World, California, and Japan. (See</br>
+Appendix for full list of available</br>
+surfaces). Each surface provides unique</br>
 detail over a specific region.</br></br></br>
 
 <b>How to Open Surface Plugin:</b></br></br>
 
 Select<i> Display>Surface>Surface Plugin</i></br></br>
+</ul></td>
+    <td><img src="images/Surface 1.png" style="width:370px;height:500px;"></td>
+  </tr>
+  </table>
+  <img src="images/Surface 2.png" style="width:770px;height:600px;"></td>
 
-***By toggling
-different surfaces,
-scientists can go
-beneath the
-earth’s surface and
-analyze the fault
-model in greater
-detail by area or
-region.</br></br>
-The 3-D structure
-illustrates major
-faults in Southern
-California. Vertical
-faults such as the
-San Andreas
-(yellow band from
-top left to bottom
-right) are shown as
-a thin strip.***
-
-</ul></div>
 <div><a href="#Menu">Back to top</a></div>
+<div id="ShakeMap"></div>
+</br></br></br></br></br></br></br>
+<h1>Shake Map</h1>
+<table>
+	<tr>
+		<td>
+			<b><i> What is a ShakeMap?</b></i></br></br>
 
-<div id="ShakeMap"><h1><a name="ShakeMap">Shake Map</a></h1>
-
-<ul>
-
-<b><i> What is a ShakeMap?</b></i></br></br></br>
-
-A ShakeMap displays the motion and
-intensity of an earthquake onto a map
-focused on the epicenter.
+A ShakeMap displays the motion and</br>
+intensity of an earthquake onto a map</br>
+focused on the epicenter.</br>
 </br></br></br>
 
-Display preloaded ShakeMaps within
-California onto current project or
-import new maps from the USGS
+Display preloaded ShakeMaps within</br>
+California onto current project or</br>
+import new maps from the USGS</br>
 website.</br></br></br>
 
 <b>How to Open ShakeMap Plugin:</b></br></br>
 
-Select<i> Display> ShakeMap> ShakeMap Plugin</i></br></br>
-
-</ul>
-
+Select<i> Display> ShakeMap> ShakeMap</br> Plugin</i></br></br>
+</td>
+<td>
+<img src="images/ShakeMap 1.png" style="width:370px;height:450px;"></td>	
+</td>
+	</tr>
+</table>
 <h2>Load ShakeMaps from USGS</h2>
 
-<ol type="1">
-  <li><b>Loading USGS Website</li></b></br>
-
-Within the ShakeMap Plugin,
-select the Download USGS
-Map option, then Open the
-USGS Website.</br></br>
-
-  <li><b>Accessing ShakeMap Database</li></b></br>
-
+<table>
+	<tr>
+		<td>
+			<b>Loading USGS Website</b></br>
+Within the ShakeMap Plugin,</br>
+select the Download USGS</br>
+Map option, then Open the</br>
+USGS Website.</br>
+		</td>
+		<td>
+			<<img src="images/ShakeMap 2.png" style="width:350px;height:300px;">
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<b>Accessing ShakeMap Database</b></br>
 Select Search ShakeMap
-Archives.</br></br></br>
+Archives.</br>
+<img src="images/ShakeMap 4.png" style="width:225px;height:200px;"></td>
+		</td>
+		<td><img src="images/ShakeMap 3.png" style="width:350px;height:250px;"></td></br></td>
+	</tr>
+</table>
 
-**Requirement
-The current iteration of
-SCEC-VDO only supports
-ShakeMaps in California.</br></br>
-
-  <li><b>ShakeMap Search</li></b></br>
-
-Customize your ShakeMap
-Search. This can include a
-specific magnitude, date,
-and region.</br></br>
-
-  <li><b>ShakeMap Information</li></b></br>
-
-Select ShakeMap from the
-results.</br></br>
-
-  <li><b>ShakeMap Event ID</li></b></br>
-
-Locate and copy the unique
-event ID located above the
-ShakeMap image.</br></br>
-
-  <li><b>Event ID in ShakeMap Plugin</li></b></br>
-
-Paste the event ID in the
-ShakeMap Plugin. Ensure the
-appropriate region is
-selected and then Download
-USGS Shake Map.</br></br>
-
-  <li><b>Load Imported ShakeMap</li></b></br>
+<img src="images/ShakeMap 5.png" style="width:645px;height:350px;">
+    
 
 
-Imported ShakeMaps can be
-found in the Load Map tab
+<table>
+	<tr>
+		<td>
+			<b>ShakeMap Search</b>
+			</br>
+			Customize your ShakeMap</br>
+Search. This can include a</br>
+specific magnitude, date,</br>
+and region.</br> ShakeMap Information</b></br>
+		Select ShakeMap from the </br>results.</br></br></br></br></br>
+
+		<b>ShakeMap Information</b></br>
+		Select ShakeMap from the results.
+			</td>
+
+			<td>
+			<img src="images/ShakeMap 6.png" style="width:350px;height:450px;">
+		</td>
+	</tr></br></br></br></br></br></br>
+<tr>
+	<td>
+		<b>ShakeMap Event ID</b></br>
+			Locate and copy the unique</br>event ID located above the </br> ShakeMap image.
+	</td>
+	<td>
+		<img src="images/ShakeMap 7.png" style="width:350px;height:250px;">
+	</td>
+</tr>
+<tr>
+	<td>
+		<b>Event ID in ShakeMap Plugin</b></br>Paste the event ID in the</br>
+ShakeMap Plugin. Ensure the</br>
+appropriate region is</br>
+selected and then <i>Download</br>
+USGS Shake Map.</i>
+	</td>
+	<td>
+		<img src="images/ShakeMap 8.png" style="width:350px;height:250px;">
+	</td>
+</tr>
+<tr>
+	<td>
+		<b>Load Imported ShakeMap</b></br>Imported ShakeMaps can be</br>
+found in the <i>Load Map</i> tab</br>
 within the ShakeMap Plugin.
-</ol>
+	</td>
+	<td>
+		<img src="images/ShakeMap 9.png" style="width:400px;height:400px;">
+	</td>
+</tr>
+</table>
+			
+	<img src="images/ShakeMap 10.png" style="width:800px;height:600px;">
+	
+	
+
+
 </div>
 <div><a href="#Menu">Back to top</a></div>
 
-<div id="PoliticalBoundaries"><h1><a name="PoliticalBoundaries">Political Boundaries</a></h1>
+<div id="PoliticalBoundaries"></div></br></br></br></br></br></br></br>
+<table>
+<tr><td colspan="2"><h1>Political Boundaries</h1></td></tr>
+<tr><td><b><i> What is Political Boundaries?</b></i></br></br>
 
-<ul>
-
-<b><i> What is Political Boundaries?</b></i></br></br>
-
-Political Boundaries are the outline of
-states and continents to distinguish
+Political Boundaries are the outline of</br>
+states and continents to distinguish</br>
 between areas.</br></br>
 
-Display continental and state borders to
-illustrate boundaries on the map.</br></br></br>
+Display continental and state borders to</br>
+illustrate boundaries on the map.</br></br>
 
 <b>How to Open Political Boundaries:</b></br></br>
 
-Default active plugin upon launching
-SCEC-VDO.</b></br></br>
+Default active plugin upon launching</br>
+SCEC-VDO.</b></br></br></td>
+<td><img src="images/PoliticalBoundaries 1.png" style="width:325px;height:400px;"></td>
+</table>
+<img src="images/PoliticalBoundaries 2.png" style="width:870px;height:450px;"></br></br>
+</br><img src="images/PoliticalBoundaries 3.png" style="width:870px;height:200px;">
+</div>
 
+<div id="Graticule"></br></br></br></br></br></br></br>
+<table>
+<table>
+<tr><td><h1>Graticule</h1></td></tr>
+<tr><td><b><i>What is Graticule?</b></i></br></br>
 
-***Political Boundaries serve as the dividing lines between states, countries and
-cities. Once findings are complete, political boundaries are necessary to
-communicate the information with decision makers.</br></br>
-</ul></div>
-
-<div id="Graticule"><h1><a name="Graticule">Graticule</a></h1>
-
-<ul>
-
-<b><i>What is Graticule?</b></i></br></br>
-
-The Graticule is a network of lines
-representing meridians and parallels on
+The Graticule is a network of lines</br>
+representing meridians and parallels on</br>
 the map.</br></br>
 
-Modify grid and background colors,
+Modify grid and background colors,</br>
 dimensions, and text on map.</br></br></br>
 
 <b>How to Open Graticule:</b></br></br>
 
-Select <i>Graticule</i> within Plugin Panel
-upon launching SCEC-VDO.</b></br></br></br></br>
+Select <i>Graticule</i> within Plugin Panel</br>
+upon launching SCEC-VDO.</b></br></br></br>
+</td>
+<td><img src="images/Graticule 1.png" style="width:340px;height:420px;"></td></tr>
 
-
-***“A graticule is a
-network of evenly
-spaced horizontal
-and vertical lines
-used to identify
-locations on a
-map.”
-Many programs,
-such as ArcGIS,
-utilize graticules to
-measure locations
-using projected
-coordinates.</br></br>
-</ul>
+</table>
+<img src="images/Graticule.png" style="width:700px;height:650px;">
 </div>
+
 <div><a href="#Menu">Back to top</a></div>
 
-<p id="EarthquakeSimulator"><h1><a name="Simulators">Earthquake Simulators</a></h1><ul>
 
-<b><i>What is an Earthquake Simulator?</b></i></br></br>
-
-Earthquake simulators replicate seismic
-activity during an earthquake in order
-for scientists to analyze key
-characteristics such as aftershocks,
-foreshocks, amplification, and elastic
+<div id="Simulators">
+</br></br></br></br></br></br></br>
+<table>
+<tr><td colspan="2"><h1>Earthquake Simulators</h1></td></tr>
+<tr><td><b><i> What is an Earthquake Simulator?</b></i></br></br>
+Earthquake simulators replicate seismic</br>
+activity during an earthquake in order</br>
+for scientists to analyze key</br>
+characteristics such as aftershocks,</br>
+foreshocks, amplification, and elastic</br>
 rebound.</br></br>
 
-Load, modify, and animate earthquake
-fault lines on SCEC-VDO showcasing
-rupture sequences, magnitude, and
-length.</br></br></br>
+Load, modify, and animate earthquake</br>
+fault lines on SCEC-VDO showcasing</br>
+rupture sequences, magnitude, and</br>
+length.</br></br>
 
-<b>Displaying an Earthquake Catalog :</b></br>
+<b>Displaying an Earthquake Catalog:</b></br>
 
-Select <i><b>Display > OpenSHA > Earthquake
-Simulators</i></b></b></br></br>
-
-
-***Earthquake
-Simulators enable
-scientists to
-visualize an
-earthquake
-propagating
-through a fault.
-“The 2008 Great
-Southern California
-ShakeOut was
-based on a
-comprehensive
-scenario involving a
-magnitude 7.8
-earthquake along
-the southernmost
-San Andreas fault.“</br></br></br>
-
-<ol type="1">
-
-  <li><b>Select File</li></b></br>
-
-The <b>Earthquake Simulators
-Plugin</b> comes preloaded with
-several packages to choose
-from. Click on the desired file
-and ensure the visibility is
-toggled ON by checking the
+Select <i>Display > OpenSHA > Earthquake</br>
+Simulators</i></b></br></br>
+</td>
+<td><img src="images/EarthQuakeSimulators.png" style="width:350px;height:425px;"></td>
+</tr>
+<tr><td>
+<b>Select File</b></br>
+The <b>Earthquake Simulators</br>
+Plugin</b> comes preloaded with</br>
+several packages to choose</br>
+from. Click on the desired file</br>
+and ensure the visibility is</br>
+toggled ON by checking the</br>
 box.</br></br>
-To import a new file, selectd
-the arrow pointing
-downward to access the
-drop-down list and scroll to
-<b><i>Select File.</b></i> Once the file has
-been selected, ensure the
-visibility is toggled ON by
+To import a new file, selected</br>
+the arrow pointing</br>
+downward to access the</br>
+drop-down list and scroll to</br>
+<b><i>Select File.</b></i> Once the file has</br>
+been selected, ensure the</br>
+visibility is toggled ON by</br>
 checking the box.</br></br>
-For this example, the catalog
-used is the <b>UCERF3</b> model.</br></br></br>
+For this example, the catalog</br></br>
+used is the <b>UCERF3</b> model.</td>
+<td><img src ="images/EarthQuakeSimulators 1.png" style="width:350px;height:250px;"></td>
 
-
-
-  <li><b>Color</li></b></br>
-
-Adjust the appearance of the
-fault model by modifying the
-color scheme. Choose
-between a wide range of
-colors by selecting the color
+<tr><td><b>Color</b></br>
+Adjust the appearance of the</br>
+fault model by modifying the</br>
+color scheme. Choose</br>
+between a wide range of</br>
+colors by selecting the color</br>
 wheel option.</br></br></br>
 
-Adjust the Color Faults By:</br></br>
+Adjust the Color Faults By:</br>
 <ul>
 <li>Slip Rate (mm/yr)</li>
-<li>Simulator Participation
+<li>Simulator Participation</br>
 Rates</li>
 <li>Depth (km)</li>
 <li>Patch Scalar File Loader</li>
-<li>Simulator Output
-Animation: Slip (m) Per
+<li>Simulator Output</br>
+Animation: Slip (m) Per</br>
 Event</li>
-<li>Custom</li></br></br>
+<li>Custom</li></ul>
+</td>
+<td><img src ="images/EarthQuakeSimulators 2.png" style="width:550px;height:500px;"></td>
 
-</ul>
-
-  <li><b>Display Settings</li></b></br>
-
-Adjust the look of the fault
-model by modifying fault
+<tr><td><b>Display Settings</b></br>
+Adjust the look of the fault</br>
+model by modifying fault</br>
 attributes.</br></br>
 Geometry Type:
 <ul>
@@ -474,206 +488,235 @@ Surface Type:
 <li>Outline Only</li>
 <li>Trace Only</li></br></br>
 </ul>
-
-
-  <li><b>Animation</li></b></br>
-
-Modify earthquake
-animations based on:</br></br>
-
+</td>
+<td><img src ="images/EarthQuakeSimulators 3.png" style="width:500px;height:350px;"></td>
+<tr><td colspan="2"><img src ="images/EarthQuakeSimulators 4.png" style="width:770px;height:350px;"></td></tr>
+<tr><td><b>Animation</b></br>
+Modify earthquake</br>
+animations based on:</br>
 <ul>
-<li>Duration: Length of the
+<li>Duration: Length of the</br>
 video.</li>
-<li>Animation Type (Time
-Based or Evenly Spaced):
-Time Based animations
-occur at the time of the
-earthquake, where as
-evenly spaced animation
-spread the earthquakes
-evenly allowing to visually
-differentiate between each
+<li>Animation Type (Time</br>
+Based or Evenly Spaced):</br>
+Time Based animations</br>
+occur at the time of the</br>
+earthquake, where as</br>
+evenly spaced animation</br>
+spread the earthquakes</br>
+evenly allowing to visually</br>
+differentiate between each</br>
 earthquake.</li>
-<li>Min Mag: Animate
-earthquakes showing only
-with a specific magnitude
+<li>Min Mag: Animate</br>
+earthquakes showing only</br>
+with a specific magnitude</br>
 and above.</li>
-<li>Only Events Involving:
-Animate only a certain
+<li>Only Events Involving:</br>
+Animate only a certain</br>
 area of a fault.</li>
-<li>Filter By Fault: Select only
+<li>Filter By Fault: Select only</br>
 a specific fault to animate.</li>
-<li>Start Event ID: Begin
-animation starting with an
-earthquake’s unique ID.</li></br></br>
-</ul></p>
-
-  
-</ol>
-</ul>
+<li>Start Event ID: Begin</br>
+animation starting with an</br>
+earthquakeâ€™s unique ID.</li></br>
+</ul></td>
+<td><img src ="images/EarthQuakeSimulators 5.png" style="width:400px;height:350px;"></td>
+</tr></table>
+<img src ="images/EarthQuakeSimulators 6.png" style="width:770px;height:770px;">
 <div><a href="#Menu">Back to top</a></div>
-<p id="DrawingTools"><h1><a name="DrawingTools">Drawing Tools</a></h1>
 
-<ul>
+<div id="DrawingTools"></div>
+</br></br></br></br></br>
 
-<b><i>What is Drawing Tools?</b></i></br></br>
+<table>
+	<tr>
+		<td><h1>Drawing Tools</h1></td></tr>
+		<tr><td><b><i>What is Drawing Tools?</b></i></br></br>
 
-
-Drawing Tools display California’s
-infrastructure including cities, highways,
+Drawing Tools display Californiaâ€™s</br>
+infrastructure including cities, highways,</br>
 and airports onto the map.</br></br></br>
 
 <b>How to Open Drawing Tools:</b></br></br>
 
-Select <i><b>Drawing Tools</i></b> within Plugin Panel
-upon launching SCEC-VDO.</br></br></br></br>
+Select <i><b>Drawing Tools</i></b> within Plugin </br>Panel
+upon launching SCEC-VDO.</br></br></br></br></td>
+<td><img src ="images/DrawingTools.png" style="width:300px;height:400px;"></td></br></br>
+	</tr>
+</table>
 
+<img src ="images/DrawingTools2.png" style="width:650px;height:450px;"></br></br></br></br></br>
+<img src ="images/DrawingTools3.png" style="width:650px;height:180px;">
 
-***“Drawing Tools enable the user to display California's infrastructure
-such as counties, dams, hospitals, and electrical power facilities. By
-displaying California’s infrastructure on the map, scientists can visually
-see the distance of a hospital or power facility is to a major fault.</br></br>
-</ul></p>
+<div id="EarthquakeCatalog"></div>
+</br></br></br></br></br></br></br>
+<table>
+<tr><td colspan="2"><h1>Earthquake Catalog</h1></td></tr>
+<tr><td><b><i>What is an Earthquake Catalog?</b></i></br></br>
+Earthquake Catalogs contain</br>
+earthquake source parameters (e.q.</br>
+hypocenters, magnitudes, phase picks</br>
+and amplitudes) and other products</br>
+(e.g. moment tensor solutions,</br>
+macroseismic information, tectonic</br>
+summaries, maps) produced by</br>
+contributing seismic networks.</br></br></br>
 
-
-
-
-<div id="EarthquakeCatalog"><h1><a name="EarthquakeCatalog">Earthquake Catalog</a></h1>
-
-<ul>
-
-<b><i>What is an Earthquake Catalog?</b></i></br></br>
-
-
-Earthquake Catalogs contain
-earthquake source parameters (e.q.
-hypocenters, magnitudes, phase picks
-and amplitudes) and other products
-(e.g. moment tensor solutions,
-macroseismic information, tectonic
-summaries, maps) produced by
-contributing seismic networks. 1</br></br></br>
-
-Display multiple earthquake catalogs
+Display multiple earthquake catalogs</br>
 onto SCEC-VDO map.</br></br></br>
 
 <b>How to Open Earthquake Catalog:</b></br></br>
 
-Select <i><b>Display</i></b> > Earthquake >
+Select <i><b>Display</i></b> > Earthquake ></br>
 Earthquake Catalog Plugin</br></br></br></br>
+		</td>
 
-<ol type="1">
+		<td>
+			<img src ="images/EarthQuakeCatalog1.png" style="width:400px;height:600px;">
+		</td>
+	</tr>
 
-<li><b>Loading Earthquake
-Catalogs</li></b></br>
+	<tr><td>
+<b>Loading Earthquake</br>
+Catalogs</b></br>
 
-Check the boxes of
-Earthquake Catalogs to
+Check the boxes of</br>
+Earthquake Catalogs to</br>
 display onto the map.</br></br>
+		</td>
+		<td>
+			<img src ="images/EarthQuakeCatalog2.png" style="width:400px;height:200px;">
+		</td>
+	</tr>
+	<tr>
+		<td>
+<b>Adjusting Appearance</b></br>
 
-<li><b>Adjusting Appearance</li></b></br>
-
-Select <i><b>Display</i></b> within the
-Earthquake Catalog Plugin.
-Modify the shape, color, or
-transparency of each
+Select <i><b>Display</i></b> within the</br>
+Earthquake Catalog Plugin.</br>
+Modify the shape, color, or</br>
+transparency of each</br>
 Earthquake Catalog.</br></br></br>
-</ol>
+<img src ="images/EarthQuakeCatalog4.png" style="width:200px;height:170px;">
+		</td>
+		<td>
+		<img src ="images/EarthQuakeCatalog3.png" style="width:400px;height:500px;">	</td>
+	</tr>
+</table></br></br></br></br></br>
 
-Note: Loading multiple
-catalogs at a time
-may cause a slow
-down in
-performance.</br></br></br></br>
+<img src ="images/EarthQuakeCatalog5.png" style="width:700px;height:600px;">
 
-**An earthquake catalog is
-a list of earthquakes with
-information about them,
-usually the time and
-location that they
-occurred and their
-seismic moment or
-magnitude.</br></br>
 
 
 </ul></div>
 <div><a href="#Menu">Back to top</a></div>
-<div id="Legend"><h1><a name="Legend">Legend Catalog</a></h1>
 
-<ul>
 
+<div id="Legend"></div>
+</br></br></br></br></br></br></br>
+<table>
+	<tr><td colspan="2"><h1>Legend Catalog</h1></td></tr>
+<tr><td>
 <b><i>What is a Legend?</b></i></br></br>
 
 
-A legend is an explanation of tables,
-diagrams, charts, or other forms of
+A legend is an explanation of tables,</br>
+diagrams, charts, or other forms of</br>
 information.</br></br></br>
 
-Display an on-screen legend for SCECVDO
-animations to inform viewers on
+Display an on-screen legend for SCEC</br>
+-VDO animations to inform viewers on</br>
 slip rates and magnitudes.</br></br></br>
 
 
 
 <b>How to Open Legend:</b></br></br>
 
-Select <i><b>Display > Legend >
-Legend Plugin</i></b></br></br></br></br>
+Select <i>Display > Legend ></br>
+Legend Plugin</i></br></br></br></br>
+		</td>
 
-<ol type="1">
+		<td>
+			<img src ="images/Legend.png" style="width:400px;height:300px;">
+		</td>
+	</tr>
 
-<li><b>Create Legend</li></b></br>
+	<tr>
+		<td><b>Create Legend</b></br>
 
-Select <i><b>Create Legend</i></b></br></br>
+Select <i>Create Legend</i></br></br>
+		</td>
+		<td>
+			<img src ="images/Legend2.png" style="width:400px;height:300px;">
+		</td>
+	</tr>
+	<tr>
+		<td><b>Select Orientation</b></br>
 
+The orientation allows the</br>
+user to display either the</br>
+color then text, text then</br>
+color, or a gradient on the</br>
+legend.</br></td>
+		<td>
+			<img src ="images/Legend3.png" style="width:400px;height:350px;">
+		</td>
+	</tr>
+	<tr><td>
+<b>Naming the Legend</b></br>
 
+Enter the name of the legend</br>
+within the text field. After</br>
+naming the legend, select</br>
+<i>Add to List</i></br></br></br>
+		</td>
+		<td>
+			<img src ="images/Legend4.png" style="width:400px;height:450px;">
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<b>Saving the Legend</b></br>
 
-<li><b>Select Orientation</li></b></br>
-
-The orientation allows the
-user to display either the
-color then text, text then
-color, or a gradient on the
-legend.</br></br></br>
-
-<li><b>Naming the Legend</li></b></br>
-
-Enter the name of the legend
-within the text field. After
-naming the legend, select
-<i><b>Add to List</i></b></br></br></br>
-
-<li><b>Saving the Legend</li></b></br>
-
-Once the legend is complete,
-select <i><b>Create Legend</i></b>. This
-will save the legend as a
+Once the legend is complete,</br>
+select <i>Create Legend</i>. This</br>
+will save the legend as a</br>
 JPEG file.</br></br></br>
+		</td>
+		<td><img src ="images/Legend5.png" style="width:450px;height:300px;"></td>
+	</tr>
+	<tr>
+		<td><b>Displaying the Legend</b></br>
 
-<li><b>Displaying the Legend</li></b></br>
-
-After saving the legend,
-select <i><b>Add Image</i></b> and open
+After saving the legend,</br>
+select <i>Add Image</i> and open</br>
 the legend file.</br></br></br>
 
-Some plugins, such as
-Earthquake Simulators, may
-a legend option built in to
+Some plugins, such as</br>
+Earthquake Simulators, may</br>
+a legend option built in to</br>
 describe a certain function.</br></br></br></br></br></br>
 
-
-</ol>
-
-Legends describe what a particular line, symbol, dot, or color
-represents on a map.
-In SCEC-VDO, the magnitude of slip can easily be differentiated
-throughout the San Andreas fault by displaying a legend.</br></br></br>
-
-
-</ul></div>
+		</td>
+		<td>
+			<img src ="images/Legend6.png" style="width:350px;height:300px;">
+			
+		</td>
+	</tr>
+<tr>
+	<td></td>
+	<td><img src ="images/Legend7.png" style="width:350px;height:400px;"></td>
+</tr>
+</table>
+<img src ="images/Legend8.png" style="width:850px;height:450px;"></br></br></br></br></br>
+<img src ="images/Legend9.png" style="width:850px;height:200px;">
+</div>
 <div><a href="#Menu">Back to top</a></div>
 
-<div id="Scripting"><h1><a name="Scripting">Scripting Controls</a></h1>
+<div id="Scripting"></div>
+</br></br></br></br></br></br></br>
+<h1>Scripting Controls</h1>
+
 
 <ul>
 <b>Scripting</b> is the process of utilizing the timeline plugin in SCEC-VDO to create three-dimensional
@@ -683,41 +726,54 @@ animations.</br></br>
 <ul>
 <li>Key frames enable the user to transition between positions or toggle data on/off on the
 map at a certain time and for a specific duration.</li>
-<li>Key frames are separated by plugins – Camera, Political Boundaries, Graticule, and so
+<li>Key frames are separated by plugins â€“ Camera, Political Boundaries, Graticule, and so
 on.</li></br></br></br></br>
 </ul>
-
-<b><i>Insert Key Frames –</b></i>Insert key frames in the Timeline Plugin either by <b>double clicking</b> at a
+<img src ="images/ScriptingControls 1.png" style="width:750px;height:200px;"></br>
+</br></br></br>
+<b><i>Insert Key Frames: </b></i>Insert key frames in the Timeline Plugin either by <b>double clicking</b> at a
 particular time, or from the <b>key frame options.</b></br></br></br>
-
-<b><i>Delete Key Frames –</b></i>Delete a key frame either by <b>right clicking</b>the mouse or using the <b>scroll
+<img src ="images/ScriptingControls 2.png" style="width:750px;height:200px;"></br>
+<b><i>Delete Key Frames: </b></i>Delete a key frame either by <b>right clicking</b>the mouse or using the <b>scroll
 wheel click</b>on a particular key frame.</br></br></br>
+<img src ="images/ScriptingControls 3.png" style="width:750px;height:200px;"></br>
+</br></br>
 
-
-
-<b><i>Camera Position Key Frame –</b></i>Change the position of the map from one position key frame to
+<b><i>Camera Position Key Frame: </b></i>Change the position of the map from one position key frame to
 another.</br></br></br>
+<img src ="images/ScriptingControls 4.png" style="width:750px;height:200px;"></br>
 
-<b><i>Camera Pause Key Frame –</b></i>Pause the next position key frame in place.</br></br></br>
+</br></br></br>
+<b><i>Camera Pause Key Frame : </b></i>Pause the next position key frame in place.</br></br></br>
+<img src ="images/ScriptingControls 5.png" style="width:750px;height:200px;"></br>
+</br></br></br>
+<b><i>Show/Hide Entire Plugin: </b></i>Show or hide key frame data for a plugin during an animation.
+</br></br></br>
+<img src ="images/ScriptingControls 6.png" style="width:750px;height:200px;"></br>
+</br></br></br>
 
+<b><i>Freeze Plugin: </b></i>Freeze plugin key frame data which can increase CPU performance.</br></br></br>
+<img src ="images/ScriptingControls 7.png" style="width:750px;height:200px;"></br>
+</br></br></br>
+<b><i>Normal Key Frame: </b></i>Normal Key Frames for Stateful plugins.
+</br></br></br>
+<img src ="images/ScriptingControls 8.png" style="width:750px;height:200px;"></br>
+</br></br></br>
 
-<b><i>Show/Hide Entire Plugin –</b></i>Show or hide key frame data for a plugin during an animation.</br></br></br>
-
-<b><i>Freeze Plugin –</b></i>Freeze plugin key frame data which can increase CPU performance.</br></br></br>
-
-
-<b><i>Normal Key Frame – </b></i>Normal Key Frames for Stateful plugins.</br></br></br>
-
-<b><i>Visibility On Key Frame – </b></i>The visibility on key frame allows the user to make plugins visible on
-the map during an animation at a specific point in time.</br></br></br>
-
-<b><i>Visibility Off Key Frame – </b></i>The visibility off key frame allows the user to make plugins invisible
+<b><i>Visibility On Key Frame: </b></i>The visibility on key frame allows the user to make plugins visible on
+the map during an animation at a specific point in time.
+</br></br></br>
+<img src ="images/ScriptingControls 9.png" style="width:750px;height:200px;"></br>
+</br></br></br>
+<b><i>Visibility Off Key Frame: </b></i>The visibility off key frame allows the user to make plugins invisible
 on the map during an animation at a specific point in time.</br></br></br>
-
+</br></br></br>
+<img src ="images/ScriptingControls 10.png" style="width:750px;height:200px;"></br>
+</br></br></br>
 
 <b><i>Render Settings</b></i></br></br>
 <ul>
-<li>Change the duration of the animation in seconds.</li></br></br>
+<li>Change the duration of the animation in seconds.</li></br>
 <li>Adjust the camera spline to alter the transition behavior between position key
 frames.</li>
 <ul>
@@ -734,9 +790,10 @@ frames.</li>
 <li><b>JPEG Sequence</b></li></br></br>
 </ul>
 <li>Adjust output resolution</li></br></br>
-
-
 </ul>
+</br>
+<center><img src ="images/ScriptingControls 11.png" style="width:350px;height:350px;"></center></br>
+</br>
 
 The Timeline plugin enables the user to insert key frames in a predetermined amount
 of time to animate various datasets, angles, and perspectives. This process is known as
@@ -745,11 +802,12 @@ scripting.</br></br>
 </ul></div>
 
 <div><a href="#Menu">Back to top</a></div>
-<div id="CreatingAnimations"><h1><a name="CreatingAnimations">Creating Animations</a></h1>
+<div id="CreatingAnimations"></div>
+</br></br></br></br></br></br></br>
+<h1>Creating Animations</h1>
 
-<ul>
 
-<b><i>Transition Key Frames –</b></i>For this example, the camera key frames will move the map from the
+<ul><b>Transition Key Frames: </b>For this example, the camera key frames will move the map from the
 default position to a zoomed in, tilted position.</br></br></br>
 
 <ol type="1">
@@ -760,40 +818,49 @@ picture A.</li></br></br>
 <li>Tilt, zoom, and drag the map to another position, such as picture B, and add
 another key frame. Keep in mind the amount of time in between key frames. The
 closer key frames are positioned to another, the faster the animation will be.</li></br>
+<img src ="images/CreatingAnimations1.png" style="width:650px;height:350px;">
 
-<b><i>Toggle Data On/Off –</b></i>Toggling data on/off allows the user to have specific data appear, disappear,
+</br></br>
+<b>Toggle Data On/Off: </b>Toggling data on/off allows the user to have specific data appear, disappear,
 freeze or play at a certain point in the animation. In this example, the animation will be begin with
 no interstates in California, and after 5 seconds, they will become visible.</br></br></br>
 
 
 <li>Access the <b>Drawing Tools</b> plugin.</li></br></br>
+<img src ="images/CreatingAnimations2.png" style="width:550px;height:350px;">
+
 
 
 <li>Turn ON <b>California Interstates</li></b></br></br>
-
+<img src ="images/CreatingAnimations3.png" style="width:550px;height:350px;">
 
 <li>Access the <b>Timeline</b> plugin</li></br></br>
-
+<img src ="images/CreatingAnimations4.png" style="width:650px;height:350px;"></br</br></br></br></br></br>
 <li>Insert a <b>Visibility Off Key Frame</b> corresponding to the <b>Drawing Tools</b> plugin in
 the <b>Timeline</b>. The visibility off key frame will take the data set in that specific
 plugin and make it non-visible.</li></br></br>
-
+<img src ="images/CreatingAnimations5.png" style="width:650px;height:290px;">
+</br></br></br></br>
 <li>Place a <b>Visibility On</b> key frame at the 5 second mark. If you place another key frame at
 the same time location, it might be under the active key frame, simply slide over the
 current key frame in order to reveal the new key frame.</li></br></br>
+<img src ="images/CreatingAnimations6.png" style="width:650px;height:290px;"></div>
 </ol>
-</ul></div>
+</ul>
+
 
 <div><a href="#Menu">Back to top</a></div>
 
-<div id="ExportRenders"><h1><a name="ExportRenders">Export Renders</a></h1>
+<div id="ExportRenders"></div>
+</br></br></br></br></br></br></br>
+<h1>Export Renders</h1>
 
 <ul>
 
 Once the animation is complete, export the project to the computer by selecting the red
 record button on the Timeline plugin. Exporting animations vary based upon the length and
 amount of data utilized in the animation.
-
 </ul>
+<img src ="images/ExportRenders1.png" style="width:850px;height:290px;">
 </body>
 </html>
