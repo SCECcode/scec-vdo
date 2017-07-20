@@ -158,7 +158,7 @@ public class CheckAllTable extends JPanel {
         table.setShowHorizontalLines(false);
         table.setPreferredScrollableViewportSize(new Dimension(250, 175));
         //Center table title
-        renderTableHeader();
+        renderTableHeader();  
     }
     
     public void renderTableHeader() {
@@ -321,6 +321,13 @@ public class CheckAllTable extends JPanel {
         	this.add(new JLabel("Search:"));
     		this.add(searchBar);
         }
+    }
+    
+    public void clearSearchBar() {
+    	searchBar.setText("");
+    	filter.swapPrefix("");
+    	table.getRowSorter().allRowsChanged();
+    	return;
     }
     /**
      * Handles selection on the table
