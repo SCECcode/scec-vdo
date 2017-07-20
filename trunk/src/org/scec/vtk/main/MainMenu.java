@@ -105,10 +105,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		menuBar = new JMenuBar();
 		setupFileMenu();
 		pluginMenuItems = new HashMap<>();
-
-		
 		// manually add Display menu so that it is second from the left
-		
 		JMenu displayMenu = new JMenu();
 		displayMenu.setLabel("Display");
 		displayMenu.setName("Display");
@@ -132,9 +129,6 @@ public class MainMenu implements ActionListener, ItemListener{
 		windowMenu = new JMenu();
 		windowMenu.setLabel("Window");
 		windowMenu.setName("Window");
-	
-		
-		
 		resizeWindow = new JMenuItem("Resize render window");
 		windowMenu.add(resizeWindow);
 		menuBar.add(windowMenu);
@@ -272,10 +266,19 @@ public class MainMenu implements ActionListener, ItemListener{
 
 			Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
 					loadedPlugins.values());
+			
+			if(activePlugins.isEmpty())
+				System.out.println("activePlugins is empty");
+			
+			if(pluginDescriptors.isEmpty())
+				System.out.println("pluginDescriptors.isEmpty");
+			
 			for(Plugin pluginDescriptor:pluginDescriptors)
 			{
 
 				Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+				System.out.println("active plugins in Toolbar " + plugin.getId());
+				System.out.println("pluginDescriptor: " + pluginDescriptor.getId());
 				if (plugin instanceof StatefulPlugin) {
 					Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
 					((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
@@ -308,14 +311,23 @@ public class MainMenu implements ActionListener, ItemListener{
 		Element root = document.addElement("root");
 		Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
 				loadedPlugins.values());
+		
+		if(activePlugins.isEmpty())
+			System.out.println("activePlugins is empty");
+		
+		if(pluginDescriptors.isEmpty())
+			System.out.println("pluginDescriptors.isEmpty");
+		
 		for(Plugin pluginDescriptor:pluginDescriptors)
 		{
 
 			Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+			
+			System.out.println("active plugins in autoSave: " + plugin.getId());
+			System.out.println("pluginDescriptor: " + pluginDescriptor.getId());
 			if (plugin instanceof StatefulPlugin) {
 				Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
 				((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
-
 			}
 		}
 		//save timeline state
@@ -383,6 +395,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	
 	//Function for Wizard GUI
 	public void open(){
+		
 		JFileChooser chooser = new JFileChooser();
 		MainGUI.class.getConstructors();
 		int ret = chooser.showOpenDialog(Info.getMainGUI());
@@ -390,13 +403,14 @@ public class MainMenu implements ActionListener, ItemListener{
 			Info.getMainGUI().wizFrame.setVisible(true);
 			}
 		if (ret == JFileChooser.APPROVE_OPTION) {
+			unloadAllPlugins();
 			File file = chooser.getSelectedFile();
 			currFileName = file.getPath();
 			SAXReader reader = new SAXReader();
 			try {
 				Document document = reader.read(file.getPath());
 				Element root = document.getRootElement();
-				System.out.println("document.toString(): " + document.toString());
+				//System.out.println("document.toString(): " + document.toString());
 				saved = true;
 				// iterate through child elements of root
 				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
@@ -441,17 +455,19 @@ public class MainMenu implements ActionListener, ItemListener{
 		MainGUI.class.getConstructors();
 		int ret = chooser.showOpenDialog(Info.getMainGUI());
 		if (ret == JFileChooser.APPROVE_OPTION) {
+			unloadAllPlugins();
 			File file = chooser.getSelectedFile();
 			currFileName = file.getPath();
 			SAXReader reader = new SAXReader();
 			try {
 				Document document = reader.read(file.getPath());
 				Element root = document.getRootElement();
-				System.out.println("document.toString(): " + document.toString());
+				//System.out.println("document.toString(): " + document.toString());
 				saved = true;
 				// iterate through child elements of root
 				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 						availablePlugins.values());
+				
 				for(PluginInfo pluginDescriptor:pluginDescriptors) {
 					//System.out.println(pluginDescriptor.getName());
 					for (Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
@@ -481,7 +497,10 @@ public class MainMenu implements ActionListener, ItemListener{
 				e1.printStackTrace();
 			}
 		}
+		
+		
 	}
+	
 	public void saveObj(File file)
 	{
 		vtkActorCollection actorlist =  Info.getMainGUI().getRenderWindow().getRenderer().GetActors();
@@ -531,7 +550,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		
 	}
 	
-public void openVTKObj()
+	public void openVTKObj()
 	{
 
 		vtkPolyDataReader reader =new vtkPolyDataReader();
@@ -636,6 +655,7 @@ public void openVTKObj()
 		}
 		else if(eventSource == saveItem)
 		{
+			
 			System.out.println("Saving norm file");
 			JFileChooser chooser = new JFileChooser(); //making a file
 			int ret = chooser.showSaveDialog(Info.getMainGUI()); //is this function accurately describing the image that the user sees???
@@ -660,20 +680,14 @@ public void openVTKObj()
 				
 				for(Plugin pluginDescriptor:pluginDescriptors)
 				{
-
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 					if (plugin instanceof StatefulPlugin) { //what plug ins are not Stateful plugins??
-						
-						
 						System.out.println("Stateful plug-in #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
-						
 						stateCntr++;
 						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
 						//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
 						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
-
 					}
-					
 				}
 				//save timeline state
 				Element pluginNameElement = root.addElement("Timeline-Plugin");
@@ -714,6 +728,7 @@ public void openVTKObj()
 			if (!toggle) {
 				Wizard = true;
 				updateWizard(true);
+				
 				JOptionPane.showMessageDialog(
 						frame,  "You set Wizard to display upon launching SCEC-VDO");
 			}
@@ -1016,14 +1031,48 @@ public void openVTKObj()
 		Plugin plugin = loadedPlugins.remove(id);
 		plugin.unload();
 	}
+	
+	private void unloadAllPlugins(){
+		System.out.println("Start of unloadAllPlugins");
+		
+		ArrayList<String> plugIds = new ArrayList<String>();
+		
+		for(Plugin plug: loadedPlugins.values()){
+			if( (!plug.getId().equals("org.scec.vdo.graticulePlugin")) && (!plug.getId().equals("org.scec.vdo.politicalBoundaries"))
+					&& (!plug.getId().equals("org.scec.vdo.drawingToolsPlugin")) ){
+				plugIds.add(plug.getId());
+			}	
+		}
+		
+		for(int i = 0; i < plugIds.size(); i ++ ){
+			Info.getMainGUI().timeline.removePlugin(loadedPlugins.get(plugIds));
+			String tabName = Info.getMainGUI().tabMap.get(plugIds.get(i));
+			System.out.println("tabName: " + tabName);
+			int tabIndex = Info.getMainGUI().pluginTabPane.indexOfTab(tabName);
+			System.out.println("tabIndex: "+tabIndex);
+			System.out.println("pluginTabPane.getTabCount(): "+ Info.getMainGUI().pluginTabPane.getTabCount());
+			
+			loadedPlugins.remove(plugIds);
+			if( tabIndex != -1)
+				Info.getMainGUI().pluginTabPane.remove(tabIndex);
+			
+			updateMenu(plugIds.get(i));
+		}
+		
+		System.out.println("end of unloadAllPlugins");
+	}
+	
 	public void updateMenu(String id){
 		JCheckBoxMenuItem mi = pluginMenuItems.get(id);
 		mi.setState(false);
 
 		// Passivate plugin
 		Plugin plugin = loadedPlugins.get(id);
-		plugin.unload();
-		plugin.passivate();
+		if(plugin != null){
+			plugin.unload();
+			plugin.passivate();
+		}
+		
 		getActivePlugins().remove(id);
 		loadedPlugins.remove(id);
 	}

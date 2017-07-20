@@ -29,5 +29,7 @@ public interface PluginState {
 	 * @return
 	 */
 	public PluginState deepCopy();
+	
+	//public void clear();
 
 }

@@ -89,6 +89,8 @@ public class Timeline implements StatefulPlugin {
 	public synchronized void addPlugin(Plugin p, PluginActors actors) {
 		Preconditions.checkNotNull(p);
 		Preconditions.checkNotNull(actors);
+		if(isDouble(p))
+			return;
 		plugins.add(p);
 		pluginsDisplayed.add(true);
 		pluginsFrozen.add(false);
@@ -98,8 +100,20 @@ public class Timeline implements StatefulPlugin {
 		fireTimelinePluginsChanged();
 	}
 	
+	public Boolean isDouble(Plugin p){
+		
+		for(int i = 0; i < plugins.size(); i++){
+			if(p == plugins.get(i))
+				return true;
+		}
+		return false;
+	}
+	
 	public synchronized void removePlugin(Plugin p) {
 		int index = indexForPlugin(p);
+		if(index < 0)
+			return;
+		System.out.println("timeline removePlugins index: " + index);
 		Preconditions.checkState(index >= 0, "Plugin not found in timeline!");
 		plugins.remove(index);
 		pluginsDisplayed.remove(index);
