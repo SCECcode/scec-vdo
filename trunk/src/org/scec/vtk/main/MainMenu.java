@@ -65,8 +65,8 @@ import com.google.common.base.Preconditions;
 
 public class MainMenu implements ActionListener, ItemListener{
 
-	private JMenuBar menuBar;
-	private JMenu fileMenu;
+	private JMenuBar menuBar; 
+	private JMenu fileMenu; 
 	private JMenuItem fileOpen;
 	private JMenuItem saveItem;
 	private JMenuItem appExit;
@@ -94,19 +94,19 @@ public class MainMenu implements ActionListener, ItemListener{
 	Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
 	
 	Map<Plugin, PluginActors> pluginActors = new HashMap<>();
-	Map<String, Plugin> activePlugins = new HashMap<String, Plugin>(); //is this data structure accurately describing the current plug ins???
+	Map<String, Plugin> activePlugins = new HashMap<String, Plugin>(); 
 	Map<String, JCheckBoxMenuItem> pluginMenuItems;
 	private static  Logger log = Logger.getLogger(MainGUI.class);
 
-	public MainMenu(Object object){
+	@SuppressWarnings("deprecation")
+	public MainMenu(){
 		getState();
 		currFileName = "";
-		//Creates the main menu bar.
-		menuBar = new JMenuBar();
+		menuBar = new JMenuBar(); //Creates the main menu bar.
 		setupFileMenu();
 		pluginMenuItems = new HashMap<>();
-		// manually add Display menu so that it is second from the left
-		JMenu displayMenu = new JMenu();
+		JMenu displayMenu = new JMenu(); // manually add Display menu so that it is second from the left
+
 		displayMenu.setLabel("Display");
 		displayMenu.setName("Display");
 		focalPointItem = new JCheckBoxMenuItem("Focal Point", false);
@@ -124,8 +124,8 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 
 
+	@SuppressWarnings("deprecation")
 	private void setupWindowMenu() {
-		// TODO Auto-generated method stub
 		windowMenu = new JMenu();
 		windowMenu.setLabel("Window");
 		windowMenu.setName("Window");
@@ -156,6 +156,13 @@ public class MainMenu implements ActionListener, ItemListener{
 		this.wizardActivation.addActionListener(this);
 	
 	}
+	/*
+	 * setupTimeline(Timeline timeline, TimelineGUI timelineGUI)
+	 * 
+	 * @param: Timeline timeline: Receives timeline
+	 * @param: TimelineGUI timelineGUI: Receives timeline GUI. 
+	 */
+	
 	public void setupTimeline(Timeline timeline, TimelineGUI timelineGUI) {
 		Preconditions.checkState(this.timeline == null, "Timeline already initialized!");
 		this.timeline = timeline;
@@ -182,6 +189,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		
 	}
 
+	
 	private void setupFileMenu() {
 		//File menu - save and open a scene.
 		fileMenu = new JMenu("File");
@@ -197,21 +205,22 @@ public class MainMenu implements ActionListener, ItemListener{
 		this.saveItemOBJ.addActionListener(this);
 		this.appExit.addActionListener(this);
 		this.fileOpen.addActionListener(this);
-
 		this.fileMenu.add(fileOpen);
 		this.fileMenu.add(saveItem);
 		//this.fileMenu.add(saveItemVTK);
 		//this.fileMenu.add(saveItemOBJ);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(appExit);
-
 		this.menuBar.add(fileMenu);
 	}
 
 	public void quit() {
 		System.exit(0);
 	}
-	//function for Wizard GUI
+	
+	
+	//save(): The saving function at the File button.  
+	 
 	public void save(){
 		JFileChooser chooser = new JFileChooser();
 		int ret = chooser.showSaveDialog(Info.getMainGUI());
@@ -249,10 +258,9 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 	}
 	
-	/*
-	 * saves new file, leaves out wizard functionality
-	 */
 	
+	// saveForToolbar(): saves new file, leaves out wizard functionality
+	 
 	public void saveForToolbar() {
 		JFileChooser chooser = new JFileChooser();
 		int ret = chooser.showSaveDialog(Info.getMainGUI());
@@ -362,7 +370,12 @@ public class MainMenu implements ActionListener, ItemListener{
 		return true;
 	}
 	
-	public  void updateWizard(Boolean wiz){
+	/*
+	 * updateWizard(Boolean wiz): 
+	 * @param Boolean wiz: Receives the wizard 
+	 * 
+	 */
+	public void updateWizard(Boolean wiz){
 		try{
 			SAXReader reader = new SAXReader();
 			Document document = reader.read("src/org/scec/vtk/main/SCEC-VDO_STATUS.xml");
@@ -389,11 +402,11 @@ public class MainMenu implements ActionListener, ItemListener{
 		}catch( DocumentException e){
 			e.printStackTrace();
 		}
-		
-		
 	}
 	
-	//Function for Wizard GUI
+	/*
+	 * open(): Opens a project file (File button)
+	 */
 	public void open(){
 		
 		JFileChooser chooser = new JFileChooser();
@@ -448,7 +461,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 	
 	/*
-	 * opens new file, leaves out wizard functionality
+	 * openForToolbar(): l.opens new file, leaves out wizard functionality
 	 */
 	public void openForToolbar() {
 		JFileChooser chooser = new JFileChooser();

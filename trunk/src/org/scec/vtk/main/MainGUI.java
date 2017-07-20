@@ -4,20 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.CheckboxMenuItem;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -31,11 +25,9 @@ import java.awt.geom.GeneralPath;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -51,47 +43,28 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.plaf.ColorUIResource;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.basic.BasicButtonUI;
-import javax.swing.plaf.basic.BasicGraphicsUtils;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
-import javax.swing.table.TableModel;
-import javax.swing.text.View;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
-
 import org.apache.log4j.Logger;
-import org.opensha.sha.gui.beans.EqkRupSelectorGuiBean;
 import org.scec.vtk.commons.legend.LegendItem;
-//import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
-//import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPluginGUI;
-import org.scec.vtk.drawingTools.DrawingToolsGUI;
-import org.scec.vtk.drawingTools.DrawingToolsPlugin;
-import org.scec.vtk.grid.GraticuleGUI;
-import org.scec.vtk.grid.GraticulePlugin;
 import org.scec.vtk.grid.ViewRange;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.PluginInfo;
-import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
@@ -99,46 +72,33 @@ import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.plugins.Plugins;
 import org.scec.vtk.main.Help;
-
 import com.google.common.base.Preconditions;
-import com.ibm.media.bean.multiplayer.ImageButton;
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
-import javafx.scene.Parent;
-import javafx.scene.layout.Border;
 import vtk.vtkActor;
-import vtk.vtkActor2D;
 import vtk.vtkCamera;
-import vtk.vtkCanvas;
 import vtk.vtkCellPicker;
 import vtk.vtkNativeLibrary;
-import vtk.vtkOpenGLRenderWindow;
-import vtk.vtkPicker;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
-import vtk.vtkPropPicker;
 import vtk.vtkSphereSource;
-import vtk.rendering.jogl.vtkJoglCanvasComponent;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
 
 public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsChangeListener{
 	private final int BORDER_SIZE = 10;
-	//	private static JFrame frame ;
 	private static vtkJoglPanelComponent  renderWindow;
-	//pluginTabPane contains tabs with all plugins
-	public JTabbedPane pluginTabPane;
-	//Create Main Panel/ Main panel contains toolBar and VTK rendered 3D image; 
-	public JPanel mainPanel;
-	
-	public JFrame wizFrame;
-	public JFrame helpFrame;
-	
-	private Dimension canvasSize = new Dimension();
-	private int xCenter = BORDER_SIZE / 2;
-	private int yCenter = BORDER_SIZE / 2;
+	public JTabbedPane pluginTabPane; //pluginTabPane contains tabs with all plugins
+	public JPanel mainPanel;//Create Main Panel/ Main panel contains toolBar and VTK rendered 3D image; 
+	public JFrame wizFrame; //pop up window that hosts the wizard for saving
+	public JFrame helpFrame; // pop to tell the user some messages
+    private Dimension canvasSize = new Dimension(); //Size Of the main GUI. 
+    public Timeline timeline;
+	private TimelineGUI timelineGUI;
+	private JToolBar toolBar;
+	private JPanel toolBarGUI;
+
 	private ViewRange viewRange;
 	private static final Logger log = Logger.getLogger(MainGUI.class);
-	public  Map<String, String> tabMap = new HashMap<String, String>();
+	public  Map<String, String> tabMap = new HashMap<String, String>(); //A Map of the plugin id and tab name
+	
 	// In the static constructor we load in the native code.
 	// The libraries must be in your path to work.
 	static {
@@ -151,32 +111,19 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		}
 		vtkNativeLibrary.DisableOutputWindow(null);
 	}
+	
 	private static File getCWD;
-
 	public MainMenu mainMenu;
-	//pluginGUIPanel contains searchBar and pluginTabPane
-	private JPanel pluginGUIPanel;
-	private JPanel helpPanel;
-	//pluginGUIScrollPane contains the scroll bar.
-	private JScrollPane pluginGUIScrollPane;
-	//pluginSplitPane splits mainPanel and pluginGUIPanel
-	private JSplitPane pluginSplitPane;
-	private int xeBorder=0;
-	private int ysBorder=0;
-	private vtkActor tempGlobeScene = new vtkActor();
+	private JPanel pluginGUIPanel;//pluginGUIPanel contains searchBar and pluginTabPane
+	private JPanel helpPanel; //Panel for hosting Help Button
+	private JScrollPane pluginGUIScrollPane; 	//pluginGUIScrollPane contains the scroll bar.
+	private JSplitPane pluginSplitPane;//pluginSplitPane splits mainPanel and pluginGUIPanel
+	
+	private vtkActor tempGlobeScene = new vtkActor(); 
 	private boolean gridDisplay = true;
-//	private ScriptingPlugin scriptingPluginObj;
+	//private ScriptingPlugin scriptingPluginObj;
 	
-	public Timeline timeline;
-	private TimelineGUI timelineGUI;
-	
-	private JTextField searchBar;
-	private JPanel searchBarGUI;
-	
-	private JToolBar toolBar;
-	private JPanel toolBarGUI;
-
-	//default starting cam coordinates
+	//default starting cam coordinates (California)
 	static double[] camCord = {7513.266063258975,
 			-4588.568400980608,
 			6246.237592377226,//position
@@ -187,11 +134,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			0.276911132961531,
 			0.8447615350850914};//up
 
-	private vtkActor focalPointActor = new vtkActor();
-	
+	private vtkActor focalPointActor = new vtkActor(); 
 	private ArrayList<PluginActorsChangeListener> actorsChangeListeners = new ArrayList<>();
-	
-	vtkCamera cam = new vtkCamera();
+	vtkCamera cam = new vtkCamera(); //the main camera for the 3D space.
 
 	public MainGUI() {
 		Prefs.init();
@@ -200,29 +145,37 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		mainPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
 		renderWindow.getRenderer().SetBackground(0,0,0);
 		
-		// this should enable depth peeling, but doesn't seem to work. at least for Kevin on linux.
-		// more info/source: http://www.vtk.org/Wiki/VTK/Depth_Peeling
-//		renderWindow.getRenderWindow().SetAlphaBitPlanes(1);
-//		renderWindow.getRenderWindow().SetMultiSamples(0);
-//		renderWindow.getRenderer().SetUseDepthPeeling(1);
-////		renderWindow.getRenderer().SetMaximumNumberOfPeels(100);
-////		renderWindow.getRenderer().SetOcclusionRatio(0.1);
-//		renderWindow.getRenderer().SetMaximumNumberOfPeels(1000);
-//		renderWindow.getRenderer().SetOcclusionRatio(0);
-		mainMenu = new MainMenu(null);
+	/*	   This should enable depth peeling, but doesn't seem to work. at least for Kevin on linux.
+		   more info/source: http://www.vtk.org/Wiki/VTK/Depth_Peeling
+		 * 
+		renderWindow.getRenderWindow().SetAlphaBitPlanes(1);
+		renderWindow.getRenderWindow().SetMultiSamples(0);
+		renderWindow.getRenderer().SetUseDepthPeeling(1);
+		renderWindow.getRenderer().SetMaximumNumberOfPeels(100);
+		renderWindow.getRenderer().SetOcclusionRatio(0.1);		
+		renderWindow.getRenderer().SetMaximumNumberOfPeels(1000);
+		renderWindow.getRenderer().SetOcclusionRatio(0); 
 		
-		pluginGUIPanel = new JPanel(new BorderLayout());
-		helpPanel = new JPanel();
-		helpPanel.setLayout(new FlowLayout());
+	*/
 		
-		Icon icon = UIManager.getIcon("OptionPane.questionIcon");
-		JButton helpButton = new JButton(icon);
-		helpPanel.add(helpButton);
+		mainMenu = new MainMenu(); //Creates Main Menu
+		pluginGUIPanel = new JPanel(new BorderLayout()); //Creates the GUI panel for tabs.
+		helpPanel = new JPanel(); //Creates the help panel 
+		helpPanel.setLayout(new FlowLayout()); 
+		
+		Icon icon = UIManager.getIcon("OptionPane.questionIcon"); //help panel Icon
+		JButton helpButton = new JButton(icon); //Creates new help button
+		helpPanel.add(helpButton); //Adds the help button to the help panel. 
 		helpPanel.setOpaque(true);
-		//helpPanel.setColor(Color.white);
-		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
+		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END); //Adds the help panel to the plugin gui panel. 
 		pluginGUIPanel.setBorder(BorderFactory.createEmptyBorder());
 		
+		
+		/*
+		 * 
+		 * Help button action listener. 
+		 * This listener aims to open the tutorial and autodirect the user to the correlating section of the tutorial.
+		 */
 		helpButton.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent ae) {
 					helpFrame = new JFrame("SCEC VDO User Guide");
@@ -259,16 +212,16 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		    	    }
 		      }
 		    });
-  //HELP BUTTON
-		pluginTabPane =  new JTabbedPane();
+		
+		pluginTabPane =  new JTabbedPane(); // Holds all the plugin panels.
 		pluginTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		pluginTabPane.setUI(tabbedPaneUI);
-		//Set up all default GUI elements
-		Info.setMainGUI(this);
+		
+		Info.setMainGUI(this); //Set up all default GUI elements
 		setUpPluginTabs();
-		//setUpSearchBar();
-		setUpToolBar();
+		setUpToolBar(); //Adds the toolbar to the main gui. 
 
+		//Setting up the plugin split pane.
 		pluginSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainPanel, pluginGUIScrollPane);
 		pluginSplitPane.setOneTouchExpandable(false);
 		pluginSplitPane.setBorder(BorderFactory.createEmptyBorder());
@@ -315,6 +268,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				renderWindow.getRenderer().Render();
 			}
 
+			
+			/*
+			 * Recenter functionality on ESC Button (non-Javadoc)
+			 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
+			 */
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -434,6 +392,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
     final Color tabBackgroundColor = Color.LIGHT_GRAY;
     final Color tabBorderColor = Color.LIGHT_GRAY;
 
+    
+    /*
+     * BasicTabbedPaneUI: Sets up the UI for the tabs.
+     */
+    
 	BasicTabbedPaneUI tabbedPaneUI = new BasicTabbedPaneUI() {
 		private final Insets borderInsets = new Insets(-5, 0, 0, 0);
         @Override
@@ -504,6 +467,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			g2.dispose();
 		}
 	};
+	
+	//Makes the focal point visible.
 	public void setFocalPointVisible(boolean visible) {
 		int newVis = visible ? 1 : 0;
 		int curVis = focalPointActor.GetVisibility();
@@ -544,6 +509,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		return getCWD;
 	}
 
+	/*
+	 * addDefaultActors(): Adds the 3 default plugins to the GUI. 
+	 * 		Political Boundaries
+	 * 		Graticule
+	 * 		Drawing Tools
+	 */
+	
 	private void addDefaultActors() {
 		// render window locks up and won't repaint if there are zero actors. add a blank actor to prevent this
 		vtkActor blankActor = new vtkActor();
@@ -594,13 +566,17 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	
 	@SuppressWarnings("unused")
+	
 	/*
-	 * Adds buttons to toolbar, adds toolbar to GUI
+	 * setUpToolBar(): Adds buttons to toolbar, adds toolbar to GUI
+	 * 		Center
+	 * 		Zoom In/Out
+	 * 		Save
+	 * 		Open
 	 */
+	
 	private void setUpToolBar() {
 		toolBar = new JToolBar();
-		//toolBar.setLayout(new BorderLayout());
-		//toolBar.setSize(new Dimension(200, 20));
 		JButton centerImage = new JButton();
 		try {
 			// sets hover text
@@ -616,20 +592,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		centerImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) { 
 				
-				//if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=) {
 					renderWindow.getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
 					renderWindow.getRenderer().GetActiveCamera().SetFocalPoint(MainGUI.camCord[3], MainGUI.camCord[4],MainGUI.camCord[5]);
 					renderWindow.getRenderer().GetActiveCamera().SetViewUp(MainGUI.camCord[6], MainGUI.camCord[7],MainGUI.camCord[8]);
 					renderWindow.getRenderer().ResetCameraClippingRange();
 					renderWindow.getComponent().repaint();
-					
-			//}
 			  } 
 		});
 		
-		
 		JButton zoomIn = new JButton();
-		
 		try {
 			// sets hover text
 			zoomIn.setToolTipText("Zoom In");
@@ -669,7 +640,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		} );
 		
 		JButton save = new JButton();
-		
 		try {
 			// sets hover text
 			save.setToolTipText("Save file");
@@ -696,7 +666,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		} );
 		
 		JButton open = new JButton();
-		
 		try {
 			// sets hover text
 			open.setToolTipText("Open a file");
@@ -712,7 +681,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				  mainMenu.openForToolbar();
 			  } 
 		} );
-		
 		
 		//adds buttons to toolbar
 		toolBar.add(centerImage);
@@ -730,43 +698,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		mainPanel.add(toolBarGUI, BorderLayout.PAGE_START);
 	}
 	
-	private void setUpSearchBar() {
-		searchBar = new JTextField();
-		searchBarGUI = new JPanel(new BorderLayout());
-		searchBarGUI.add(searchBar, BorderLayout.CENTER);
-		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
-		
-		
-	}
-	
-//	@SuppressWarnings("unused")
-//	public JPanel makebuttonPanel1() {
-//		searchBarGUI = new JPanel();
-//		searchBar = new JButton("?");
-//		searchBarGUI.add(searchBar, BorderLayout.CENTER);
-//		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
-//		
-//		return pluginGUIPanel;
-	//}
-//		buttonPanel.setAlignmentX(JPanel.LEFT_ALIGNMENT);
-//		JButton help = new JButton("?"); // "button
-//		graticuleappsProp_help.addActionListener(this);
-//		graticuleappsProp_help.setActionCommand("?");
-//		buttonPanel.setFlowlayout();
-		
-		
-//		
-//		
-	
 	
 	private void setUpPluginTabs() {
-		//pluginTabPane.setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		pluginGUIPanel.add(pluginTabPane, BorderLayout.PAGE_START);
 		pluginTabPane.addChangeListener((ChangeListener) this);
 		pluginTabPane.setBorder(BorderFactory.createEmptyBorder());
 		pluginGUIScrollPane = new JScrollPane(pluginGUIPanel);
 		pluginGUIScrollPane.setBorder(BorderFactory.createEmptyBorder());
-		//		pluginSplitPane = null;
 	}
 	
 	//create frame and tabbed pane in main window
@@ -786,16 +724,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		return mainPanel;
 	}
 	
-//	@SuppressWarnings("unused")
-//	public JPanel makebuttonPanel1() {
-//		searchBarGUI = new JPanel();
-//		searchBar = new JButton("?");
-//		searchBarGUI.add(searchBar, BorderLayout.CENTER);
-//		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
-//		
-//		return mainPanel;
-	//}
-	//viewRange
 	public void setViewRange(ViewRange viewRange) {
 		this.viewRange = viewRange;
 	}
@@ -804,6 +732,14 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		return this.viewRange;
 	}
 
+	
+	/*
+	 * addPluginGUI(String id, String title, JComponent gui) 
+	 * @param String id: A string of the plugin id.
+	 * @param String title: A string of the plugin tabbed name.
+	 * @param JComponen gui: The specific plugin gui.
+	 */
+	
 	public void addPluginGUI(String id, String title, JComponent gui) {
 		
 		if(pluginTabPane.indexOfTab(title) != -1)
@@ -815,15 +751,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			return;
 		}
 		
-		//System.out.println("id: "+ id);
-		//System.out.println("title: "+ title);
-		
-		//everytime a plugin is added we're gonna put it in our map.
 		tabMap.put(id,title);
 
 		isPluginGuiShowing();
 
-		// Create a new plugin tab
 		JPanel allPanel = new JPanel();
 		allPanel.setLayout(new BoxLayout(allPanel, BoxLayout.PAGE_AXIS));
 		allPanel.setBorder(BorderFactory.createEmptyBorder());
@@ -835,13 +766,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		JScrollPane pluginTab = new JScrollPane(allPanel);
 		pluginTab.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		pluginTab.setBorder(BorderFactory.createEmptyBorder());
-		//pluginTab.setOpaque(true);
-		//pluginTab.setColor(Color.white);
 		pluginTab.setName(id);
-
-
 		// Add the tab to the tab panel
-		
 		pluginTabPane.addTab(title, pluginTab);
 		if(id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin" && id != "org.scec.vdo.drawingToolsPlugin" && id != "org.scec.vdo.landmarksPlugin")
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
@@ -849,15 +775,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1,null);
 		pluginTabPane.setSelectedIndex(pluginTabPane.indexOfComponent(pluginTab));
 
-//		if(id.equals("org.scec.vdo.plugins.ScriptingPlugin") )
-//			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
-
 		SwingUtilities.updateComponentTreeUI(this);
 		pluginTabPane.setUI(tabbedPaneUI);
 		pluginTabPane.repaint();
-		//pluginTabPane.set
 	}
 
+	/*
+	 * removePluginGUI(String id): Removes the plugin gui.
+	 * @param String id: the plugin id.
+	 */
 	public boolean removePluginGUI(String id) {
 
 		if (!mainMenu.isPluginActive(id)) {
@@ -878,7 +804,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 				// If it was the last gui, remove the split pane
 				if (pluginTabPane.getTabCount() == 0) {
-					updateCanvasSize();
 					SwingUtilities.updateComponentTreeUI(this);
 				}
 
@@ -886,34 +811,21 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			}
 		}
 
-		// I think this means that if we remove all the plugins
-		// and the plugin split pane goes away, and we are
-		// showing the navigation map HUD, then we need to
-		// update the HUD.
-		/*if (showNavMap && (showing != isPluginGuiShowing())) {
-			viewPlatform.setPlatformGeometry(getHUDGeometry());
-			you.setRedDot(keyBehv.getFocalPoint());
-		}*/
-
 		return removed;
 	}
-
-
 
 	private boolean isPluginGuiShowing() {
 		return (pluginTabPane.getTabCount() > 0);
 	}
 
-
 	//update renderwindow and focus on actor
 	public static void updateRenderWindow(vtkActor actor) {
 		renderWindow.Render();
 		renderWindow.getRenderer().ResetCamera(actor.GetBounds());
-		//renderWindow.repaint(); 
 	}
+	
 	//just update renderwindow
 	public static void updateRenderWindow() {
-		//updateActors(getActorToAllActors());
 		renderWindow.Render();
 		renderWindow.getComponent().repaint();
 	}
@@ -923,23 +835,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 
 	public void removeSplitPane() {
-		// TODO Auto-generated method stub
 		remove(pluginSplitPane);
 		pluginSplitPane = null;
 		setContentPane(mainPanel);
-		updateCanvasSize();
 		SwingUtilities.updateComponentTreeUI(this);
 	}
 	
-	public void updateCanvasSize() {
-		canvasSize = getSize();
-		xCenter = (int) canvasSize.getWidth() / 2;
-		yCenter = (int) canvasSize.getHeight() / 2;
-		xeBorder = (int) canvasSize.getWidth() - BORDER_SIZE;
-		ysBorder = (int) canvasSize.getHeight() - BORDER_SIZE;
-	}
-
-
 	/**
 	 * When tabs are changed, TODO change whether the pickability of objects
 	 * belonging to a tab are turned on or off. If a tab is currently selected
@@ -965,16 +866,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		}
 
 		// Get the id of the selected plugin
-		String selectedPlugin = c.getName();
 	}
 
 
 
 	// button component to put inside the tabs to make the close button
 	public class ButtonTabComponent extends JPanel {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 		private final JTabbedPane pane;
 		private String pluginID;
@@ -989,9 +886,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				throw new NullPointerException("TabbedPane is null");
 			}
 			this.pane = pane;
-	
 			setOpaque(false);
-
 			pluginID = id;
 
 			//make JLabel read titles from JTabbedPane
@@ -1017,9 +912,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		}
 
 		private class TabButton extends JButton implements ActionListener {
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1L;
 
 			public TabButton() {
@@ -1054,8 +946,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 					pane.remove(i);
 					mainMenu.updateMenu(pluginID);
 				}
-				//if (loadedPlugins.size() == 0)
-				//removeSplitPane();
 			}
 
 		}
@@ -1067,7 +957,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				Component component = e.getComponent();
 				if (component instanceof AbstractButton) {
 					AbstractButton button = (AbstractButton) component;
-					//button.setBorderPainted(true);
 					button.setIcon(redIcon);
 				}
 			}
@@ -1076,14 +965,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				Component component = e.getComponent();
 				if (component instanceof AbstractButton) {
 					AbstractButton button = (AbstractButton) component;
-					//button.setBorderPainted(false);
 					button.setIcon(icon);
 				}
 			}
 		};
 		};
 	
-
+		
 	private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 
 	/**
@@ -1208,15 +1096,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	}
 
-//	public ScriptingPluginGUI GetScriptingPlugin() {
-//		// TODO Auto-generated method stub
-//		if(scriptingPluginObj==null || scriptingPluginObj.getGratPanel()==null)
-//		{
-//			mainMenu.activatePlugin("org.scec.vdo.plugins.ScriptingPlugin");	
-//		}
-//		return scriptingPluginObj.getScriptingPluginGUI();
-//	}
-
 	@Override
 	public void actorAdded(vtkProp actor) {
 		// called when a plugin adds an actor
@@ -1315,7 +1194,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	    catch (IllegalAccessException e) {
 	       // handle exception
 	    }
-	//	UIManager.put("PopupMenu.border", BorderFactory.createLineBorder(Color.red, 4));
 		UIManager.put("Menu.border", BorderFactory.createEmptyBorder(2, 4, 2, 4));
 		UIManager.put("MenuBar.border", BorderFactory.createEmptyBorder(1, 3, 2, 3));
 		UIManager.put("MenuItem.border", BorderFactory.createEmptyBorder(2, 4, 2, 4));
@@ -1326,7 +1204,4 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			}
 		});
 	}
-	
-	
-
 }
