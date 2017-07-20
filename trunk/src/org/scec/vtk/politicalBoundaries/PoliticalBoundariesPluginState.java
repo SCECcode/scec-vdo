@@ -31,6 +31,7 @@ public class PoliticalBoundariesPluginState implements PluginState {
 
 	void copyLatestCatalogDetails()
 	{
+		System.out.println("inside copyLatestCatalogDetails()");
 		filePath.clear();
 	
 		TreeNode<CheckAllTable> treeRoot = parent.root;
@@ -61,9 +62,26 @@ public class PoliticalBoundariesPluginState implements PluginState {
 	
 	
 	
+	public void clear(){
+
+		TreeNode<CheckAllTable> treeRoot = parent.root;
+		
+		for (TreeNode<CheckAllTable> node : treeRoot) {
+			CheckAllTable table = node.data;
+			TableModel list = table.getTable().getModel();
+			for(int i = 0; i < list.getRowCount(); i ++){
+				for(int j = 0 ; j < filePath.size(); j++){
+						list.setValueAt(false, i, 0);	
+				}	
+			}
+		}
+		
+	}
+	
 	@Override
 	public void load() {
 		
+		clear();
 		
 		TreeNode<CheckAllTable> treeRoot = parent.root;
 		
@@ -74,15 +92,15 @@ public class PoliticalBoundariesPluginState implements PluginState {
 				for(int j = 0 ; j < filePath.size(); j++){
 					if(((String)list.getValueAt(i, 1)).equalsIgnoreCase(filePath.get(j))){
 						list.setValueAt(true, i, 0);
+						System.out.println(list.getValueAt(i, 0) + (String) list.getValueAt(i, 1));
 					}
-					else{
-						list.setValueAt(false, i, 0);
-					}
+					
 				}
 				
 				
 			}
 		}
+		
 
 		/*for(int j= 0; j < parent.getPoliticalBoundarySubPanelLowerTab().getTabCount(); j++)
 		{
@@ -121,6 +139,7 @@ public class PoliticalBoundariesPluginState implements PluginState {
 
 	@Override
 	public void toXML(Element stateEl) {
+		System.out.println("toXML pol bound state");
 		copyLatestCatalogDetails();
 		createElement(stateEl);
 	}

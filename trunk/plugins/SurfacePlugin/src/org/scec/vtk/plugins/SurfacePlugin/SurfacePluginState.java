@@ -131,7 +131,13 @@ public class SurfacePluginState implements PluginState{
 
 	@Override
 	public void fromXML(Element stateEl) {
-
+		
+		dispName.clear();
+		filePath.clear();
+		filePathgeo.clear();
+		transparency.clear();
+		visibility.clear();
+		
 		for ( Iterator i = stateEl.elementIterator( "Surfaces" ); i.hasNext(); ) 
 		{
 			Element e = (Element) i.next();
