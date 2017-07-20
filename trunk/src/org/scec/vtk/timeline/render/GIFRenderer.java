@@ -118,7 +118,6 @@ public class GIFRenderer extends AbstractThreadedRenderer {
 		frameCntr++;
 		if (D){
 			
-			System.out.println("Done processing frame " + frameCntr);
 		}
 		if (frameCntr == (int)maxTime*fps){ //multiply the frames per second with maxtime
 			
