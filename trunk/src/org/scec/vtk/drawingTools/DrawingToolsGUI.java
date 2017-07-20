@@ -16,6 +16,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -111,6 +112,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		drawingToolSubPanelUpper.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		drawingToolSubPanelUpper.setPreferredSize(new Dimension(200, 100));
 		drawingToolSubPanelUpper.setViewportView(defaultLocations);
+		
 
 		displayAttributes = new DisplayAttributes();
 		displayAttributes.latField.addActionListener(this);

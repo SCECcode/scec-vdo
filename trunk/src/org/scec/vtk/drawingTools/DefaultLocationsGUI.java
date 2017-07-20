@@ -120,6 +120,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		
 		// Check to make sure it exists
 		File dataDirectory = new File(dataPath);
+		//System.out.println("datapath: " + dataPath);
 		if (dataDirectory.isDirectory()) {
 			// List files in the directory and process each
 			File files[] = dataDirectory.listFiles();
@@ -130,6 +131,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					
 					tempGroup.file = files[i];
 					String tempName = files[i].getName();
+					//System.out.println(tempGroup.name + ": " + tempGroup.file.toString());
 					tempName = tempName.substring(0, tempName.lastIndexOf("."));
 					tempName = tempName.replace('_', ' ');
 					tempGroup.name = tempName;
@@ -398,9 +400,8 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 	{
 		selectedInputFile =filen;
 	}
-	public  void loadHighways()
-	{
-		presetLocationGroups.get(0).checkbox.setSelected(true);
+	
+	public void loadHighways() {
 		String selectedFile = selectedInputFile;
 		File highwaysFile = new File(selectedFile);
 		String temp[] = new String[2];
@@ -413,6 +414,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		double [] p = null;
 		ArrayList<vtkPoints> segmentPoints = new ArrayList<vtkPoints>();
 		int pointCount;
+		PresetLocationGroup highwayGroup;
 		
 		try {
 			BufferedReader inStream = new BufferedReader(new FileReader(highwaysFile));
@@ -442,7 +444,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 				else // new segment name
 				{
 					if (linePts.GetNumberOfPoints() > 0)
-					{
+					{      
 						segmentPoints.add(linePts);
 						linePts = new vtkPoints();
 					}
@@ -485,7 +487,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 					);
 					highway.setDisplayName(nameOfSegment);
 					highway.setSourceFile(selectedFile);
-					this.guiparent.addHighways(highway);
+					//this.guiparent.addHighways(highway);
 					this.highwayToolTable.addDrawingTool(highway);
 					nameOfSegment = temp[1];
 				}
@@ -498,6 +500,108 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 			e.printStackTrace();
 		} 		
 	}
+	
+
+//	public  void loadHighways()
+//	{
+//		presetLocationGroups.get(0).checkbox.setSelected(true);
+//		String selectedFile = selectedInputFile;
+//		File highwaysFile = new File(selectedFile);
+//		String temp[] = new String[2];
+//		String nameOfSegment="";
+//		vtkPoints linePts;
+//		vtkCellArray cells = new vtkCellArray();
+//		vtkPolyData polyData;
+//		vtkPolyDataMapper mapper;
+//		vtkActor actor = new vtkActor();
+//		double [] p = null;
+//		ArrayList<vtkPoints> segmentPoints = new ArrayList<vtkPoints>();
+//		int pointCount;
+//		
+//		try {
+//			BufferedReader inStream = new BufferedReader(new FileReader(highwaysFile));
+//			String line = inStream.readLine();
+//			StringTokenizer dataLine = new StringTokenizer(line);
+//			temp[0] = dataLine.nextToken();	
+//			temp[1] = dataLine.nextToken();
+//			nameOfSegment = temp[1];
+//			linePts = new vtkPoints();
+//
+//			while (line!=null){
+//				dataLine = new StringTokenizer(line);  
+//				temp[0] = dataLine.nextToken();	temp[1] = dataLine.nextToken();
+//				if (!temp[0].equals("segment"))
+//				{
+//					p = Transform.transformLatLon(Double.parseDouble(temp[0]), Double.parseDouble(temp[1]));
+//					linePts.InsertNextPoint(p);
+//				}
+//				else if (temp[1].equals(nameOfSegment))
+//				{
+//					if (linePts.GetNumberOfPoints() > 0)
+//					{
+//						segmentPoints.add(linePts);
+//						linePts = new vtkPoints();
+//					}
+//				}
+//				else // new segment name
+//				{
+//					if (linePts.GetNumberOfPoints() > 0)
+//					{
+//						segmentPoints.add(linePts);
+//						linePts = new vtkPoints();
+//					}
+//					vtkPoints globalPoints = new vtkPoints();
+//					cells = new vtkCellArray();
+//					pointCount = 0;
+//					for (int i=0; i<segmentPoints.size(); i++)
+//					{
+//						vtkPolyLine interstateLine = new vtkPolyLine();
+//						interstateLine.GetPointIds().SetNumberOfIds(segmentPoints.get(i).GetNumberOfPoints());
+//						for (int j=0; j<segmentPoints.get(i).GetNumberOfPoints(); j++)
+//						{
+//							globalPoints.InsertNextPoint(segmentPoints.get(i).GetPoint(j));
+//							interstateLine.GetPointIds().SetId(j, pointCount++);							
+//						}
+//						cells.InsertNextCell(interstateLine);
+//					}
+//					
+//					polyData = new vtkPolyData();
+//					polyData.SetPoints(globalPoints);
+//					polyData.SetLines(cells);
+//					mapper = new vtkPolyDataMapper();
+//					mapper.SetInputData(polyData);
+//					actor = new vtkActor();
+//					actor.SetMapper(mapper);
+//					highwayActors.add(actor);
+//					segmentPoints = new ArrayList<vtkPoints>();
+//					//this.guiparent.appendActors.addToAppendedPolyData(actor);
+//					
+//					defaultLocationsStartIndex = this.highwayToolTable.getRowCount();
+//					DrawingTool highway = new DrawingTool(
+//						p[0],
+//						p[1],
+//						0.0d,
+//						nameOfSegment,
+//						displayAttributes,
+//						Color.WHITE,
+//						actor,
+//						null
+//					);
+//					highway.setDisplayName(nameOfSegment);
+//					highway.setSourceFile(selectedFile);
+//					//this.guiparent.addHighways(highway);
+//					//this.highwayToolTable.addDrawingTool(highway);
+//					nameOfSegment = temp[1];
+//				}
+//				line = inStream.readLine();						
+//			}
+//			inStream.close();
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} 		
+//	}
 	
 	public void removeHighways()
 	{	
@@ -564,6 +668,7 @@ public class DefaultLocationsGUI extends JPanel implements ActionListener {
 		Object src = e.getSource();
 		for (int i = 0; i < presetLocationGroups.size(); i++) {
 			PresetLocationGroup tempGroup = presetLocationGroups.get(i);
+			System.out.println("DefaultLocationsGUI:" + tempGroup.name);
 			if (tempGroup != null && src == tempGroup.checkbox) {
 				if (tempGroup.checkbox.isSelected()) {
 					selectedInputFile = tempGroup.file.getAbsolutePath();
