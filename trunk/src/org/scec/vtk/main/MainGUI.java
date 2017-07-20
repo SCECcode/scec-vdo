@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -125,7 +126,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	//	private static JFrame frame ;
 	private static vtkJoglPanelComponent  renderWindow;
 	//pluginTabPane contains tabs with all plugins
-	private JTabbedPane pluginTabPane;
+	public JTabbedPane pluginTabPane;
 	//Create Main Panel/ Main panel contains toolBar and VTK rendered 3D image; 
 	public JPanel mainPanel;
 	
@@ -137,6 +138,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private int yCenter = BORDER_SIZE / 2;
 	private ViewRange viewRange;
 	private static final Logger log = Logger.getLogger(MainGUI.class);
+	public  Map<String, String> tabMap = new HashMap<String, String>();
 	// In the static constructor we load in the native code.
 	// The libraries must be in your path to work.
 	static {
@@ -165,7 +167,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private boolean gridDisplay = true;
 //	private ScriptingPlugin scriptingPluginObj;
 	
-	private Timeline timeline;
+	public Timeline timeline;
 	private TimelineGUI timelineGUI;
 	
 	private JTextField searchBar;
@@ -682,10 +684,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			  public void actionPerformed(ActionEvent e) {
 				 // checks whether file has been created
 				 if (mainMenu.isSaved()) {
+					 System.out.println("autoSave()");
 					 mainMenu.autoSave();
 				 }
 				 else {
 					 // creates new file
+					 System.out.println("saveForToolbar");
 					 mainMenu.saveForToolbar();
 				 }
 			  } 
@@ -801,12 +805,21 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 
 	public void addPluginGUI(String id, String title, JComponent gui) {
+		
+		if(pluginTabPane.indexOfTab(title) != -1)
+			return;
 		if (!mainMenu.isPluginActive(id) && id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin"
 				&& id != "org.scec.vdo.drawingToolsPlugin" && id !="org.scec.vdo.landmarksPlugin") {
 			//Logger
 			log.debug("Cannot add gui for inactive plugin " + id);
 			return;
 		}
+		
+		//System.out.println("id: "+ id);
+		//System.out.println("title: "+ title);
+		
+		//everytime a plugin is added we're gonna put it in our map.
+		tabMap.put(id,title);
 
 		isPluginGuiShowing();
 
@@ -828,6 +841,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 
 		// Add the tab to the tab panel
+		
 		pluginTabPane.addTab(title, pluginTab);
 		if(id !="org.scec.vdo.politicalBoundaries" && id !="org.scec.vdo.graticulePlugin" && id != "org.scec.vdo.drawingToolsPlugin" && id != "org.scec.vdo.landmarksPlugin")
 			pluginTabPane.setTabComponentAt(pluginTabPane.getTabCount() -1, new ButtonTabComponent(pluginTabPane, id));
@@ -975,6 +989,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				throw new NullPointerException("TabbedPane is null");
 			}
 			this.pane = pane;
+	
 			setOpaque(false);
 
 			pluginID = id;
@@ -1031,6 +1046,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 			public void actionPerformed(ActionEvent e) {
 				Map<String, Plugin> loadedPlugins = mainMenu.getLoadedPluginsAsMap();
+				
 				int i = pane.indexOfTabComponent(ButtonTabComponent.this);
 				if (i != -1 && loadedPlugins.containsKey(pluginID)) {
 					//System.out.println("*******PluginID to be removed: " + pluginID);

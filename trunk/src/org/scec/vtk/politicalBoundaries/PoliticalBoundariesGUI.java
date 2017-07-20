@@ -502,7 +502,7 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 					public Void doInBackground() {
 						TableModel model = (TableModel) e.getSource();
 						String subTableName = (String) model.getValueAt(row, column+1);
-						System.out.println("subtable name: " + subTableName);
+						//System.out.println("subtable name: " + subTableName);
 						final Boolean checked = (Boolean) model.getValueAt(row, column);
 						final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
 						for (int i = 0 ; i < nextTableNode.data.getTable().getRowCount(); i++) {
@@ -523,7 +523,7 @@ public class PoliticalBoundariesGUI implements ActionListener, PropertyChangeLis
 					        if ("progress" == evt.getPropertyName()) {
 					            int progress = (Integer) evt.getNewValue();
 					            progbar.setValue(progress);
-					            System.out.println(progbar.getValue());
+					           // System.out.println(progbar.getValue());
 					        } 
 							
 						}
