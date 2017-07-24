@@ -624,6 +624,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			  } 
 		});
 		
+		centerImage.setToolTipText("Center");
+		
 		
 		JButton zoomIn = new JButton();
 		
@@ -646,6 +648,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			  } 
 		} );
 		
+		zoomIn.setToolTipText("Zoom In");
+		
 		JButton zoomOut = new JButton();
 		try {
 			// sets hover text
@@ -664,6 +668,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				  renderWindow.getComponent().repaint();
 			  } 
 		} );
+		
+		zoomOut.setToolTipText("Zoom Out");
 		
 		JButton save = new JButton();
 		
@@ -692,6 +698,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			  } 
 		} );
 		
+		save.setToolTipText("Save");
+		
 		JButton open = new JButton();
 		
 		try {
@@ -709,6 +717,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				  mainMenu.openForToolbar();
 			  } 
 		} );
+		
+		open.setToolTipText("Open");
 		
 		
 		//adds buttons to toolbar
