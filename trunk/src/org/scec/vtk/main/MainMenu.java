@@ -1,7 +1,5 @@
 package org.scec.vtk.main;
 
-
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -21,9 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
-import java.util.*;
-
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -48,7 +43,6 @@ import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.timeline.gui.ViewerSizePanel;
 import org.scec.vtk.main.Help;
-
 import vtk.vtkActor;
 import vtk.vtkActorCollection;
 import vtk.vtkAppendPolyData;
@@ -61,7 +55,6 @@ import vtk.vtkPolyDataWriter;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
 
 import com.google.common.base.Preconditions;
-
 
 public class MainMenu implements ActionListener, ItemListener{
 
@@ -92,7 +85,6 @@ public class MainMenu implements ActionListener, ItemListener{
 
 	Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
-	
 	Map<Plugin, PluginActors> pluginActors = new HashMap<>();
 	Map<String, Plugin> activePlugins = new HashMap<String, Plugin>(); 
 	Map<String, JCheckBoxMenuItem> pluginMenuItems;
@@ -416,6 +408,8 @@ public class MainMenu implements ActionListener, ItemListener{
 			Info.getMainGUI().wizFrame.setVisible(true);
 			}
 		if (ret == JFileChooser.APPROVE_OPTION) {
+			if(isSaved())
+				autoSave();
 			unloadAllPlugins();
 			File file = chooser.getSelectedFile();
 			currFileName = file.getPath();
@@ -468,6 +462,8 @@ public class MainMenu implements ActionListener, ItemListener{
 		MainGUI.class.getConstructors();
 		int ret = chooser.showOpenDialog(Info.getMainGUI());
 		if (ret == JFileChooser.APPROVE_OPTION) {
+			if(isSaved())
+				autoSave();
 			unloadAllPlugins();
 			File file = chooser.getSelectedFile();
 			currFileName = file.getPath();
@@ -506,7 +502,6 @@ public class MainMenu implements ActionListener, ItemListener{
 				timeline.getState().load();
 				timelineGUI.getTimeLinePanel().timelinePluginsChanged();
 			} catch (DocumentException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}
@@ -574,7 +569,6 @@ public class MainMenu implements ActionListener, ItemListener{
 		//reader.Update();
 		vtkDoubleArray c1 = (vtkDoubleArray) reader.GetOutput().GetPointData().GetScalars("Colors");
 		double[] c = c1.GetTuple3(0);
-		Color color = new Color((int)c[0], (int) c[1], (int)c[2]); 
 		//setColor(color);
 		c[0] /= Info.rgbMax;
 		c[1] /= Info.rgbMax;
@@ -722,8 +716,10 @@ public class MainMenu implements ActionListener, ItemListener{
 			}
 			
 		}
-		//**********************************************
-		//Function for calling the userGuide
+		/*
+		 *Function for calling the userGuide 
+		 */
+		
 		else if(eventSource == tutorial) {
 			helpFrame = new JFrame("SCEC VDO User Guide");
 			Help helpGUI = new Help();
@@ -770,7 +766,6 @@ public class MainMenu implements ActionListener, ItemListener{
 	
 
 	private void saveXMLFile(Document document,Element root,String destinationData) {
-		// TODO Auto-generated method stub
 		
 		System.out.println("document.toString() inside saveXMLFile(): " + document.toString());
 		XMLWriter writer = null;
@@ -781,7 +776,6 @@ public class MainMenu implements ActionListener, ItemListener{
 					new FileWriter( destinationData)
 					);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
@@ -789,7 +783,6 @@ public class MainMenu implements ActionListener, ItemListener{
 
 			writer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 				
@@ -852,7 +845,6 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 
 	public boolean isPluginActive(String id) {
-		// TODO Auto-generated method stub
 		return getActivePlugins().containsKey(id);
 	}
 
@@ -977,7 +969,6 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 
 	private void setCursor(Cursor predefinedCursor) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -994,11 +985,8 @@ public class MainMenu implements ActionListener, ItemListener{
 			log.debug("Passivating plugin " + id);
 			if (loadedPlugins.containsKey(id)) {
 				timeline.removePlugin(loadedPlugins.get(id));
-
 				// Update menu
 				updateMenu(id);
-
-
 			} else {
 				log.warn("Unknown plugin: " + id);
 			}
@@ -1008,12 +996,10 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 
 	private void loadPlugin(String id) {
-
 		if (loadedPlugins != null && loadedPlugins.containsKey(id)) {
 			log.warn("Plugin " + id + " already loaded");
 			return;
 		}
-
 		if (availablePlugins.containsKey(id)) {
 			try {
 				PluginInfo info = availablePlugins.get(id);
@@ -1085,7 +1071,6 @@ public class MainMenu implements ActionListener, ItemListener{
 			plugin.unload();
 			plugin.passivate();
 		}
-		
 		getActivePlugins().remove(id);
 		loadedPlugins.remove(id);
 	}
