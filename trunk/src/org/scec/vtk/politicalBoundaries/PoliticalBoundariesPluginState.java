@@ -4,13 +4,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
 import javax.swing.table.TableModel;
-
 import org.dom4j.Element;
 import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.utils.components.CheckAllTable;
@@ -117,30 +112,6 @@ public class PoliticalBoundariesPluginState implements PluginState {
 				
 			}
 		}
-		
-
-		/*for(int j= 0; j < parent.getPoliticalBoundarySubPanelLowerTab().getTabCount(); j++)
-		{
-			JScrollPane sp = (JScrollPane)  parent.getPoliticalBoundarySubPanelLowerTab().getComponentAt(j);
-			JViewport vp = (JViewport) sp.getComponent(0);
-			JPanel p = (JPanel) vp.getComponent(0);
-			unselectLowerCheckBox(p);
-
-			for(int k = 0; k < filePath.size(); k++)
-			{	
-				if(containComponent(p, filePath.get(k)))
-				{
-					int segIndex = findIndex(p, filePath.get(k));
-					int actorIndex = parent.getLowerCheckBoxButtons().indexOf(p.getComponent(segIndex));//
-					vtkActor actor = parent.getPoliticalBoundaries().get(actorIndex);
-					actor.VisibilityOn();
-					JCheckBox comp = (JCheckBox) p.getComponent(segIndex);
-					comp.setSelected(true);
-
-				}
-
-			}
-		}*/
 
 	}
 
