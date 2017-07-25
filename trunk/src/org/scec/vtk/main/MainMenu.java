@@ -721,9 +721,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		 */
 		
 		else if(eventSource == tutorial) {
-			File file = new File("userguide_HTML/userGuide.html");
-			String filepath = (file.getAbsolutePath());
-			String url = filepath.replace("\\", "/");
+			String url = "http://scecvdo.usc.edu/manual/UserGuide.html";
 				String os = System.getProperty("os.name").toLowerCase();
 			    Runtime rt = Runtime.getRuntime();
 				try{
