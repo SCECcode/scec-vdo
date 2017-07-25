@@ -225,35 +225,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 		helpButton.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent ae) {
-					File file = new File("userguide_HTML/userGuide.html");
-					String filepath = (file.getAbsolutePath());
-					String url = filepath.replace("\\", "/");
-						String os = System.getProperty("os.name").toLowerCase();
-					    Runtime rt = Runtime.getRuntime();
-						try{
-						    if (os.indexOf( "win" ) >= 0) {
-						        rt.exec( "rundll32 url.dll,FileProtocolHandler " + url);
-						    }
-						    else if (os.indexOf( "mac" ) >= 0) {
-
-						        rt.exec( "open " + url);
-					            }
-						    else if (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0) {
-						        String[] browsers = {"firefox", "mozilla", "epiphany", "konqueror",
-						       			             "netscape","opera","links","seamonkey", "galeon", "kazehakase","lynx"};
-						        StringBuffer cmd = new StringBuffer();
-						        for (int i=0; i<browsers.length; i++)
-						            cmd.append( (i==0  ? "" : " || " ) + browsers[i] +" \"" + url + "\" ");
-						        rt.exec(new String[] { "sh", "-c", cmd.toString() });
-						        } 
-					            else {
-					                return;
-					           }
-					       }
-						catch (Exception e1){
-						    return;
-					       }
-					      return;
+		    	  Help help = new Help();
 		      }
 		    });
   //HELP BUTTON
@@ -745,26 +717,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 		
 	}
-	
-//	@SuppressWarnings("unused")
-//	public JPanel makebuttonPanel1() {
-//		searchBarGUI = new JPanel();
-//		searchBar = new JButton("?");
-//		searchBarGUI.add(searchBar, BorderLayout.CENTER);
-//		pluginGUIPanel.add(searchBarGUI, BorderLayout.PAGE_END);
-//		
-//		return pluginGUIPanel;
-	//}
-//		buttonPanel.setAlignmentX(JPanel.LEFT_ALIGNMENT);
-//		JButton help = new JButton("?"); // "button
-//		graticuleappsProp_help.addActionListener(this);
-//		graticuleappsProp_help.setActionCommand("?");
-//		buttonPanel.setFlowlayout();
-		
-		
-//		
-//		
-	
 	
 	private void setUpPluginTabs() {
 		//pluginTabPane.setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
