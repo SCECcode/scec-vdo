@@ -7,57 +7,31 @@ public class Help {
 		  
 		  String url;
 		  if (MainGUI.pluginTabPane.getTitleAt(MainGUI.pluginTabPane.getSelectedIndex()).equals("Political Boundaries")) {
-				File file = new File("userguide_HTML/userGuide.html");
-				String filepath = (file.getAbsolutePath());
-				String url0 = filepath.replace("\\", "/");
-				url = "file:///" + url0 + "#PoliticalBoundaries";
-		  }
+				url = "http://scecvdo.usc.edu/manual/UserGuide.html#PoliticalBoundaries";
+				}
 		  else if (MainGUI.pluginTabPane.getTitleAt(MainGUI.pluginTabPane.getSelectedIndex()).equals("Graticule")) {
-				File file = new File("userguide_HTML/userGuide.html");
-				String filepath = (file.getAbsolutePath());
-				String url0 = filepath.replace("\\", "/");
-				url = "file:///" + url0 + "#Graticule";
+				url = "http://scecvdo.usc.edu/manual/UserGuide.html#Graticule";
 			  }
 		  else if (MainGUI.pluginTabPane.getTitleAt(MainGUI.pluginTabPane.getSelectedIndex()).equals("Drawing Tools")) {
-				File file = new File("userguide_HTML/userGuide.html");
-				String filepath = (file.getAbsolutePath());
-				String url0 = filepath.replace("\\", "/");
-				url = "file:///" + url0 + "#DrawingTools";
+				url = "http://scecvdo.usc.edu/manual/UserGuide.html#DrawingTools";
 			  }
 		  else if (MainGUI.pluginTabPane.getTitleAt(MainGUI.pluginTabPane.getSelectedIndex()).equals("ShakeMap Plugin")) {
-				File file = new File("userguide_HTML/userGuide.html");
-				String filepath = (file.getAbsolutePath());
-				String url0 = filepath.replace("\\", "/");
-				url = "file:///" + url0 + "#ShakeMap";
+				url = "http://scecvdo.usc.edu/manual/UserGuide.html#ShakeMap";
 			  }
 		  else if (MainGUI.pluginTabPane.getTitleAt(MainGUI.pluginTabPane.getSelectedIndex()).equals("Surface Plugin")) {
-				File file = new File("userguide_HTML/userGuide.html");
-				String filepath = (file.getAbsolutePath());
-				String url0 = filepath.replace("\\", "/");
-				url = "file:///" + url0 + "#Surface";
+				url = "http://scecvdo.usc.edu/manual/UserGuide.html#Surface";
 			  }
 		  else if (MainGUI.pluginTabPane.getTitleAt(MainGUI.pluginTabPane.getSelectedIndex()).equals("Earthquake Catalog Plugin")) {
-				File file = new File("userguide_HTML/userGuide.html");
-				String filepath = (file.getAbsolutePath());
-				String url0 = filepath.replace("\\", "/");
-				url = "file:///" + url0 + "#EarthquakeCatalog";
+				url = "http://scecvdo.usc.edu/manual/UserGuide.html#EarthquakeCatalog";
 			  }
 		  else if (MainGUI.pluginTabPane.getTitleAt(MainGUI.pluginTabPane.getSelectedIndex()).equals("Legend Plugin")) {
-				File file = new File("userguide_HTML/userGuide.html");
-				String filepath = (file.getAbsolutePath());
-				String url0 = filepath.replace("\\", "/");
-				url = "file:///" + url0 + "#Legend";
+				url = "http://scecvdo.usc.edu/manual/UserGuide.html#Legend";
 			  }
 		  else if (MainGUI.pluginTabPane.getTitleAt(MainGUI.pluginTabPane.getSelectedIndex()).equals("Earthquake Simulators")) {
-				File file = new File("userguide_HTML/userGuide.html");
-				String filepath = (file.getAbsolutePath());
-				String url0 = filepath.replace("\\", "/");
-				url = "file:///" + url0 + "#Simulators";
+				url = "http://scecvdo.usc.edu/manual/UserGuide.html#Simulators";
 			  }
 			  else{
-					File file = new File("userguide_HTML/userGuide.html");
-					String filepath = (file.getAbsolutePath());
-					url = filepath.replace("\\", "/");
+					url = "http://scecvdo.usc.edu/manual/UserGuide.html";
 			  }
 		  
 		String os = System.getProperty("os.name").toLowerCase();
