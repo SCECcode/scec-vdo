@@ -29,7 +29,7 @@ import vtk.vtkPolyLine;
 
 public class PoliticalBoundariesFileParser {
 	
-	class PresetLocationGroup {
+	public class PresetLocationGroup {
 		public ArrayList<DrawingTool> locations = null;
 		public ArrayList<String> locationNames = null;
 		public String name			= null;

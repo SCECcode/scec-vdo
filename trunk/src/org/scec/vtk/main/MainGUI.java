@@ -138,6 +138,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private int yCenter = BORDER_SIZE / 2;
 	private ViewRange viewRange;
 	private static final Logger log = Logger.getLogger(MainGUI.class);
+
 	public  Map<String, String> tabMap = new HashMap<String, String>();
 	// In the static constructor we load in the native code.
 	// The libraries must be in your path to work.
