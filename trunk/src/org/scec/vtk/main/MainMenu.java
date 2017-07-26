@@ -33,6 +33,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.scec.vtk.plugins.Plugin;
@@ -43,6 +44,7 @@ import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
 import org.scec.vtk.timeline.gui.ViewerSizePanel;
+import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.main.Help;
 import vtk.vtkActor;
 import vtk.vtkActorCollection;
@@ -79,7 +81,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private ViewerSizePanel sizePanel;
 	private JCheckBoxMenuItem focalPointItem;
 	private String currFileName;
-	static public Boolean Wizard;
+	static public Boolean Wizard = true; // default value for new users
 	static public JMenu helpMenu;
 	static public Boolean saved = false;
 	public JFrame helpFrame;
@@ -337,30 +339,50 @@ public class MainMenu implements ActionListener, ItemListener{
 		saveXMLFile(document, root, currFileName);
 	}
 	
+	private static File getStatusFile() {
+		return new File(Prefs.getLibLoc(), "SCEC-VDO_STATUS.xml");
+	}
 	
 	public boolean getState(){
-		
-		try{
+		File statusFile = getStatusFile();
+		try {
+			if (!statusFile.exists())
+				initStatusFile(statusFile);
 			SAXReader reader = new SAXReader();
-			Document document = reader.read("src/org/scec/vtk/main/SCEC-VDO_STATUS.xml");
+			Document document = reader.read(statusFile);
 			Element root = document.getRootElement();
-			for ( Iterator i = root.elementIterator(); i.hasNext(); ) {
-				Element status = (Element) i.next();
-				if(status.getName().equalsIgnoreCase("Wizard")){
-					if(status.getData().toString().equalsIgnoreCase("True")){
-						Wizard = true;
-						return true;
-					}
-					else {
-						Wizard = false;
-						return false;
-					}
-				}
+			Element wizardEl = root.element("Wizard");
+			String data = wizardEl.getText().trim();
+			if (data.equalsIgnoreCase("true")) {
+				Wizard = true;
+				return true;
+			} else if (data.equalsIgnoreCase("false")) {
+				Wizard = false;
+				return false;
 			}
-		}catch( DocumentException e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return true;
+	}
+	
+	private static OutputFormat format = OutputFormat.createPrettyPrint();
+	
+	private void initStatusFile(File statusFile) throws IOException {
+		System.out.println("Initializing status file: "+statusFile.getAbsolutePath());
+		Document doc = DocumentHelper.createDocument();
+		
+		Element root = doc.addElement("SCECVDO");
+		Element wizardEl = root.addElement("Wizard");
+		wizardEl.setText(Wizard+"");
+		
+		writeXML(doc, statusFile);
+	}
+	
+	private static void writeXML(Document document, File file) throws IOException {
+		XMLWriter writer = new XMLWriter(new FileWriter(file), format);
+		writer.write(document);
+		writer.close();
 	}
 	
 	/*
@@ -369,30 +391,18 @@ public class MainMenu implements ActionListener, ItemListener{
 	 * 
 	 */
 	public void updateWizard(Boolean wiz){
+		File statusFile = getStatusFile();
 		try{
+			if (!statusFile.exists())
+				initStatusFile(statusFile);
 			SAXReader reader = new SAXReader();
-			Document document = reader.read("src/org/scec/vtk/main/SCEC-VDO_STATUS.xml");
+			Document document = reader.read(statusFile);
 			Element root = document.getRootElement();
-			for ( Iterator i = root.elementIterator(); i.hasNext(); ) {
-				Element status = (Element) i.next();
-				if(status.getName().equalsIgnoreCase("Wizard")){
-					status.detach();
-					if(wiz){
-						Element wizTru = root.addElement("Wizard");
-						wizTru.setText("True");
-					}
-					else {
-						System.out.println("setting wizard to false? ");
-						Element wizTru = root.addElement("Wizard");
-						wizTru.setText("False");
-						System.out.println("root.asXML() in updateWizard: " + root.asXML());
-
-					}
-
-				}
-			}
-			saveXMLFile(document, root, "src/org/scec/vtk/main/SCEC-VDO_STATUS.xml");	
-		}catch( DocumentException e){
+			Element wizardEl = root.element("Wizard");
+			wizardEl.setText(Wizard+"");
+			writeXML(document, statusFile);
+			
+		} catch (Exception e){
 			e.printStackTrace();
 		}
 	}
