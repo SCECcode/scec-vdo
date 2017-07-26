@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -20,6 +21,7 @@ import org.opensha.commons.data.NamedComparator;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.ButtonParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
@@ -59,6 +61,10 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private static final String INPUT_SELECTOR_FROM_FILE = "(Select File)";
 	private StringParameter inputParam;
 	
+	private static final String LOAD_PARAM_NAME = "Load Catalogs";
+	private static final String LOAD_PARAM_BUTTON_NAME = "Browse";
+	private ButtonParameter loadParam;
+	
 	private static final String EVENT_SELECTOR_PARAM_NAME = "Simulator Event File";
 	private FileParameter eventFileParam = new FileParameter(EVENT_SELECTOR_PARAM_NAME);
 	
@@ -90,6 +96,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			strings.add(name);
 		}
 		strings.add(INPUT_SELECTOR_FROM_FILE);
+
+		//LoadCatalogs.addActionListener(new ActionListener()));
 		
 		inputParam = new StringParameter(INPUT_SELECTOR_PARAM_NAME, strings, strings.get(0));
 		inputParam.addParameterChangeListener(this);
@@ -97,6 +105,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		eventFileParam.addParameterChangeListener(this);
 		eventFileParam.setShowHiddenFiles(true);
 		builderParams.addParameter(eventFileParam);
+		loadParam = new ButtonParameter(LOAD_PARAM_NAME, LOAD_PARAM_BUTTON_NAME);
+		loadParam.addParameterChangeListener(this);
+		builderParams.addParameter(loadParam);
 		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(5d));
 		builderParams.addParameter(eventMinMagParam);
 		
@@ -351,6 +362,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 					throw new RuntimeException(e);
 				}
 			}
+		} else if (event.getSource() == loadParam) {
+			EQSimsCatalogQuery eqsim = new EQSimsCatalogQuery(null, null);
 		}
 	}
 	
