@@ -2,8 +2,6 @@ package org.scec.vtk.plugins.opensha.ucerf3Rups.anims;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -13,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -48,7 +45,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
-import com.sun.jmx.snmp.tasks.Task;
 
 import scratch.UCERF3.FaultSystemRupSet;
 import scratch.UCERF3.FaultSystemSolution;
@@ -70,7 +66,7 @@ import vtk.vtkUnsignedCharArray;
 import vtk.vtkVertexGlyphFilter;
 
 public class ETASCatalogAnim extends CPTBasedColorer implements TimeBasedFaultAnimation, IDBasedFaultAnimation,
-UCERF3RupSetChangeListener, ParameterChangeListener, PropertyChangeListener, PickHandler<AbstractFaultSection> {
+UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
 
 	private FileParameter catalogFileParam;
 	private BooleanParameter hideFaultsParam;
@@ -99,7 +95,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PropertyChangeListener, Pic
 	protected Map<Integer, Integer> mostRecentSectRups;
 	protected Map<Integer, Double> mostRecentSectMag;
 	
-	private PickHandler<ETAS_EqkRupture> spherePicker;  
+	private PickHandler<ETAS_EqkRupture> spherePicker;
 	
 	private PluginActors actors;
 	
@@ -328,8 +324,6 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PropertyChangeListener, Pic
 			// detect ot
 			long ot = detectScenarioOT(catalog);
 			List<ETAS_EqkRupture> triggerEvents = Lists.newArrayList();
-			
-			
 			for (String line : Files.readLines(infoFile, Charset.defaultCharset())) {
 				line = line.trim();
 				if (line.startsWith("FSS simulation. ")) {
@@ -857,11 +851,5 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PropertyChangeListener, Pic
 		for (int i=0; i<100; i++)
 			System.out.println("Time "+i+": "+anim.getTimeForStep(i));
 //		System.out.println("Time 1: "+anim.getTimeForStep(1));
-	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		// TODO Auto-generated method stub
-		
 	}
 }

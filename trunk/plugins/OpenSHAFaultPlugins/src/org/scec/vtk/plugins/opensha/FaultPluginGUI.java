@@ -1,19 +1,13 @@
 package org.scec.vtk.plugins.opensha;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -49,11 +43,8 @@ import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.simulators.EQSimsCatalogQuery;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickHandler;
-
-import com.sun.jmx.snmp.tasks.Task;
 
 public class FaultPluginGUI extends JSplitPane {
 	
@@ -144,17 +135,6 @@ public class FaultPluginGUI extends JSplitPane {
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
 		
-		this.setLayout(new FlowLayout());
-		JButton LoadCatalogs = new JButton("Load Catalogs");
-		topPanel.add(LoadCatalogs);
-		LoadCatalogs.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				EQSimsCatalogQuery eqsim = new EQSimsCatalogQuery(null, null);
-			}
-			
-		});
 		// this allows the entire UI to be locked during long calculations
 		lockUI = new LockableUI();
 		jxLayer = new JXLayer<JComponent>(this, lockUI);
