@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.DBFReaderJGeom;
 import oracle.spatial.util.ShapefileReaderJGeom;
+import vtk.vtkActor;
 
 /**
  * Created July 21,2011 Builds and handles events for GIS NorhtRidge SHP files.
@@ -58,6 +59,7 @@ public class Events {
 	int numBounds = 0;
 	public String[] names;
 	public int[] groupSize;
+	private ArrayList<vtkActor> allSegmentActors = new ArrayList<vtkActor>();
 
 	Color[] purpleGradient = new Color[NUM_POP_CATEGORY];
 
@@ -761,11 +763,12 @@ public class Events {
 				Latitude[i] = x.get(i).floatValue();
 				Longitude[i] = y.get(i).floatValue();
 			}
-			currentBoundary.addSegment(Latitude, Longitude);
-
+			allSegmentActors.add(currentBoundary.addSegment(Latitude, Longitude));
 		}
 	}
-
+	public ArrayList<vtkActor> getSegmentActors() {
+		return allSegmentActors;
+	}
 	public ArrayList<Float> getLegendMax() {
 		return legendMaxList;
 	}

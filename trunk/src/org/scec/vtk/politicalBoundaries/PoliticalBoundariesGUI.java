@@ -7,37 +7,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingWorker;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 
-import org.netlib.util.booleanW;
-import org.apache.commons.math3.exception.NoDataException;
-import org.jpedal.utils.sleep;
-import org.omg.CORBA.PUBLIC_MEMBER;
-import org.scec.vtk.commons.opensha.tree.events.ColorChangeListener;
-import org.scec.vtk.drawingTools.DisplayAttributes;
 import org.scec.vtk.drawingTools.DrawingTool;
-import org.scec.vtk.drawingTools.DrawingToolsGUI;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.utils.components.CheckAllTable;
@@ -50,8 +37,7 @@ import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 import org.scec.vtk.tools.actors.AppendActors;
 
-import com.sun.corba.se.impl.orbutil.graph.Node;
-import com.sun.xml.internal.bind.v2.model.core.ID;
+import com.jogamp.newt.event.MouseListener;
 
 import vtk.vtkActor;
 import vtk.vtkActor2D;
@@ -68,19 +54,17 @@ import vtk.vtkPolyDataMapper;
 import vtk.vtkStringArray;
 
 public class PoliticalBoundariesGUI implements ActionListener {
-	private JPanel politicalBoundaryMainPanel;
-	private JPanel tablePanel;
-	private ArrayList<vtkActor> actorPoliticalBoundariesSegments;
-	private ArrayList<String> allSubRegionNames;
-	Dimension dMainPanel;
-	public static vtkActor mainFocusReginActor = new vtkActor();
-	PluginActors pluginActors = new PluginActors();
-	AppendActors appendActors = new AppendActors();
-	private ColorButton colorDrawingToolsButton;
-	private SingleColorChooser colorChooser;
-	private DrawingToolsGUI gui;
+	private JPanel mainPanel;														//Main panel of the plugin. Contains the CheckAllTable.
+	private ArrayList<vtkActor> actorPoliticalBoundariesSegments;					//List of vtkActors of all country, continent, and region boundaries. A vtkActor handle the 3D visualization of the object
+	private ArrayList<String> allSubRegionNames;									//allSubRegionNames contains all country names. Unfortunately this is necessary because of the way vtkActors are saved above.
+	Dimension dMainPanel;															//Dimensions for main panel.
+	public static vtkActor mainFocusReginActor = new vtkActor();						
+	PluginActors pluginActors = new PluginActors();									//Contains actors of country and continent boundaries.
+	AppendActors appendActors = new AppendActors();									//Contains actors of landmarks
+	private ColorButton colorDrawingToolsButton;									//Color button
+	private SingleColorChooser colorChooser;										//Color chooser dialog
 	
-	private Object[][] regionTableData = {{Boolean.FALSE, "Africa", Color.white},
+	private Object[][] regionTableData = {{Boolean.FALSE, "Africa", Color.white},				//Data for continents
 										{Boolean.FALSE, "Asia", Color.white},
 										{Boolean.FALSE, "Europe", Color.white},
 										{Boolean.FALSE, "North America", Color.white},
@@ -88,7 +72,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 										{Boolean.FALSE, "South America", Color.white},
 										{Boolean.FALSE, "United States", Color.white}};
 	
-	private String[][] regionFileNames = {{"United States","us_complete.txt"},
+	private String[][] regionFileNames = {{"United States","us_complete.txt"},					//All data for countries/regions are in text files.
 									{"Africa","africa.txt"}, 
 									{"Asia", "asia.txt"},
 									{"Europe", "europe.txt"},
@@ -96,60 +80,53 @@ public class PoliticalBoundariesGUI implements ActionListener {
 									{"Oceania", "oceania.txt"},
 									{"South America", "south_america.txt"}};
 	
-	TreeNode<CheckAllTable> root;
-	PoliticalBoundariesFileParser fileParser;
-	ArrayList<DrawingTool> allActiveDrawings;
+	TreeNode<CheckAllTable> root;														//All CheckAllTables are part of the root tree to enable navigation between CheckAllTables.
+	PoliticalBoundariesFileParser fileParser;											//Helps with file parsing. TODO::Put text file parsing inside this file.
+	ArrayList<DrawingTool> allActiveDrawings;											//Contains all landmark drawings - vtk labels and pins. Does not contain country/continent boundaries.
 		
 	
 	public PoliticalBoundariesGUI(PluginActors pluginActors){
-		//Plugin actors handle the display of vtk objects
-		this.pluginActors = pluginActors;
+		this.pluginActors = pluginActors;												//Plugin actors handle the display of vtk objects
 		this.pluginActors.addActor(appendActors.getAppendedActor());
-		createMainPanel();
 		
-		fileParser = new PoliticalBoundariesFileParser();
+		createMainPanel();																//Create main panel. All CheckAllTables must be contained in the same parent panel to enable navigation between tables.
+		
+		fileParser = new PoliticalBoundariesFileParser();							
 		allActiveDrawings = new ArrayList<DrawingTool>();
-		//Upper panel contains regions
-		this.tablePanel = new JPanel();
-		this.tablePanel.setLayout(new BoxLayout(this.tablePanel, BoxLayout.Y_AXIS));
-		this.tablePanel.setOpaque(false);
-		
-		//List of "actors" 
 		this.actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
-		allSubRegionNames = new ArrayList<String>();
+		this.allSubRegionNames = new ArrayList<String>();
 		
 	}
 	
+	/**
+	 * Create MainPanel which contains CheckAllTables.
+	 */
 	public void createMainPanel() {
-		//Main panel contains tablePanel	
-		politicalBoundaryMainPanel = new JPanel(new BorderLayout());
-		politicalBoundaryMainPanel.setName("Political Boundaries");
+		mainPanel = new JPanel(new BorderLayout());
+		mainPanel.setName("Political Boundaries");
 		dMainPanel = new Dimension(Prefs.getPluginWidth(),Prefs.getPluginHeight());
-		politicalBoundaryMainPanel.setPreferredSize(dMainPanel);
-		politicalBoundaryMainPanel.setOpaque(false);
+		mainPanel.setPreferredSize(dMainPanel);
+		mainPanel.setOpaque(false);
 	}
 
 	/**
-	 * Populates table tree with all tables and subtables
-	 * @return
+	 * @returns the main panel to be displayed in the plugin.
+	 *  Populates table tree with all tables and children tables.
+	 * 
 	 */
 	public JPanel loadAllRegions() {
 	    String name = "Regions";
-	    //Create root table of the plugin - the regions table;
-		CheckAllTable regionTable = new CheckAllTable(regionTableData, name, checkNextTableListener);
-		root = new TreeNode<CheckAllTable>(regionTable);
-		//Add root table to the panel;
-		tablePanel.add(regionTable, BorderLayout.PAGE_START);
-		this.politicalBoundaryMainPanel.add(tablePanel);
-		//Add subregions and landmarks
-		for (int i = 0; i < regionFileNames.length; i++) {
+		CheckAllTable regionTable = new CheckAllTable(regionTableData, name, checkNextTableListener);		
+		root = new TreeNode<CheckAllTable>(regionTable);													//Root of the tree contains the regionTable - the continents and the U.S.
+		mainPanel.add(regionTable, BorderLayout.PAGE_START);
+		for (int i = 0; i < regionFileNames.length; i++) {													
 			ArrayList<String> subRegions = loadRegion(regionFileNames[i][1], false);
 			CheckAllTable subRegionTable = setUpTable(subRegions, regionFileNames[i][0], subRegionListener, new ColorListener(false));
-			TreeNode<CheckAllTable> subRegionNode = root.addChild(subRegionTable);
+			TreeNode<CheckAllTable> subRegionNode = root.addChild(subRegionTable);							//Add subRegion tables as children of the root node. subRegions include countries and states.
 
 			if(subRegionTable.getTitle() == "United States") {
-				subRegionNode.data.getTable().getModel().setValueAt(true, 4, 0);
-				loadLandmarks("California", subRegionNode);
+				subRegionNode.data.getTable().getModel().setValueAt(true, 4, 0);							//Make California visible by default. TODO::Un-hardcode this value and search for default instead.
+				loadLandmarks("California", subRegionNode);													//Add landmark tables as children of the subRegion nodes. 
 			}
 			if(subRegionTable.getTitle() == "North America") {	
 				loadLandmarks("Mexico", subRegionNode);
@@ -165,30 +142,46 @@ public class PoliticalBoundariesGUI implements ActionListener {
 			if(subRegionTable.getTitle() == "Asia") {
 				loadLandmarks("Japan", subRegionNode);
 			}
-			subRegionTable.addControlColumn(forwardClickListener, ">", subRegionNode);
+			subRegionTable.addControlColumn(forwardClickListener, ">", subRegionNode);						//Control column to implement navigation. Can also be used for loading new data.
 		}
 		regionTable.addControlColumn(forwardClickListener, ">", root);
-		regionTable.addColorButton(new ColorListener(true));
-
-		return this.politicalBoundaryMainPanel;
+		regionTable.addColorButton(new ColorListener(true));												//Add color button. Color listener is set to true, which means it changes the color of its direct children as well as its own color.
+		return this.mainPanel;
 	}
 
-	
+	/**
+	 * 
+	 * @param groupName
+	 * @param subRegionNode
+	 * 
+	 * 
+	 * Loads landmarks and add them to the table tree
+	 * 
+	 */
 	private void loadLandmarks(String groupName, TreeNode<CheckAllTable> subRegionNode) {
-		ArrayList<String> landmarks = fileParser.loadLandmarkGroups(groupName);
-		CheckAllTable landmarksTable = setUpTable(landmarks, groupName, checkNextTableListener, new ColorListener(true));
-		TreeNode<CheckAllTable> landmarksNode = subRegionNode.addChild(landmarksTable);
+		ArrayList<String> landmarks = fileParser.loadLandmarkGroups(groupName);												//Use fileParser to parse landmark data based on the group name.
+		CheckAllTable landmarksTable = setUpTable(landmarks, groupName, checkNextTableListener, new ColorListener(true));	//Create table to display all landmark groups for the subRegion
+		TreeNode<CheckAllTable> landmarksNode = subRegionNode.addChild(landmarksTable);										//Add the table as child of the subRegion table.
 		landmarksTable.getTable().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
-		for (int j = 0; j < landmarks.size(); j++) {
-			final PresetLocationGroup landmarkData = fileParser.loadLandmarkData(landmarks.get(j));
-			CheckAllTable landmarkDataTable = setUpTable(landmarkData.locationNames, landmarks.get(j), new LandmarkListener(landmarkData), new ColorListener(false));
-			landmarksNode.addChild(landmarkDataTable);
+		for (int j = 0; j < landmarks.size(); j++) {																		
+			final PresetLocationGroup landmarkData = fileParser.loadLandmarkData(landmarks.get(j));							
+			CheckAllTable landmarkDataTable = setUpTable(landmarkData.locationNames, landmarks.get(j), new LandmarkListener(landmarkData), new ColorListener(false));		//Create table to display landmarks in landmark group.
+			landmarksNode.addChild(landmarkDataTable);																		//Add table as child.
 		}
 		landmarksTable.addControlColumn(forwardClickListener, ">", landmarksNode);
 	}
 
-	 
+	/**
+	 * 
+	 * @param tableData
+	 * @param title
+	 * @param tableListener
+	 * @param colorListener
+	 * @return table
+	 * 
+	 * Create new CheckAllTable with listeners and buttons added.
+	 * 
+	 */
 	public CheckAllTable setUpTable(ArrayList<String> tableData, String title, TableModelListener tableListener, ActionListener colorListener) {
 		title = title.replace('_', ' ');
 		CheckAllTable table = new CheckAllTable(tableData, title, tableListener);
@@ -196,6 +189,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		table.addColorButton(colorListener);
 		return table;
 	}
+	
 	/**
 	 * Add vtkActors
 	 */
@@ -209,18 +203,34 @@ public class PoliticalBoundariesGUI implements ActionListener {
 			}
 		}
 	}
+	
+	/**
+	 * @param drawingTool
+	 * 
+	 * Remove vtk pin and labels.
+	 */
 	public void removeDrawingTool(DrawingTool drawingTool) {
 		appendActors.getAppendedActor().RemovePart(drawingTool.getActorPin());
 		appendActors.getAppendedActor().RemovePart(drawingTool.getActorText());
 	}
 
-	
+	/**
+	 * @param drawingTool
+	 * @param text
+	 * @return
+	 * 
+	 * Creates vtk actors for a drawing tool and adds it to allActiveDrawings
+	 * 
+	 */
 	public DrawingTool addDrawingTool(DrawingTool drawingTool, String text){
 		if (drawingTool.getActorPin()!= null) {
 			appendActors.addToAppendedPolyData(drawingTool.getActorPin());
+			if (drawingTool.getActorText() != null)
+				appendActors.addToAppendedPolyData(drawingTool.getActorText());
 			appendActors.getAppendedActor().Modified();
 			return drawingTool;
 		}
+		
 		double[] pt= {Transform.calcRadius(37),37,-120};
 		if(drawingTool.getTextString()!=null) {
 			text = drawingTool.getTextString();
@@ -255,6 +265,9 @@ public class PoliticalBoundariesGUI implements ActionListener {
 
 		vtkPolyDataMapper pm = new vtkPolyDataMapper();
 		pm.SetInputConnection(glyphPoints.GetOutputPort());
+		
+		final vtkActor actorPin = new vtkActor();
+		actorPin.SetMapper(pm);
 
 		vtkPolyData temp = new vtkPolyData();
 		temp.SetPoints(labelPoints);
@@ -271,11 +284,8 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		vtkLabelPlacementMapper cellMapper = new vtkLabelPlacementMapper();
 		cellMapper.SetInputConnection(pointSetToLabelHierarchyFilter.GetOutputPort());
 
-		vtkActor2D actor = new vtkActor2D();
+		final vtkActor2D actor = new vtkActor2D();
 		actor.SetMapper(cellMapper);
-
-		vtkActor actorPin = new vtkActor();
-		actorPin.SetMapper(pm);
 
 		if(drawingTool.getTextString()==null){
 			drawingTool = new DrawingTool(pt[1],pt[2],pt[0],text,null,Color.white,actorPin,actor);
@@ -301,7 +311,16 @@ public class PoliticalBoundariesGUI implements ActionListener {
 	//	drawingToolsArray.add(drawingTool);
 		return drawingTool;
 	}
-
+	
+	/**
+	 * 
+	 * @param filename
+	 * @param isSelected
+	 * @return
+	 * 
+	 * Loads boundaries from the text files and creates vtk actors to display them. 
+	 * 
+	 */
 	public ArrayList<String> loadRegion(String filename, boolean isSelected)
 	{
 		//subRegions are displayed in the lower panel of this plugin
@@ -386,6 +405,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		};
 		return searchNode.findTreeNode(searchCriteria);
     }
+    
     //Search criteria for searching treenode by title of CheckAllTable
     private TreeNode<CheckAllTable> findTableNodeByTitle(TreeNode<CheckAllTable> searchNode, final String title) {
     	Comparable<CheckAllTable> searchCriteria = new Comparable<CheckAllTable>() {
@@ -411,27 +431,26 @@ public class PoliticalBoundariesGUI implements ActionListener {
     	public void tableChanged(TableModelEvent e) {
     		int row = e.getFirstRow();
     		int column = e.getColumn();
-    		
+    		TableModel model = (TableModel) e.getSource();
     		if (column == 0) {
-    			TableModel model = (TableModel) e.getSource();
-    			String landmarkName = (String) model.getValueAt(row, column+1);
+    			String landmarkName = (String) model.getValueAt(row, 1);
+    			Color landmarkColor = (Color) model.getValueAt(row, 2);
     			Boolean checked = (Boolean) model.getValueAt(row, column);
     			for(int k = 0; k < landmarkData.locationNames.size(); k++) {
     				if (landmarkData.locationNames.get(k).equals(landmarkName)) {
-    					System.out.println(landmarkData.locationNames.get(k));
     					if (checked) {
     						if(!allActiveDrawings.contains(landmarkData.locations.get(k))) {
     							allActiveDrawings.add(addDrawingTool(landmarkData.locations.get(k), ""));
-    							//addDrawingTool(landmarkData.locations.get(k), "");
     						}
     						else {
-    							setVisibility(landmarkData.locations.get(k), 1); 
+    							setVisibility(landmarkData.locations.get(k), 1);
     						}
+    						setColor(landmarkData.locations.get(k), landmarkColor);
     					}
     					else {
-    						removeDrawingTool(landmarkData.locations.get(k));
-    						allActiveDrawings.remove(landmarkData.locations.get(k));
-    						//setVisibility(landmarkData.locations.get(k), 0);
+    						if(allActiveDrawings.contains(landmarkData.locations.get(k))) {
+    							setVisibility(allActiveDrawings.get(allActiveDrawings.indexOf(landmarkData.locations.get(k))), 0);
+    						}
     					}
     					break;
     				}
@@ -441,8 +460,11 @@ public class PoliticalBoundariesGUI implements ActionListener {
     		Info.getMainGUI().updateRenderWindow();
     	}
     }
-
     
+    /**
+     *  Listens for clicks on the header of the checkbox column. Can be copied and used in other plugins.
+     *  This listener is the default to navigate to the parent table.
+     */
     MouseAdapter backClickListener = new MouseAdapter() {
     	public void mouseClicked(MouseEvent e) {
     		//Getting path to checkalltable based on table header click
@@ -455,16 +477,20 @@ public class PoliticalBoundariesGUI implements ActionListener {
     		// clear search bar 
     		targetTable.clearSearchBar();
     		if (col == 0) {
-    			tablePanel.remove(targetTable);
+    			mainPanel.remove(targetTable);
     			currentTableNode.parent.data.renderTableHeader();
-    			tablePanel.add(currentTableNode.parent.data);
-    			tablePanel.revalidate(); 
-    			tablePanel.repaint();
+    			mainPanel.add(currentTableNode.parent.data);
+    			mainPanel.revalidate(); 
+    			mainPanel.repaint();
     		}
     		
     	}
     };
 	
+    /**
+     *  Listens for clicks on the control column. Can be copied and used in other plugins.
+     *  This listener is the default to navigate to a child table. 
+     */
     MouseAdapter forwardClickListener = new MouseAdapter() {
     	public void mousePressed(MouseEvent e) {
     		JTable target = (JTable)e.getSource();
@@ -474,22 +500,28 @@ public class PoliticalBoundariesGUI implements ActionListener {
     		TreeNode<CheckAllTable> currentTableNode = findTableNode(root, targetTable);
     		int row = target.getSelectedRow();
     		int col = target.columnAtPoint(e.getPoint());
+    		targetTable.clearSearchBar();
     		if (col != 0) {
     			if (e.getClickCount() == 2 || col == targetTable.getTable().getColumnCount()-1) {
     				final String subTableName = (String)target.getValueAt(row, 1);
     				for (TreeNode<CheckAllTable> node : currentTableNode) {
     					if (node.data.getTitle().equals(subTableName)) {
-    						tablePanel.remove(targetTable);
-    						tablePanel.add(node.data);
+    						mainPanel.remove(targetTable);
+    						mainPanel.add(node.data);
+    						node.data.renderTableHeader();
     					}
     				}
-    				tablePanel.revalidate(); 
-    				tablePanel.repaint();
+    				mainPanel.revalidate(); 
+    				mainPanel.repaint();
     			}
     		}
     	}
     };
 	
+    /**
+     * Listens for checks on the check column and checks all the boxes for the rows child table.
+     * Can be copied and used in other plugins.
+     */
 	TableModelListener checkNextTableListener = new TableModelListener() {
 		@Override
 		public void tableChanged(final TableModelEvent e) {
@@ -498,16 +530,19 @@ public class PoliticalBoundariesGUI implements ActionListener {
 			if (column == 0) {
 						TableModel model = (TableModel) e.getSource();
 						String subTableName = (String) model.getValueAt(row, column+1);
-						System.out.println("subtable name: " + subTableName);
 						final Boolean checked = (Boolean) model.getValueAt(row, column);
 						final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
 						for (int i = 0 ; i < nextTableNode.data.getTable().getRowCount(); i++) {
 							nextTableNode.data.getTable().setValueAt(checked, i, 0);
+							nextTableNode.data.getTable().setValueAt(model.getValueAt(row, 2), i, 2);
 						}   
 				}
 			}
 		};
 	
+	/**
+	 * Listener specific to this plugin. Turns region and subregion boundaries on and off.
+	 */
 	TableModelListener subRegionListener = new TableModelListener() {
 		@Override
 		public void tableChanged(TableModelEvent e) {
@@ -517,9 +552,11 @@ public class PoliticalBoundariesGUI implements ActionListener {
 				TableModel model = (TableModel) e.getSource();
 				String subRegionName = (String) model.getValueAt(row, column+1);
 				Boolean checked = (Boolean) model.getValueAt(row, column);
+    			Color subRegionColor = (Color) model.getValueAt(row, 2);
 				if (allSubRegionNames.contains(subRegionName)) {
 					vtkActor actor = actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(subRegionName));
 					if (checked) {
+						actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(subRegionName)).GetProperty().SetColor(Info.convertColor(subRegionColor));
 						actor.VisibilityOn();
 					}
 					else {
@@ -530,7 +567,34 @@ public class PoliticalBoundariesGUI implements ActionListener {
 			}
 		}
 	};
-
+	
+	/**
+	 * @param targetTable
+	 * @param tableName
+	 * @param color
+	 * 
+	 * Helper function to set colors.
+	 * 
+	 */
+	private void setVtkColors(JTable targetTable, String tableName, Color color) {
+		if (allSubRegionNames.contains(tableName)) {
+			actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(tableName)).GetProperty().SetColor(Info.convertColor(color));
+		}
+		if (allActiveDrawings != null) {
+			for (int k = 0; k < allActiveDrawings.size(); k++) {
+				if (tableName.equals(allActiveDrawings.get(k).getTextString())) {
+					allActiveDrawings.get(k).setColor(color);
+					setColor(allActiveDrawings.get(k), color);
+				}
+			}
+		}
+	}
+	/**
+	 * @author intern
+	 *
+	 * Listens for color button click and changes colors as appropriate.
+	 *
+	 */
 	class ColorListener implements ActionListener {
 		private PresetLocationGroup landmarkData;
 		private boolean colorNextTable = false;
@@ -556,34 +620,16 @@ public class PoliticalBoundariesGUI implements ActionListener {
 						String subTableName = (String) table.getModel().getValueAt(table.convertRowIndexToModel(i), 1);
 						table.getModel().setValueAt(newColor, table.convertRowIndexToModel(i), 2);
 						if (!colorNextTable) {
+							setVtkColors(table, subTableName, newColor);
 							if (allSubRegionNames.contains(subTableName)) {
-								actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(subTableName)).GetProperty().SetColor(Info.convertColor(newColor));
 								table.getModel().setValueAt(newColor ,table.convertRowIndexToModel(i), 2);
-							}
-							if (allActiveDrawings != null) {
-								for (int k = 0; k < allActiveDrawings.size(); k++) {
-									if (subTableName.equals(allActiveDrawings.get(k).getTextString())) {
-										allActiveDrawings.get(k).setColor(newColor);
-										setColor(allActiveDrawings.get(k), newColor);
-									}
-								}
 							}
 						}
 						else {
 				    	 	final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
 				    	 	for (int j = 0 ; j < nextTableNode.data.getTable().getRowCount(); j++) {
 								String nextTableName = (String) nextTableNode.data.getTable().getModel().getValueAt(j, 1);
-								if (allSubRegionNames.contains(nextTableName)) {
-									actorPoliticalBoundariesSegments.get(allSubRegionNames.indexOf(nextTableName)).GetProperty().SetColor(Info.convertColor(newColor));
-								}
-								if (allActiveDrawings != null) {
-									for (int k = 0; k < allActiveDrawings.size(); k++) {
-										if (nextTableName.equals(allActiveDrawings.get(k).getTextString())) {
-											allActiveDrawings.get(k).setColor(newColor);
-											setColor(allActiveDrawings.get(k), newColor);
-										}
-									}
-								}
+								setVtkColors(table, nextTableName, newColor);
 								nextTableNode.data.getTable().getModel().setValueAt(newColor, nextTableNode.data.getTable().convertRowIndexToModel(j), 2);
 							}
 						}
@@ -594,23 +640,24 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		}
 		
 	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		Object src = e.getSource();
-		if (src == this.colorDrawingToolsButton){
-			if (this.colorChooser == null) {
-				this.colorChooser = new SingleColorChooser(colorDrawingToolsButton);
-			}
-			Color newColor = this.colorChooser.getColor();
-			if (newColor != null) {
-				for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
-				{
-					actorPoliticalBoundariesSegments.get(j).GetProperty().SetColor(Info.convertColor(newColor));
-				}
-			}
-			Info.getMainGUI().updateRenderWindow();
-		}
+//		Object src = e.getSource();
+//		if (src == this.colorDrawingToolsButton){
+//			if (this.colorChooser == null) {
+//				this.colorChooser = new SingleColorChooser(colorDrawingToolsButton);
+//			}
+//			Color newColor = this.colorChooser.getColor();
+//			if (newColor != null) {
+//				for(int j =0;j<actorPoliticalBoundariesSegments.size();j++)
+//				{
+//					actorPoliticalBoundariesSegments.get(j).GetProperty().SetColor(Info.convertColor(newColor));
+//				}
+//			}
+//			Info.getMainGUI().updateRenderWindow();
+//		}
 	}
 	
 	
@@ -659,5 +706,4 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		ArrayList<JCheckBox> upperCheckBoxButtons = new ArrayList<JCheckBox>();
 		return upperCheckBoxButtons;
 	}
-	
 }
