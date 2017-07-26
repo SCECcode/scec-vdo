@@ -27,6 +27,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.GeneralPath;
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +58,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
@@ -78,6 +80,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 
 import org.apache.log4j.Logger;
+import org.jfree.chart.block.LineBorder;
 import org.opensha.sha.gui.beans.EqkRupSelectorGuiBean;
 import org.scec.vtk.commons.legend.LegendItem;
 //import org.scec.vtk.plugins.ScriptingPlugin.ScriptingPlugin;
@@ -198,7 +201,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		Prefs.init();
 		renderWindow = new vtkJoglPanelComponent();
 		mainPanel = new JPanel(new BorderLayout());
-		mainPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
 		renderWindow.getRenderer().SetBackground(0,0,0);
 		
 		// this should enable depth peeling, but doesn't seem to work. at least for Kevin on linux.
@@ -216,14 +218,34 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		helpPanel = new JPanel();
 		helpPanel.setLayout(new FlowLayout());
 		
-		Icon icon = UIManager.getIcon("OptionPane.questionIcon");
-		JButton helpButton = new JButton(icon);
-		helpPanel.add(helpButton);
-		helpPanel.setOpaque(true);
+		mainMenu = new MainMenu(); //Creates Main Menu
+		pluginGUIPanel = new JPanel(new BorderLayout()); //Creates the GUI panel for tabs.
+		helpPanel = new JPanel(); //Creates the help panel 
+		helpPanel.setLayout(new FlowLayout()); 
+		
+		Icon icon = UIManager.getIcon("OptionPane.questionIcon"); //help panel Icon
+		JButton helpButton = new JButton(icon); //Creates new help button
+		helpButton.setOpaque(false);
+		helpPanel.add(helpButton); //Adds the help button to the help panel. 
+
+		helpPanel.setOpaque(false);
+		helpPanel.setMaximumSize(new Dimension(300, 50));
 		//helpPanel.setColor(Color.white);
 		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
 		pluginGUIPanel.setBorder(BorderFactory.createEmptyBorder());
+		mainPanel.setOpaque(true);
+		//mainPanel.setBackground(Color.white);
+		mainPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+		pluginGUIPanel.setOpaque(true);
+		//pluginGUIPanel.setBackground(Color.white);
+		pluginGUIPanel.setBorder(new EmptyBorder(2, 0, 0, 0));
 		
+		
+		/*
+		 * 
+		 * Help button action listener. 
+		 * This listener aims to open the tutorial and autodirect the user to the correlating section of the tutorial.
+		 */
 		helpButton.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent ae) {
 		    	  Help help = new Help();
@@ -249,7 +271,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
 		pluginGUIScrollPane.setMinimumSize(d);
 		pluginGUIScrollPane.setPreferredSize(d);
-		pluginTabPane.setBorder(new EmptyBorder(2, 5, 5, 5));
+		pluginTabPane.setOpaque(false);
 		Dimension minimumSize = new Dimension(100, 50);
 		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		renderWindow.getComponent().setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
@@ -305,11 +327,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		});
 
 		//mouse event
+		final JLabel label = new JLabel(" ", SwingConstants.RIGHT);
 		final vtkCellPicker cellPicker = new vtkCellPicker();
 		cellPicker.SetTolerance(0.001);
 		
 		final boolean clickDebug = false;
-
 		renderWindow.getComponent().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -339,14 +361,16 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				int y = clickPos[1];
 //				int x = e.getX();
 //				int y = calcY;
+				cellPicker.Pick(e.getX(), renderWindow.getComponent().getHeight()-e.getY()-1,
+			            0.0, renderWindow.getRenderer());
  
-				cellPicker.Pick(x, y, 0, renderWindow.getRenderer());
-				if (clickDebug) {
-					if (cellPicker.GetActor() != null)
-						System.out.println("Actor: "+cellPicker.GetActor().getClass().getName());
-					else
-						System.out.println("Actor: (null)");
-				}
+				//cellPicker.Pick(x, y, 0, renderWindow.getRenderer());
+//				if (clickDebug) {
+//					if (cellPicker.GetActor() != null)
+//						System.out.println("Actor: "+cellPicker.GetActor().getClass().getName());
+//					else
+//						System.out.println("Actor: (null)");
+//				}
 				// if we picked a pick enabled actor, fire off a pick event
 				if (cellPicker.GetActor() instanceof PickEnabledActor<?>) {
 					PickEnabledActor<?> actor = (PickEnabledActor<?>)cellPicker.GetActor();
@@ -596,7 +620,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			//}
 			  } 
 		});
-		
+		centerImage.setOpaque(false);
 		centerImage.setToolTipText("Center");
 		
 		
@@ -605,6 +629,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		try {
 			// sets hover text
 			zoomIn.setToolTipText("Zoom In");
+			zoomIn.setOpaque(false);
 			File file = new File("resources/zoomIn.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -627,6 +652,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		try {
 			// sets hover text
 			zoomOut.setToolTipText("Zoom Out");
+			zoomOut.setOpaque(false);
 			File file = new File("resources/zoomOut.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -649,6 +675,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		try {
 			// sets hover text
 			save.setToolTipText("Save file");
+			save.setOpaque(false);
 			File file = new File("resources/save.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -678,6 +705,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		try {
 			// sets hover text
 			open.setToolTipText("Open a file");
+			open.setOpaque(false);
 			File file = new File("resources/open.png");
 		    Image img = ImageIO.read(file);
 		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -788,18 +816,18 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		allPanel.setLayout(new BoxLayout(allPanel, BoxLayout.PAGE_AXIS));
 		allPanel.setBorder(BorderFactory.createEmptyBorder());
 		allPanel.add(gui);
-		allPanel.setOpaque (false); //
+		allPanel.setOpaque(false);
 	    allPanel.setFocusable (false);
 		allPanel.add(Box.createVerticalGlue());
-		allPanel.add(new JPanel());
+		//allPanel.add(new JPanel());
 		JScrollPane pluginTab = new JScrollPane(allPanel);
 		pluginTab.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		pluginTab.setBorder(BorderFactory.createEmptyBorder());
 		//pluginTab.setOpaque(true);
 		//pluginTab.setColor(Color.white);
 		pluginTab.setName(id);
-
-
+		pluginTab.setOpaque(false);
+		pluginTab.setBackground(Color.black);
 		// Add the tab to the tab panel
 		
 		pluginTabPane.addTab(title, pluginTab);

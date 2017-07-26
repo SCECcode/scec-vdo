@@ -1,5 +1,6 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
+import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -36,6 +37,7 @@ import org.opensha.sha.simulators.parsers.RSQSimFileReader;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultIDComparator;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
+import org.scec.vtk.commons.opensha.surfaces.params.ColorParameter;
 import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
@@ -140,6 +142,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	
 	
 	private File getCustomFile() {
 		if (chooser == null) {
