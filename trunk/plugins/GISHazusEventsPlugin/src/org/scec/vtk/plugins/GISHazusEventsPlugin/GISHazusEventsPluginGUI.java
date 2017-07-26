@@ -7,10 +7,14 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -25,19 +29,25 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
+import org.opensha.sha.earthquake.rupForecastImpl.WGCEP_UCERF_2_Final.rupCalc.Tree;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
+import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.utils.components.GradientColorChooser;
+import org.scec.vtk.plugins.utils.components.TreeNode;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.actors.AppendActors;
 
@@ -127,8 +137,11 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 	PluginActors hazusPluginActors;
 
 	private AppendActors appendHazusActor;
-
-
+	
+	JPanel tablePanel;
+	TreeNode<CheckAllTable> root;
+	Map<String, Events> allEarthquakeEvents = new HashMap<>();
+	
 	public GISHazusEventsPluginGUI(PluginActors pluginActors) {
 		super(); 
 		hazusPluginActors=pluginActors;
@@ -136,13 +149,6 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		appendHazusActor = new AppendActors();
 		bTrace.setAppendActors(appendHazusActor);
 
-//		for(int i = 0; i < boundaryRowOrder.length; i++)
-//		{
-//			
-////			boundaryRowOrder[i]=-1;
-//			
-////			boundaryStartIndex[i] = -1;
-//		}
 				for(int i = 0; i < boundaryRowOrder.length; i++)
 				{
 					for(int j = 0; j < boundaryRowOrder[0].length; j++)
@@ -164,6 +170,33 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		 *Upper Panel*
 		 ************/
 		// subgroups tab
+		tablePanel = new JPanel(new BorderLayout());
+		ArrayList<String> likeEarthquakes = new ArrayList<String>();
+		likeEarthquakes.add("Northridge");
+		likeEarthquakes.add("Loma Prieta");
+		likeEarthquakes.add("Next Like-Earthquake");
+		CheckAllTable earthquakeTable = new CheckAllTable(likeEarthquakes, "Earthquakes");
+		root = new TreeNode<CheckAllTable>(earthquakeTable);
+		for(String quake: likeEarthquakes) {
+			ArrayList<String> areaList = new ArrayList<String>();
+			for(int i =0; i<subgroupNames.size(); i++){
+				if (quake.equalsIgnoreCase(bTrace.getLikeEarthquake(i))){
+					areaList.add(subgroupNames.get(i));
+				}
+				else if (bTrace.getEventName(i).equalsIgnoreCase("Import")){
+					areaList.add(subgroupNames.get(i));
+				}
+			}
+			CheckAllTable areaTable = new CheckAllTable(areaList, quake);
+			TreeNode<CheckAllTable> areaTableNode = root.addChild(areaTable);
+			areaTable.getTable().getTableHeader().addMouseListener(backClickListener);
+			areaTable.addControlColumn(loadClickListener, "Load", areaTableNode);
+		}
+		tablePanel.add(earthquakeTable);
+		earthquakeTable.addControlColumn(forwardClickListener, ">", root);
+		earthquakeTable.disableCheckboxes();
+		//add(tablePanel, BorderLayout.PAGE_END);
+		
 		groupsTabbedPane = new JTabbedPane();
 		groupsTabbedPane.setBorder(BorderFactory.createEmptyBorder(15,10,10,10));
 		groupsTabbedPane.setPreferredSize(new Dimension(400, 240));
@@ -239,6 +272,184 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 
 
 	}
+    private TreeNode<CheckAllTable> findTableNode(TreeNode<CheckAllTable> searchNode, final CheckAllTable targetTable) {
+    	Comparable<CheckAllTable> searchCriteria = new Comparable<CheckAllTable>() {
+			@Override
+			public int compareTo(CheckAllTable table) {
+				if (table == null)
+					return 1;
+				boolean nodeOk = (table == targetTable);
+				return nodeOk ? 0 : 1;
+			}
+		};
+		return searchNode.findTreeNode(searchCriteria);
+    }
+    
+	MouseAdapter backClickListener = new MouseAdapter() {
+    	public void mouseClicked(MouseEvent e) {
+    		//Getting path to checkalltable based on table header click
+    		JTable target = ((JTableHeader)e.getSource()).getTable();
+    		JViewport vp = (JViewport) target.getParent();
+    	 	JScrollPane sp = (JScrollPane) vp.getParent();
+    	 	final CheckAllTable targetTable = (CheckAllTable) sp.getParent();
+    	 	TreeNode<CheckAllTable> currentTableNode = findTableNode(root, targetTable);
+    		int col = target.columnAtPoint(e.getPoint());
+    		if (col == 0) {
+    			tablePanel.remove(targetTable);  
+    			currentTableNode.parent.data.renderTableHeader();
+    			tablePanel.add(currentTableNode.parent.data);
+    			tablePanel.revalidate(); 
+    			tablePanel.repaint();
+    		}
+    	}
+    };
+  class BoundaryListener implements TableModelListener{
+	private ArrayList<FilledBoundaryCluster> boundaryArray;
+	private String tableName;
+	public BoundaryListener(ArrayList<FilledBoundaryCluster> boundaryArray, String tableName) {
+		this.boundaryArray = boundaryArray;
+		this.tableName = tableName;
+	}
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		int row = e.getFirstRow();
+		int column = e.getColumn();
+		if (column == 0) {
+			TableModel model = (TableModel) e.getSource();
+			String boundaryName = (String) model.getValueAt(row, column+1);
+			Boolean checked = (Boolean) model.getValueAt(row, column);
+			for (int k = 0; k < boundaryArray.size(); k++) {
+				if (boundaryArray.get(k).getName().equals(boundaryName)) {
+					System.out.println(tableName);
+					if (checked) {
+						hazusPluginActors.addActor(allEarthquakeEvents.get(tableName).getSegmentActors().get(k));
+					}
+					else {
+						hazusPluginActors.removeActor(allEarthquakeEvents.get(tableName).getSegmentActors().get(k));
+					}
+				}
+			}
+		}
+		Info.getMainGUI().updateRenderWindow();
+	}
+}
+    
+    MouseAdapter loadClickListener = new MouseAdapter() {
+    	public void mousePressed(MouseEvent e) {
+    		JTable target = (JTable)e.getSource();
+    		JViewport vp = (JViewport) target.getParent();
+    		JScrollPane sp = (JScrollPane) vp.getParent();
+    		final CheckAllTable targetTable = (CheckAllTable) sp.getParent();
+    		TreeNode<CheckAllTable> currentTableNode = findTableNode(root, targetTable);
+    		int row = target.getSelectedRow();
+    		int col = target.columnAtPoint(e.getPoint());
+    		if (col != 0) {
+    			if (e.getClickCount() == 2 || col == targetTable.getTable().getColumnCount()-1) {
+    				final String subTableName = (String)target.getValueAt(row, 1);
+    				boolean foundTable = false;
+    				for (TreeNode<CheckAllTable> node : currentTableNode) {
+    					if (node.data.getTitle().equals(subTableName)) {
+    						tablePanel.remove(targetTable);
+    						tablePanel.add(node.data);
+    						node.data.renderTableHeader();
+    						foundTable = true;
+    					}
+    				}
+    				if (!foundTable) {
+    					if(polArray == null){
+    						polArray = bTrace.buildSelectedBoundary(selectedEventRow);
+
+
+    					}
+    					else{
+    						int startIndex = polArray.size();
+    						//			polArray.addAll(bTrace.buildSelectedBoundary(rowClicked));
+    						ArrayList<FilledBoundaryCluster> temp = bTrace.buildSelectedBoundary(selectedEventRow);
+    						for (int i = 0; i < temp.size(); i++) {
+    							polArray.add(temp.get(i));
+
+    						}
+    					}
+	    				allEarthquakeEvents.put(subTableName, bTrace);
+	        			numOfBoundaries = polArray.size();
+	        			ArrayList<String> polArrayNames = new ArrayList<String>();
+	        			for (int i = 0; i < numOfBoundaries; i++) {
+	        				polArray.get(i).setDisplayed(true);
+	        				
+	        				polArrayNames.add(polArray.get(i).getName());
+	        			}
+	        			System.out.println(polArray.get(0).getName());
+	        			CheckAllTable newTable = new CheckAllTable(polArrayNames, subTableName, new BoundaryListener(polArray, subTableName));
+	        			TreeNode<CheckAllTable> newTableNode = currentTableNode.addChild(newTable);
+	        			newTable.getTable().getTableHeader().addMouseListener(backClickListener);
+	        			tablePanel.remove(targetTable);
+						tablePanel.add(newTable);
+						newTable.renderTableHeader();
+	        			transparencySlider.setEnabled(true);    
+	    				}
+        			}
+    		}
+    	}
+    };
+	
+    MouseAdapter forwardClickListener = new MouseAdapter() {
+    	public void mousePressed(MouseEvent e) {
+    		JTable target = (JTable)e.getSource();
+    		JViewport vp = (JViewport) target.getParent();
+    		JScrollPane sp = (JScrollPane) vp.getParent();
+    		final CheckAllTable targetTable = (CheckAllTable) sp.getParent();
+    		TreeNode<CheckAllTable> currentTableNode = findTableNode(root, targetTable);
+    		int row = target.getSelectedRow();
+    		int col = target.columnAtPoint(e.getPoint());
+    		if (col != 0) {
+    			if (e.getClickCount() == 2 || col == targetTable.getTable().getColumnCount()-1) {
+    				final String subTableName = (String)target.getValueAt(row, 1);
+    				for (TreeNode<CheckAllTable> node : currentTableNode) {
+    					if (node.data.getTitle().equals(subTableName)) {
+    						tablePanel.remove(targetTable);
+    						tablePanel.add(node.data);
+    						node.data.renderTableHeader();
+    					}
+    				}
+    				tablePanel.revalidate(); 
+    				tablePanel.repaint();
+    			}
+    		}
+    	}
+    };
+//    class AreaListener implements TableModelListener{
+//    	public AreaListener() {
+//    		super();
+//		}
+//    	@Override
+//    	public void tableChanged(TableModelEvent e) {
+//    		int row = e.getFirstRow();
+//    		int column = e.getColumn();
+//    		if (column == 0) {
+//    			TableModel model = (TableModel) e.getSource();
+//    			String landmarkName = (String) model.getValueAt(row, column+1);
+//    			Boolean checked = (Boolean) model.getValueAt(row, column);
+//    			if (checked) {
+//    				polArray = bTrace.buildSelectedBoundary(row);
+//    				
+//        			hazusPluginActors.addActor(bTrace.getAppendActor().getAppendedActor());	
+//        			numOfBoundaries = polArray.size();
+//        			for (int i = 0; i < numOfBoundaries; i++) {
+//        				polArray.get(i).setDisplayed(true);
+//        				System.out.println(polArray.get(i).getName());
+//        			}
+//        			transparencySlider.setEnabled(true);
+//    			}
+//    			else {
+//    				unload();
+//    				polArray = null;
+//    				numOfBoundaries = 0;
+//    				transparencySlider.setEnabled(false);
+//    			}
+//    		}
+//    		Info.getMainGUI().updateRenderWindow();
+//    	}
+//    }
 	public void updateColorButton(Color c1, Color c2)
 	{
 		colorButton.setColor(c1,c2);
@@ -913,7 +1124,6 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		if (src == transparencySlider) {
 
 			float transparency = ((float) transparencySlider.getValue()) / 100.0f;
-
 			System.out.println("transparency: "+ transparency);
 			setTransparency(transparency);
 

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 import org.scec.vtk.tools.actors.AppendActors;
 
+import vtk.vtkActor;
+
 
 
 public class FilledBoundaryCluster {
@@ -15,7 +17,6 @@ public class FilledBoundaryCluster {
 	private Color color = new Color(1.0f,1.0f,1.0f);
 	private boolean bDisplayed=false;
 	private AppendActors segmentActors;
-	
 	public FilledBoundaryCluster(AppendActors append)
 	{
 		init(append);
@@ -31,7 +32,7 @@ public class FilledBoundaryCluster {
 		name="";
 		segmentActors =append;
 	}
-	public void addSegment(float[] latitude, float[] longitude)
+	public vtkActor addSegment(float[] latitude, float[] longitude)
 	{
 		FilledBoundary currentBoundary= new FilledBoundary();
 		//Boundary currentBoundary2= new Boundary();
@@ -42,13 +43,12 @@ public class FilledBoundaryCluster {
 		boundaries.add(currentBoundary);
 		//boundaries2.add(currentBoundary2);
 		if(currentBoundary.getActor()!=null){
-		//segmentActors.AddInputData(currentBoundary.getActor());
-		//System.out.println(currentBoundary.getActor().GetNumberOfPoints());
-		segmentActors.addToAppendedPolyData(currentBoundary.getActor());
-		//segmentActors.Update();
+			segmentActors.addToAppendedPolyData(currentBoundary.getActor());
+			return currentBoundary.getActor();
 		}
+		return null;
 	}
-	
+
 	public ArrayList<FilledBoundary> getBoundaries(){
 		return boundaries;
 	}
