@@ -11,7 +11,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -22,7 +21,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
-
 
 import org.scec.vtk.drawingTools.DrawingTool;
 import org.scec.vtk.main.Info;
@@ -36,8 +34,6 @@ import org.scec.vtk.politicalBoundaries.PoliticalBoundariesFileParser.PresetLoca
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.Transform;
 import org.scec.vtk.tools.actors.AppendActors;
-
-import com.jogamp.newt.event.MouseListener;
 
 import vtk.vtkActor;
 import vtk.vtkActor2D;
