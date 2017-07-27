@@ -181,18 +181,44 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		helpPanel = new JPanel();
 		helpPanel.setLayout(new FlowLayout());
 		
-		mainMenu = new MainMenu(); //Creates Main Menu
-		pluginGUIPanel = new JPanel(new BorderLayout()); //Creates the GUI panel for tabs.
-		helpPanel = new JPanel(); //Creates the help panel 
-		helpPanel.setLayout(new FlowLayout()); 
+//		Icon icon = UIManager.getIcon("OptionPane.questionIcon");
 		
-		Icon icon = UIManager.getIcon("OptionPane.questionIcon"); //help panel Icon
-		JButton helpButton = new JButton(icon); //Creates new help button
-		helpButton.setOpaque(false);
-		helpPanel.add(helpButton); //Adds the help button to the help panel. 
+		
+		JButton helpButton = new JButton();
+		
 
+		
+		try {
+			// sets hover text
+		helpButton.setToolTipText("Help");
+			File file = new File("resources/question3.png");
+		    Image img = ImageIO.read(file);
+		    img = img.getScaledInstance(50, 45, Image.SCALE_DEFAULT);
+		    helpButton.setIcon(new ImageIcon(img));
+		  } catch (IOException ex) {
+		    System.out.println("help: " + ex);
+		  }
+//		zoomIn.addActionListener(new ActionListener() { 
+//		helpButton.setPreferredSize(new Dimension(40, 40));
+//		helpButton.setPreferredSize(new Dimension(100,50));
+		
+		helpButton.setBackground(Color.black);
+//        ImageIcon img = new ImageIcon("/Users/interns/Desktop/question3.png");
+		
+//        ImageIcon img = new ImageIcon("/resources/question3.png");
+//        helpButton.setIcon(img);
+		
+        helpButton.setOpaque(false);
+		
+//        helpButton.setBounds(20,30,50,30);
+        
+        
+        
+        
+//           
+        
+		helpPanel.add(helpButton);
 		helpPanel.setOpaque(false);
-		helpPanel.setMaximumSize(new Dimension(300, 50));
 		//helpPanel.setColor(Color.white);
 		pluginGUIPanel.add(helpPanel,BorderLayout.PAGE_END);
 		pluginGUIPanel.setBorder(BorderFactory.createEmptyBorder());
@@ -213,7 +239,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		      public void actionPerformed(ActionEvent ae) {
 		    	  Help help = new Help();
 		      }
-		    });
+		
+		});
+		
   //HELP BUTTON
 		pluginTabPane =  new JTabbedPane();
 		pluginTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
