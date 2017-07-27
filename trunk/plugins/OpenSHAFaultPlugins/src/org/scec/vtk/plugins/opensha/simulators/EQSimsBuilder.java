@@ -1,6 +1,10 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -367,7 +371,14 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 				}
 			}
 		} else if (event.getSource() == loadParam) {
-			EQSimsCatalogQuery eqsim = new EQSimsCatalogQuery(null, null);
+			final EQSimsCatalogQuery EQSimQueryFrame = new EQSimsCatalogQuery();
+			EQSimQueryFrame.downloadButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					ArrayList<String> downloadList = EQSimQueryFrame.getDownloadTitles();
+					System.out.println(downloadList);
+				}
+			});
 		}
 	}
 	

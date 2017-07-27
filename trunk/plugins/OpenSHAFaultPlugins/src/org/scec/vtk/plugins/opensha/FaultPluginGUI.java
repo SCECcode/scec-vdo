@@ -134,7 +134,6 @@ public class FaultPluginGUI extends JSplitPane {
 		
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
-		
 		// this allows the entire UI to be locked during long calculations
 		lockUI = new LockableUI();
 		jxLayer = new JXLayer<JComponent>(this, lockUI);
