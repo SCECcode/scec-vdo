@@ -3,6 +3,7 @@ package org.scec.vtk.plugins.utils.components;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -66,6 +67,9 @@ public class CheckAllTable extends JPanel {
 
     private Filter filter;									//filter used for searching
     JTextField searchBar;									//searchBar implements a search bar
+    
+    
+    
     
     /**
      * @param data
@@ -154,7 +158,7 @@ public class CheckAllTable extends JPanel {
     	TITLE = title;
         this.setLayout(new BorderLayout());
         
-        String[] COLUMN_HEADERS = {" < ", title, ""};									//First column header is "<" and is used as the back button.
+        String[] COLUMN_HEADERS = {" < ", TITLE, ""};									//First column header is "<" and is used as the back button.
         dataModel = new DataModel(DATA, COLUMN_HEADERS);								//Create a new DataModel to handle all data
         
         controlPanel = new ControlPanel();												//Add ControlPanel.					
@@ -186,6 +190,16 @@ public class CheckAllTable extends JPanel {
         
     }
     
+    public void addColumn(ArrayList<String> columnData, String columnTitle) {
+    	Object[] cData = new Object[columnData.size()];
+    	for (int i = 0; i < columnData.size(); i++) {
+    		cData[i] = columnData.get(i);
+    	}
+    	dataModel.addColumn(columnTitle, cData);
+    	table.moveColumn(table.getColumnCount()-1, table.getColumnCount()-2);
+    	setTableProperties();
+    }
+    
     /**
      * Disable checkboxes by setting values in CHECK_COL to an empty string instead of a boolean.
      */
@@ -201,9 +215,9 @@ public class CheckAllTable extends JPanel {
     private void setTableProperties() {
     	table.getColumnModel().getColumn(CHECK_COL).setMaxWidth(60);
     	table.getColumnModel().getColumn(1).setCellRenderer(textRenderer);
-    	table.getColumnModel().getColumn(COLOR_COL).setMaxWidth(60);									//Hides color column from table view.
-    	table.getColumnModel().getColumn(COLOR_COL).setMinWidth(60);
-    	table.getColumnModel().getColumn(COLOR_COL).setPreferredWidth(60);
+    	table.getColumnModel().getColumn(COLOR_COL).setMaxWidth(0);									//Hides color column from table view.
+    	table.getColumnModel().getColumn(COLOR_COL).setMinWidth(0);
+    	table.getColumnModel().getColumn(COLOR_COL).setPreferredWidth(0);
         table.setIntercellSpacing(new Dimension(0,0));												
         table.setShowGrid(false);																	//Hide default table grid
         table.setRowHeight(25);																
@@ -382,28 +396,37 @@ public class CheckAllTable extends JPanel {
     public void addColorButton(ActionListener actionListener) {
     	ColorButton colorDrawingToolsButton = new ColorButton(actionListener, "Change color");
     	colorDrawingToolsButton.setEnabled(true);
-    	controlPanel.add(colorDrawingToolsButton, FlowLayout.LEFT);
+    	controlPanel.buttonPanel.add(colorDrawingToolsButton, FlowLayout.LEFT);
     }
     
     /**
      * Class that extends JPanel and contains the select/deselect all buttons and the search bar. New buttons can also be added.
      */
     public class ControlPanel extends JPanel {
+    	JPanel buttonPanel;
+    	JPanel searchPanel;
         public ControlPanel() {
-        	this.setBorder(new EmptyBorder(4, 2, 1, 0));
-            this.setOpaque(false);								
-        	this.setLayout(new FlowLayout(FlowLayout.LEADING));
-        	
+        	this.setBorder(new EmptyBorder(4, 2, -3, 3));
+            this.setOpaque(false);
+            this.setLayout(new BorderLayout());
+            buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+            buttonPanel.setBorder(new EmptyBorder(3, 0, 4, 0));
         	JButton selectButton = new JButton(new SelectionAction("Select", true));    	//These buttons use SelectionAction as their action when clicked.
         	JButton deselectButton = new JButton(new SelectionAction("Deselect", false));
-        	this.add(selectButton, FlowLayout.LEFT);
-            this.add(deselectButton, FlowLayout.LEFT);
-        	this.add(Box.createRigidArea(new Dimension(90, 0)));							//Adds a space in between the buttons and the search bar.
-        	
-            searchBar = new JTextField(25);												
+        	buttonPanel.add(selectButton, FlowLayout.LEFT);
+            buttonPanel.add(deselectButton, FlowLayout.LEFT);
+            this.add(buttonPanel, BorderLayout.LINE_START);
+
+            searchPanel = new JPanel(new FlowLayout());
+            searchPanel.setBorder(new EmptyBorder(5, 0, 0, 0));
+            searchBar = new JTextField(27);
+            searchBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, searchBar.getPreferredSize().height));
+            //searchBar.setMinimumSize(new Dimension(this.getPreferredSize().width/10, searchBar.getPreferredSize().height));
     		searchBar.addKeyListener(searchKeyListener);
-        	this.add(new JLabel("Search:"));
-    		this.add(searchBar);
+        	searchPanel.add(new JLabel("Search:"));
+    		searchPanel.add(searchBar);
+    		this.add(searchPanel, BorderLayout.LINE_END);
+        	
         }
     }
     
