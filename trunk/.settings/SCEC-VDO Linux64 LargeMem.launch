@@ -20,5 +20,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.scec.vtk.main.MainGUI"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="scec_vdo_vtk"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-splash:${workspace_loc:scec_vdo_vtk/resources/SCEClogo.png} -Xms2G -Xmx20G"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png} -Xms2G -Xmx20G"/>
 </launchConfiguration>
