@@ -35,7 +35,7 @@ public class EQSimsCatalogQuery extends JFrame {
     private String defaultCatalogURL = "http://rsqsim.usc.edu/catalogs/";		//Default URL for getting events catalog
     private CheckAllTable tablePanel;											//Panel containing main table
     String[] tags = {"authors", "date", "description", "region"};				//XML tags to look for on the index.xml at the url
-    String[] fileTypes = {".flt", ".eList", ".pList", ".dList", ".dat" };		//File types to download
+    String[] fileTypes = {".flt", ".eList", ".pList", ".dList", ".tList"};		//File types to download
     
     /**
      * 
