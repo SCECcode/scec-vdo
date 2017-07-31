@@ -226,7 +226,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
   //HELP BUTTON
 		pluginTabPane =  new JTabbedPane();
-		pluginTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+		//pluginTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		pluginTabPane.setUI(tabbedPaneUI);
 		//Set up all default GUI elements
 		Info.setMainGUI(this);
@@ -244,7 +244,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
 		pluginGUIScrollPane.setMinimumSize(d);
 		pluginGUIScrollPane.setPreferredSize(d);
-		pluginTabPane.setOpaque(false);
+		pluginTabPane.setOpaque(true);
 		Dimension minimumSize = new Dimension(100, 50);
 		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		renderWindow.getComponent().setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
@@ -789,7 +789,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		allPanel.setLayout(new BoxLayout(allPanel, BoxLayout.PAGE_AXIS));
 		allPanel.setBorder(BorderFactory.createEmptyBorder());
 		allPanel.add(gui);
-		allPanel.setOpaque(false);
+		allPanel.setOpaque(true);
 	    allPanel.setFocusable (false);
 		allPanel.add(Box.createVerticalGlue());
 		//allPanel.add(new JPanel());
@@ -799,7 +799,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		//pluginTab.setOpaque(true);
 		//pluginTab.setColor(Color.white);
 		pluginTab.setName(id);
-		pluginTab.setOpaque(false);
+		pluginTab.setOpaque(true);
 		pluginTab.setBackground(Color.black);
 		// Add the tab to the tab panel
 		
