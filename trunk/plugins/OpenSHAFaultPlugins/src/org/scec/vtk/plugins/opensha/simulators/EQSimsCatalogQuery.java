@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.text.DateFormat;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -31,21 +32,20 @@ public class EQSimsCatalogQuery extends JFrame {
     private JTextField locationTextField;				    //Page location text field.
     private JEditorPane displayEditorPane;					//Editor pane for displaying table;
     
-    private String defaultCatalogURL = "http://rsqsim.usc.edu/catalogs/index.xml";
-    private CheckAllTable tablePanel;
-    String[] tags = {"authors", "date", "description", "region"};
+    private String defaultCatalogURL = "http://rsqsim.usc.edu/catalogs/";		//Default URL for getting events catalog
+    private CheckAllTable tablePanel;											//Panel containing main table
+    String[] tags = {"authors", "date", "description", "region"};				//XML tags to look for on the index.xml at the url
+    String[] fileTypes = {".flt", ".eList", ".pList", ".dList", ".dat" };		//File types to download
     
+    /**
+     * 
+     */
     public EQSimsCatalogQuery() {
-        // Set application title.
-        super("Catalog Downloads");
-         
-        // Set window size.
-        setSize(640, 480);
-         
-        // Handle closing events.
+        super("Catalog Downloads");									// Set application title.
+        setSize(640, 480);										
         setVisible(true);
-        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-       
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);     
+        
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.setBorder(new EmptyBorder(5, 10, 0, 10));
         locationTextField = new JTextField(defaultCatalogURL);
@@ -75,7 +75,7 @@ public class EQSimsCatalogQuery extends JFrame {
                 try {
 					actionGo();
 				} catch (SAXException e1) {
-					// TODO Auto-generated catch block
+					System.out.println("Parsing error");
 					e1.printStackTrace();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -95,7 +95,7 @@ public class EQSimsCatalogQuery extends JFrame {
         
         ArrayList<String> empty = new ArrayList<String>();
         empty.add("");
-        tablePanel = new CheckAllTable(empty, "title");
+        tablePanel = new CheckAllTable(empty, "title");							//Create empty checkalltable as placeholder
         
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(buttonPanel, BorderLayout.NORTH);
@@ -103,15 +103,50 @@ public class EQSimsCatalogQuery extends JFrame {
 
     }
     
-    protected ArrayList<String> getDownloadTitles() {
-    	ArrayList<String> downloads = new ArrayList<String>();
+    /**
+     * @return
+     * 
+     * Get date from the 3rd column of the table
+     */
+	protected ArrayList<Date> getDate() {
+    	ArrayList<Date> dates = new ArrayList<Date>();
     	for (int i = 0; i < tablePanel.getTable().getRowCount(); i++)
     		if ((boolean) tablePanel.getTable().getValueAt(i, 0)) {
-    			downloads.add((String) tablePanel.getTable().getValueAt(i, 1));
+    			String dateStr = (String)tablePanel.getTable().getValueAt(i, 3);
+    			Date date = new Date();
+    			//dates.add(DateFormat.parse(dateStr));
+    		}
+    	return dates;
+    }
+    
+	/**
+	 * @return
+	 * Build URLs for each file type to download. Return title of the catalog and the URLs to download from.
+	 */
+    protected HashMap<String, ArrayList<URL>> getDownloadURLs() {
+    	HashMap<String, ArrayList<URL>> downloads = new HashMap<String, ArrayList<URL>>();
+    	ArrayList<URL> URLList = new ArrayList<URL>();
+    	for (int i = 0; i < tablePanel.getTable().getRowCount(); i++)
+    		if ((boolean) tablePanel.getTable().getValueAt(i, 0)) {
+    			try {
+    				String title = (String)tablePanel.getTable().getValueAt(i, 1);
+    				for (int j = 0; j < fileTypes.length; j++) {
+    					URL url = new URL(defaultCatalogURL + title + "/" + title + fileTypes[j]);
+    					URLList.add(url);
+    				}
+					downloads.put(title, URLList);
+				} catch (MalformedURLException e) {
+					System.out.println("URL Invalid");
+				}
     		}
     	return downloads;
 	}
-
+    
+    /**
+     * Convert NodeList to ArrayList
+     * @param nodeList
+     * @return
+     */
 	private ArrayList<String> convertNodeList(NodeList nodeList) {
     	ArrayList<String> arrayList = new ArrayList<String>();
     	for (int i = 0; i < nodeList.getLength(); i++) {
@@ -119,9 +154,15 @@ public class EQSimsCatalogQuery extends JFrame {
         }
     	return arrayList;
     }
-     
+    
+	/**
+	 * Clicking go parses index.xml on the chosen webpage. Populates the table.
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 */
     private void actionGo() throws SAXException, IOException, ParserConfigurationException {
-        URL verifiedUrl = verifyUrl(locationTextField.getText());
+        URL verifiedUrl = verifyUrl(locationTextField.getText() + "index.xml");
         if (verifiedUrl != null) {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
                     .newInstance();
@@ -131,7 +172,6 @@ public class EQSimsCatalogQuery extends JFrame {
             NodeList titles = ((org.w3c.dom.Document) document).getElementsByTagName("title");
        	 	ArrayList<String> titleList = convertNodeList(titles);
             this.getContentPane().remove(tablePanel);
-            
             tablePanel = new CheckAllTable(titleList, "title");
             for (int i = 0; i < tags.length; i++) {
             	 NodeList nodeList = ((org.w3c.dom.Document) document).getElementsByTagName(tags[i]);
@@ -141,7 +181,7 @@ public class EQSimsCatalogQuery extends JFrame {
             this.getContentPane().add(tablePanel, BorderLayout.CENTER);
             this.revalidate();
         } else {
-            //INVALID URL
+            System.out.println("Invalid URL");
         }
     }
      

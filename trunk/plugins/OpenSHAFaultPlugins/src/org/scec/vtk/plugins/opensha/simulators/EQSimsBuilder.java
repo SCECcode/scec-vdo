@@ -11,11 +11,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -47,6 +51,8 @@ import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.tools.Prefs;
+
+import jdk.management.cmm.SystemResourcePressureMXBean;
 
 public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener {
 	
@@ -102,8 +108,6 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			strings.add(name);
 		}
 		strings.add(INPUT_SELECTOR_FROM_FILE);
-
-		//LoadCatalogs.addActionListener(new ActionListener()));
 		
 		inputParam = new StringParameter(INPUT_SELECTOR_PARAM_NAME, strings, strings.get(0));
 		inputParam.addParameterChangeListener(this);
@@ -375,8 +379,25 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			EQSimQueryFrame.downloadButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					ArrayList<String> downloadList = EQSimQueryFrame.getDownloadTitles();
-					System.out.println(downloadList);
+					HashMap<String, ArrayList<URL>> downloadURLs = EQSimQueryFrame.getDownloadURLs();
+					for (Entry<String, ArrayList<URL>> entry : downloadURLs.entrySet()) {
+						String title = entry.getKey();
+						ArrayList<URL> urls = entry.getValue();
+						File catalogDir = new File(dataDir + File.separator + title);
+						if (!catalogDir.exists())
+							catalogDir.mkdirs();
+						for (int i = 0; i < urls.size(); i++) {
+							String[] fileName = urls.get(i).getFile().split("/");
+							File file = new File(catalogDir.getAbsolutePath() + File.separator + fileName[fileName.length - 1]);
+							if (!file.exists()) {
+								try {
+									downloadURL(urls.get(i), file);
+								} catch (IOException e1) {
+									e1.printStackTrace();
+								}
+							}
+						}
+					}
 				}
 			});
 		}
