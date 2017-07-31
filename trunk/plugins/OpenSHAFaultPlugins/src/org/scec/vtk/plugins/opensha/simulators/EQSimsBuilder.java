@@ -52,8 +52,6 @@ import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.tools.Prefs;
 
-import jdk.management.cmm.SystemResourcePressureMXBean;
-
 public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener {
 	
 	private static ArrayList<String> hardcodedInputs = new ArrayList<String>();
@@ -395,6 +393,32 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 								} catch (IOException e1) {
 									e1.printStackTrace();
 								}
+							}
+						}
+						File outFile = catalogDir;
+						
+						if (outFile == null || elements == null) {
+							fireNewEvents(null);
+						} else if (elements != null) {
+							try {
+								List<RuptureIdentifier> rupIdens = new ArrayList<>();
+								rupIdens.add(new MagRangeRuptureIdentifier(eventMinMagParam.getValue(), 10d));
+								List<? extends SimulatorEvent> events;
+								CalcProgressBar progress = new CalcProgressBar("Reading Events File", "Loading events...");
+								progress.setIndeterminate(true);
+								if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
+									System.out.println("Detected RSQSim output file/dir");
+										events = RSQSimFileReader.readEventsFile(outFile, elements, rupIdens);
+								} else {
+										events = EQSIMv06FileReader.readEventsFile(outFile, elements, rupIdens);
+								}
+								System.out.println("Done reading events file!");
+								fireNewEvents(events);
+								progress.setVisible(false);
+								progress.dispose();
+							}
+							catch(Exception e1) {
+								System.out.println("failure to read");
 							}
 						}
 					}
