@@ -179,44 +179,26 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		
 		pluginGUIPanel = new JPanel(new BorderLayout());
 		helpPanel = new JPanel();
+		helpPanel.setBorder(new EmptyBorder(10, 30, 10, 30));
 		helpPanel.setLayout(new FlowLayout());
 		
 //		Icon icon = UIManager.getIcon("OptionPane.questionIcon");
 		
 		
 		JButton helpButton = new JButton();
-		
-
-		
 		try {
 			// sets hover text
 		helpButton.setToolTipText("Help");
 			File file = new File("resources/question3.png");
 		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(50, 45, Image.SCALE_DEFAULT);
+		    img = img.getScaledInstance(32, 32, Image.SCALE_SMOOTH);
 		    helpButton.setIcon(new ImageIcon(img));
 		  } catch (IOException ex) {
 		    System.out.println("help: " + ex);
 		  }
-//		zoomIn.addActionListener(new ActionListener() { 
-//		helpButton.setPreferredSize(new Dimension(40, 40));
-//		helpButton.setPreferredSize(new Dimension(100,50));
-		
 		helpButton.setBackground(Color.black);
-//        ImageIcon img = new ImageIcon("/Users/interns/Desktop/question3.png");
-		
-//        ImageIcon img = new ImageIcon("/resources/question3.png");
-//        helpButton.setIcon(img);
-		
-        helpButton.setOpaque(false);
-		
-//        helpButton.setBounds(20,30,50,30);
-        
-        
-        
-        
-//           
-        
+		helpButton.setOpaque(false);       
+		//helpButton.setPreferredSize(new Dimension(50, 30));
 		helpPanel.add(helpButton);
 		helpPanel.setOpaque(false);
 		//helpPanel.setColor(Color.white);

@@ -393,7 +393,7 @@ public class CheckAllTable extends JPanel {
      * Adds a color button to the controlPanel
      * 
      */
-    public void addColorButton(ActionListener actionListener) {
+    public void addColorButton(ActionListener actionListener) {													
     	ColorButton colorDrawingToolsButton = new ColorButton(actionListener, "Change color");
     	colorDrawingToolsButton.setEnabled(true);
     	controlPanel.buttonPanel.add(colorDrawingToolsButton, FlowLayout.LEFT);
@@ -406,27 +406,25 @@ public class CheckAllTable extends JPanel {
     	JPanel buttonPanel;
     	JPanel searchPanel;
         public ControlPanel() {
-        	this.setBorder(new EmptyBorder(4, 2, -3, 3));
+        	this.setBorder(new EmptyBorder(4, 0, -3, 3));
             this.setOpaque(false);
             this.setLayout(new BorderLayout());
             buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-            buttonPanel.setBorder(new EmptyBorder(3, 0, 4, 0));
+            buttonPanel.setBorder(new EmptyBorder(4, 1, 4, 0));
         	JButton selectButton = new JButton(new SelectionAction("Select", true));    	//These buttons use SelectionAction as their action when clicked.
         	JButton deselectButton = new JButton(new SelectionAction("Deselect", false));
         	buttonPanel.add(selectButton, FlowLayout.LEFT);
             buttonPanel.add(deselectButton, FlowLayout.LEFT);
             this.add(buttonPanel, BorderLayout.LINE_START);
 
-            searchPanel = new JPanel(new FlowLayout());
-            searchPanel.setBorder(new EmptyBorder(5, 0, 0, 0));
-            searchBar = new JTextField(27);
-            searchBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, searchBar.getPreferredSize().height));
-            //searchBar.setMinimumSize(new Dimension(this.getPreferredSize().width/10, searchBar.getPreferredSize().height));
+            searchPanel = new JPanel(new BorderLayout());
+            searchPanel.setPreferredSize(new Dimension(300, 10));
+            searchPanel.setBorder(new EmptyBorder(10, 0, 9, 4));
+            searchBar = new JTextField();
     		searchBar.addKeyListener(searchKeyListener);
-        	searchPanel.add(new JLabel("Search:"));
-    		searchPanel.add(searchBar);
+        	searchPanel.add(new JLabel("Search: "), BorderLayout.LINE_START);
+    		searchPanel.add(searchBar, BorderLayout.CENTER);
     		this.add(searchPanel, BorderLayout.LINE_END);
-        	
         }
     }
     

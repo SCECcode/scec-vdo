@@ -603,8 +603,9 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			ColorButton target = (ColorButton) e.getSource();
-    	 	final ControlPanel cp = (ControlPanel) target.getParent();
-    	 	final CheckAllTable targetPanel = (CheckAllTable) cp.getParent();
+			final JPanel jPanel = (JPanel) target.getParent();
+    	 	final ControlPanel controlPanel = (ControlPanel) jPanel.getParent();
+    	 	final CheckAllTable targetPanel = (CheckAllTable) controlPanel.getParent();
     	 	JTable table = targetPanel.getTable();
 			if (colorChooser == null) {
 				colorChooser = new SingleColorChooser(colorDrawingToolsButton);
