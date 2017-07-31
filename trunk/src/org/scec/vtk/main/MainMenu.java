@@ -442,9 +442,11 @@ public class MainMenu implements ActionListener, ItemListener{
 								activatePlugin(pluginDescriptor.getId());
 							Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 							if (plugin instanceof StatefulPlugin) {
+								System.out.println("plugin.toString(): " + plugin.toString());
 								((StatefulPlugin)plugin).getState().fromXML(pluginNameElement);
-
+								System.out.println("load: ");
 								((StatefulPlugin)plugin).getState().load();
+								System.out.println("post maLoad");
 							}
 						} catch (Exception e1) {
 							System.err.println("WARNING: Error loading plugin state from XML: "+pluginDescriptor.getName());
@@ -1062,8 +1064,6 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 	
 	private void unloadAllPlugins(){
-		System.out.println("Start of unloadAllPlugins");
-		
 		ArrayList<String> plugIds = new ArrayList<String>();
 		
 		for(Plugin plug: loadedPlugins.values()){
@@ -1088,7 +1088,6 @@ public class MainMenu implements ActionListener, ItemListener{
 			updateMenu(plugIds.get(i));
 		}
 		
-		System.out.println("end of unloadAllPlugins");
 	}
 	
 	public void updateMenu(String id){

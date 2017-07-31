@@ -36,7 +36,6 @@ public class PoliticalBoundariesPluginState implements PluginState {
 	
 	void copyLatestCatalogDetails()
 	{
-		System.out.println("inside copyLatestCatalogDetails()");
 		filePath.clear();
 	
 		TreeNode<CheckAllTable> treeRoot = parent.root;
@@ -47,7 +46,6 @@ public class PoliticalBoundariesPluginState implements PluginState {
 			for(int i = 0; i < list.getRowCount(); i ++){
 				if((Boolean)list.getValueAt(i, 0)){
 					filePath.add((String)list.getValueAt(i, 1));
-					System.out.println("Name: " + list.getValueAt(i, 1) + " | color:  " + list.getValueAt(i, 2).toString()  );
 					Color c = (Color)list.getValueAt(i, 2);
 					filePath.add(Integer.toString(c.hashCode()));
 					
@@ -71,16 +69,15 @@ public class PoliticalBoundariesPluginState implements PluginState {
 	
 	
 	public void clear(){
-
 		TreeNode<CheckAllTable> treeRoot = parent.root;
 		
 		for (TreeNode<CheckAllTable> node : treeRoot) {
 			CheckAllTable table = node.data;
 			TableModel list = table.getTable().getModel();
 			for(int i = 0; i < list.getRowCount(); i ++){
-				for(int j = 0 ; j < filePath.size(); j++){
-						list.setValueAt(false, i, 0);	
-				}	
+				
+				list.setValueAt(false, i, 0);	
+				
 			}
 		}
 		
@@ -90,7 +87,6 @@ public class PoliticalBoundariesPluginState implements PluginState {
 	public void load() {
 		
 		clear();
-		
 		TreeNode<CheckAllTable> treeRoot = parent.root;
 		
 		for (TreeNode<CheckAllTable> node : treeRoot) {
@@ -103,12 +99,9 @@ public class PoliticalBoundariesPluginState implements PluginState {
 						j++;
 						list.setValueAt(new Color(Integer.parseInt(filePath.get(j))), i, 2);
 						
-						System.out.println("PoliBoun: " + list.getValueAt(i, 1 ) + " Color: " + list.getValueAt(i, 2));
 						
 					}
-					
 				}
-				
 				
 			}
 		}
