@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.opensha.nshmp2.erf.source.PointSource;
 import org.scec.vtk.drawingTools.DisplayAttributes;
 import org.scec.vtk.drawingTools.DrawingTool;
 import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
@@ -17,6 +18,7 @@ import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.tools.Transform;
 
+import oracle.net.aso.i;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.DBFReaderJGeom;
 import oracle.spatial.util.ShapefileReaderJGeom;
@@ -34,6 +36,7 @@ public class PoliticalBoundariesFileParser {
 		public ArrayList<String> locationNames = null;
 		public String name			= null;
 		public File file			= null;
+		public DrawingTool[] counties = null;
 	}
 	
 	ArrayList<PresetLocationGroup> presetLocationGroups;
@@ -68,6 +71,118 @@ public class PoliticalBoundariesFileParser {
 			}
 		}
 		parseHighwayFiles();
+	}
+	
+	PresetLocationGroup loadCounties(PresetLocationGroup CACounties)
+	{
+		double [] p = null;
+		String selectedFile = landmarksDataPath + "CA_Counties.txt";
+		File highwaysFile = new File(selectedFile);
+		String name = "";
+		//CACounties.locations = new ArrayList<DrawingTool>();
+		int arraySize = CACounties.locations.size();
+		DrawingTool[] tempCounties = new DrawingTool[arraySize];
+		ArrayList<vtkPoints> points = new ArrayList<vtkPoints>();
+		
+		try {
+			BufferedReader inStream = new BufferedReader(new FileReader(highwaysFile)); 
+			String line = inStream.readLine();
+			StringTokenizer dataLine = new StringTokenizer(line);
+			while (line!=null){
+				vtkActor actor = new vtkActor();
+				vtkPoints glbPoints = new vtkPoints();
+				int ptCount=0;
+				vtkPoints linePts =new vtkPoints();
+				vtkCellArray cells = new vtkCellArray();
+				dataLine = new StringTokenizer(line);
+				String coord = "";
+				if(line.contains(":"))
+				{
+					name = dataLine.nextToken(":");
+				}
+				line = inStream.readLine();
+				dataLine = new StringTokenizer(line);
+				while(coord != null)
+				{
+					try{
+						String latitude = "";
+						String longitude = "";
+						coord = dataLine.nextToken();
+						coord = coord.substring(0,coord.length()-3);
+						int i = coord.indexOf(',');
+						longitude = coord.substring(0,i);
+						latitude = coord.substring(i + 1, coord.length()-1);
+						p = Transform.transformLatLon(Double.parseDouble(latitude), Double.parseDouble(longitude));
+						linePts.InsertNextPoint(p);
+					}catch(Exception e)
+					{
+						break;
+					}
+				}
+				
+				vtkPolyLine plyLine = new vtkPolyLine();
+				plyLine.GetPointIds().SetNumberOfIds(linePts.GetNumberOfPoints());
+				for (int j = 0; j < linePts.GetNumberOfPoints(); j++) {
+					glbPoints.InsertNextPoint(linePts.GetPoint(j));
+					plyLine.GetPointIds().SetId(j,ptCount);
+					ptCount++;
+				}
+				cells.InsertNextCell(plyLine);
+				vtkPolyData polyData = new vtkPolyData();
+				polyData.SetPoints(glbPoints);
+				polyData.SetLines(cells);
+				vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+				mapper.SetInputData(polyData);
+				actor.SetMapper(mapper);
+				linePts = new vtkPoints();
+				DrawingTool highway = new DrawingTool(
+							p[0],
+							p[1],
+							0.0d,
+							name,
+							displayAttributes,
+							Color.WHITE,
+							actor,
+							null
+							);
+					highway.setSourceFile(selectedFile);
+					highway.setDisplayName(highway.getTextString());
+					
+					if (CACounties.locationNames.indexOf(name) != -1)
+						tempCounties[CACounties.locationNames.indexOf(name)] = highway;
+				
+				line = inStream.readLine();
+			}
+			inStream.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 		
+//		vtkPoints glbPoints = new vtkPoints();
+//		for(int i = 0;i<points.size();i++)
+//		{
+//			vtkPolyLine plyLine = new vtkPolyLine();
+//			plyLine.GetPointIds().SetNumberOfIds(points.get(i).GetNumberOfPoints());
+//			for(int j = 0;j<points.get(i).GetNumberOfPoints();j++)
+//				{
+//					glbPoints.InsertNextPoint(points.get(i).GetPoint(j));
+//					plyLine.GetPointIds().SetId(j,ptCount);
+//					ptCount++;
+//				}
+//			cells.InsertNextCell(plyLine);
+//		}
+//
+//		vtkPolyData polyData = new vtkPolyData();
+//		polyData.SetPoints(glbPoints);
+//		polyData.SetLines(cells);
+//		vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+//		mapper.SetInputData(polyData);
+//		vtkActor actor = new vtkActor();
+//		actor.SetMapper(mapper);
+//		return actor;
+		CACounties.counties = tempCounties;
+		return CACounties;
 	}
 	
 	private PresetLocationGroup parseHighwayFiles() {
@@ -179,6 +294,9 @@ public class PoliticalBoundariesFileParser {
 			if (groupname.equals("California")) {
 				if (presetLocationGroups.get(i).name.contains("CA") || presetLocationGroups.get(i).name.contains("California") || presetLocationGroups.get(i).name.contains("LA")) {
 					groupNames.add(presetLocationGroups.get(i).name);
+//					if (presetLocationGroups.get(i).name.equals("CA Counties")) {
+//						presetLocationGroups.get(i).locations = loadCounties(presetLocationGroups.get(i));
+//					}
 				}
 			}
 			else if (presetLocationGroups.get(i).name.contains(groupname))
@@ -194,10 +312,12 @@ public class PoliticalBoundariesFileParser {
 				if (tempGroup.name.equals("California Interstates")) {
 					tempGroup = parseHighwayFiles();
 				}
-				
 				else {
 					String selectedInputFile = tempGroup.file.getAbsolutePath();
 					tempGroup = loadBuiltInFiles(selectedInputFile, tempGroup);
+					if (tempGroup.name.equals("CA Counties")) {
+						tempGroup = loadCounties(tempGroup);
+					}
 				}
 				return tempGroup;
 			}
