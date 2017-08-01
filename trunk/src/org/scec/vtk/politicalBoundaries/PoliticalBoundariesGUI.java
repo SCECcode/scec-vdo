@@ -79,7 +79,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 	TreeNode<CheckAllTable> root;														//All CheckAllTables are part of the root tree to enable navigation between CheckAllTables.
 	PoliticalBoundariesFileParser fileParser;											//Helps with file parsing. TODO::Put text file parsing inside this file.
 	ArrayList<DrawingTool> allActiveDrawings;											//Contains all landmark drawings - vtk labels and pins. Does not contain country/continent boundaries.
-		
+	ArrayList<DrawingTool> countyDrawings;	
 	
 	public PoliticalBoundariesGUI(PluginActors pluginActors){
 		this.pluginActors = pluginActors;												//Plugin actors handle the display of vtk objects
@@ -89,6 +89,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		
 		fileParser = new PoliticalBoundariesFileParser();							
 		allActiveDrawings = new ArrayList<DrawingTool>();
+		countyDrawings = new ArrayList<DrawingTool>();
 		this.actorPoliticalBoundariesSegments = new ArrayList<vtkActor>();
 		this.allSubRegionNames = new ArrayList<String>();
 		
@@ -122,7 +123,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 
 			if(subRegionTable.getTitle() == "United States") {
 				subRegionNode.data.getTable().getModel().setValueAt(true, 4, 0);							//Make California visible by default. TODO::Un-hardcode this value and search for default instead.
-				loadLandmarks("California", subRegionNode);													//Add landmark tables as children of the subRegion nodes. 
+				loadLandmarks("California", subRegionNode);												//Add landmark tables as children of the subRegion nodes. 
 			}
 			if(subRegionTable.getTitle() == "North America") {	
 				loadLandmarks("Mexico", subRegionNode);
@@ -160,7 +161,10 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		TreeNode<CheckAllTable> landmarksNode = subRegionNode.addChild(landmarksTable);										//Add the table as child of the subRegion table.
 		landmarksTable.getTable().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		for (int j = 0; j < landmarks.size(); j++) {																		
-			final PresetLocationGroup landmarkData = fileParser.loadLandmarkData(landmarks.get(j));							
+			final PresetLocationGroup landmarkData = fileParser.loadLandmarkData(landmarks.get(j));		
+			if (landmarkData.name.equals("CA Counties")) {
+				System.out.println(landmarkData.locationNames.size() + " " + landmarkData.locations.size());
+			}
 			CheckAllTable landmarkDataTable = setUpTable(landmarkData.locationNames, landmarks.get(j), new LandmarkListener(landmarkData), new ColorListener(false));		//Create table to display landmarks in landmark group.
 			landmarksNode.addChild(landmarkDataTable);																		//Add table as child.
 		}
@@ -221,8 +225,11 @@ public class PoliticalBoundariesGUI implements ActionListener {
 	public DrawingTool addDrawingTool(DrawingTool drawingTool, String text){
 		if (drawingTool.getActorPin()!= null) {
 			appendActors.addToAppendedPolyData(drawingTool.getActorPin());
-			if (drawingTool.getActorText() != null)
+			System.out.println("Drawing pin exists");
+			if (drawingTool.getActorText() != null) {
+				System.out.println("Drawing text exists");
 				appendActors.addToAppendedPolyData(drawingTool.getActorText());
+			}
 			appendActors.getAppendedActor().Modified();
 			return drawingTool;
 		}
@@ -416,7 +423,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		return searchNode.findTreeNode(searchCriteria);
     }
     
-    
+    //Counties are a pain and everything county related should be rewritten properly.
     class LandmarkListener implements TableModelListener{
     	private PresetLocationGroup landmarkData;
     	public LandmarkListener(PresetLocationGroup landmarkData) {
@@ -437,16 +444,40 @@ public class PoliticalBoundariesGUI implements ActionListener {
     					if (checked) {
     						if(!allActiveDrawings.contains(landmarkData.locations.get(k))) {
     							allActiveDrawings.add(addDrawingTool(landmarkData.locations.get(k), ""));
+    							if (landmarkData.counties != null) {
+    								if (landmarkData.counties[k] != null) {
+    									countyDrawings.add(addDrawingTool(landmarkData.counties[k], ""));
+    								}
+    							}
     						}
     						else {
     							setVisibility(landmarkData.locations.get(k), 1);
+    							if (landmarkData.counties != null) {
+    								if (landmarkData.counties[k] != null) {
+    									setVisibility(landmarkData.counties[k], 1);
+    								}
+    							}
     						}
     						setColor(landmarkData.locations.get(k), landmarkColor);
+    						if (landmarkData.counties != null) {
+								if (landmarkData.counties[k] != null) {
+									setColor(landmarkData.counties[k], landmarkColor);
+								}
+							}
     					}
     					else {
     						if(allActiveDrawings.contains(landmarkData.locations.get(k))) {
     							setVisibility(allActiveDrawings.get(allActiveDrawings.indexOf(landmarkData.locations.get(k))), 0);
+    							System.out.println(allActiveDrawings.indexOf(landmarkData.locations.get(k)));
     						}
+    						if (landmarkData.counties != null) {
+								if (landmarkData.counties[k] != null) {
+		    						if(countyDrawings.contains(landmarkData.counties[k])) {
+		    							setVisibility(countyDrawings.get(countyDrawings.indexOf(landmarkData.counties[k])), 0);
+		    						}
+								}
+    						}
+    						
     					}
     					break;
     				}

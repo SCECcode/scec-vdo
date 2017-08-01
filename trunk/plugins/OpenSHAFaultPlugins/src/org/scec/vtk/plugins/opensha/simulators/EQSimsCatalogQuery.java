@@ -34,8 +34,6 @@ public class EQSimsCatalogQuery extends JFrame {
     
     private String defaultCatalogURL = "http://rsqsim.usc.edu/catalogs/";		//Default URL for getting events catalog
     private CheckAllTable tablePanel;											//Panel containing main table
-    String[] tags = {"authors", "date", "description", "region"};				//XML tags to look for on the index.xml at the url
-    String[] fileTypes = {".flt", ".eList", ".pList", ".dList", ".tList"};		//File types to download
     
     /**
      * 
@@ -126,6 +124,7 @@ public class EQSimsCatalogQuery extends JFrame {
     protected HashMap<String, ArrayList<URL>> getDownloadURLs() {
     	HashMap<String, ArrayList<URL>> downloads = new HashMap<String, ArrayList<URL>>();
     	ArrayList<URL> URLList = new ArrayList<URL>();
+        String[] fileTypes = {".flt", ".eList", ".pList", ".dList", ".tList"};		//File types to download
     	for (int i = 0; i < tablePanel.getTable().getRowCount(); i++)
     		if ((boolean) tablePanel.getTable().getValueAt(i, 0)) {
     			try {
@@ -164,16 +163,17 @@ public class EQSimsCatalogQuery extends JFrame {
     private void actionGo() throws SAXException, IOException, ParserConfigurationException {
         URL verifiedUrl = verifyUrl(locationTextField.getText() + "index.xml");
         if (verifiedUrl != null) {
+            String[] tags = {"Title", "Authors", "Date", "Description", "Region"};				//XML tags to look for on the index.xml at the url
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
                     .newInstance();
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
             InputStream stream = verifiedUrl.openStream();
             org.w3c.dom.Document document = documentBuilder.parse(stream);
-            NodeList titles = ((org.w3c.dom.Document) document).getElementsByTagName("title");
+            NodeList titles = ((org.w3c.dom.Document) document).getElementsByTagName(tags[0]);
        	 	ArrayList<String> titleList = convertNodeList(titles);
             this.getContentPane().remove(tablePanel);
-            tablePanel = new CheckAllTable(titleList, "title");
-            for (int i = 0; i < tags.length; i++) {
+            tablePanel = new CheckAllTable(titleList, tags[0]);
+            for (int i = 1; i < tags.length; i++) {
             	 NodeList nodeList = ((org.w3c.dom.Document) document).getElementsByTagName(tags[i]);
             	 ArrayList<String> arrayList = convertNodeList(nodeList);
             	 tablePanel.addColumn(arrayList, tags[i]);
