@@ -428,13 +428,11 @@ public class MainMenu implements ActionListener, ItemListener{
 			try {
 				Document document = reader.read(file.getPath());
 				Element root = document.getRootElement();
-				//System.out.println("document.toString(): " + document.toString());
 				saved = true;
 				// iterate through child elements of root
 				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 						availablePlugins.values());
 				for(PluginInfo pluginDescriptor:pluginDescriptors) {
-					//System.out.println(pluginDescriptor.getName());
 					for ( Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
 						Element pluginNameElement = (Element) i.next();
 						try {
@@ -442,11 +440,8 @@ public class MainMenu implements ActionListener, ItemListener{
 								activatePlugin(pluginDescriptor.getId());
 							Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 							if (plugin instanceof StatefulPlugin) {
-								System.out.println("plugin.toString(): " + plugin.toString());
 								((StatefulPlugin)plugin).getState().fromXML(pluginNameElement);
-								System.out.println("load: ");
 								((StatefulPlugin)plugin).getState().load();
-								System.out.println("post maLoad");
 							}
 						} catch (Exception e1) {
 							System.err.println("WARNING: Error loading plugin state from XML: "+pluginDescriptor.getName());
@@ -606,7 +601,6 @@ public class MainMenu implements ActionListener, ItemListener{
 
 	//@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
 		Object eventSource = e.getSource();
 		if (eventSource == appExit) {
 			quit();

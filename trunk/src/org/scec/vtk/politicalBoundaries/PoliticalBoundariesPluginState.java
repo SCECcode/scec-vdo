@@ -26,6 +26,7 @@ public class PoliticalBoundariesPluginState implements PluginState {
 		filePath = new ArrayList<>();
 	}
 
+	
 	/*
 	 * copyLatestCatalogDetails()
 	 * 		This function traverses through the table tree structure
@@ -33,7 +34,6 @@ public class PoliticalBoundariesPluginState implements PluginState {
 	 * 		as true on TableModel 
 	 * 		
 	 */
-	
 	void copyLatestCatalogDetails()
 	{
 		filePath.clear();
@@ -67,7 +67,14 @@ public class PoliticalBoundariesPluginState implements PluginState {
 	}
 	
 	
-	
+	/*
+	 * clear():
+	 * resets the table tree
+	 * 
+	 * used in the load function. reset the table before setting the 
+	 * 	elements within. 
+	 * 
+	 */
 	public void clear(){
 		TreeNode<CheckAllTable> treeRoot = parent.root;
 		
@@ -83,6 +90,14 @@ public class PoliticalBoundariesPluginState implements PluginState {
 		
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.scec.vtk.plugins.PluginState#load()
+	 * 
+	 * loads the data from the filePath list onto the table tree
+	 * the table takes care of representing the data on the user interface.
+	 * just set the checks to true and set the colors aproppriately
+	 */
 	@Override
 	public void load() {
 		
@@ -98,8 +113,6 @@ public class PoliticalBoundariesPluginState implements PluginState {
 						list.setValueAt(true, i, 0);
 						j++;
 						list.setValueAt(new Color(Integer.parseInt(filePath.get(j))), i, 2);
-						
-						
 					}
 				}
 				
@@ -120,10 +133,10 @@ public class PoliticalBoundariesPluginState implements PluginState {
 
 	@Override
 	public void toXML(Element stateEl) {
-		System.out.println("toXML pol bound state");
 		copyLatestCatalogDetails();
 		createElement(stateEl);
 	}
+
 
 	@Override
 	public void fromXML(Element stateEl) {
