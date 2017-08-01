@@ -911,6 +911,7 @@ public class MainMenu implements ActionListener, ItemListener{
 
 			final String menuName = info.getMenuName();
 			JMenu menu = getMenuByName(menuName);
+			System.out.println("MENU NAME:" + menuName);
 
 			// If the menu was not found, then create it
 			if (menu == null) {
@@ -921,7 +922,9 @@ public class MainMenu implements ActionListener, ItemListener{
 			}
 
 			final String submenuName = info.getSubmenuName();
+			System.out.println("SUBMENU NAME:" + submenuName);
 			if (submenuName == null) {
+				System.out.println(submenuName + " is null");
 
 				// If the plugin does not specify a submenu,
 				// then add it to the regular menu
@@ -940,9 +943,13 @@ public class MainMenu implements ActionListener, ItemListener{
 	private JMenu getCreateSubMenu(JMenu menu, String submenuName) {
 		// Try to find the submenu
 		JMenu submenu = null;
+		System.out.println(submenuName);
 		for (int i = 0; i < (menu).getItemCount(); i++) {
 			JMenuItem candidate = menu.getItem(i);
 			if (candidate != null && candidate instanceof JMenu) {
+				if (candidate.getName().equalsIgnoreCase("GIS Hazus Events") || candidate.getName().equalsIgnoreCase("ShakeMap") || candidate.getName().equals("Training")) {
+					candidate.setVisible(false);;
+				}
 				if (((JMenu) candidate).getName().equalsIgnoreCase(
 						submenuName)) {
 					return (JMenu) candidate;
@@ -1033,6 +1040,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				PluginActors actors = new PluginActors();
 				actors.addActorsChangeListener(Info.getMainGUI());
 				Plugin plugin = info.newInstance(actors);
+				System.out.println(plugin.toString() + " " + plugin.getId());
 				pluginActors.put(plugin, actors);
 				loadedPlugins.put(id, plugin);
 				plugin.load();
