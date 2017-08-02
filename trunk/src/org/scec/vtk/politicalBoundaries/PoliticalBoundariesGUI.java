@@ -162,9 +162,6 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		landmarksTable.getTable().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		for (int j = 0; j < landmarks.size(); j++) {																		
 			final PresetLocationGroup landmarkData = fileParser.loadLandmarkData(landmarks.get(j));		
-			if (landmarkData.name.equals("CA Counties")) {
-				System.out.println(landmarkData.locationNames.size() + " " + landmarkData.locations.size());
-			}
 			CheckAllTable landmarkDataTable = setUpTable(landmarkData.locationNames, landmarks.get(j), new LandmarkListener(landmarkData), new ColorListener(false));		//Create table to display landmarks in landmark group.
 			landmarksNode.addChild(landmarkDataTable);																		//Add table as child.
 		}
@@ -225,9 +222,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 	public DrawingTool addDrawingTool(DrawingTool drawingTool, String text){
 		if (drawingTool.getActorPin()!= null) {
 			appendActors.addToAppendedPolyData(drawingTool.getActorPin());
-			System.out.println("Drawing pin exists");
 			if (drawingTool.getActorText() != null) {
-				System.out.println("Drawing text exists");
 				appendActors.addToAppendedPolyData(drawingTool.getActorText());
 			}
 			appendActors.getAppendedActor().Modified();
@@ -459,16 +454,15 @@ public class PoliticalBoundariesGUI implements ActionListener {
     							}
     						}
     						setColor(landmarkData.locations.get(k), landmarkColor);
-    						if (landmarkData.counties != null) {
-								if (landmarkData.counties[k] != null) {
-									setColor(landmarkData.counties[k], landmarkColor);
-								}
-							}
+//    						if (landmarkData.counties != null) {
+//								if (landmarkData.counties[k] != null) {
+//									setColor(landmarkData.counties[k], landmarkColor);
+//								}
+//							}
     					}
     					else {
     						if(allActiveDrawings.contains(landmarkData.locations.get(k))) {
     							setVisibility(allActiveDrawings.get(allActiveDrawings.indexOf(landmarkData.locations.get(k))), 0);
-    							System.out.println(allActiveDrawings.indexOf(landmarkData.locations.get(k)));
     						}
     						if (landmarkData.counties != null) {
 								if (landmarkData.counties[k] != null) {
