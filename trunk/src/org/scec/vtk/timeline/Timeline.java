@@ -48,7 +48,7 @@ public class Timeline implements StatefulPlugin {
 	private List<Renderer> availableRenderers;
 	private Dimension renderDimensions;
 	
-	GIFRenderer gif;
+	public GIFRenderer gif;
 	
 	private boolean isLive = true; // can be set to false for external GUI tests;
 
