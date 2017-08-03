@@ -32,6 +32,7 @@ public class GIFRenderer extends AbstractThreadedRenderer {
 	private double fps = 30;
 	private int tFrames;
 	private int frameCntr;
+	public boolean creatingGIF;
 	private String GIFoutputFileName;
 	private String GIFoutputFilePath;
 	
@@ -47,7 +48,8 @@ public class GIFRenderer extends AbstractThreadedRenderer {
 		this.extension = "gif";
 		this.name = name;
 		tFrames =  (int)(fps*maxTime);
-		frameCntr = -1;
+		frameCntr = 0;
+		creatingGIF = false;
 		GIFoutputFileName = "GIFName";
 		Frames = new Vector<BufferedImage>();
 		
@@ -116,19 +118,24 @@ public class GIFRenderer extends AbstractThreadedRenderer {
 		
 		index++;
 		frameCntr++;
+		System.out.println( "frameCntr = "+ frameCntr);
 		if (D){
 			
 		}
-		if (frameCntr == (int)maxTime*fps){ //multiply the frames per second with maxtime
+		if (frameCntr == (int)maxTime*fps){ //multiply the frames per second by the duration of the animation to calculate the amounts of frames that will be used for the gif.
 			
 			//a gif is created when the animation is finished 
-			System.out.println("Creating gif...");
+			System.out.println("Creating gif... " + frameCntr);
+			creatingGIF = true;
 			GIFSequence.gifFunction(GIFRenderer.Frames, GIFoutputFileName, GIFoutputFilePath);
 			Frames.clear();
+			
 			//System.out.println("frameCntr: " + frameCntr);
-			frameCntr=-1;
+			frameCntr=0;
 			
+			return; 
 			
+			//The function is creating at the correct time but the Rendering Bar on timeline doesn't reflect it accordingly. 
 		}
 		
 			 
