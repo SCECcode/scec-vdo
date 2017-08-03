@@ -216,7 +216,8 @@ public class PoliticalBoundariesGUI implements ActionListener {
 	 * @param text
 	 * @return
 	 * 
-	 * Creates vtk actors for a drawing tool and adds it to allActiveDrawings
+	 * Creates vtk actors for a drawing tool and adds it to allActiveDrawings. 
+	 * Function copied from DefaultLocationsGUI in drawing tools, which is now deprecated.
 	 * 
 	 */
 	public DrawingTool addDrawingTool(DrawingTool drawingTool, String text){
@@ -418,7 +419,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		return searchNode.findTreeNode(searchCriteria);
     }
     
-    //Counties are a pain and everything county related should be rewritten properly.
+    //Counties are a pain and everything county related should be rewritten properly. It works though.
     class LandmarkListener implements TableModelListener{
     	private PresetLocationGroup landmarkData;
     	public LandmarkListener(PresetLocationGroup landmarkData) {
@@ -495,12 +496,11 @@ public class PoliticalBoundariesGUI implements ActionListener {
     	 	final CheckAllTable targetTable = (CheckAllTable) sp.getParent();
     	 	TreeNode<CheckAllTable> currentTableNode = findTableNode(root, targetTable);
     		int col = target.columnAtPoint(e.getPoint());
-    		// clear search bar 
-    		targetTable.clearSearchBar();
     		if (col == 0) {
     			mainPanel.remove(targetTable);
     			currentTableNode.parent.data.renderTableHeader();
     			mainPanel.add(currentTableNode.parent.data);
+        		targetTable.clearSearchBar();
     			mainPanel.revalidate(); 
     			mainPanel.repaint();
     		}
@@ -521,7 +521,6 @@ public class PoliticalBoundariesGUI implements ActionListener {
     		TreeNode<CheckAllTable> currentTableNode = findTableNode(root, targetTable);
     		int row = target.getSelectedRow();
     		int col = target.columnAtPoint(e.getPoint());
-    		targetTable.clearSearchBar();
     		if (col != 0) {
     			if (e.getClickCount() == 2 || col == targetTable.getTable().getColumnCount()-1) {
     				final String subTableName = (String)target.getValueAt(row, 1);
@@ -532,6 +531,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
     						node.data.renderTableHeader();
     					}
     				}
+    	    		targetTable.clearSearchBar();
     				mainPanel.revalidate(); 
     				mainPanel.repaint();
     			}
@@ -540,8 +540,8 @@ public class PoliticalBoundariesGUI implements ActionListener {
     };
 	
     /**
-     * Listens for checks on the check column and checks all the boxes for the rows child table.
-     * Can be copied and used in other plugins.
+     * Listens for checks on the check column and checks all the boxes for the row's child table.
+     * Can be copied and used in other plugins with CheckAllTable trees.
      */
 	TableModelListener checkNextTableListener = new TableModelListener() {
 		@Override
@@ -641,13 +641,14 @@ public class PoliticalBoundariesGUI implements ActionListener {
 					if (table.getSelectionModel().isSelectedIndex(i)) {
 						String subTableName = (String) table.getModel().getValueAt(table.convertRowIndexToModel(i), 1);
 						table.getModel().setValueAt(newColor, table.convertRowIndexToModel(i), 2);
+						//Check if the color listener was set to color the child table as well.
 						if (!colorNextTable) {
 							setVtkColors(table, subTableName, newColor);
 							if (allSubRegionNames.contains(subTableName)) {
 								table.getModel().setValueAt(newColor ,table.convertRowIndexToModel(i), 2);
 							}
 						}
-						else {
+						else {				
 				    	 	final TreeNode<CheckAllTable> nextTableNode = findTableNodeByTitle(root, subTableName);
 				    	 	for (int j = 0 ; j < nextTableNode.data.getTable().getRowCount(); j++) {
 								String nextTableName = (String) nextTableNode.data.getTable().getModel().getValueAt(j, 1);
@@ -663,6 +664,10 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		
 	}
 	
+	/**
+	 * No longer necessary to override actionPerformed.
+	 * @param e
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
@@ -711,12 +716,15 @@ public class PoliticalBoundariesGUI implements ActionListener {
 			actorPin.SetVisibility(visible);
 		}
 	}
-	  
+	 
 	public ArrayList<vtkActor> getPoliticalBoundaries()
 	{
 		return actorPoliticalBoundariesSegments;
 	}
-	
+	/**
+	 * These two functions have been deprecated.
+	 * @return
+	 */
 	public ArrayList<JCheckBox> getLowerCheckBoxButtons()
 	{
 		ArrayList<JCheckBox> lowerCheckBoxButtons = new ArrayList<JCheckBox>();
