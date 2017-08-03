@@ -2,6 +2,11 @@ package org.scec.vtk.plugins.utils.components;
 
 import java.util.Iterator;
 
+/**
+*
+* Documentation for this class can be found at https://github.com/gt4dev/yet-another-tree-structure
+*/
+
 public class TreeNodeIter<T> implements Iterator<TreeNode<T>> {
 
 	enum ProcessStages {

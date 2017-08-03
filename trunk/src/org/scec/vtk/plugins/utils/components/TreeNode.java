@@ -4,6 +4,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ *
+ * Documentation for this class can be found at https://github.com/gt4dev/yet-another-tree-structure
+ */
+
 public class TreeNode<T> implements Iterable<TreeNode<T>> {
 
 	public T data;
