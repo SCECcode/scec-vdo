@@ -113,6 +113,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		eventFileParam.addParameterChangeListener(this);
 		eventFileParam.setShowHiddenFiles(true);
 		builderParams.addParameter(eventFileParam);
+		//Added button to load catalogs from RSQSimServer.
 		loadParam = new ButtonParameter(LOAD_PARAM_NAME, LOAD_PARAM_BUTTON_NAME);
 		loadParam.addParameterChangeListener(this);
 		builderParams.addParameter(loadParam);
@@ -377,6 +378,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			EQSimQueryFrame.downloadButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					//Create a new folder in the .scecvdo folder and download to that folder
 					HashMap<String, ArrayList<URL>> downloadURLs = EQSimQueryFrame.getDownloadURLs();
 					for (Entry<String, ArrayList<URL>> entry : downloadURLs.entrySet()) {
 						String title = entry.getKey();
@@ -395,8 +397,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 								}
 							}
 						}
-						File outFile = catalogDir;
-						
+						File outFile = catalogDir; //outFile contains all downloaded files.
+						//Work with the outFile. Copied from above.
 						if (outFile == null || elements == null) {
 							fireNewEvents(null);
 						} else if (elements != null) {
