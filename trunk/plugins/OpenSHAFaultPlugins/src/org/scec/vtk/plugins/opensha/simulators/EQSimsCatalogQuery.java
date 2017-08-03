@@ -162,6 +162,7 @@ public class EQSimsCatalogQuery extends JFrame {
 	 */
     private void actionGo() throws SAXException, IOException, ParserConfigurationException {
         URL verifiedUrl = verifyUrl(locationTextField.getText() + "index.xml");
+        defaultCatalogURL = locationTextField.getText();
         if (verifiedUrl != null) {
             String[] tags = {"Title", "Authors", "Date", "Description", "Region"};				//XML tags to look for on the index.xml at the url
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
