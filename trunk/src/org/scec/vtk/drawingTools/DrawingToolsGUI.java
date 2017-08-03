@@ -132,9 +132,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		this.drawingToolSubPanelLowest = new JPanel(new BorderLayout(0,0));
 		this.drawingToolSubPanelLowest.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));    
 		this.drawingToolSubPanelLowest.add(displayAttributes);
-		displayPanel.add(drawingToolSubPanelUpper);//upper level			The upper panel contained the DefaultLocationsGUI, which has been put in the PoliticalBoundaries plugin
+		//displayPanel.add(drawingToolSubPanelUpper);//upper level			The upper panel contained the DefaultLocationsGUI, which has been put in the PoliticalBoundaries plugin
 		displayPanel.add(getDrawingToolLibraryPanel());//mid level
-		displayPanel.add(this.drawingToolSubPanelLowest);//lowest level
+		displayPanel.add(this.drawingToolSubPanelLowest);//lowest level			
 		add(displayPanel);
 		drawingToolsArray  = new Vector<DrawingTool>();
 		highwayToolsArray  = new Vector<DrawingTool>();
@@ -284,10 +284,10 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		scrollerHighway.setPreferredSize(new Dimension(Prefs.getPluginWidth()-10, 200));
 		scrollerHighway.setViewportView(this.highwayToolTable);
 		scrollerHighway.getViewport().setBackground(this.highwayToolTable.getBackground());
-		this.drawingToolSubPanelLower.add(new JLabel("Cities"));
+		this.drawingToolSubPanelLower.add(new JLabel("Drawings"));
 		this.drawingToolSubPanelLower.add(scroller);
-		this.drawingToolSubPanelLower.add(new JLabel("Highways"));
-		this.drawingToolSubPanelLower.add(scrollerHighway);
+		//this.drawingToolSubPanelLower.add(new JLabel("Highways"));
+		//this.drawingToolSubPanelLower.add(scrollerHighway);
 		this.drawingToolSubPanelLower.add(getDrawingToolLibraryBar(),BorderLayout.PAGE_END);
 
 

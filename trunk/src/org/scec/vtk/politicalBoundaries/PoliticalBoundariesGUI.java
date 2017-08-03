@@ -614,7 +614,7 @@ public class PoliticalBoundariesGUI implements ActionListener {
 	 * @author intern
 	 *
 	 * Listens for color button click and changes colors as appropriate.
-	 *
+	 * TODO: Add options to change text and pin size. Example in DefaultLocationsGUI
 	 */
 	class ColorListener implements ActionListener {
 		private PresetLocationGroup landmarkData;
