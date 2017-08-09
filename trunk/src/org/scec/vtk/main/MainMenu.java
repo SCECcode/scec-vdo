@@ -943,7 +943,12 @@ public class MainMenu implements ActionListener, ItemListener{
 		for (int i = 0; i < (menu).getItemCount(); i++) {
 			JMenuItem candidate = menu.getItem(i);
 			if (candidate != null && candidate instanceof JMenu) {
-				if (candidate.getName().equalsIgnoreCase("GIS Hazus Events") || candidate.getName().equalsIgnoreCase("ShakeMap") || candidate.getName().equals("Training")) {
+				// this is a dirty kludgey way to do this, bad interns
+				// TODO do it right with some sort of configuration file
+				if (candidate.getName().equalsIgnoreCase("GIS Hazus Events")
+						|| candidate.getName().equalsIgnoreCase("ShakeMap")
+//						|| candidate.getName().equals("Training")
+						) {
 					candidate.setVisible(false);;
 				}
 				if (((JMenu) candidate).getName().equalsIgnoreCase(
