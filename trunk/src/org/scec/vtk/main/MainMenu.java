@@ -340,7 +340,9 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 	
 	private static File getStatusFile() {
-		return new File(Prefs.getLibLoc(), "SCEC-VDO_STATUS.xml");
+		File libDir = new File(Prefs.getLibLoc());
+		Preconditions.checkState(libDir.exists() || libDir.mkdir());
+		return new File(libDir, "SCEC-VDO_STATUS.xml");
 	}
 	
 	public boolean getState(){
