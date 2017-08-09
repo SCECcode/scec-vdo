@@ -332,18 +332,14 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				
 				int x = clickPos[0];
 				int y = clickPos[1];
-//				int x = e.getX();
-//				int y = calcY;
-				cellPicker.Pick(e.getX(), renderWindow.getComponent().getHeight()-e.getY()-1,
-			            0.0, renderWindow.getRenderer());
  
-				//cellPicker.Pick(x, y, 0, renderWindow.getRenderer());
-//				if (clickDebug) {
-//					if (cellPicker.GetActor() != null)
-//						System.out.println("Actor: "+cellPicker.GetActor().getClass().getName());
-//					else
-//						System.out.println("Actor: (null)");
-//				}
+				cellPicker.Pick(x, y, 0, renderWindow.getRenderer());
+				if (clickDebug) {
+					if (cellPicker.GetActor() != null)
+						System.out.println("Actor: "+cellPicker.GetActor().getClass().getName());
+					else
+						System.out.println("Actor: (null)");
+				}
 				// if we picked a pick enabled actor, fire off a pick event
 				if (cellPicker.GetActor() instanceof PickEnabledActor<?>) {
 					PickEnabledActor<?> actor = (PickEnabledActor<?>)cellPicker.GetActor();
