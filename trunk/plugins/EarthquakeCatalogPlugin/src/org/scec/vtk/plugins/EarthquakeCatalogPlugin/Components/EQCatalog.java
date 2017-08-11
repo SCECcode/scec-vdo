@@ -446,10 +446,10 @@ public class EQCatalog extends CatalogAccessor {
 		// calc mag divisions
 		if(this.valuesBy=="Magnitude")
 		{ 
-			magDivs= (int)Math.ceil(getMaxMagnitude()) - (int)Math.floor(getMinMagnitude());
+			magDivs= (int)Math.ceil(getMaxMagnitude()) - (int)Math.floor(getMinMagnitude()) + 1;
 		}else
 		{
-			magDivs= (int)Math.ceil(getMaxDepth()) - (int)Math.floor(getMinDepth());
+			magDivs= (int)Math.ceil(getMaxDepth()) - (int)Math.floor(getMinDepth()) + 1;
 		}
 		// find number of increments/divisions:
 		//    -- depth gradient is always 3km intervals from 0-18km
