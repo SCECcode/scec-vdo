@@ -190,8 +190,8 @@ public class MainMenu implements ActionListener, ItemListener{
 		fileMenu = new JMenu("File");
 		fileOpen = new JMenuItem("Open...");
 		saveItem = new JMenuItem("Save state...");
-		saveItemVTK = new JMenuItem("Save as VTK...");
-		saveItemOBJ = new JMenuItem("Save as OBJ...");
+		saveItemVTK = new JMenuItem("Export as VTK...");
+		saveItemOBJ = new JMenuItem("Export as OBJ...");
 		appExit = new JMenuItem("Quit");
 
 		fileMenu.addActionListener(this);
@@ -202,8 +202,8 @@ public class MainMenu implements ActionListener, ItemListener{
 		this.fileOpen.addActionListener(this);
 		this.fileMenu.add(fileOpen);
 		this.fileMenu.add(saveItem);
-		//this.fileMenu.add(saveItemVTK);
-		//this.fileMenu.add(saveItemOBJ);
+		this.fileMenu.add(saveItemVTK);
+		this.fileMenu.add(saveItemOBJ);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(appExit);
 		this.menuBar.add(fileMenu);
