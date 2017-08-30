@@ -17,6 +17,7 @@ import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
+import org.opensha.sha.simulators.utils.SimulatorUtils;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 
@@ -129,7 +130,7 @@ public class EQSlipRateColorer extends CPTBasedColorer implements EQSimsEventLis
 		if (events == null)
 			return;
 		
-		double rate = 1d / General_EQSIM_Tools.getSimulationDurationYears(events);
+		double rate = 1d / SimulatorUtils.getSimulationDurationYears(events);
 		
 		for (SimulatorEvent event : events) {
 			int[] ids = event.getAllElementIDs();

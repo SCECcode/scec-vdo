@@ -19,7 +19,6 @@ public class EQSimsPlugin extends AbstractFaultPlugin {
 		EQSimsBuilder builder = new EQSimsBuilder();
 		
 		ArrayList<FaultColorer> colorers = builder.getColorers();
-		FaultAnimation faultAnim = builder.getFaultAnimation();
 		ArrayList<GeometryGenerator> geomGens = FaultPluginGUI.createDefaultGeomGens();
 		setBundlerInGeomGens(geomGens, new EQSimsFaultSectionBundler());
 		
@@ -29,8 +28,7 @@ public class EQSimsPlugin extends AbstractFaultPlugin {
 			geomGens.add(0, lines);
 		}
 		
-		ArrayList<FaultAnimation> faultAnims = new ArrayList<FaultAnimation>();
-		faultAnims.add(faultAnim);
+		ArrayList<FaultAnimation> faultAnims = builder.getAnimations();
 		
 		FaultPluginGUI gui = new FaultPluginGUI(this, builder, colorers, geomGens, Color.GRAY, faultAnims);
 //		gui.addDistTab(); // TODO?

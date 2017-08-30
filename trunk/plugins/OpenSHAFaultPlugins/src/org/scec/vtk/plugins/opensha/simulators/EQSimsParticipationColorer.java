@@ -41,6 +41,7 @@ import org.opensha.sha.simulators.iden.FaultIDIden;
 import org.opensha.sha.simulators.iden.MagRangeRuptureIdentifier;
 import org.opensha.sha.simulators.iden.SectionIDIden;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
+import org.opensha.sha.simulators.utils.SimulatorUtils;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
@@ -279,7 +280,7 @@ PickHandler<AbstractFaultSection> {
 		if (events.isEmpty())
 			return;
 		
-		double years = General_EQSIM_Tools.getSimulationDurationYears(events);
+		double years = SimulatorUtils.getSimulationDurationYears(events);
 		double rate = 1d/years; // each event happens once in the simulation
 		
 		System.out.println("Updating participation rates! Time span: "+years+" years. Rate/event: "+rate);
@@ -512,7 +513,7 @@ PickHandler<AbstractFaultSection> {
 			minMag = 5d;
 		double deltaMag = 0.1;
 		int numMag = (int)((9d - minMag)/deltaMag + 0.5);
-		Preconditions.checkState(numMag > 1, "Bad numMag=%s, minMag=%s", numMag, minMag);
+		Preconditions.checkState(numMag > 1, "Bad numMag="+numMag+", minMag="+minMag);
 		minMag += 0.5*deltaMag;
 		
 		for (int i=0; i<names.size(); i++) {

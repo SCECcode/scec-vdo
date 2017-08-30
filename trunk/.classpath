@@ -36,5 +36,6 @@
 	<classpathentry kind="lib" path="lib/jcodec-0.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/opensha.jar"/>
 	<classpathentry kind="lib" path="lib/vtk.jar"/>
+	<classpathentry kind="lib" path="lib/jxlayer.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
