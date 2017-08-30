@@ -43,6 +43,7 @@ import org.opensha.sha.simulators.iden.RuptureIdentifier;
 import org.opensha.sha.simulators.parsers.EQSIMv06FileReader;
 import org.opensha.sha.simulators.parsers.RSQSimFileReader;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultIDComparator;
+import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.surfaces.params.ColorParameter;
@@ -87,8 +88,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	
 	private TreeChangeListener l;
 	
-	private EQSimsEventAnimColorer faultAnim;
+	private EQSimsEventSlipAnim eventSlipAnim;
 	private ArrayList<FaultColorer> colorers;
+	private ArrayList<FaultAnimation> animations;
 	
 	private ArrayList<EQSimsEventListener> eventListeners = new ArrayList<EQSimsEventListener>();
 	
@@ -137,6 +139,14 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 //		EQSimMultiFaultRupColorer multiFault = new EQSimMultiFaultRupColorer();
 //		eventListeners.add(multiFault);
 //		colorers.add(multiFault);
+		
+		animations = new ArrayList<>();
+		EQSimsEventAnimColorer eventAnim = new EQSimsEventAnimColorer();
+		animations.add(eventAnim);
+		eventListeners.add(eventAnim);
+		eventSlipAnim = new EQSimsEventSlipAnim();
+		animations.add(eventSlipAnim);
+		eventListeners.add(eventSlipAnim);
 	}
 
 	@Override
@@ -325,12 +335,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		return colorers;
 	}
 	
-	public EQSimsEventAnimColorer getFaultAnimation() {
-		if (faultAnim == null) {
-			faultAnim = new EQSimsEventAnimColorer();
-			eventListeners.add(faultAnim);
-		}
-		return faultAnim;
+	public ArrayList<FaultAnimation> getAnimations() {
+		return animations;
 	}
 	
 	private void fireNewGeometry(List<SimulatorElement> elements) {
@@ -354,6 +360,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 				fireNewEvents(null);
 			} else if (elements != null) {
 				try {
+					eventSlipAnim.setInitialDir(outFile.getParentFile());
 					List<RuptureIdentifier> rupIdens = new ArrayList<>();
 					rupIdens.add(new MagRangeRuptureIdentifier(eventMinMagParam.getValue(), 10d));
 					List<? extends SimulatorEvent> events;
