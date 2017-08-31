@@ -219,8 +219,8 @@ ParameterChangeListener {
 			return 0;
 		Preconditions.checkState(step <= 1, "Should either be -1, 0, or 1");
 		if (step == 0)
-			return curSlipTimeFunc.getStartTime();
-		return curSlipTimeFunc.getEndTime();
+			return 0;
+		return curSlipTimeFunc.getEndTime() - curSlipTimeFunc.getStartTime();
 	}
 
 	@Override
@@ -246,9 +246,9 @@ ParameterChangeListener {
 			return Double.NaN;
 		switch (displayParam.getValue()) {
 		case CUMULATIVE_SLIP:
-			return curSlipTimeFunc.getCumulativeEventSlip(fault.getId(), curTime);
+			return curSlipTimeFunc.getCumulativeEventSlip(fault.getId(), curSlipTimeFunc.getStartTime()+curTime);
 		case VELOCITY:
-			return curSlipTimeFunc.getVelocity(fault.getId(), curTime);
+			return curSlipTimeFunc.getVelocity(fault.getId(), curSlipTimeFunc.getStartTime()+curTime);
 
 		default:
 			throw new IllegalStateException();
