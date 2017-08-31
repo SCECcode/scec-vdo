@@ -9,14 +9,7 @@ package org.scec.vtk.plugins;
  *
  * @author Gideon Juve <juve@usc.edu>
  */
-public interface StatefulPlugin extends Plugin
-{
-	/**
-     * Get the state of the plugin
-     * 
-     * getState() will always be called after load()
-     */
-    public PluginState getState();
+public interface StatefulPlugin extends Plugin, Stateful {
     
 }
 
