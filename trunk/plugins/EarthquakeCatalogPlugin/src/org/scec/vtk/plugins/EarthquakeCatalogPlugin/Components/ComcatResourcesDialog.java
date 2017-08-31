@@ -77,8 +77,6 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	private JTextField maxEventsField = new JTextField();
 	private JButton importButton = new JButton("Import");
 
-	JSONObject obj = new JSONObject();
-	JSONArray catalogList = new JSONArray();
 	//explanations and references for each source catalog
 	//private JTextArea srcExplainText = new JTextArea();
 	//		private JLabel srcSCSNLabel = new JLabel();
@@ -608,6 +606,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 
 		Date startDate;
 		Date endDate;
+		
+		masterEarthquakeCatalogsList.clear();
 
 		JsonEvent je = new JsonEvent((JSONObject) jsonArray.get(0));
 		
@@ -742,6 +742,10 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			throw ExceptionUtils.asRuntimeException(e);
 		}
 		System.out.println(events);
+		
+		JSONObject obj = new JSONObject();
+		JSONArray catalogList = new JSONArray();
+		masterEarthquakeCatalogsList.clear();
 
 		float min_dep =    5.0f;
 		float max_dep = -600.0f;
