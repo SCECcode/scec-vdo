@@ -38,6 +38,8 @@ import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.SimulatorEvent;
+import org.opensha.sha.simulators.iden.CatalogLengthLoadIden;
+import org.opensha.sha.simulators.iden.LogicalAndRupIden;
 import org.opensha.sha.simulators.iden.MagRangeRuptureIdentifier;
 import org.opensha.sha.simulators.iden.RuptureIdentifier;
 import org.opensha.sha.simulators.parsers.EQSIMv06FileReader;
@@ -82,6 +84,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private static final String EVENT_MIN_MAG_PARAM_NAME = "Min Event Mag To Load";
 	private DoubleParameter eventMinMagParam;
 	
+	private static final String MAX_CAT_DURATION_PARAM_NAME = "Max Catalog Years To Load";
+	private DoubleParameter catDurationParam;
+	
 	private ParameterList builderParams = new ParameterList();
 	
 	private JFileChooser chooser;
@@ -121,6 +126,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		builderParams.addParameter(loadParam);
 		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(5d));
 		builderParams.addParameter(eventMinMagParam);
+		catDurationParam = new DoubleParameter(MAX_CAT_DURATION_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
+		builderParams.addParameter(catDurationParam);
 		
 		colorers = new ArrayList<FaultColorer>();
 		EQSlipRateColorer slipColorer = new EQSlipRateColorer();
@@ -359,26 +366,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			if (outFile == null || elements == null) {
 				fireNewEvents(null);
 			} else if (elements != null) {
-				try {
-					eventSlipAnim.setInitialDir(outFile.getParentFile());
-					List<RuptureIdentifier> rupIdens = new ArrayList<>();
-					rupIdens.add(new MagRangeRuptureIdentifier(eventMinMagParam.getValue(), 10d));
-					List<? extends SimulatorEvent> events;
-					CalcProgressBar progress = new CalcProgressBar("Reading Events File", "Loading events...");
-					progress.setIndeterminate(true);
-					if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
-						System.out.println("Detected RSQSim output file/dir");
-						events = RSQSimFileReader.readEventsFile(outFile, elements, rupIdens);
-					} else {
-						events = EQSIMv06FileReader.readEventsFile(outFile, elements, rupIdens);
-					}
-					System.out.println("Done reading events file!");
-					fireNewEvents(events);
-					progress.setVisible(false);
-					progress.dispose();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
+				loadEvents(outFile);
 			}
 		} else if (event.getSource() == loadParam) {
 			final EQSimsCatalogQuery EQSimQueryFrame = new EQSimsCatalogQuery();
@@ -409,30 +397,37 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 						if (outFile == null || elements == null) {
 							fireNewEvents(null);
 						} else if (elements != null) {
-							try {
-								List<RuptureIdentifier> rupIdens = new ArrayList<>();
-								rupIdens.add(new MagRangeRuptureIdentifier(eventMinMagParam.getValue(), 10d));
-								List<? extends SimulatorEvent> events;
-								CalcProgressBar progress = new CalcProgressBar("Reading Events File", "Loading events...");
-								progress.setIndeterminate(true);
-								if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
-									System.out.println("Detected RSQSim output file/dir");
-										events = RSQSimFileReader.readEventsFile(outFile, elements, rupIdens);
-								} else {
-										events = EQSIMv06FileReader.readEventsFile(outFile, elements, rupIdens);
-								}
-								System.out.println("Done reading events file!");
-								fireNewEvents(events);
-								progress.setVisible(false);
-								progress.dispose();
-							}
-							catch(Exception e1) {
-								System.out.println("failure to read");
-							}
+							loadEvents(outFile);
 						}
 					}
 				}
 			});
+		}
+	}
+
+	private void loadEvents(File outFile) {
+		try {
+			eventSlipAnim.setInitialDir(outFile.getParentFile());
+			List<RuptureIdentifier> rupIdens = new ArrayList<>();
+			RuptureIdentifier loadIden = new MagRangeRuptureIdentifier(eventMinMagParam.getValue(), Double.POSITIVE_INFINITY);
+			if (catDurationParam.getValue() > 0d)
+				loadIden = new LogicalAndRupIden(loadIden, new CatalogLengthLoadIden(catDurationParam.getValue()));
+			rupIdens.add(loadIden);
+			List<? extends SimulatorEvent> events;
+			CalcProgressBar progress = new CalcProgressBar("Reading Events File", "Loading events...");
+			progress.setIndeterminate(true);
+			if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
+				System.out.println("Detected RSQSim output file/dir");
+				events = RSQSimFileReader.readEventsFile(outFile, elements, rupIdens);
+			} else {
+				events = EQSIMv06FileReader.readEventsFile(outFile, elements, rupIdens);
+			}
+			System.out.println("Done reading events file!");
+			fireNewEvents(events);
+			progress.setVisible(false);
+			progress.dispose();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 	

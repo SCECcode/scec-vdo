@@ -107,6 +107,8 @@ ParameterChangeListener {
 	public EQSimsEventSlipAnim() {
 		super(getDefaultCPT(), false);
 		
+		paramList = new ParameterList();
+		
 		transFileParam = new FileParameter("Trans. File");
 		transFileParam.addParameterChangeListener(this);
 		paramList.addParameter(transFileParam);
