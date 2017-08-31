@@ -1,5 +1,6 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +57,9 @@ ParameterChangeListener {
 	
 	private static CPT getDefaultSlipCPT() {
 		try {
-			return GMT_CPT_Files.MAX_SPECTRUM.instance().rescale(0d, 10d);
+			CPT cpt = GMT_CPT_Files.MAX_SPECTRUM.instance().rescale(0d, 10d);
+			cpt.setNanColor(Color.GRAY);
+			return cpt;
 		} catch (IOException e) {
 			throw ExceptionUtils.asRuntimeException(e);
 		}
@@ -64,7 +67,9 @@ ParameterChangeListener {
 	
 	private static CPT getDefaultVelocityCPT() {
 		try {
-			return GMT_CPT_Files.MAX_SPECTRUM.instance().rescale(0d, 1d);
+			CPT cpt = GMT_CPT_Files.MAX_SPECTRUM.instance().rescale(0d, 1d);
+			cpt.setNanColor(Color.GRAY);
+			return cpt;
 		} catch (IOException e) {
 			throw ExceptionUtils.asRuntimeException(e);
 		}
