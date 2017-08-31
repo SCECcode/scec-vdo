@@ -53,6 +53,8 @@ public class CueAnimator {
 	// static for persistence of current directory
 	private static JFileChooser chooser = new JFileChooser();
 	
+	public static final int IMAGE_TYPE = BufferedImage.TYPE_INT_RGB;
+	
 	public CueAnimator(Timeline timeline, CueAnimatorListener listener) {
 		this.timeline = timeline;
 		this.listener = listener;
@@ -244,7 +246,7 @@ public class CueAnimator {
 			Dimension dims = getCurrentSize();
 			Preconditions.checkState(dims.width == renderWidth && dims.height == renderHeight,
 					"Render canvas size changed during render");
-			BufferedImage image = new BufferedImage(dims.width, dims.height, BufferedImage.TYPE_INT_RGB);
+			BufferedImage image = new BufferedImage(dims.width, dims.height, IMAGE_TYPE);
 			if (JAVA_COMPONENT_RENDER) {
 				// call the Component's paint method, using
 				// the Graphics object of the image.

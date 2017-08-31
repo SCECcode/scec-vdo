@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -37,17 +38,20 @@ import org.scec.vtk.tools.actors.AppendActors;
 
 import vtk.vtkActor;
 import vtk.vtkActor2D;
+import vtk.vtkAppendPolyData;
 import vtk.vtkCellArray;
 import vtk.vtkConeSource;
 import vtk.vtkDoubleArray;
 import vtk.vtkGlyph3D;
 import vtk.vtkLabelPlacementMapper;
 import vtk.vtkLine;
+import vtk.vtkLineSource;
 import vtk.vtkPointSetToLabelHierarchy;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkStringArray;
+import vtk.vtkTubeFilter;
 
 public class PoliticalBoundariesGUI implements ActionListener {
 	private JPanel mainPanel;														//Main panel of the plugin. Contains the CheckAllTable.
@@ -59,6 +63,8 @@ public class PoliticalBoundariesGUI implements ActionListener {
 	AppendActors appendActors = new AppendActors();									//Contains actors of landmarks
 	private ColorButton colorDrawingToolsButton;									//Color button
 	private SingleColorChooser colorChooser;										//Color chooser dialog
+	
+	private static final boolean render_as_poly = false; 							// flag for rendering as polygons (tube) for export to Maya. always disabled otherwise. SUPER slow
 	
 	private Object[][] regionTableData = {{Boolean.FALSE, "Africa", Color.white},				//Data for continents
 										{Boolean.FALSE, "Asia", Color.white},
@@ -350,6 +356,11 @@ public class PoliticalBoundariesGUI implements ActionListener {
 			vtkCellArray lines = new vtkCellArray();
 			vtkPolyData linesPolyData = new vtkPolyData();
 			countpts = 0;
+			
+			List<vtkLineSource> lineSources = null;
+			if (render_as_poly)
+				lineSources = new ArrayList<>();
+			
 			for(int k=0;k< vtkBoundaries.size();k++)
 			{
 				//segments
@@ -369,12 +380,44 @@ public class PoliticalBoundariesGUI implements ActionListener {
 					countpts=countpts+1;
 				}
 				countpts=countpts+1;
+				
+				if (render_as_poly) {
+					vtkLineSource lineSource = new vtkLineSource();
+					vtkPoints subBoundary = new vtkPoints();
+					for(int i = 0; i <  segmentpoints.GetNumberOfPoints(); i++) {
+						double[] pt = segmentpoints.GetPoint(i);
+						subBoundary.InsertNextPoint(Transform.transformLatLon(pt[0],pt[1]));	
+					}
+					lineSource.SetPoints(subBoundary);
+					lineSources.add(lineSource);
+				}
 			}
 
 			linesPolyData.SetPoints(boundary);
 			linesPolyData.SetLines(lines);
 			vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-			mapper.SetInputData(linesPolyData);
+			if (render_as_poly) {
+				vtkAppendPolyData appendData = new vtkAppendPolyData();
+//				vtkLineSource lineSource = lineSources.get(0);
+				for (vtkLineSource lineSource : lineSources) {
+					vtkTubeFilter tubeFilter = new vtkTubeFilter();
+					tubeFilter.SetInputConnection(lineSource.GetOutputPort());
+					tubeFilter.SetRadius(2d);
+					tubeFilter.SetNumberOfSides(20);
+					tubeFilter.Update();
+//					appendData.AddInputConnection(tubeFilter.GetOutputPort());
+//					vtkPolyDataMapper subMapper = new vtkPolyDataMapper();
+//					subMapper.SetInputConnection(tubeFilter.GetOutputPort());
+					appendData.AddInputData(tubeFilter.GetOutput());
+//					mapper.SetInputConnection(tubeFilter.GetOutputPort());
+				}
+//				mapper.SetInputConnection(appendData.GetOutputPort());
+				appendData.Update();
+				mapper.SetInputData(appendData.GetOutput());
+//				mapper.SetInputConnection(appendData.GetOutputPort());
+			} else {
+				mapper.SetInputData(linesPolyData);
+			}
 			//mapper.SetInputConnection(assign.GetOutputPort());
 
 			vtkActor plyOutActor = new vtkActor();

@@ -35,8 +35,6 @@ public class ImageSequenceRenderer extends AbstractThreadedRenderer {
 	public static ImageSequenceRenderer getJPEG() {
 		return new ImageSequenceRenderer("jpg", "JPEG Sequence", true, 90);
 	}
-	
-
 
 	ImageSequenceRenderer(String extension, String name, boolean showQuality, int defaultQuality) {
 		this.extension = extension;
@@ -90,8 +88,6 @@ public class ImageSequenceRenderer extends AbstractThreadedRenderer {
 			numStr = "0"+numStr;
 		return numStr;
 	}
-
-	
 	
 	@Override
 	protected void doProcessFrame(BufferedImage img) throws IOException {

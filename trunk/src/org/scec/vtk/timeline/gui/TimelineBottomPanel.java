@@ -2,10 +2,12 @@ package org.scec.vtk.timeline.gui;
 
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 
 import org.scec.vtk.timeline.AnimationTimeListener;
 import org.scec.vtk.timeline.Timeline;
@@ -56,15 +58,21 @@ public class TimelineBottomPanel extends JPanel implements AnimationTimeListener
 	private static DecimalFormat timeDF = new DecimalFormat("0.0 s");
 
 	@Override
-	public void animationTimeChanged(double curTime) {
-		if (!rendering) {
-			renderProgress.setString("");
-			renderProgress.setValue(0);
-		}
-		double fract = curTime/maxTime;
-		int p = (int)Math.round(fract*play_max);
-		playProgress.setValue(p);
-		playProgress.setString(playbackText+": "+timeDF.format(curTime));
+	public void animationTimeChanged(final double curTime) {
+		runOnEDT(new Runnable() {
+			
+			@Override
+			public void run() {
+				if (!rendering) {
+					renderProgress.setString("");
+					renderProgress.setValue(0);
+				}
+				double fract = curTime/maxTime;
+				int p = (int)Math.round(fract*play_max);
+				playProgress.setValue(p);
+				playProgress.setString(playbackText+": "+timeDF.format(curTime));
+			}
+		});
 	}
 
 	@Override
@@ -75,41 +83,77 @@ public class TimelineBottomPanel extends JPanel implements AnimationTimeListener
 	private static DecimalFormat percentDF = new DecimalFormat("0 %");
 
 	@Override
-	public void frameProcessed(int index, int count) {
-		rendering = true;
-		// index is 0-based
-		index++;
-		double fract = (double)index/(double)count;
-		renderProgress.setString(renderingText+": Frame "+index+"/"+count+" ("+percentDF.format(fract)+")");
-		if (count != renderProgress.getMaximum())
-			renderProgress.setMaximum(count);
-		renderProgress.setValue(index);
+	public void frameProcessed(final int index, final int count) {
+		runOnEDT(new Runnable() {
+			
+			@Override
+			public void run() {
+				rendering = true;
+				// index is 0-based
+				int myIndex = index+1;
+				double fract = (double)myIndex/(double)count;
+				renderProgress.setString(renderingText+": Frame "+myIndex+"/"+count+" ("+percentDF.format(fract)+")");
+				if (count != renderProgress.getMaximum())
+					renderProgress.setMaximum(count);
+				renderProgress.setValue(myIndex);
+			}
+		});
 	}
 
 	@Override
 	public void finalizeStarted() {
-		rendering = true;
-		renderProgress.setIndeterminate(true);
-		renderProgress.setString(finalizeText);
+		runOnEDT(new Runnable() {
+			
+			@Override
+			public void run() {
+				rendering = true;
+				renderProgress.setIndeterminate(true);
+				renderProgress.setString(finalizeText);
+			}
+		});
 	}
 
 	@Override
-	public void finalizeProgress(int current, int total) {
-		rendering = true;
-		double fract = (double)current/(double)total;
-		renderProgress.setString(finalizeText+": "+(current+1)+"/"+total+" ("+percentDF.format(fract)+")");
-		if (total != renderProgress.getMaximum())
-			renderProgress.setMaximum(total);
-		renderProgress.setValue(current+1);
+	public void finalizeProgress(final int current, final int total) {
+		runOnEDT(new Runnable() {
+
+			@Override
+			public void run() {
+				rendering = true;
+				double fract = (double)current/(double)total;
+				renderProgress.setString(finalizeText+": "+(current+1)+"/"+total+" ("+percentDF.format(fract)+")");
+				if (total != renderProgress.getMaximum())
+					renderProgress.setMaximum(total);
+				renderProgress.setValue(current+1);
+			}
+		});
 	}
 
 	@Override
 	public void finalizeCompleted() {
-		rendering = false;
-		renderProgress.setString(renderDoneText);
-		renderProgress.setIndeterminate(false);
-		renderProgress.setValue(renderProgress.getMaximum());
+		runOnEDT(new Runnable() {
+			
+			@Override
+			public void run() {
+				rendering = false;
+				renderProgress.setString(renderDoneText);
+				renderProgress.setIndeterminate(false);
+				renderProgress.setValue(renderProgress.getMaximum());
+			}
+		});
 		
+	}
+	
+	private void runOnEDT(Runnable run) {
+		if (SwingUtilities.isEventDispatchThread())
+			run.run();
+		else
+			try {
+//				SwingUtilities.invokeAndWait(run); // can cause deadlock
+				SwingUtilities.invokeLater(run);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 	}
 
 }
