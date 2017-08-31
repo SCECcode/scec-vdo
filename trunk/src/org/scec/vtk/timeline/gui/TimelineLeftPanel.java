@@ -49,9 +49,7 @@ import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.TimelinePluginChangeListener;
 import org.scec.vtk.timeline.VisibilityKeyFrame;
 import org.scec.vtk.timeline.camera.CameraAnimator.SplineType;
-import org.scec.vtk.timeline.render.ImageSequenceRenderer;
 import org.scec.vtk.timeline.render.Renderer;
-import org.scec.vtk.timeline.render.GIFSequence;
 
 import com.google.common.base.Preconditions;
 
