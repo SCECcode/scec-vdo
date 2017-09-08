@@ -74,6 +74,7 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.MultiFaultRupColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.NucleationRateColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ParentSectColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ParticipationRateColorer;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.RSQSimRuptureMappingColorer;
 import org.scec.vtk.tools.Prefs;
 
 import scratch.UCERF3.AverageFaultSystemSolution;
@@ -311,6 +312,10 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 //		colorers.add(new U3TimeDepCSVLoader());
 		
 //		colorers.add(new FaultEvolutionColorer());
+		
+		RSQSimRuptureMappingColorer rsqsimMapping = new RSQSimRuptureMappingColorer();
+		rupSetChangeListeners.add(rsqsimMapping);
+		colorers.add(rsqsimMapping);
 	}
 	
 	public void setGeometryTypeSelector(GeometryTypeSelectorPanel geomSelect) {
