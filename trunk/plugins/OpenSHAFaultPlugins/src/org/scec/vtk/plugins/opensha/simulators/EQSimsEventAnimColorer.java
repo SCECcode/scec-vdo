@@ -89,6 +89,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	private DoubleParameter fadeYearsParam;
 	private Map<Integer, Color> fadeColors;
 	
+	private BooleanParameter onlyCurrentVisibleParam;
+	
 	private Map<Integer, HashSet<Integer>> faultMappings;
 	private Map<String, Integer> faultNamesMap;
 	private Map<String, Integer> sectNamesMap;
@@ -158,6 +160,10 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		fadeYearsParam = new DoubleParameter(FADE_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
 		animParams.addParameter(fadeYearsParam);
 		fadeYearsParam.addParameterChangeListener(this);
+		
+		onlyCurrentVisibleParam = new BooleanParameter("Hide Other Elements", false);
+		animParams.addParameter(onlyCurrentVisibleParam);
+		onlyCurrentVisibleParam.addParameterChangeListener(this);;
 		
 		// cache for event colors for faster loading
 		// PreloadThread below will actively try to preload this cache with the next steps 
@@ -465,6 +471,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		} else if (event.getSource() == fadeYearsParam) {
 			fadeColors = null;
 			fireRangeChangeEvent();
+		} else if (event.getSource() == onlyCurrentVisibleParam) {
+			fireColorerChangeEvent();
 		}
 	}
 
@@ -507,7 +515,9 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 
 	@Override
 	public Boolean getFaultVisibility(AbstractFaultSection fault) {
-		// TODO Auto-generated method stub
+		if (onlyCurrentVisibleParam.getValue()) {
+			return !getColor(fault).equals(getCPT().getNaNColor());
+		}
 		return null;
 	}
 
