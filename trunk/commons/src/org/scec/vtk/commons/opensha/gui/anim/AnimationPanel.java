@@ -760,21 +760,29 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		}
 	}
 	
+	private Color selectLegendColor() {
+		Color bkg = Info.getBackgroundColor();
+		double meanVal = (double)(bkg.getRed() + bkg.getGreen() + bkg.getBlue())/3d;
+		Color color;
+		if (meanVal >= 127.5)
+			// it's a light color
+			color = Color.BLACK;
+		else
+			// it's a dark color
+			color = Color.WHITE;
+//		System.out.println("Building legend. BKG="+bkg+" (mean="+meanVal+")");
+		return color;
+	}
+	
 	private synchronized void setLegendDisplayed(boolean displayed) {
+		Color color = selectLegendColor();
 		if (legend == null) {
 			// determine color as compliment of background color
-			Color bkg = Info.getBackgroundColor();
-			double meanVal = (double)(bkg.getRed() + bkg.getGreen() + bkg.getBlue())/3d;
-			Color color;
-			if (meanVal >= 127.5)
-				// it's a light color
-				color = Color.BLACK;
-			else
-				// it's a dark color
-				color = Color.WHITE;
 			// first pass in the name so that it shows up as such in the legend gui
 			legend = LegendUtils.buildTextLegend(plugin, faultAnim.getName(), Font.SANS_SERIF, 28, color, 5, 5);
 			((vtkTextActor)legend.getActor()).SetInput(buildLegendText());
+		} else {
+			((vtkTextActor)legend.getActor()).GetTextProperty().SetColor(Info.convertColor(color));
 		}
 		
 		if (displayed)
