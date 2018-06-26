@@ -43,4 +43,14 @@
 		<menu-item menu="Display" submenu="OpenSHA"/>
 			
 	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.ucerf3Disagg.UCERF3DisaggPlugin"
+		name="UCERF3 Disaggregation Plugin"
+		short-name="UCERF3 Disagg Plugin"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.ucerf3Disagg.UCERF3DisaggPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
 </plugins>

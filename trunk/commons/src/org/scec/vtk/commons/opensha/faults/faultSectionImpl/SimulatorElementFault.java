@@ -36,16 +36,22 @@ public class SimulatorElementFault extends AbstractFaultSection {
 
 	@Override
 	public double getAvgRake() {
+		if (element.getFocalMechanism() != null)
+			return element.getFocalMechanism().getRake();
 		return Double.NaN;
 	}
 
 	@Override
 	public double getAvgStrike() {
+		if (element.getFocalMechanism() != null)
+			return element.getFocalMechanism().getStrike();
 		return Double.NaN;
 	}
 
 	@Override
 	public double getAvgDip() {
+		if (element.getFocalMechanism() != null)
+			return element.getFocalMechanism().getDip();
 		return Double.NaN;
 	}
 

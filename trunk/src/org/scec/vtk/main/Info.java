@@ -28,7 +28,7 @@ public class Info {
 	}
 	public static Color convertColor(double[] tempColor)
 	{
-		return new Color((float)(tempColor[0]/rgbMax), (float)(tempColor[1]/rgbMax), (float)(tempColor[2]/rgbMax));
+		return new Color((float)tempColor[0], (float)tempColor[1], (float)tempColor[2]);
 	}
 	
 	public static Color getBackgroundColor() {
