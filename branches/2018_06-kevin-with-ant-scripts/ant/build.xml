@@ -1,0 +1,59 @@
+<project basedir="." default="build" name="Compile">
+	
+	<property name="build" value="../build" />
+	<property name="tmpdest" value="../build.temp" />
+	<property name="dist" value="../dist" />
+	<property name="app.jar.name" value="scec_vdo.jar" />
+	<property name="src" value="../src/" />
+	<property name="plugins" value="../plugins/" />
+	<property name="commons" value="../commons/" />
+	<property name="lib.dir" value="../lib" />
+	
+	<path id="library.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="init">
+		<mkdir dir="${tmpdest}" />
+		<mkdir dir="${build}" />
+		<mkdir dir="${dist}" />
+	</target>
+	
+	<target name="precompilecleanup">
+		<delete dir="${tmpdest}" failonerror="yes" verbose="no" />
+	</target>
+	
+	<target name="compile">
+		<javac debug="true" deprecation="false" optimize="true" destdir="${tmpdest}" nowarn="true"
+			source="1.8" target="1.8" failonerror="yes" verbose="no" fork="yes" encoding="utf-8"
+			memoryInitialSize="512m" memoryMaximumSize="1024m">
+			<classpath>
+				<pathelement location="${build}" />
+				<path refid="library.classpath" />
+			</classpath>
+			<src path="${src}" />
+			<src path="${plugins}" />
+			<src path="${commons}" />
+		</javac>
+	</target>
+	
+	<target name="build" depends="precompilecleanup,init,compile">
+		<delete dir="${build}" failonerror="yes" verbose="no" />
+		
+		<copy todir="${build}" overwrite="true">
+			<fileset dir="${plugins}" />
+			<fileset dir="${commons}" />
+			<fileset dir="${src}" />
+		</copy>
+		
+		<move todir="${build}">
+			<fileset dir="${tmpdest}" />
+		</move>
+
+		<delete dir="${tmpdest}" failonerror="yes" verbose="no" />
+		
+		<jar destfile="${dist}/${app.jar.name}" basedir="${build}" />
+	</target>
+</project>
