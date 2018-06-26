@@ -46,7 +46,10 @@ import org.opensha.sha.simulators.parsers.EQSIMv06FileReader;
 import org.opensha.sha.simulators.parsers.RSQSimFileReader;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultIDComparator;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
+import org.scec.vtk.commons.opensha.faults.colorers.DipColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.RakeColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.StrikeColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.surfaces.params.ColorParameter;
 import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
@@ -146,6 +149,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 //		EQSimMultiFaultRupColorer multiFault = new EQSimMultiFaultRupColorer();
 //		eventListeners.add(multiFault);
 //		colorers.add(multiFault);
+		colorers.add(new StrikeColorer());
+		colorers.add(new DipColorer());
+		colorers.add(new RakeColorer());
 		
 		animations = new ArrayList<>();
 		EQSimsEventAnimColorer eventAnim = new EQSimsEventAnimColorer();
