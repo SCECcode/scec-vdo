@@ -117,6 +117,13 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		}
 		strings.add(INPUT_SELECTOR_FROM_FILE);
 		
+		//Min Event Mag input area
+		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(5d));
+		builderParams.addParameter(eventMinMagParam);
+		//Max Catalog Yrs Loaded input area
+		catDurationParam = new DoubleParameter(MAX_CAT_DURATION_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
+		builderParams.addParameter(catDurationParam);
+		
 		inputParam = new StringParameter(INPUT_SELECTOR_PARAM_NAME, strings, strings.get(0));
 		inputParam.addParameterChangeListener(this);
 		builderParams.addParameter(inputParam);
@@ -127,10 +134,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		loadParam = new ButtonParameter(LOAD_PARAM_NAME, LOAD_PARAM_BUTTON_NAME);
 		loadParam.addParameterChangeListener(this);
 		builderParams.addParameter(loadParam);
-		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(5d));
-		builderParams.addParameter(eventMinMagParam);
-		catDurationParam = new DoubleParameter(MAX_CAT_DURATION_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
-		builderParams.addParameter(catDurationParam);
+
 		
 		colorers = new ArrayList<FaultColorer>();
 		EQSlipRateColorer slipColorer = new EQSlipRateColorer();
