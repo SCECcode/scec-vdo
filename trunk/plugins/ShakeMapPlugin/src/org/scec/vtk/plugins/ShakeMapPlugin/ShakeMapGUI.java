@@ -236,7 +236,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				try {
-					openWebpage(new URL("http://earthquake.usgs.gov/earthquakes/shakemap/"));
+					openWebpage(new URL("http://earthquake.usgs.gov/data/shakemap/"));
 				} catch (MalformedURLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -260,7 +260,10 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			@Override
 			public void focusLost(FocusEvent arg0) {
 				// TODO Auto-generated method stub
-				
+				if(eventIdBox.getText() == "")
+				{
+					eventIdBox.setText("Enter Event ID");
+				}
 			}
 		});
 		
@@ -373,6 +376,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			shakeMap.loadOpenSHAFileToGriddedGeoDataSet(path); 
 		}
 		shakeMap.setActor(shakeMap.builtPolygonSurface());
+		shakeMap.getActor().GetProperty().SetOpacity(0.5);
 		actorList.add(shakeMap.getActor());
 		pluginActors.addActor(shakeMap.getActor());
 		shakeMapsList.add(shakeMap);
@@ -492,6 +496,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 						actorList.set(i, shakeMap.getActor());
 						pluginActors.addActor(shakeMap.getActor());
 						shakeMapsList.set(i, shakeMap);
+						shakeMapsList.get(i).getActor().GetProperty().SetOpacity(0.5);
 					}else{
 						shakeMapsList.get(i).getActor().SetVisibility(1);
 					}
@@ -549,6 +554,11 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		if (selectedRows.length > 0) {
 			this.transparencySlider.setEnabled(true);
 			this.legendCheckBox.setEnabled(true);
+			
+			/*
+			double shakeMapOpacity = shakeMapsList.get(selectedRows[0]).getActor().GetProperty().GetOpacity() * 100; //set transparency slider value to the shakemap's current opacity
+			this.transparencySlider.setValue((int) shakeMapOpacity);
+			*/
 		} else {
 			this.transparencySlider.setEnabled(false);
 			this.legendCheckBox.setEnabled(false);
@@ -563,6 +573,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		if(src == transparencySlider)
 		{
 			double transparency = ((double)(transparencySlider.getValue())/100.0);
+			System.out.println("transparency changed to " + transparency);
 			ListSelectionModel model = surfaceTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 				int idx = (int) surfaceTableModel.getValueAt(i, 1);
