@@ -948,7 +948,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				// this is a dirty kludgey way to do this, bad interns
 				// TODO do it right with some sort of configuration file
 				if (candidate.getName().equalsIgnoreCase("GIS Hazus Events")
-						|| candidate.getName().equalsIgnoreCase("ShakeMap")
+					//	|| candidate.getName().equalsIgnoreCase("ShakeMap")
 //						|| candidate.getName().equals("Training")
 						) {
 					candidate.setVisible(false);;
