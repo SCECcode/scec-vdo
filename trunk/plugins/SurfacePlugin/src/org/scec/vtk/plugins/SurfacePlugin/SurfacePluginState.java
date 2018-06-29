@@ -55,6 +55,10 @@ public class SurfacePluginState implements PluginState{
 		{
 			surfaceArray.add(surf);
 			String imagename = surf.getImageInfo().getImageName();
+			
+			System.out.println(imagename);
+
+			
 			String file = surf.getImageInfo().getFilename();
 			dispName.add(imagename);
 			filePath.add(new File(file).getAbsolutePath());
@@ -78,10 +82,10 @@ public class SurfacePluginState implements PluginState{
 	public void load() {
 		// call methods to update based on the properties captured //might also want to put swing invoke and wait
 		int i=0;
-//		System.out.println("surfaceArray is " + surfaceArray);
-//		System.out.println("transparency array is" + transparency);
-//		System.out.println("visibility array is " + visibility);
-//		System.out.println("disp names are " + dispName);
+		System.out.println("surfaceArray is " + surfaceArray);
+		System.out.println("transparency array is" + transparency);
+		System.out.println("visibility array is " + visibility);
+		System.out.println("disp names are " + dispName);
 		
 		parent.removeAllMaps();
 		addSurfaceToTable(dispName, filePath);
@@ -95,8 +99,7 @@ public class SurfacePluginState implements PluginState{
 	}
 
 	private void createElement(Element stateEl) {
-		int i=0;
-		for (Surface surf : SurfacePluginGUI.surfaceArray)
+		for (int i = 0; i < surfaceArray.size(); i++)
 		{
 			//System.out.println(filePathgeo.get(i));
 			if (filePathgeo.size() != 0)
@@ -107,6 +110,7 @@ public class SurfacePluginState implements PluginState{
 				propertyEl.addElement("GeographicSurfaceInfo").addText(filePathgeo.get(i));
 				propertyEl.addElement("transparency").addText(transparency.get(i).toString());
 				propertyEl.addElement("visibility").addText(visibility.get(i).toString());
+				
 			}
 			else
 			{
@@ -116,10 +120,8 @@ public class SurfacePluginState implements PluginState{
 				propertyEl.addElement("GeographicSurfaceInfo").addText("");
 				propertyEl.addElement("transparency").addText(transparency.get(i).toString());
 				propertyEl.addElement("visibility").addText(visibility.get(i).toString());
-
+				
 			}
-
-			i++;
 		}
 	}
 
@@ -385,6 +387,26 @@ public class SurfacePluginState implements PluginState{
 				mscpg.createImage(lfp, this.parent);
 
 			}
+			else if (pictureNames.get(i).equals("CAlDEM_old")) {
+				parent.setCheckBox("cdc", true);
+				double imageData[] = new double[5];
+				imageData[0] = 42;
+				imageData[1] = 32.5;
+				imageData[2] = -114.131477;
+				imageData[3] = -124.409641;
+				imageData[4] = 0; //Altitude
+
+				String surfaceTemp="-";
+				String imageTemp="CAlDEM_old"; // image name
+				String imageExt=".png"; //image file extension type
+				String loadedFilePath=Info.getMainGUI().getRootPluginDir() + File.separator + SurfacePlugin.dataStoreDir+ File.separator + "data" +File.separator + surfaceTemp + "_" + imageTemp + ".xml";
+
+				lfp = new LoadedFilesProperties(filepath.get(i), imageData,"-",null,null,false,loadedFilePath);
+				mscpg = new MapSetCreatePluginGUI(imageTemp, imageData);
+				mscpg.createImage(lfp, this.parent);
+
+			}
+
 
 			Info.getMainGUI().updateRenderWindow();
 
