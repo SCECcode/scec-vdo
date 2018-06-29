@@ -64,7 +64,8 @@ public class DummyPlugin extends ActionPlugin {
 			return;
 		}
 		System.out.println("Unloading sphere.");
-		actor.SetVisibility(0);
+		//actor.SetVisibility(0);
+		getPluginActors().removeActor(actor);
 		MainGUI.updateRenderWindow();
 		sphereLoaded = false;
 	}
