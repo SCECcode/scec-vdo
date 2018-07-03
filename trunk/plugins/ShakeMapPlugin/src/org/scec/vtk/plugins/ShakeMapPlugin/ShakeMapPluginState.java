@@ -118,7 +118,7 @@ public class ShakeMapPluginState implements PluginState{
 	
 	/*
 	 * Display the maps after reading the data from the xml files.
-	 * -filenames: list of files which contain the map data
+	 * -filepaths: list of files which contain the map data
 	 * -transparentValues: list of opacity (transparency) values
 	 */
 	public void showMaps(ArrayList<String> filepaths, ArrayList<Double> transparentValues){
