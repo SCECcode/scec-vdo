@@ -1,3 +1,4 @@
+
 package org.scec.vtk.grid;
 
 import java.awt.BorderLayout;
@@ -195,7 +196,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	}
 	private ArrayList<GlobeBox> makeGrids(int upperLat, int lowerLat,
 			int leftLong, int rightLong, double spacing) {
-
+		
 		// Add label array.
 		labels =new vtkStringArray();
 		labels.SetName("labels");
@@ -212,7 +213,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		int countPts =0;
 		vtkCellArray lines =  new vtkCellArray();
 		vtkPolyData linesPolyData =new vtkPolyData();
-
+		
 		vtkDoubleArray lat = new vtkDoubleArray();
 		vtkDoubleArray lon = new vtkDoubleArray();
 		lat.SetName("latitude");
@@ -222,13 +223,25 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		//INVERT IMAGE//
 		double leftLon  = 1 * rightLong;
 		double rightLon = 1 * leftLong; 
+		
+		//Make sure the range is correct
+		if(upperLat < lowerLat) {
+			upperLat = lowerLat;
+			System.out.println("Invalid Latitude Range");
+		}
+		if(leftLon < rightLon) {
+			leftLon = rightLon;
+			System.out.println("Invalid Longitude Range");
+		}
+		
 		//END IMAGE INVERT//
 		int numOfLat = (int) (Math.ceil((upperLat-lowerLat)/spacing)+1);
 		numOfLat += (int) (Math.ceil((leftLon-rightLon)/spacing)+1);
 		labels.SetNumberOfValues(numOfLat+1);
 		sizes.SetNumberOfValues(numOfLat);
 		labelLatCt=0;
-		int maxDepth = 0; 	
+		int maxDepth = 0;
+			
 		for(double j = upperLat;j>=lowerLat;j-=spacing,labelLatCt++)
 		{
 
@@ -262,8 +275,8 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			labelPoints.InsertNextPoint(Transform.customTransform(pt));
 
 		}
-
-		//longitutde lines
+		
+		//longitude lines
 		for(double j = leftLon;j>=rightLon;j-=spacing,labelLatCt++)
 		{
 			double[] pt = new double[3];
@@ -546,7 +559,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		NorthPanel.add(new JLabel("Lat:"));
 		NorthPanel.add(Box.createRigidArea(new Dimension(4, 0)));
 		NorthPanel.add(relIntensityProp_extentsNval1);
-		NorthPanel.add(Box.createRigidArea(new Dimension(4, 0)));
+		//NorthPanel.add(Box.createRigidArea(new Dimension(4, 0)));
 		NorthPanel.add(relIntensityProp_extentsMax2);
 		NorthPanel.setMaximumSize(new Dimension(100, 22));
 

@@ -78,7 +78,6 @@ public class GraticulePlugin extends ActionPlugin implements StatefulPlugin{
 //				String.valueOf(gratPanel.upperLongitude));
 //		graticule.setAttribute("lowerLon",
 //				String.valueOf(gratPanel.lowerLongitude));
-//		System.out.println("tits");
 //		String gridWidth = String.valueOf(gratPanel.getGridWidth());
 //		if (gratPanel.noneRadioButton.isSelected()) {
 //			gridWidth = "0.0";
