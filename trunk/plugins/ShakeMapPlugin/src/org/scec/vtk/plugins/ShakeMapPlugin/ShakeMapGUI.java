@@ -97,10 +97,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	JButton browse = new JButton("Load File");
 	
 	//for the usgs download option
-	private ButtonGroup calChooser = new ButtonGroup();
-	private JRadioButton nc = new JRadioButton("Northern California");
-	private JRadioButton sc = new JRadioButton("Southern California");
-	JTextField eventIdBox = new JTextField("Enter Event ID");
+	
+	JTextField eventIdBox = new JTextField("Enter Shakemap XML Link");
 	JButton downloadUSGSButton = new JButton("Download USGS Shake Map");
 	
 	//Table and transparency for preset shakemaps
@@ -228,27 +226,32 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		
 		JPanel USGSPanel = new JPanel();
 		USGSPanel.setLayout(new FlowLayout());
-		calChooser.add(nc);
-		calChooser.add(sc);
+		//calChooser.add(nc);
+		//calChooser.add(sc);
 		JButton usgsLink = new JButton("Open USGS Website");
+		final JTextField usgsURL = new JTextField("http://earthquake.usgs.gov/data/shakemap/");
+
 		usgsLink.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				try {
-					openWebpage(new URL("http://earthquake.usgs.gov/data/shakemap/"));
+					openWebpage(new URL(usgsURL.getText()));
 				} catch (MalformedURLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
 		});
-		USGSPanel.add(new JLabel("Select Region:"));
-		USGSPanel.add(nc);
-		USGSPanel.add(sc);
+		
+		
+		//USGSPanel.add(new JLabel("Select Region:"));
+		//USGSPanel.add(nc);
+		//USGSPanel.add(sc);
 		eventIdBox.setPreferredSize(new Dimension(200,40));
 		USGSPanel.add(eventIdBox);
 		USGSPanel.add(downloadUSGSButton);
+		USGSPanel.add(usgsURL);
 		USGSPanel.add(usgsLink);
 		
 		eventIdBox.addFocusListener(new FocusListener(){
@@ -262,7 +265,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 				// TODO Auto-generated method stub
 				if(eventIdBox.getText() == "")
 				{
-					eventIdBox.setText("Enter Event ID");
+					eventIdBox.setText("Enter XML Link");
 				}
 			}
 		});
@@ -272,35 +275,29 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				String id = eventIdBox.getText();
-				if(id.length() > 0){
-					String network = "";
-					if(nc.isSelected()){
-						network = "nc";
-					}else if(sc.isSelected()){
-						network = "sc";
-					}
-					if(network.length() > 0){
-						USGSShakeMapDownloader smd = new USGSShakeMapDownloader(network, id);
-						String d = smd.downloadShakeMap(id+".txt");
-						System.out.println(d);
-						if(d.length() <= 0){
-							System.out.println("Failure");
-							JOptionPane.showMessageDialog(shakeMapLibraryPanel,
-								    "File not found on USGS site.");
-						}else{
-							System.out.println("Loaded!");
-							showNewMap(dataPath + "/" + moreMaps + "/" + id+".txt", "mmi");
-							addNewCheckBox(id+".txt", dataPath + "/" + moreMaps + "/" + id+".txt");
-						}
-					}else{
-						System.out.println("Make a location selection!");
+				if(id.length() > 0)
+				{
+					USGSShakeMapDownloader smd = new USGSShakeMapDownloader(id);
+					String d = smd.downloadShakeMap(id+".txt");
+					if(d.length() <= 0)
+					{
+						System.out.println("Failure");
 						JOptionPane.showMessageDialog(shakeMapLibraryPanel,
-							    "Select A Region (Northern or Southern California)");
+								    "File not found on USGS site.");
 					}
-				}else{
+					else
+					{
+						System.out.println("Loaded!");
+						System.out.println("showing new map: " + dataPath + "/" + moreMaps + "/" + d +".txt");
+						showNewMap(dataPath + "/" + moreMaps + "/" + d+".txt", "mmi");
+						addNewCheckBox(d+".txt", dataPath + "/" + moreMaps + "/" + d+".txt");
+					}
+				}
+				else
+				{
 					System.out.println("Enter an earthquake ID!");
 					JOptionPane.showMessageDialog(shakeMapLibraryPanel,
-						    "Enter an earthquake ID.");
+							"Enter link to Shakemap XML");
 				}
 			}			
 		});
@@ -362,6 +359,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	 */
 	private void showNewMap(String path, String scaleChoice){
 		String colorFile = "";
+		System.out.println("file path: " + path);
 		if(scaleChoice.equals("pga")){
 			colorFile = "colors_pga.cpt";
 		}else if(scaleChoice.equals("pgv")){
@@ -573,7 +571,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		if(src == transparencySlider)
 		{
 			double transparency = ((double)(transparencySlider.getValue())/100.0);
-			System.out.println("transparency changed to " + transparency);
 			ListSelectionModel model = surfaceTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 				int idx = (int) surfaceTableModel.getValueAt(i, 1);
