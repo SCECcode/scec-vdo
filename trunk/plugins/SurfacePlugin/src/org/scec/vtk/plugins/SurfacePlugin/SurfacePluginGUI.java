@@ -541,6 +541,7 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		ListSelectionModel model = surfaceTable.getSelectionModel();
 		for(int i =0;i<surfaceTableModel.getRowCount();i++)
 		{
+			System.out.println("uncheck " + i);
 			JCheckBox tempCheckBox = uncheckPreset(i);
 			if(tempCheckBox!=null && tempCheckBox == uncheckedCheckBox)
 			{
@@ -618,6 +619,10 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		case "Mexico":
 		{
 			return mm;
+		}
+		case "Indonesia":
+		{
+			return im;
 		}
 		case "SouthAmerica":
 		{
