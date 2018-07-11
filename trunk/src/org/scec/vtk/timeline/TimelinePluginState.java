@@ -80,12 +80,14 @@ public class TimelinePluginState implements PluginState{
 		
 		for(int j=0;j<cameraKeyArray.size();j++)
 		{
+			//Write out key frame information to XML
 			Element pluginKeyFrameElement = stateEl.addElement("CameraKeyFrame");
 			pluginKeyFrameElement.addElement("index").addText( Integer.toString(j));
 			pluginKeyFrameElement.addElement("camPositon").addText( cameraAtKeyframe.get(j).getCam().GetPosition()[0]+","+cameraAtKeyframe.get(j).getCam().GetPosition()[1]+","+cameraAtKeyframe.get(j).getCam().GetPosition()[2]);
 			pluginKeyFrameElement.addElement("camViewUp").addText( cameraAtKeyframe.get(j).getCam().GetViewUp()[0]+","+cameraAtKeyframe.get(j).getCam().GetViewUp()[1]+","+cameraAtKeyframe.get(j).getCam().GetViewUp()[2]);
 			pluginKeyFrameElement.addElement("camLookAt").addText( cameraAtKeyframe.get(j).getCam().GetFocalPoint()[0]+","+cameraAtKeyframe.get(j).getCam().GetFocalPoint()[1]+","+cameraAtKeyframe.get(j).getCam().GetFocalPoint()[2]);
 			pluginKeyFrameElement.addElement("camTime").addText(Double.toString(cameraTimeAtKeyframe.get(j)));
+			pluginKeyFrameElement.addElement("paused").addText(Boolean.toString(cameraAtKeyframe.get(j).isPause()));
 		}
 		
 		for(int i =0;i<this.numPlugins;i++)
@@ -162,7 +164,7 @@ public class TimelinePluginState implements PluginState{
 			String[] focalPoint = eSub.elementText("camLookAt").split(",");
 			cam.SetFocalPoint(Double.parseDouble(focalPoint[0]),Double.parseDouble(focalPoint[1]),Double.parseDouble(focalPoint[2]));
 			
-			CameraKeyFrame key = new CameraKeyFrame(Double.parseDouble(eSub.elementText("camTime")), cam, false);
+			CameraKeyFrame key = new CameraKeyFrame(Double.parseDouble(eSub.elementText("camTime")), cam, Boolean.parseBoolean(eSub.elementText("paused")));
 			
 			parent.addCameraKeyFrame(key);
 		}
