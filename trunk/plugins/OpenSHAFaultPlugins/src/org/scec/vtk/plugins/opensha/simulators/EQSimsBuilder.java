@@ -118,7 +118,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		strings.add(INPUT_SELECTOR_FROM_FILE);
 		
 		//Min Event Mag input area
-		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(5d));
+		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(7d));
 		builderParams.addParameter(eventMinMagParam);
 		//Max Catalog Yrs Loaded input area
 		catDurationParam = new DoubleParameter(MAX_CAT_DURATION_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
@@ -183,6 +183,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		if (chooser == null) {
 			chooser = new JFileChooser();
 			chooser.setFileHidingEnabled(false);
+			File kevinDir = new File("/home/kevin/Simulators/catalogs");
+			if (kevinDir.exists())
+				chooser.setCurrentDirectory(kevinDir);
 		}
 		int retVal = chooser.showOpenDialog(null);
 		if (retVal == JFileChooser.APPROVE_OPTION) {

@@ -31,6 +31,10 @@ public class EQSimsPlugin extends AbstractFaultPlugin {
 		ArrayList<FaultAnimation> faultAnims = builder.getAnimations();
 		
 		FaultPluginGUI gui = new FaultPluginGUI(this, builder, colorers, geomGens, Color.GRAY, faultAnims);
+		for (FaultAnimation anim : faultAnims) {
+			if (anim instanceof EQSimsEventAnimColorer)
+				((EQSimsEventAnimColorer)anim).setEventManager(gui.getEventManager());
+		}
 //		gui.addDistTab(); // TODO?
 		
 		return gui;

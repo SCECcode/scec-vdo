@@ -50,7 +50,7 @@ public class FaultSectionNode extends AbstractFaultNode {
 	@Override
 	public void setColor(Color color) {
 		super.setColor(color);
-		if (visibilityChangeListener != null && Objects.equals(color, this.getColor()))
+		if (colorChangeListener != null && Objects.equals(color, this.getColor()))
 			colorChangeListener.colorChanged(fault, color);
 	}
 

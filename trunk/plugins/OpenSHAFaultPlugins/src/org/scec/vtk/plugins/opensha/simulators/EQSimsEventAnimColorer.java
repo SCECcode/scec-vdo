@@ -1,6 +1,7 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
 import java.awt.Color;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +19,7 @@ import org.opensha.commons.param.constraint.impl.StringConstraint;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
+import org.opensha.commons.param.impl.ButtonParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
@@ -33,6 +35,11 @@ import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
+import org.scec.vtk.commons.opensha.gui.EventManager;
+import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.tools.picking.PickEnabledActor;
+import org.scec.vtk.tools.picking.PickHandler;
 
 import com.google.common.base.Joiner;
 import com.google.common.cache.CacheBuilder;
@@ -40,9 +47,12 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Ints;
+
+import vtk.vtkCellPicker;
 
 public class EQSimsEventAnimColorer extends CPTBasedColorer implements
-		TimeBasedFaultAnimation, IDBasedFaultAnimation, ParameterChangeListener, EQSimsEventListener {
+		TimeBasedFaultAnimation, IDBasedFaultAnimation, ParameterChangeListener, EQSimsEventListener, PickHandler<AbstractFaultSection> {
 
 	/**
 	 * 
@@ -53,6 +63,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	
 	private ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
 	
+	private EventManager eventManager;
+	
 	private List<? extends SimulatorEvent> unfilteredevents;
 	private Map<Integer, Integer> idToUnfilteredStepMap;
 	private List<Integer> filterIndexes;
@@ -61,12 +73,17 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	
 	private int currentStep = -1;
 	
-	private static final String MAG_FILTER_PARAM_NAME = "Min Mag";
-	private static final Double MAG_FILTER_PARAM_MIN = 0d;
-	private static final Double MAG_FILTER_PARAM_MAX = 10d;
-	private static final Double MAG_FILTER_PARAM_DEFAULT = MAG_FILTER_PARAM_MIN;
-	private DoubleParameter magFilterParam =
-		new DoubleParameter(MAG_FILTER_PARAM_NAME, MAG_FILTER_PARAM_MIN, MAG_FILTER_PARAM_MAX, MAG_FILTER_PARAM_DEFAULT);
+	private static final String MAG_MIN_PARAM_NAME = "Min Mag";
+	private static final Double MAG_PARAM_MIN = 0d;
+	private static final Double MAG_PARAM_MAX = 10d;
+	private static final Double MAG_MIN_PARAM_DEFAULT = MAG_PARAM_MIN;
+	private DoubleParameter magMinParam =
+		new DoubleParameter(MAG_MIN_PARAM_NAME, MAG_PARAM_MIN, MAG_PARAM_MAX, MAG_MIN_PARAM_DEFAULT);
+	
+	private static final String MAG_MAX_PARAM_NAME = "Max Mag";
+	private static final Double MAG_MAX_PARAM_DEFAULT = MAG_PARAM_MAX;
+	private DoubleParameter magMaxParam =
+		new DoubleParameter(MAG_MAX_PARAM_NAME, MAG_PARAM_MIN, MAG_PARAM_MAX, MAG_MAX_PARAM_DEFAULT);
 	
 	private static final String SECT_FILTER_PARAM_NAME = "Only Events Involing";
 	private static final String SECT_FILTER_PARAM_DEFAULT = "(all sections)";
@@ -75,6 +92,9 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	private static final String FAULT_FILTER_PARAM_NAME = "Filter By Fault";
 	private static final String FAULT_FILTER_PARAM_DEFAULT = "(all faults)";
 	private StringParameter faultFilterParam;
+	
+	private static final String SHIFT_CLICK_FILTER_PARAM_NAME = "Filter By Shift-Clicking Elements";
+	private ButtonParameter shiftClickClearParam;
 	
 	private static final String SUPRA_SEISMOGENIC_FILTER_PARAM_NAME = "Only Supra-Seismogenic";
 	private BooleanParameter supraSeismogenicFilterParam;
@@ -97,6 +117,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	
 	private List<SimulatorElement> elements;
 	private General_EQSIM_Tools tools;
+	
+	private List<SimulatorElement> shiftClickedElements;
 	
 	private ParameterList animParams = new ParameterList();
 	
@@ -128,8 +150,11 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	public EQSimsEventAnimColorer() {
 		super(getDefaultCPT(), false);
 		
-		animParams.addParameter(magFilterParam);
-		magFilterParam.addParameterChangeListener(this);
+		animParams.addParameter(magMinParam);
+		magMinParam.addParameterChangeListener(this);
+		
+		animParams.addParameter(magMaxParam);
+		magMaxParam.addParameterChangeListener(this);
 		
 		ArrayList<String> strings = new ArrayList<String>();
 		strings.add(SECT_FILTER_PARAM_DEFAULT);
@@ -144,6 +169,12 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		faultFilterParam = new StringParameter(FAULT_FILTER_PARAM_NAME, strings, FAULT_FILTER_PARAM_DEFAULT);
 		animParams.addParameter(faultFilterParam);
 		faultFilterParam.addParameterChangeListener(this);
+		
+		shiftClickClearParam = new ButtonParameter(SHIFT_CLICK_FILTER_PARAM_NAME, "temp");
+		animParams.addParameter(shiftClickClearParam);
+		shiftClickClearParam.addParameterChangeListener(this);
+		shiftClickedElements = new ArrayList<>();
+		updateShiftClickButtonText();
 		
 		supraSeismogenicFilterParam = new BooleanParameter(SUPRA_SEISMOGENIC_FILTER_PARAM_NAME, false);
 		animParams.addParameter(supraSeismogenicFilterParam);
@@ -188,6 +219,10 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		});
 	}
 	
+	public void setEventManager(EventManager eventManager) {
+		this.eventManager = eventManager;
+	}
+
 	@Override
 	public double getValue(AbstractFaultSection fault) {
 		return Double.NaN;
@@ -216,7 +251,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	}
 
 	@Override
-	public int getNumSteps() {
+	public synchronized int getNumSteps() {
 		if (unfilteredevents != null)
 			if (filterIndexes == null)
 				return unfilteredevents.size();
@@ -232,7 +267,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		checkStartPreloadThread();
 	}
 	
-	private Map<Integer, Color> getColorCacheForStep(int step) {
+	private synchronized Map<Integer, Color> getColorCacheForStep(int step) {
 		if (unfilteredevents == null)
 			return null;
 		try {
@@ -245,7 +280,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		}
 	}
 	
-	private SimulatorEvent getEventForStep(int step) {
+	private synchronized SimulatorEvent getEventForStep(int step) {
 		if (unfilteredevents == null)
 			return null;
 		if (filterIndexes == null)
@@ -377,8 +412,9 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		return animParams;
 	}
 	
-	private void filterEvents() {
-		double magThresh = magFilterParam.getValue();
+	private synchronized void filterEvents() {
+		double minMag = magMinParam.getValue();
+		double maxMag = magMaxParam.getValue();
 		
 		String sectFilterName = sectFilterParam.getValue();
 		int filterSectionID;
@@ -411,7 +447,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			}
 		}
 		
-		if (magThresh > 0.0 || filterSectionID >= 0 || filterFault != null || supraSeis || !Double.isNaN(startTime)) {
+		if (minMag > MAG_PARAM_MIN || maxMag < MAG_PARAM_MAX || filterSectionID >= 0 || filterFault != null
+				|| supraSeis || !Double.isNaN(startTime) || !shiftClickedElements.isEmpty()) {
 			filterIndexes = new ArrayList<Integer>();
 			for (int i=0; i<unfilteredevents.size(); i++) {
 				SimulatorEvent event = unfilteredevents.get(i);
@@ -422,13 +459,27 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 //						rupSects.add(e.getSectionID());
 //					System.out.println("Sections: "+Joiner.on(",").join(rupSects));
 //				}
-				if (event.getMagnitude() < magThresh)
+				if (event.getMagnitude() < minMag)
+					continue;
+				if (event.getMagnitude() > maxMag)
 					continue;
 				if (filterSectionID >= 0 && !event.doesEventIncludeSection(filterSectionID))
 					continue;
 				if (filterFault != null && !event.doesEventIncludeFault(filterFault)) {
 //					System.out.println("Filtered by fault and it failed!");
 					continue;
+				}
+				if (!shiftClickedElements.isEmpty()) {
+					boolean match = true;
+					HashSet<Integer> rupElems = new HashSet<>(Ints.asList(event.getAllElementIDs()));
+					for (SimulatorElement elem : shiftClickedElements) {
+						if (!rupElems.contains(elem.getID())) {
+							match = false;
+							break;
+						}
+					}
+					if (!match)
+						continue;
 				}
 				if (supraSeis) {
 					if (tools == null)
@@ -452,13 +503,31 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		} else {
 			filterIndexes = null;
 		}
+		fireColorerChangeEvent();
 		checkStartPreloadThread();
 		fireRangeChangeEvent();
+//		setCurrentStep(0);
+//		try {
+//			if (eventManager != null) {
+//				eventManager.animationStepChanged(this);
+//				//			eventManager.colorerChanged(getFaultColorer());
+//				eventManager.waitOnCalcThread();
+//			}
+//		} catch (InterruptedException e) {}
+//		fireColorerChangeEvent();
+////		try {
+////			if (eventManager != null) {
+////				eventManager.animationStepChanged(this);
+//////				eventManager.colorerChanged(getFaultColorer());
+////				eventManager.waitOnCalcThread();
+////			}
+////		} catch (InterruptedException e) {}
+		MainGUI.updateRenderWindow();
 	}
 
 	@Override
 	public void parameterChange(ParameterChangeEvent event) {
-		if (event.getSource() == magFilterParam) {
+		if (event.getSource() == magMinParam) {
 			filterEvents();
 		} else if (event.getSource() == sectFilterParam) {
 			filterEvents();
@@ -473,11 +542,14 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			fireRangeChangeEvent();
 		} else if (event.getSource() == onlyCurrentVisibleParam) {
 			fireColorerChangeEvent();
+		} else if (event.getSource() == shiftClickClearParam) {
+			shiftClickedElements.clear();
+			filterEvents();
 		}
 	}
 
 	@Override
-	public int getStepForID(int id) {
+	public synchronized int getStepForID(int id) {
 		Integer step = idToUnfilteredStepMap.get(id);
 		if (step == null)
 			// it's not a valid ID
@@ -492,8 +564,10 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			return filterIndex;
 		} else if (id > 0 && id <= unfilteredevents.size()) {
 			// this is a valid ID, but it's currently filtered out. remove the filter.
-			magFilterParam.setValue(MAG_FILTER_PARAM_MIN);
-			magFilterParam.getEditor().setParameter(magFilterParam);
+			magMinParam.setValue(MAG_PARAM_MIN);
+			magMinParam.getEditor().setParameter(magMinParam);
+			magMaxParam.setValue(MAG_PARAM_MAX);
+			magMaxParam.getEditor().setParameter(magMaxParam);
 			return step;
 		} else {
 			// it's not a valid ID
@@ -502,7 +576,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	}
 
 	@Override
-	public int getIDForStep(int step) {
+	public synchronized int getIDForStep(int step) {
 		if (filterIndexes == null && step >= 0 && unfilteredevents != null && step < unfilteredevents.size()) {
 			return unfilteredevents.get(step).getID();
 //			return step+1;
@@ -683,6 +757,33 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		}
 		this.fadeColors = fadeColors;
 		return true;
+	}
+	
+	private void updateShiftClickButtonText() {
+		if (shiftClickedElements == null || shiftClickedElements.isEmpty()) {
+			shiftClickClearParam.setButtonText("(shift+click a fault to begin)");
+			shiftClickClearParam.getEditor().setEnabled(false);
+		} else {
+			shiftClickClearParam.setButtonText(shiftClickedElements.size()+" selected, click to clear");
+			shiftClickClearParam.getEditor().setEnabled(true);
+		}
+		
+		shiftClickClearParam.getEditor().refreshParamEditor();
+	}
+
+	@Override
+	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor, AbstractFaultSection reference,
+			vtkCellPicker picker, MouseEvent e) {
+		if (reference instanceof SimulatorElementFault) {
+			SimulatorElementFault fault = (SimulatorElementFault)reference;
+			if (e.getButton() == MouseEvent.BUTTON1 && e.isShiftDown()) {
+				System.out.println("shift down, adding "+fault.getId());
+				
+				shiftClickedElements.add(fault.getElement());
+				updateShiftClickButtonText();
+				filterEvents();
+			}
+		}
 	}
 
 }
