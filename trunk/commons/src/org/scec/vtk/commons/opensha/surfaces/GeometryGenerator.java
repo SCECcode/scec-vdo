@@ -108,13 +108,20 @@ public abstract class GeometryGenerator implements Named {
 				}
 				colors.Modified();
 				bundle.getActor().Modified();
+				bundle.modified();
+				if (bundle.getActor().GetVisibility() > 0) {
+					bundle.getActor().VisibilityOff();
+					bundle.getActor().VisibilityOn();
+				}
 //				System.out.println("Leaving bundle synchronized block (updateColor)");
 			}
 //			System.out.println("Left bundle synchronized block (updateColor)");
 			return true;
 		} else {
-			for (vtkActor actor : actorList)
+			for (vtkActor actor : actorList) {
 				actor.GetProperty().SetColor(getColorDoubleArray(color));
+				actor.Modified();
+			}
 			return true;
 		}
 	}
