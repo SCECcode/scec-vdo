@@ -339,9 +339,8 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		// This function says .getUSStateNames but actually works for all regions
 		ArrayList<String> subRegionNames = subRegions.getUSStateNames();
 		for (int i = 0; i < subRegionNames.size(); i++) {
-			allSubRegionNames.add(subRegionNames.get(i));
 			subRegionNames.set(i, subRegionNames.get(i).replace('_', ' '));
-
+			allSubRegionNames.add(subRegionNames.get(i));
 		}
 		vtkLine line = new vtkLine();
 		int countpts = 0;
