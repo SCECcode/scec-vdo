@@ -93,8 +93,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	private static final String FAULT_FILTER_PARAM_DEFAULT = "(all faults)";
 	private StringParameter faultFilterParam;
 	
-	private static final String SHIFT_CLICK_FILTER_PARAM_NAME = "Filter By Shift-Clicking Elements";
-	private ButtonParameter shiftClickClearParam;
+	private static final String CONTROL_CLICK_FILTER_PARAM_NAME = "Filter By Control+Clicking Elements";
+	private ButtonParameter controlClickClearParam;
 	
 	private static final String SUPRA_SEISMOGENIC_FILTER_PARAM_NAME = "Only Supra-Seismogenic";
 	private BooleanParameter supraSeismogenicFilterParam;
@@ -118,7 +118,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	private List<SimulatorElement> elements;
 	private General_EQSIM_Tools tools;
 	
-	private List<SimulatorElement> shiftClickedElements;
+	private List<SimulatorElement> controlClickedElements;
 	
 	private ParameterList animParams = new ParameterList();
 	
@@ -170,11 +170,11 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		animParams.addParameter(faultFilterParam);
 		faultFilterParam.addParameterChangeListener(this);
 		
-		shiftClickClearParam = new ButtonParameter(SHIFT_CLICK_FILTER_PARAM_NAME, "temp");
-		animParams.addParameter(shiftClickClearParam);
-		shiftClickClearParam.addParameterChangeListener(this);
-		shiftClickedElements = new ArrayList<>();
-		updateShiftClickButtonText();
+		controlClickClearParam = new ButtonParameter(CONTROL_CLICK_FILTER_PARAM_NAME, "temp");
+		animParams.addParameter(controlClickClearParam);
+		controlClickClearParam.addParameterChangeListener(this);
+		controlClickedElements = new ArrayList<>();
+		updateControlClickButtonText();
 		
 		supraSeismogenicFilterParam = new BooleanParameter(SUPRA_SEISMOGENIC_FILTER_PARAM_NAME, false);
 		animParams.addParameter(supraSeismogenicFilterParam);
@@ -448,7 +448,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		}
 		
 		if (minMag > MAG_PARAM_MIN || maxMag < MAG_PARAM_MAX || filterSectionID >= 0 || filterFault != null
-				|| supraSeis || !Double.isNaN(startTime) || !shiftClickedElements.isEmpty()) {
+				|| supraSeis || !Double.isNaN(startTime) || !controlClickedElements.isEmpty()) {
 			filterIndexes = new ArrayList<Integer>();
 			for (int i=0; i<unfilteredevents.size(); i++) {
 				SimulatorEvent event = unfilteredevents.get(i);
@@ -469,10 +469,10 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 //					System.out.println("Filtered by fault and it failed!");
 					continue;
 				}
-				if (!shiftClickedElements.isEmpty()) {
+				if (!controlClickedElements.isEmpty()) {
 					boolean match = true;
 					HashSet<Integer> rupElems = new HashSet<>(Ints.asList(event.getAllElementIDs()));
-					for (SimulatorElement elem : shiftClickedElements) {
+					for (SimulatorElement elem : controlClickedElements) {
 						if (!rupElems.contains(elem.getID())) {
 							match = false;
 							break;
@@ -542,8 +542,8 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			fireRangeChangeEvent();
 		} else if (event.getSource() == onlyCurrentVisibleParam) {
 			fireColorerChangeEvent();
-		} else if (event.getSource() == shiftClickClearParam) {
-			shiftClickedElements.clear();
+		} else if (event.getSource() == controlClickClearParam) {
+			controlClickedElements.clear();
 			filterEvents();
 		}
 	}
@@ -759,16 +759,16 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		return true;
 	}
 	
-	private void updateShiftClickButtonText() {
-		if (shiftClickedElements == null || shiftClickedElements.isEmpty()) {
-			shiftClickClearParam.setButtonText("(shift+click a fault to begin)");
-			shiftClickClearParam.getEditor().setEnabled(false);
+	private void updateControlClickButtonText() {
+		if (controlClickedElements == null || controlClickedElements.isEmpty()) {
+			controlClickClearParam.setButtonText("(control+click a fault to begin)");
+			controlClickClearParam.getEditor().setEnabled(false);
 		} else {
-			shiftClickClearParam.setButtonText(shiftClickedElements.size()+" selected, click to clear");
-			shiftClickClearParam.getEditor().setEnabled(true);
+			controlClickClearParam.setButtonText(controlClickedElements.size()+" selected, click to clear");
+			controlClickClearParam.getEditor().setEnabled(true);
 		}
 		
-		shiftClickClearParam.getEditor().refreshParamEditor();
+		controlClickClearParam.getEditor().refreshParamEditor();
 	}
 
 	@Override
@@ -776,11 +776,11 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			vtkCellPicker picker, MouseEvent e) {
 		if (reference instanceof SimulatorElementFault) {
 			SimulatorElementFault fault = (SimulatorElementFault)reference;
-			if (e.getButton() == MouseEvent.BUTTON1 && e.isShiftDown()) {
+			if (e.getButton() == MouseEvent.BUTTON1 && e.isControlDown()) {
 				System.out.println("shift down, adding "+fault.getId());
 				
-				shiftClickedElements.add(fault.getElement());
-				updateShiftClickButtonText();
+				controlClickedElements.add(fault.getElement());
+				updateControlClickButtonText();
 				filterEvents();
 			}
 		}
