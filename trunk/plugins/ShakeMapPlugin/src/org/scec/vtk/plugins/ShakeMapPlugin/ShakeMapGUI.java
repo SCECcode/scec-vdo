@@ -56,6 +56,8 @@ import org.scec.vtk.plugins.ShakeMapPlugin.Component.ShakeMap;
 import org.scec.vtk.plugins.SurfacePlugin.SurfaceTableModel;
 import org.scec.vtk.tools.Prefs;
 
+import com.lowagie.text.Font;
+
 import vtk.vtkActor;
 import vtk.vtkActor2D;
 
@@ -244,8 +246,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			}
 		});
 		
+		USGSPanel.add(new JLabel("Visit website, locate shakemap, and enter URL of Shakemap's XML file"));
 		
-		//USGSPanel.add(new JLabel("Select Region:"));
 		//USGSPanel.add(nc);
 		//USGSPanel.add(sc);
 		eventIdBox.setPreferredSize(new Dimension(200,40));
@@ -263,7 +265,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			@Override
 			public void focusLost(FocusEvent arg0) {
 				// TODO Auto-generated method stub
-				if(eventIdBox.getText() == "")
+				if(eventIdBox.getText() == "" || eventIdBox.getText() == " ")
 				{
 					eventIdBox.setText("Enter XML Link");
 				}
