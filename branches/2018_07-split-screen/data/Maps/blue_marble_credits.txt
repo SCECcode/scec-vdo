@@ -1,0 +1,2 @@
+# Credits: NASA Goddard Space Flight Center
+# Image by Reto Stöckli (land surface, shallow water, clouds). Enhancements by Robert Simmon (ocean color, compositing, 3D globes, animation).
