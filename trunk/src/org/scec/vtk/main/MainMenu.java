@@ -74,6 +74,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private JCheckBoxMenuItem timelineItem;
 	private JMenuItem saveItemVTK;
 	private JMenuItem saveItemOBJ;
+	private JMenuItem screenShot;
 	private JMenuItem resizeWindow;
 	private JMenuItem tutorial;
 	private JMenuItem wizardActivation;
@@ -192,18 +193,21 @@ public class MainMenu implements ActionListener, ItemListener{
 		saveItem = new JMenuItem("Save state...");
 		saveItemVTK = new JMenuItem("Export as VTK...");
 		saveItemOBJ = new JMenuItem("Export as OBJ...");
+		screenShot = new JMenuItem("Save as image");
 		appExit = new JMenuItem("Quit");
 
 		fileMenu.addActionListener(this);
 		this.saveItem.addActionListener(this);
 		this.saveItemVTK.addActionListener(this);
 		this.saveItemOBJ.addActionListener(this);
+		this.screenShot.addActionListener(this);
 		this.appExit.addActionListener(this);
 		this.fileOpen.addActionListener(this);
 		this.fileMenu.add(fileOpen);
 		this.fileMenu.add(saveItem);
 		this.fileMenu.add(saveItemVTK);
 		this.fileMenu.add(saveItemOBJ);
+		this.fileMenu.add(screenShot);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(appExit);
 		this.menuBar.add(fileMenu);
@@ -600,6 +604,11 @@ public class MainMenu implements ActionListener, ItemListener{
 		renderWindow.getRenderer().AddActor(actor);
 		MainGUI.updateRenderWindow(actor);
 	}
+	
+	public void savePNG(File file) throws IOException
+	{
+		pngRenderer.pngRender(file, Info.getMainGUI());
+	}
 
 	//@Override
 	public void actionPerformed(ActionEvent e) {
@@ -725,6 +734,28 @@ public class MainMenu implements ActionListener, ItemListener{
 			}
 			
 		}
+		
+		else if(eventSource == screenShot)
+		{
+			JFileChooser chooser = new JFileChooser();
+			int ret = chooser.showSaveDialog(Info.getMainGUI());
+			if (ret == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				try{
+					String fName = file.getAbsolutePath();
+
+					if(!fName.endsWith(".png") ) {
+						file = new File(fName + ".png");
+					}
+					savePNG(file);
+				}
+				catch(IOException e1)
+				{
+					System.out.println("Error");
+				}
+			}
+		}
+
 		/*
 		 *Function for calling the userGuide 
 		 */
