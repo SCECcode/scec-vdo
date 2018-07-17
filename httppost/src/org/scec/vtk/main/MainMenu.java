@@ -9,6 +9,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -57,6 +58,14 @@ import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
 
+//file transfer
+import java.io.OutputStream;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.net.URL;
+import java.net.Socket;
+import java.util.Properties;
+
 import com.google.common.base.Preconditions;
 
 public class MainMenu implements ActionListener, ItemListener{
@@ -74,6 +83,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private JCheckBoxMenuItem timelineItem;
 	private JMenuItem saveItemVTK;
 	private JMenuItem saveItemOBJ;
+	private JMenuItem publishVTP;
 	private JMenuItem resizeWindow;
 	private JMenuItem tutorial;
 	private JMenuItem wizardActivation;
@@ -192,18 +202,22 @@ public class MainMenu implements ActionListener, ItemListener{
 		saveItem = new JMenuItem("Save state...");
 		saveItemVTK = new JMenuItem("Export as VTK...");
 		saveItemOBJ = new JMenuItem("Export as OBJ...");
+		publishVTP = new JMenuItem("Publish VTP...");
+		
 		appExit = new JMenuItem("Quit");
 
 		fileMenu.addActionListener(this);
 		this.saveItem.addActionListener(this);
 		this.saveItemVTK.addActionListener(this);
 		this.saveItemOBJ.addActionListener(this);
+		this.publishVTP.addActionListener(this);
 		this.appExit.addActionListener(this);
 		this.fileOpen.addActionListener(this);
 		this.fileMenu.add(fileOpen);
 		this.fileMenu.add(saveItem);
 		this.fileMenu.add(saveItemVTK);
 		this.fileMenu.add(saveItemOBJ);
+		this.fileMenu.add(publishVTP);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(appExit);
 		this.menuBar.add(fileMenu);
@@ -600,6 +614,128 @@ public class MainMenu implements ActionListener, ItemListener{
 		renderWindow.getRenderer().AddActor(actor);
 		MainGUI.updateRenderWindow(actor);
 	}
+	
+	private void httpConn() 
+	{
+	    final String CrLf = "\r\n";
+
+        URLConnection conn = null;
+        OutputStream os = null;
+        InputStream is = null;
+
+        try {
+            URL url = new URL("http://scecvdo.usc.edu/viewer/publish.php");
+            System.out.println("url:" + url);
+            conn = url.openConnection();
+            conn.setDoOutput(true);
+
+           // String postData = "";
+
+           // InputStream imgIs = getClass().getResourceAsStream("../../../../../../../" +
+            	//	 "/Desktop/vtpexport.vtp");
+            
+            InputStream imgIs = new FileInputStream(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + "bho.txt");
+            		//MainMenu.class.getClassLoader().getResourceAsStream("tester.txt");
+            
+            System.out.println("size: " + imgIs.available());
+            
+            /*
+            System.out.println(System.getProperty("user.home") + 
+            		File.separator + ".scec_vdo" + 
+            		File.separator + "tmp" + 
+            		File.separator + "publish.vtp");
+            */
+            
+              
+            byte[] imgData = new byte[imgIs.available()];
+            imgIs.read(imgData);
+
+            String message1 = "";
+            message1 += "-----------------------------4664151417711" + CrLf;
+            message1 += "Content-Disposition: form-data; name=\"uploadedfile\"; filename=\"bho.txt\""
+                    + CrLf;
+            message1 += "Content-Type: text/plain" + CrLf;
+            message1 += CrLf;
+
+            //file is sent between the messages in the multipart message.
+
+            String message2 = "";
+            message2 += CrLf + "-----------------------------4664151417711--"
+                    + CrLf;
+
+            conn.setRequestProperty("Content-Type",
+                    "text/plain; boundary=---------------------------4664151417711");
+            // might not need to specify the content-length when sending chunked
+            // data... but keep as is
+            conn.setRequestProperty("Content-Length", String.valueOf((message1
+                    .length() + message2.length() + imgData.length)));
+
+            System.out.println("open os");
+            os = conn.getOutputStream();
+
+            System.out.println(message1);
+            os.write(message1.getBytes());
+
+            // SEND THE File
+            int index = 0;
+            int size = 1024;
+            do {
+                System.out.println("write:" + index);
+                if ((index + size) > imgData.length) {
+                    size = imgData.length - index;
+                }
+                os.write(imgData, index, size);
+                index += size;
+            } while (index < imgData.length);
+            System.out.println("written:" + index);
+
+            System.out.println(message2);
+            os.write(message2.getBytes());
+            os.flush();
+
+            System.out.println("open input stream");
+            is = conn.getInputStream();
+
+            char buff = 512;
+            int len = 0;
+            byte[] data = new byte[buff];
+            
+            do {
+                System.out.println("READ");
+                len = is.read(data);
+                System.out.println("len: " + len);
+
+                if (len > 0) {
+                    System.out.println(new String(data, 0, len));
+                }
+            } while (len > 0);
+            
+            /*
+            int readBytes = 0;
+            while ((readBytes  = is.read(data)) != -1) {
+                os.write(data, 0, readBytes);
+              }
+              */
+
+            System.out.println("DONE");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("Close connection");
+            try {
+                os.close();
+            } catch (Exception e) {
+            }
+            try {
+                is.close();
+            } catch (Exception e) {
+            }
+            try {
+
+            } catch (Exception e) {
+            }
+        }
+    }
 
 	//@Override
 	public void actionPerformed(ActionEvent e) {
@@ -659,6 +795,10 @@ public class MainMenu implements ActionListener, ItemListener{
 				File file = chooser.getSelectedFile();
 				saveVTKObj(file);
 			}
+		}
+		else if(eventSource == publishVTP)
+		{
+			httpConn();
 		}
 		else if(eventSource == saveItemOBJ)
 		{
@@ -1118,3 +1258,6 @@ public class MainMenu implements ActionListener, ItemListener{
 	}
 
 }
+
+
+
