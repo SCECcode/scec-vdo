@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: object_template.xml 20 2005-05-04 19:44:40Z pmpowers $-->
+<scec_video_object>
+  <object_info>
+    <class>org.scec.geo3d.plugins.EQCatalogPlugin.components.EQCatalog</class>
+    <source_file>\EQCatalogStore\source\Type A Faults_Quakes.cat</source_file>
+    <attribute_file>\EQCatalogStore\display\filteredCat_454569.cat</attribute_file>
+    <data_file>\EQCatalogStore\display\data\filteredCat_454569.dat</data_file>
+    <display_name>Type A Fault Earthquakes</display_name>
+    <source_info>
+      <citation>UCERF2</citation>
+      <reference>Resource - http://pubs.usgs.gov/of/2007/1437/of2007-1437_text.pdf</reference>
+    </source_info>
+    <notes />
+  </object_info>
+  <object_attributes>
+    <data num_events="11" scope="13">
+      <latitude min="33.0" max="39.2" />
+      <longitude min="-123.8" max="-115.8" />
+      <depth min="1.0" max="1.0" />
+      <magnitude min="6.5" max="7.9" />
+      <date min="January 13, 1857  (04:39:59)" max="October 22, 1989  (04:39:59)" />
+    </data>
+    <display>
+      <geometry value="1" />
+      <scaling value="4" />
+      <focal_mech value="0" />
+      <colors apply_gradient="0">
+        <color_1 r="1.0" g="0.0" b="0.0" />
+        <color_2 r="1.0" g="0.0" b="0.0" />
+      </colors>
+      <recentEQcoloring value="0" />
+    </display>
+  </object_attributes>
+</scec_video_object>
+
