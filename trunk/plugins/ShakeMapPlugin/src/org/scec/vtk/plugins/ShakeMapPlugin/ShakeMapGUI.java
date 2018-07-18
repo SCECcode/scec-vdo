@@ -405,6 +405,15 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
 	        "Text files", "txt", "xyz");
 	    chooser.setFileFilter(filter);
+	    
+	    
+	    String s = File.separator;
+	    File defaultDir = new File(MainGUI.getCWD(),
+				"data"+s+"ShakeMapPlugin");	    
+		if (defaultDir.exists())
+			chooser.setCurrentDirectory(defaultDir);
+		
+		
 //	    chooser.setCurrentDirectory(new File(dataPath+"/"+moreMaps));
 	    int returnVal = chooser.showOpenDialog(this);
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {

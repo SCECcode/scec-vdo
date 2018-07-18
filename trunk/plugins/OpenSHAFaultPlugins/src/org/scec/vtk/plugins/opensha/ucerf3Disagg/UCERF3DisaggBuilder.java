@@ -2,6 +2,7 @@ package org.scec.vtk.plugins.opensha.ucerf3Disagg;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -55,6 +56,7 @@ import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
+import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.tools.Transform;
 
@@ -300,6 +302,12 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 			// browse for file
 			if (choose == null)
 				choose = new JFileChooser();
+			
+		    File defaultDir = new File(MainGUI.getCWD(),
+					"data");	    
+			if (defaultDir.exists())
+				choose.setCurrentDirectory(defaultDir);
+			
 			int ret = choose.showOpenDialog(null);
 			if (ret == JFileChooser.APPROVE_OPTION)
 				this.erf = new FaultSystemSolutionERF(choose.getSelectedFile().getAbsolutePath());
