@@ -277,8 +277,10 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 				chooser = new JFileChooser();
 				String s = File.separator;
 				try {
-					File defaultDir = new File(MainGUI.getCWD().getParentFile(),
-							"OpenSHA"+s+"src"+s+"resources"+s+"cpt");
+				    File defaultDir = new File(MainGUI.getCWD(),
+							"data");	    
+					if (defaultDir.exists())
+						chooser.setCurrentDirectory(defaultDir);
 					if (defaultDir.exists())
 						chooser.setCurrentDirectory(defaultDir);
 				} catch (Exception e1) {}

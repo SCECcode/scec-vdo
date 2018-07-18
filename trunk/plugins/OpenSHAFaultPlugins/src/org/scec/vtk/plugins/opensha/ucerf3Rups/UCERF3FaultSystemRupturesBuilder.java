@@ -168,10 +168,14 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	public UCERF3FaultSystemRupturesBuilder(Plugin plugin) {
 		faultParams.getParameter(Boolean.class, GridSpacingFitParam.NAME).setValue(false);
 		faultParams.getParameter(Boolean.class, AseismicityParam.NAME).setValue(false);
-		
+		/*
 		File defaultLoadDir = new File(MainGUI.getCWD().getParentFile(),
 				"OpenSHA"+File.separator+"dev"+File.separator+"scratch"+File.separator+"UCERF3"
 				+File.separator+"data"+File.separator+"scratch");
+				*/
+		
+	    File defaultLoadDir = new File(MainGUI.getCWD(),
+				"data");	    
 		System.out.println(defaultLoadDir.getAbsolutePath() + " ? "+defaultLoadDir.exists());
 		if (!defaultLoadDir.exists())
 			defaultLoadDir = null;
@@ -612,6 +616,12 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 				case PALEO_CORRELATION_GEN:
 					if (sol != null && sol instanceof InversionFaultSystemSolution) {
 						JFileChooser choose = new JFileChooser();
+						
+					    File defaultDir = new File(MainGUI.getCWD(),
+								"data");	    
+						if (defaultDir.exists())
+							choose.setCurrentDirectory(defaultDir);
+						
 						int ret = choose.showSaveDialog(null);
 						if (ret == JFileChooser.APPROVE_OPTION) {
 							File outFile = choose.getSelectedFile();
@@ -658,6 +668,13 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 					if (sol != null && sol instanceof InversionFaultSystemSolution) {
 						JFileChooser choose = new JFileChooser();
 						choose.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+						
+						String s = File.separator;
+					    File defaultDir = new File(MainGUI.getCWD(),
+								"data"+s+"ShakeMapPlugin");	    
+						if (defaultDir.exists())
+							choose.setCurrentDirectory(defaultDir);
+						
 						int ret = choose.showSaveDialog(null);
 						if (ret == JFileChooser.APPROVE_OPTION) {
 							final File outDir = choose.getSelectedFile();

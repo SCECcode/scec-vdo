@@ -56,6 +56,7 @@ import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
+import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.Prefs;
 
 public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener {
@@ -183,9 +184,15 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		if (chooser == null) {
 			chooser = new JFileChooser();
 			chooser.setFileHidingEnabled(false);
-			File kevinDir = new File("/home/kevin/Simulators/catalogs");
+			//File kevinDir = new File("/home/kevin/Simulators/catalogs");
+		    File defaultDir = new File(MainGUI.getCWD(),
+					"data");	    
+			if (defaultDir.exists())
+				chooser.setCurrentDirectory(defaultDir);
+			/*
 			if (kevinDir.exists())
 				chooser.setCurrentDirectory(kevinDir);
+				*/
 		}
 		int retVal = chooser.showOpenDialog(null);
 		if (retVal == JFileChooser.APPROVE_OPTION) {
