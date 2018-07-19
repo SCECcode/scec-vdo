@@ -12,8 +12,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +33,11 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -36,6 +46,8 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
@@ -75,6 +87,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	private JMenuItem saveItemVTK;
 	private JMenuItem saveItemOBJ;
 	private JMenuItem screenShot;
+	private JMenuItem publishVTP;
 	private JMenuItem resizeWindow;
 	private JMenuItem tutorial;
 	private JMenuItem wizardActivation;
@@ -194,6 +207,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		saveItemVTK = new JMenuItem("Export as VTK...");
 		saveItemOBJ = new JMenuItem("Export as OBJ...");
 		screenShot = new JMenuItem("Save as image");
+		publishVTP = new JMenuItem("Publish");
 		appExit = new JMenuItem("Quit");
 
 		fileMenu.addActionListener(this);
@@ -201,6 +215,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		this.saveItemVTK.addActionListener(this);
 		this.saveItemOBJ.addActionListener(this);
 		this.screenShot.addActionListener(this);
+		this.publishVTP.addActionListener(this);
 		this.appExit.addActionListener(this);
 		this.fileOpen.addActionListener(this);
 		this.fileMenu.add(fileOpen);
@@ -208,6 +223,8 @@ public class MainMenu implements ActionListener, ItemListener{
 		this.fileMenu.add(saveItemVTK);
 		this.fileMenu.add(saveItemOBJ);
 		this.fileMenu.add(screenShot);
+		this.fileMenu.addSeparator();
+		this.fileMenu.add(publishVTP);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(appExit);
 		this.menuBar.add(fileMenu);
@@ -735,6 +752,78 @@ public class MainMenu implements ActionListener, ItemListener{
 			
 		}
 		
+		else if (eventSource == publishVTP) //provides input window for publishing information, writes xml and vtp files and sends them to server
+		{
+			UIManager.put("OptionPane.minimumSize",new Dimension(500,500)); 
+			JTextField title = new JTextField();
+			JTextField author = new JTextField();
+			JTextField server = new JTextField("http://scecvdo.usc.edu/viewer/publish.php");
+			JTextField username = new JTextField();
+			JTextField password = new JPasswordField();
+			JTextArea description = new JTextArea(20, 20);		
+
+			Object[] message = {
+			    "Title:", title,
+			    "Author:", author,
+			    "Server:", server,		
+				"Username:", username,
+				"Password:", password,
+			    "Description", description
+			};
+
+			int val = JOptionPane.showConfirmDialog(null, message, "Publish To Web Server", JOptionPane.OK_CANCEL_OPTION);
+			try 
+			{
+				//set up the XML document with title, author, date, description info
+				 org.jdom.Element rootElement = new org.jdom.Element("model");
+				 
+				 org.jdom.Document doc = new org.jdom.Document(rootElement);
+				 
+				 org.jdom.Element xmlTitle = new org.jdom.Element("title");
+				 xmlTitle.setText(title.getText());
+				 
+				 org.jdom.Element xmlAuthor = new org.jdom.Element("author");
+				 xmlAuthor.setText(author.getText());
+				 
+				 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				 Date date = new Date();
+				//System.out.println(dateFormat.format(date)); //2016/11/16 12:08:43
+				 org.jdom.Element xmlDate = new org.jdom.Element("date");
+				 xmlDate.setText(dateFormat.format(date));
+				 
+				 org.jdom.Element xmlRegion = new org.jdom.Element("region");
+				 xmlRegion.setText("California");
+				 
+				 org.jdom.Element xmlDescription = new org.jdom.Element("description");
+				 xmlDescription.setText(description.getText());
+				 
+				 
+				 doc.getRootElement().addContent(xmlTitle);
+				 doc.getRootElement().addContent(xmlAuthor);
+				 doc.getRootElement().addContent(xmlDate);
+				 doc.getRootElement().addContent(xmlRegion);
+				 doc.getRootElement().addContent(xmlDescription);
+				 
+				 org.jdom.output.XMLOutputter outter = new XMLOutputter();
+				 outter.setFormat(Format.getPrettyFormat());
+				 
+				 //write XML file to tmp folder
+				 File publishXml = new File(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/publish.xml");
+				 
+				 if(!publishXml.exists()) //if file doesn't exist, create it
+				 {
+					 Files.createDirectories(Paths.get(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/publish.xml"));
+				 }
+				 
+				 Writer out = new FileWriter(publishXml);
+				 outter.output(doc, out);
+			}
+			catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
 		else if(eventSource == screenShot)
 		{
 			JFileChooser chooser = new JFileChooser();
@@ -755,6 +844,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				}
 			}
 		}
+
 
 		/*
 		 *Function for calling the userGuide 
