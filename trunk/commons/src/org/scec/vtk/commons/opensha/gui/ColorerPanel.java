@@ -17,6 +17,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opensha.commons.mapping.gmt.gui.CPTPanel;
 import org.opensha.commons.param.ParameterList;
@@ -277,10 +278,13 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 				chooser = new JFileChooser();
 				String s = File.separator;
 				try {
-				    File defaultDir = new File(MainGUI.getCWD(),
-							"data");	    
-					if (defaultDir.exists())
-						chooser.setCurrentDirectory(defaultDir);
+					File defaultDir = new File(MainGUI.getCWD(),
+							"data");
+					
+					FileNameExtensionFilter fileType = new FileNameExtensionFilter(".txt" , "txt"); //Tiffany
+					chooser.setFileFilter(fileType); //Tiffany
+					
+					System.out.println(defaultDir.getAbsolutePath());
 					if (defaultDir.exists())
 						chooser.setCurrentDirectory(defaultDir);
 				} catch (Exception e1) {}
