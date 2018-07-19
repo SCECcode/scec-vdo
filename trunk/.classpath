@@ -37,6 +37,5 @@
 	<classpathentry kind="lib" path="lib/opensha.jar"/>
 	<classpathentry kind="lib" path="lib/vtk.jar"/>
 	<classpathentry kind="lib" path="lib/jxlayer.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Intern/Downloads/jdom.jar.zip"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
