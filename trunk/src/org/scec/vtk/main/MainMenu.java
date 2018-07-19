@@ -9,10 +9,15 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -29,6 +34,7 @@ import java.util.Vector;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -36,7 +42,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
+import javax.swing.text.JTextComponent;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -67,6 +75,7 @@ import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
+import vtk.vtkXMLPolyDataWriter;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
 
 import com.google.common.base.Preconditions;
@@ -589,6 +598,42 @@ public class MainMenu implements ActionListener, ItemListener{
 		
 	}
 	
+	public void saveVTPObj()
+	{
+
+		vtkJoglPanelComponent renderWindow = Info.getMainGUI().getRenderWindow();
+
+		vtkActorCollection actorlist = renderWindow.getRenderer().GetActors();
+		if(actorlist.GetNumberOfItems()>0){
+			System.out.println(actorlist.GetNumberOfItems());
+			vtkXMLPolyDataWriter objExporter = new vtkXMLPolyDataWriter();
+			objExporter.SetFileName(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/publish.vtp"); 
+			vtkAppendPolyData  mainData = new vtkAppendPolyData ();
+
+			for(int i = 0; i <actorlist.GetNumberOfItems();i++)
+			{
+				vtkActor pbActor = (vtkActor) actorlist.GetItemAsObject(i);
+
+				if(pbActor.GetVisibility() == 1)
+				{
+					vtkPolyDataMapper gmapper = (vtkPolyDataMapper) pbActor.GetMapper();
+					if(gmapper!=null){
+					vtkPolyData pd  = new vtkPolyData();
+					pd.SetPoints(gmapper.GetInput().GetPoints());
+					pd.SetLines(gmapper.GetInput().GetLines());
+					pd.SetPolys(gmapper.GetInput().GetPolys());
+					mainData.AddInputData(pd);
+					mainData.Update();
+					}
+				}
+			}
+			objExporter.SetInputConnection(mainData.GetOutputPort());
+			objExporter.Write();
+			System.out.println("done");
+		}
+		
+	}
+	
 	public void openVTKObj()
 	{
 
@@ -772,11 +817,16 @@ public class MainMenu implements ActionListener, ItemListener{
 			};
 
 			int val = JOptionPane.showConfirmDialog(null, message, "Publish To Web Server", JOptionPane.OK_CANCEL_OPTION);
+			
+			if(val != JOptionPane.OK_OPTION) //publishing has been canceled
+			{
+				return;
+			}
+			
 			try 
 			{
 				//set up the XML document with title, author, date, description info
 				 org.jdom.Element rootElement = new org.jdom.Element("model");
-				 
 				 org.jdom.Document doc = new org.jdom.Document(rootElement);
 				 
 				 org.jdom.Element xmlTitle = new org.jdom.Element("title");
@@ -797,7 +847,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				 org.jdom.Element xmlDescription = new org.jdom.Element("description");
 				 xmlDescription.setText(description.getText());
 				 
-				 
+				 //add elements to xml
 				 doc.getRootElement().addContent(xmlTitle);
 				 doc.getRootElement().addContent(xmlAuthor);
 				 doc.getRootElement().addContent(xmlDate);
@@ -812,18 +862,36 @@ public class MainMenu implements ActionListener, ItemListener{
 				 
 				 if(!publishXml.exists()) //if file doesn't exist, create it
 				 {
-					 Files.createDirectories(Paths.get(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/publish.xml"));
+					 Files.createDirectories(Paths.get(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/"));
 				 }
+				 
+				 saveVTPObj();
 				 
 				 Writer out = new FileWriter(publishXml);
 				 outter.output(doc, out);
+				 
+				 
+				 UIManager.put("OptionPane.minimumSize",new Dimension(100,100)); 
+				 JLabel words = new JLabel("Project successfully published online!");
+
+				 Object[] confirmation = {words};
+				 
+				 if(transferFile(new File(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + "publish.vtp"), server.getText())
+				  && transferFile(new File(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + "publish.xml"), server.getText()))
+				 {
+					 JOptionPane.showMessageDialog(null, confirmation, "Success", JOptionPane.INFORMATION_MESSAGE);
+				 }
+				 else
+				 {
+					 words.setText("Error publishing project");
+					 JOptionPane.showMessageDialog(null, confirmation, "Error", JOptionPane.ERROR_MESSAGE);
+				 }
+					
 			}
 			catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}
-		
 		else if(eventSource == screenShot)
 		{
 			JFileChooser chooser = new JFileChooser();
@@ -913,6 +981,113 @@ public class MainMenu implements ActionListener, ItemListener{
 			
 		}
 	
+	
+	private boolean transferFile(File f, String urlText)
+	{
+		 final String CrLf = "\r\n";
+
+	        URLConnection conn = null;
+	        OutputStream os = null;
+	        InputStream is = null;
+
+	        try {
+	            URL url = new URL(urlText);
+	            conn = url.openConnection();
+	            conn.setDoOutput(true);
+	            
+	            InputStream imgIs = new FileInputStream(f.getAbsolutePath());
+	            		//MainMenu.class.getClassLoader().getResourceAsStream("tester.txt");
+	            
+	            //System.out.println("size: " + imgIs.available());
+	              
+	            byte[] imgData = new byte[imgIs.available()];
+	            
+	            imgIs.read(imgData);
+
+	            String message1 = "";
+	            message1 += "-----------------------------4664151417711" + CrLf;
+	            message1 += "Content-Disposition: form-data; name=\"uploadedfile\"; filename=\"" + f.getName() + "\""
+	                    + CrLf;
+	            message1 += "Content-Type: text/plain" + CrLf;
+	            message1 += CrLf;
+
+	            // the image is sent between the messages in the multipart message.
+
+	            String message2 = "";
+	            message2 += CrLf + "-----------------------------4664151417711--"
+	                    + CrLf;
+
+	            conn.setRequestProperty("Content-Type",
+	                    "multipart/form-data; boundary=---------------------------4664151417711");
+	            // might not need to specify the content-length when sending chunked
+	            // data.
+	            conn.setRequestProperty("Content-Length", String.valueOf((message1
+	                    .length() + message2.length() + imgData.length)));
+
+	            //System.out.println("open os");
+	            os = conn.getOutputStream();
+
+	           // System.out.println(message1);
+	            os.write(message1.getBytes());
+
+	            // SEND THE File
+	            int index = 0;
+	            int size = 1024;
+	            do {
+	                //System.out.println("write:" + index);
+	                if ((index + size) > imgData.length) {
+	                    size = imgData.length - index;
+	                }
+	                os.write(imgData, index, size);
+	                index += size;
+	            } while (index < imgData.length);	            
+	            
+	            System.out.println("written:" + index);
+
+	           // System.out.println(message2);
+	            os.write(message2.getBytes());
+	            os.flush();
+
+	           // System.out.println("open input stream");
+	            is = conn.getInputStream();
+
+	            char buff = 512;
+	            int len = 0;
+	            byte[] data = new byte[buff];
+	            
+	            do {
+	               // System.out.println("READ");
+	                len = is.read(data);
+	              //  System.out.println("len: " + len);
+
+	                if (len > 0) {
+	                    System.out.println(new String(data, 0, len));
+	                }
+	            } while (len > 0);
+
+	            System.out.println("DONE");
+	        } catch (Exception ef) {
+	            ef.printStackTrace();
+	            return false;
+	        } finally {
+	            System.out.println("Close connection");
+	            try {
+	                os.close();
+	            } catch (Exception ef) {
+	            }
+	            try {
+	                is.close();
+	            } catch (Exception ef) {
+	            }
+	            try {
+
+	            } catch (Exception ef) {
+	            }
+	        }
+	        
+	        return true;
+	        
+	}
 
 	private void saveXMLFile(Document document,Element root,String destinationData) {
 		
