@@ -1297,19 +1297,27 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	//	}
 
 	@Override
-	//look for actor.setVisibility
+	//On initialization provide actors, afterwards seperate
 	public void actorAdded(vtkProp actor) {
 		// called when a plugin adds an actor
 		renderWindow.getRenderer().AddActor(actor);
+		vtkProp copy = (vtkProp)deepCopy(actor);
+		//System.out.println(actor);
+		//System.out.println(copy);
 		if(splitMode == true) {
+			if(copy != null) {
+			renderWindowSplit.getRenderer().AddActor(copy);
+			}
+			else {
 			renderWindowSplit.getRenderer().AddActor(actor);
+			}
 		}
 			
 		for (PluginActorsChangeListener l : actorsChangeListeners) 
 			l.actorAdded(actor);
 
 	}
-
+	
 	@Override
 	public void actorRemoved(vtkProp actor) {
 		// called when a plugin removes an actor
@@ -1337,6 +1345,36 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			if(leftEqc || rightEqc) {
 			
 			}*/
+	}
+	
+	public vtkProp deepCopy(vtkProp actor) {
+		vtkActor copy = null;
+		if (actor instanceof vtkActor)
+		{
+			copy = new vtkActor();
+			copy.SetVisibility(actor.GetVisibility());
+			copy.SetPickable(actor.GetPickable());
+			copy.SetDragable(actor.GetDragable());
+			copy.SetUseBounds(actor.GetUseBounds());
+			copy.SetAllocatedRenderTime(actor.GetAllocatedRenderTime(), null);
+			copy.SetEstimatedRenderTime(actor.GetEstimatedRenderTime());
+			copy.SetRenderTimeMultiplier(actor.GetRenderTimeMultiplier());
+		
+			for (int i=0; i<actor.GetNumberOfConsumers(); i++)
+			{
+				copy.AddConsumer(actor.GetConsumer(i));
+			}
+			copy.SetPropertyKeys(actor.GetPropertyKeys());
+			copy.SetDebug(actor.GetDebug());
+			copy.SetReferenceCount(actor.GetReferenceCount());
+			copy.SetMapper(((vtkActor) actor).GetMapper());
+			copy.GetProperty().SetColor(((vtkActor) actor).GetProperty().GetColor());
+			copy.GetProperty().SetOpacity(((vtkActor) actor).GetProperty().GetOpacity());
+			copy.GetProperty().SetTexture(0,((vtkActor) actor).GetProperty().GetTexture(0));
+			copy.SetPosition(((vtkActor) actor).GetPosition());
+		}
+		
+		return copy;
 	}
 
 	@Override
