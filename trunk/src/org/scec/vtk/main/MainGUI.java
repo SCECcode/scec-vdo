@@ -62,6 +62,7 @@ import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.scec.vtk.commons.legend.LegendItem;
 import org.scec.vtk.grid.ViewRange;
@@ -165,6 +166,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		renderWindow = new vtkJoglPanelComponent();
 		mainPanel = new JPanel(new BorderLayout());
 		renderWindow.getRenderer().SetBackground(0,0,0);
+		
 		
 		// this should enable depth peeling, but doesn't seem to work. at least for Kevin on linux.
 		// more info/source: http://www.vtk.org/Wiki/VTK/Depth_Peeling
