@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -17,7 +18,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opensha.commons.mapping.gmt.gui.CPTPanel;
 import org.opensha.commons.param.ParameterList;
@@ -57,7 +57,7 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 	private ArrayList<ColorerChangeListener> listeners = new ArrayList<ColorerChangeListener>();
 	
 	private static final String COLORER_SELECTOR_PARAM_NAME = "Color Faults By";
-	private static final String COLORER_SELECTOR_CUSTOM = "(custom)";
+	public static final String COLORER_SELECTOR_CUSTOM = "(custom)";
 	
 	private Plugin plugin;
 	
@@ -188,10 +188,13 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 			return colorers.get(ListUtils.getIndexByName(colorers, selected));
 	}
 	
+	public List<FaultColorer> getColorers() {
+		return Collections.unmodifiableList(colorers);
+	}
+	
 	public void setSelectedColorer(FaultColorer colorer) {
-		if (colorer == null){
+		if (colorer == null)
 			colorerParam.setValue(COLORER_SELECTOR_CUSTOM);
-		}
 		else
 			colorerParam.setValue(colorer.getName());
 		colorerParam.getEditor().refreshParamEditor();
@@ -278,13 +281,7 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 				chooser = new JFileChooser();
 				String s = File.separator;
 				try {
-					File defaultDir = new File(MainGUI.getCWD(),
-							"data");
-					
-					FileNameExtensionFilter fileType = new FileNameExtensionFilter(".txt" , "txt"); //Tiffany
-					chooser.setFileFilter(fileType); //Tiffany
-					
-					System.out.println(defaultDir.getAbsolutePath());
+					File defaultDir = new File(MainGUI.getCWD(), "data");
 					if (defaultDir.exists())
 						chooser.setCurrentDirectory(defaultDir);
 				} catch (Exception e1) {}
