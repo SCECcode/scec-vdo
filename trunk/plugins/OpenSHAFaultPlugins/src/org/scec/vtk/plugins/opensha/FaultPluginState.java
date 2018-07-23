@@ -14,8 +14,8 @@ import org.opensha.commons.exceptions.ConstraintException;
 import org.opensha.commons.exceptions.ParameterException;
 import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
-import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
+import org.opensha.commons.util.XMLUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
@@ -40,8 +40,8 @@ public class FaultPluginState implements PluginState {
 	 */
 	// builder/tree
 	private ParameterList builderParams;
-	private Map<Object, Boolean> userDataToVisibleMap;
-	private Map<Object, Color> userDataToColorMap;
+	private Map<Integer, Boolean> idToVisibleMap;
+	private Map<Integer, Color> idToColorMap;
 	// colorer
 	private FaultColorer colorer;
 	private ParameterList colorerParams;
@@ -89,22 +89,26 @@ public class FaultPluginState implements PluginState {
 		}
 		
 		// update colorer
-		if (D) System.out.println("Loading colorer");
-		if (colorer != gui.getColorPanel().getSelectedColorer())
-			gui.getColorPanel().setSelectedColorer(colorer);
-		if (D) System.out.println("Loading colorer params");
-		waitOnColorerChange();
-		updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
-		if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
-			if (D) System.out.println("Loading CPT info");
-			CPTBasedColorer cptColor = (CPTBasedColorer) gui.getColorPanel().getSelectedColorer();
-			if (!cpt.equals(cptColor.getCPT()) || cptLog != cptColor.isCPTLog()) {
-				waitOnColorerChange();
-				cptColor.setCPT(cpt, cptLog);
-				gui.getColorPanel().cptChangedExternally();
+		if (gui.getColorPanel() != null) {
+			if (D) System.out.println("Loading colorer");
+			if (colorer != gui.getColorPanel().getSelectedColorer())
+				gui.getColorPanel().setSelectedColorer(colorer);
+			if (D) System.out.println("Loading colorer params");
+			waitOnColorerChange();
+			if (colorer != null) {
+				updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
+				if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
+					if (D) System.out.println("Loading CPT info");
+					CPTBasedColorer cptColor = (CPTBasedColorer) gui.getColorPanel().getSelectedColorer();
+					if (!cpt.equals(cptColor.getCPT()) || cptLog != cptColor.isCPTLog()) {
+						waitOnColorerChange();
+						cptColor.setCPT(cpt, cptLog);
+						gui.getColorPanel().cptChangedExternally();
+					}
+				}
+				gui.getColorPanel().setLegendVisible(legendVisibile);
 			}
 		}
-		gui.getColorPanel().setLegendVisible(legendVisibile);
 		
 		// now update the tree itself
 		waitOnColorerChange();
@@ -170,6 +174,8 @@ public class FaultPluginState implements PluginState {
 	private static final String ANIM_PARAM_LIST_EL_NAME = "AnimationParams";
 	private static final String COLORER_EL_NAME = "Colorer";
 	private static final String COLORER_PARAM_LIST_EL_NAME = "ColorerParams";
+	private static final String TREE_EL_NAME = "FaultTree";
+	private static final String TREE_NODE_EL_NAME = "Node";
 
 	@Override
 	public void toXML(Element stateEl) {
@@ -197,38 +203,31 @@ public class FaultPluginState implements PluginState {
 				paramListToXML(animEl, animParams, ANIM_PARAM_LIST_EL_NAME);
 		}
 		
-		Element colorerEl = stateEl.addElement(COLORER_EL_NAME);
-		if (colorer == null) {
-			colorerEl.addAttribute("Name", ColorerPanel.COLORER_SELECTOR_CUSTOM);
-		} else {
-			colorerEl.addAttribute("Name", colorer.getName());
-			if (colorerParams != null)
-				paramListToXML(colorerEl, colorerParams, COLORER_PARAM_LIST_EL_NAME);
-			if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
-				cpt.toXMLMetadata(colorerEl);
-				colorerEl.addAttribute("CPTLog", cptLog+"");
+		if (gui.getColorPanel() != null) {
+			Element colorerEl = stateEl.addElement(COLORER_EL_NAME);
+			if (colorer == null) {
+				colorerEl.addAttribute("Name", ColorerPanel.COLORER_SELECTOR_CUSTOM);
+			} else {
+				colorerEl.addAttribute("Name", colorer.getName());
+				if (colorerParams != null)
+					paramListToXML(colorerEl, colorerParams, COLORER_PARAM_LIST_EL_NAME);
+				if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
+					cpt.toXMLMetadata(colorerEl);
+					colorerEl.addAttribute("CPTLog", cptLog+"");
+				}
+				colorerEl.addAttribute("LegendVisible", legendVisibile+"");
 			}
-			colorerEl.addAttribute("LegendVisible", legendVisibile+"");
 		}
 		
-//		// update colorer
-//		if (D) System.out.println("Loading colorer");
-//		if (colorer != gui.getColorPanel().getSelectedColorer())
-//			gui.getColorPanel().setSelectedColorer(colorer);
-//		if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
-//			if (D) System.out.println("Loading CPT info");
-//			CPTBasedColorer cptColor = (CPTBasedColorer) gui.getColorPanel().getSelectedColorer();
-//			if (!cpt.equals(cptColor.getCPT()) || cptLog != cptColor.isCPTLog()) {
-//				waitOnColorerChange();
-//				cptColor.setCPT(cpt, cptLog);
-//				gui.getColorPanel().cptChangedExternally();
-//			}
-//		}
-		
-//		if (D) System.out.println("Loading colorer params");
-//		waitOnColorerChange();
-//		updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
-//		gui.getColorPanel().setLegendVisible(legendVisibile);
+		Element treeEl = stateEl.addElement(TREE_EL_NAME);
+		for (Integer id : idToColorMap.keySet()) {
+			Element nodeEl = treeEl.addElement(TREE_NODE_EL_NAME);
+			nodeEl.addAttribute("ID", id+"");
+			Color color = idToColorMap.get(id);
+			Boolean visible = idToVisibleMap.get(id);
+			nodeEl.addAttribute("Color", color.getRGB()+"");
+			nodeEl.addAttribute("Visible", visible.toString());
+		}
 	}
 	
 	private static void paramListToXML(Element rootEl, ParameterList paramList, String elName) {
@@ -279,27 +278,39 @@ public class FaultPluginState implements PluginState {
 		}
 		
 		Element colorerEl = stateEl.element(COLORER_EL_NAME);
-		String colorerName = colorerEl.attributeValue("Name");
-		if (colorerName.equals(ColorerPanel.COLORER_SELECTOR_CUSTOM)) {
-			colorer = null;
-		} else {
-			for (FaultColorer colorer : gui.getColorPanel().getColorers()) {
-				if (colorer.getName().equals(colorerName)) {
-					this.colorer = colorer;
-					colorerParams = cloneParamList(colorer.getColorerParameters());
-					Element colorerParamsEl = colorerEl.element(COLORER_PARAM_LIST_EL_NAME);
-					if (colorerParamsEl != null)
-						paramListFromXML(colorerParamsEl, colorerParams);
-					Element cptEl = colorerEl.element(CPT.XML_METADATA_NAME);
-					if (cptEl != null) {
-						Preconditions.checkState(colorer instanceof CPTBasedColorer);
-						cpt = CPT.fromXMLMetadata(cptEl);
-						cptLog = Boolean.parseBoolean(colorerEl.attributeValue("CPTLog"));
+		if (colorerEl != null) {
+			String colorerName = colorerEl.attributeValue("Name");
+			if (colorerName.equals(ColorerPanel.COLORER_SELECTOR_CUSTOM)) {
+				colorer = null;
+			} else {
+				for (FaultColorer colorer : gui.getColorPanel().getColorers()) {
+					if (colorer.getName().equals(colorerName)) {
+						this.colorer = colorer;
+						colorerParams = cloneParamList(colorer.getColorerParameters());
+						Element colorerParamsEl = colorerEl.element(COLORER_PARAM_LIST_EL_NAME);
+						if (colorerParamsEl != null)
+							paramListFromXML(colorerParamsEl, colorerParams);
+						Element cptEl = colorerEl.element(CPT.XML_METADATA_NAME);
+						if (cptEl != null) {
+							Preconditions.checkState(colorer instanceof CPTBasedColorer);
+							cpt = CPT.fromXMLMetadata(cptEl);
+							cptLog = Boolean.parseBoolean(colorerEl.attributeValue("CPTLog"));
+						}
+						legendVisibile = Boolean.parseBoolean(colorerEl.attributeValue("LegendVisible"));
+						break;
 					}
-					legendVisibile = Boolean.parseBoolean(colorerEl.attributeValue("LegendVisible"));
-					break;
 				}
 			}
+		}
+		
+		Element treeEl = stateEl.element(TREE_EL_NAME);
+		for (Element nodeEl : XMLUtils.getSubElementsList(treeEl, TREE_NODE_EL_NAME)) {
+			Integer id = Integer.parseInt(nodeEl.attributeValue("ID"));
+			int rgb = Integer.parseInt(nodeEl.attributeValue("Color"));
+			Color color = new Color(rgb);
+			Boolean visible = Boolean.parseBoolean(nodeEl.attributeValue("Visible"));
+			idToColorMap.put(id, color);
+			idToVisibleMap.put(id, visible);
 		}
 	}
 	
@@ -312,8 +323,8 @@ public class FaultPluginState implements PluginState {
 	private void clearState() {
 		if (D) System.out.println("Clearing state");
 		builderParams = null;
-		userDataToVisibleMap = null;
-		userDataToColorMap = null;
+		idToVisibleMap = null;
+		idToColorMap = null;
 		colorer = null;
 		colorerParams = null;
 		cpt = null;
@@ -328,20 +339,22 @@ public class FaultPluginState implements PluginState {
 		clearState();
 		if (D) System.out.println("Capturing state");
 		builderParams = cloneParamList(gui.getBuilder().getBuilderParams());
-		userDataToVisibleMap = new HashMap<>();
-		userDataToColorMap = new HashMap<>();
-		captureTree(gui.getFaultTreeTable().getTreeRoot(), userDataToVisibleMap, userDataToColorMap);
-		colorer = gui.getColorPanel().getSelectedColorer();
-		if (colorer != null) {
-			colorerParams = cloneParamList(colorer.getColorerParameters());
-			if (colorer instanceof CPTBasedColorer) {
-				cpt = ((CPTBasedColorer)colorer).getCPT();
-				if (cpt != null)
-					cpt = (CPT)cpt.clone();
-				cptLog = ((CPTBasedColorer)colorer).isCPTLog();
+		idToVisibleMap = new HashMap<>();
+		idToColorMap = new HashMap<>();
+		captureTree(gui.getFaultTreeTable().getTreeRoot(), idToVisibleMap, idToColorMap);
+		if (gui.getColorPanel() != null) {
+			colorer = gui.getColorPanel().getSelectedColorer();
+			if (colorer != null) {
+				colorerParams = cloneParamList(colorer.getColorerParameters());
+				if (colorer instanceof CPTBasedColorer) {
+					cpt = ((CPTBasedColorer)colorer).getCPT();
+					if (cpt != null)
+						cpt = (CPT)cpt.clone();
+					cptLog = ((CPTBasedColorer)colorer).isCPTLog();
+				}
 			}
+			legendVisibile = gui.getColorPanel().isLegendVisible();
 		}
-		legendVisibile = gui.getColorPanel().isLegendVisible();
 		if (gui.getAnimPanel() != null) {
 			anim = gui.getAnimPanel().getSelectedAnim();
 			if (anim != null)
@@ -360,20 +373,21 @@ public class FaultPluginState implements PluginState {
 	}
 	
 	/**
-	 * Recursively captures all AbstractFaultNode data into the given map. Assumes (and checks) that userObject field
+	 * Recursively captures all AbstractFaultNode data into the given map. Assumes (and checks) that ID field
 	 * of tree nodes are unique
 	 * @param map
 	 * @param node
+	 * @param userDataToIDMap2 
 	 */
-	private static void captureTree(DefaultMutableTreeNode node, Map<Object, Boolean> visibilityMap,
-			Map<Object, Color> colorMap) {
+	private static void captureTree(DefaultMutableTreeNode node, Map<Integer, Boolean> visibilityMap,
+			Map<Integer, Color> colorMap) {
 //		System.out.println("Capture: "+node);
 		if (node instanceof FaultSectionNode) {
-			Object userObject = node.getUserObject();
 			FaultSectionNode faultNode = (FaultSectionNode)node;
-			Preconditions.checkState(!visibilityMap.containsKey(userObject), "Duplicate user object entry in tree: "+userObject);
-			visibilityMap.put(userObject, faultNode.isVisible());
-			colorMap.put(userObject, faultNode.getColor());
+			Integer id = faultNode.getFault().getId();
+			Preconditions.checkState(!visibilityMap.containsKey(id), "Duplicate ID entry in tree: "+id);
+			visibilityMap.put(id, faultNode.isVisible());
+			colorMap.put(id, faultNode.getColor());
 		}
 		for (int i=0; i<node.getChildCount(); i++) {
 			TreeNode child = node.getChildAt(i);
@@ -387,10 +401,11 @@ public class FaultPluginState implements PluginState {
 //		System.out.println("Update: "+node);
 		if (node instanceof FaultSectionNode) {
 			FaultSectionNode faultNode = (FaultSectionNode)node;
-			if (userDataToColorMap.containsKey(node.getUserObject())) {
+			Integer id = faultNode.getFault().getId();
+			if (idToColorMap.containsKey(id)) {
 //				System.out.println("Udating "+faultNode.getName());
-				Color color = userDataToColorMap.get(node.getUserObject());
-				boolean visible = userDataToVisibleMap.get(node.getUserObject());
+				Color color = idToColorMap.get(id);
+				boolean visible = idToVisibleMap.get(id);
 				// event manager is already listening for changes to the following so updates will happen automatically
 				// use Objects.equals to handle null cases
 				if (!Objects.equals(color, faultNode.getColor())) {
@@ -422,8 +437,8 @@ public class FaultPluginState implements PluginState {
 		captureState();
 		// these are never modified, just replaced so no cloning needed
 		o.builderParams = builderParams;
-		o.userDataToVisibleMap = userDataToVisibleMap;
-		o.userDataToColorMap = userDataToColorMap;
+		o.idToVisibleMap = idToVisibleMap;
+		o.idToColorMap = idToColorMap;
 		o.colorer = colorer;
 		o.colorerParams = colorerParams;
 		o.cpt = cpt;
