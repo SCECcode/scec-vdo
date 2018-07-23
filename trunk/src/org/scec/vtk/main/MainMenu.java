@@ -803,16 +803,16 @@ public class MainMenu implements ActionListener, ItemListener{
 			JTextField title = new JTextField();
 			JTextField author = new JTextField();
 			JTextField server = new JTextField("http://scecvdo.usc.edu/viewer/publish.php");
-			JTextField username = new JTextField();
-			JTextField password = new JPasswordField();
-			JTextArea description = new JTextArea(20, 20);		
+		//	JTextField username = new JTextField();
+		//	JTextField password = new JPasswordField();
+			JTextArea description = new JTextArea(20, 20);
 
 			Object[] message = {
 			    "Title:", title,
 			    "Author:", author,
 			    "Server:", server,		
-				"Username:", username,
-				"Password:", password,
+			//	"Username:", username,
+			//	"Password:", password,
 			    "Description", description
 			};
 
@@ -860,12 +860,12 @@ public class MainMenu implements ActionListener, ItemListener{
 				 //write XML file to tmp folder
 				 File publishXml = new File(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/publish.xml");
 				 
-				 if(!publishXml.exists()) //if file doesn't exist, create it
+				 if(!publishXml.exists()) //if tmp directory doesn't exist, create it
 				 {
 					 Files.createDirectories(Paths.get(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/"));
 				 }
 				 
-				 saveVTPObj();
+				 saveVTPObj(); //save vtp file to tmp folder
 				 
 				 Writer out = new FileWriter(publishXml);
 				 outter.output(doc, out);
@@ -873,15 +873,15 @@ public class MainMenu implements ActionListener, ItemListener{
 				 
 				 UIManager.put("OptionPane.minimumSize",new Dimension(100,100)); 
 				 JLabel words = new JLabel("Project successfully published online!");
-
 				 Object[] confirmation = {words};
 				 
+				 //if both files are successfully transferred
 				 if(transferFile(new File(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + "publish.vtp"), server.getText())
 				  && transferFile(new File(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + "publish.xml"), server.getText()))
 				 {
 					 JOptionPane.showMessageDialog(null, confirmation, "Success", JOptionPane.INFORMATION_MESSAGE);
 				 }
-				 else
+				 else //if there are errors in file transfer
 				 {
 					 words.setText("Error publishing project");
 					 JOptionPane.showMessageDialog(null, confirmation, "Error", JOptionPane.ERROR_MESSAGE);
