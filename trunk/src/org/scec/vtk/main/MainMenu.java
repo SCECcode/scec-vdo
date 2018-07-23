@@ -1089,13 +1089,13 @@ public class MainMenu implements ActionListener, ItemListener{
 	        
 	}
 
-	private void saveXMLFile(Document document,Element root,String destinationData) {
+	private void saveXMLFile(Document document, Element root, String destinationData) {
 		
-		System.out.println("document.toString() inside saveXMLFile(): " + document.toString());
+//		System.out.println("document.toString() inside saveXMLFile(): " + document.toString());
 		XMLWriter writer = null;
 		try {
-			System.out.println("destinationData: " + destinationData);
-			System.out.println("root.asXML() inside saveXMLFile(): " + root.asXML());
+//			System.out.println("destinationData: " + destinationData);
+//			System.out.println("root.asXML() inside saveXMLFile(): " + root.asXML());
 			OutputFormat format = OutputFormat.createPrettyPrint();
 			writer = new XMLWriter(new FileWriter( destinationData), format);
 		} catch (IOException e) {
