@@ -168,14 +168,14 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	public UCERF3FaultSystemRupturesBuilder(Plugin plugin) {
 		faultParams.getParameter(Boolean.class, GridSpacingFitParam.NAME).setValue(false);
 		faultParams.getParameter(Boolean.class, AseismicityParam.NAME).setValue(false);
-		/*
+		
+		// first look for OpenSHA dir
 		File defaultLoadDir = new File(MainGUI.getCWD().getParentFile(),
 				"OpenSHA"+File.separator+"dev"+File.separator+"scratch"+File.separator+"UCERF3"
 				+File.separator+"data"+File.separator+"scratch");
-				*/
-		
-	    File defaultLoadDir = new File(MainGUI.getCWD(),
-				"data");	    
+		if (!defaultLoadDir.exists())
+			// then fallback to SCEC-VDO data dir
+			defaultLoadDir = new File(MainGUI.getCWD(), "data");	    
 		System.out.println(defaultLoadDir.getAbsolutePath() + " ? "+defaultLoadDir.exists());
 		if (!defaultLoadDir.exists())
 			defaultLoadDir = null;

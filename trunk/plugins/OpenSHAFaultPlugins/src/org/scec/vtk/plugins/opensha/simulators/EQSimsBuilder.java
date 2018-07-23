@@ -74,13 +74,17 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		hardcodedInputs.add("UCERF3.D3.1.1km.tri.2.flt");
 	}
 	
-	private static final String INPUT_SELECTOR_PARAM_NAME = "Input";
-	private static final String INPUT_SELECTOR_FROM_FILE = "(Select File)";
-	private StringParameter inputParam;
+	private static final String GEOM_PRESET_PARAM_NAME = "Geometry File Presets";
+	private static final String GEOM_PRESET_NONE = "(none selected)";
+	private StringParameter geomPresetParam;
 	
-	private static final String LOAD_PARAM_NAME = "Load Catalogs";
-	private static final String LOAD_PARAM_BUTTON_NAME = "Browse";
-	private ButtonParameter loadParam;
+	private static final String GEOM_FILE_SELECTOR_PARAM_NAME = "Geometry File";
+	private FileParameter geomFileParam = new FileParameter(GEOM_FILE_SELECTOR_PARAM_NAME);
+	
+	// no longer working
+//	private static final String LOAD_PARAM_NAME = "Load Catalogs";
+//	private static final String LOAD_PARAM_BUTTON_NAME = "Browse";
+//	private ButtonParameter loadParam;
 	
 	private static final String EVENT_SELECTOR_PARAM_NAME = "Simulator Event File";
 	private FileParameter eventFileParam = new FileParameter(EVENT_SELECTOR_PARAM_NAME);
@@ -113,10 +117,10 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			dataDir.mkdirs();
 		
 		ArrayList<String> strings = new ArrayList<String>();
+		strings.add(GEOM_PRESET_NONE);
 		for (String name : hardcodedInputs) {
 			strings.add(name);
 		}
-		strings.add(INPUT_SELECTOR_FROM_FILE);
 		
 		//Min Event Mag input area
 		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(7d));
@@ -125,16 +129,19 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		catDurationParam = new DoubleParameter(MAX_CAT_DURATION_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
 		builderParams.addParameter(catDurationParam);
 		
-		inputParam = new StringParameter(INPUT_SELECTOR_PARAM_NAME, strings, strings.get(0));
-		inputParam.addParameterChangeListener(this);
-		builderParams.addParameter(inputParam);
+		geomPresetParam = new StringParameter(GEOM_PRESET_PARAM_NAME, strings, GEOM_PRESET_NONE);
+		geomPresetParam.addParameterChangeListener(this);
+		builderParams.addParameter(geomPresetParam);
+		geomFileParam.addParameterChangeListener(this);
+		geomFileParam.setShowHiddenFiles(true);
+		builderParams.addParameter(geomFileParam);
 		eventFileParam.addParameterChangeListener(this);
 		eventFileParam.setShowHiddenFiles(true);
 		builderParams.addParameter(eventFileParam);
 		//Added button to load catalogs from RSQSimServer.
-		loadParam = new ButtonParameter(LOAD_PARAM_NAME, LOAD_PARAM_BUTTON_NAME);
-		loadParam.addParameterChangeListener(this);
-		builderParams.addParameter(loadParam);
+//		loadParam = new ButtonParameter(LOAD_PARAM_NAME, LOAD_PARAM_BUTTON_NAME);
+//		loadParam.addParameterChangeListener(this);
+//		builderParams.addParameter(loadParam);
 
 		
 		colorers = new ArrayList<FaultColorer>();
@@ -184,15 +191,15 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		if (chooser == null) {
 			chooser = new JFileChooser();
 			chooser.setFileHidingEnabled(false);
-			//File kevinDir = new File("/home/kevin/Simulators/catalogs");
-		    File defaultDir = new File(MainGUI.getCWD(),
-					"data");	    
+			// little kludge to make it convenient for me, but still defaults to the data dir for everyone else
+			File kevinDir = new File("/home/kevin/Simulators/catalogs");
+			File defaultDir;
+			if (kevinDir.exists())
+				defaultDir = kevinDir;
+			else
+				defaultDir = new File(MainGUI.getCWD(),	"data");	    
 			if (defaultDir.exists())
 				chooser.setCurrentDirectory(defaultDir);
-			/*
-			if (kevinDir.exists())
-				chooser.setCurrentDirectory(kevinDir);
-				*/
 		}
 		int retVal = chooser.showOpenDialog(null);
 		if (retVal == JFileChooser.APPROVE_OPTION) {
@@ -270,34 +277,35 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 
 	@Override
 	public void buildTree(DefaultMutableTreeNode root) {
-		String input = inputParam.getValue();
+		File geomFile = geomFileParam.getValue();
 		
 		elements = null;
-		File file;
+		if (geomFile == null)
+			return;
 		
-		if (input.equals(INPUT_SELECTOR_FROM_FILE)) {
-			file = getCustomFile();
-			if (file == null)
-				return;
-			// set directory for loading events file
-			if (eventFileParam.getValue() == null)
-				eventFileParam.setDefaultInitialDir(file.getParentFile());
-		} else {
-//			try {
-				if (isFileCached(input)) {
-					file = getCachePath(input);
-				} else {
-					// load asynchronous
-					fireNewGeometry(null);
-					downloadGeomAsynchronous(input); // will fire new tree change event when done
-					return;
-				}
-//			} catch (IOException e) {
-//				throw ExceptionUtils.asRuntimeException(e);
-//			}
-		}
+//		if (input.equals(GEOM_PRESET_NONE)) {
+//			file = getCustomFile();
+//			if (file == null)
+//				return;
+//			// set directory for loading events file
+//			if (eventFileParam.getValue() == null)
+//				eventFileParam.setDefaultInitialDir(file.getParentFile());
+//		} else {
+////			try {
+//				if (isFileCached(input)) {
+//					file = getCachePath(input);
+//				} else {
+//					// load asynchronous
+//					fireNewGeometry(null);
+//					downloadGeomAsynchronous(input); // will fire new tree change event when done
+//					return;
+//				}
+////			} catch (IOException e) {
+////				throw ExceptionUtils.asRuntimeException(e);
+////			}
+//		}
 		try {
-			elements = loadGeometry(file);
+			elements = loadGeometry(geomFile);
 		} catch (Exception e) {
 			throw ExceptionUtils.asRuntimeException(e);
 		}
@@ -332,7 +340,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		// now sort the fault nodes
 		Collections.sort(faultNodes, new NamedComparator());
 		
-		FaultCategoryNode faultRoot = new FaultCategoryNode(file.getName());
+		FaultCategoryNode faultRoot = new FaultCategoryNode(geomFile.getName());
 		
 		for (FaultCategoryNode faultNode : faultNodes) {
 			ArrayList<SimulatorElementFault> sections = sectionsMap.get(faultNode);
@@ -378,50 +386,69 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 
 	@Override
 	public void parameterChange(ParameterChangeEvent event) {
-		if (event.getSource() == inputParam) {
+		if (event.getSource() == geomPresetParam) {
+			String preset = geomPresetParam.getValue();
+			if (!preset.equals(GEOM_PRESET_NONE)) {
+				if (isFileCached(preset)) {
+					File file = getCachePath(preset);
+					geomFileParam.setValue(file);
+					geomFileParam.getEditor().refreshParamEditor();
+					fireTreeChangeEvent();
+				} else {
+					// load asynchronous
+					geomFileParam.setValue(null);
+					geomFileParam.getEditor().refreshParamEditor();
+					downloadGeomAsynchronous(preset); // will fire new tree change event when done
+					return;
+				}
+			}
+		} else if (event.getSource() == geomFileParam) {
+			File file = geomFileParam.getValue();
+			if (file != null && eventFileParam.getValue() == null)
+				eventFileParam.setDefaultInitialDir(file.getParentFile());
+			fireNewGeometry(null);
 			fireTreeChangeEvent();
 		} else if (event.getSource() == eventFileParam) {
-			// TODO
 			File outFile = eventFileParam.getValue();
 			if (outFile == null || elements == null) {
 				fireNewEvents(null);
 			} else if (elements != null) {
 				loadEvents(outFile);
 			}
-		} else if (event.getSource() == loadParam) {
-			final EQSimsCatalogQuery EQSimQueryFrame = new EQSimsCatalogQuery();
-			EQSimQueryFrame.downloadButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					//Create a new folder in the .scecvdo folder and download to that folder
-					HashMap<String, ArrayList<URL>> downloadURLs = EQSimQueryFrame.getDownloadURLs();
-					for (Entry<String, ArrayList<URL>> entry : downloadURLs.entrySet()) {
-						String title = entry.getKey();
-						ArrayList<URL> urls = entry.getValue();
-						File catalogDir = new File(dataDir + File.separator + title);
-						if (!catalogDir.exists())
-							catalogDir.mkdirs();
-						for (int i = 0; i < urls.size(); i++) {
-							String[] fileName = urls.get(i).getFile().split("/");
-							File file = new File(catalogDir.getAbsolutePath() + File.separator + fileName[fileName.length - 1]);
-							if (!file.exists()) {
-								try {
-									downloadURL(urls.get(i), file);
-								} catch (IOException e1) {
-									e1.printStackTrace();
-								}
-							}
-						}
-						File outFile = catalogDir; //outFile contains all downloaded files.
-						//Work with the outFile. Copied from above.
-						if (outFile == null || elements == null) {
-							fireNewEvents(null);
-						} else if (elements != null) {
-							loadEvents(outFile);
-						}
-					}
-				}
-			});
+//		} else if (event.getSource() == loadParam) {
+//			final EQSimsCatalogQuery EQSimQueryFrame = new EQSimsCatalogQuery();
+//			EQSimQueryFrame.downloadButton.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//					//Create a new folder in the .scecvdo folder and download to that folder
+//					HashMap<String, ArrayList<URL>> downloadURLs = EQSimQueryFrame.getDownloadURLs();
+//					for (Entry<String, ArrayList<URL>> entry : downloadURLs.entrySet()) {
+//						String title = entry.getKey();
+//						ArrayList<URL> urls = entry.getValue();
+//						File catalogDir = new File(dataDir + File.separator + title);
+//						if (!catalogDir.exists())
+//							catalogDir.mkdirs();
+//						for (int i = 0; i < urls.size(); i++) {
+//							String[] fileName = urls.get(i).getFile().split("/");
+//							File file = new File(catalogDir.getAbsolutePath() + File.separator + fileName[fileName.length - 1]);
+//							if (!file.exists()) {
+//								try {
+//									downloadURL(urls.get(i), file);
+//								} catch (IOException e1) {
+//									e1.printStackTrace();
+//								}
+//							}
+//						}
+//						File outFile = catalogDir; //outFile contains all downloaded files.
+//						//Work with the outFile. Copied from above.
+//						if (outFile == null || elements == null) {
+//							fireNewEvents(null);
+//						} else if (elements != null) {
+//							loadEvents(outFile);
+//						}
+//					}
+//				}
+//			});
 		}
 	}
 
@@ -446,6 +473,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			fireNewEvents(events);
 			progress.setVisible(false);
 			progress.dispose();
+			System.out.println("Done loadEvents()");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
