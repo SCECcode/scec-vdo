@@ -422,12 +422,12 @@ public class PoliticalBoundariesGUI implements ActionListener {
 			vtkActor plyOutActor = new vtkActor();
 			plyOutActor.SetMapper(mapper);
 			plyOutActor.GetProperty().SetColor(1,1,1);
-			if(isSelected && j == 4)
-				{plyOutActor.VisibilityOn();
-					mainFocusReginActor  = plyOutActor;
-				}
-			else
+			if (isSelected && j == 4) {
+				plyOutActor.VisibilityOn();
+				mainFocusReginActor  = plyOutActor;
+			} else {
 				plyOutActor.VisibilityOff();
+			}
 			actorPoliticalBoundariesSegments.add(plyOutActor);
 		}
 		return subRegionNames;

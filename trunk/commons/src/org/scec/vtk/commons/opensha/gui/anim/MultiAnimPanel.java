@@ -5,6 +5,7 @@ import java.awt.CardLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -108,14 +109,22 @@ public class MultiAnimPanel extends JPanel implements ItemListener, ColorerChang
 		return animMap.get(name);
 	}
 	
+	public Collection<FaultAnimation> getAnimations() {
+		return animMap.values();
+	}
+	
 	private void updateSelectedAnimPanel() {
 		String name = (String)combo.getSelectedItem();
 		animPanel = animPanelMap.get(name);
 	}
 	
 	public void setSelectedAnim(FaultAnimation anim) {
-		Preconditions.checkState(animMap.containsKey(anim.getName()));
-		combo.setSelectedItem(anim.getName());
+		setSelectedAnim(anim.getName());
+	}
+	
+	public void setSelectedAnim(String animName) {
+		Preconditions.checkState(animMap.containsKey(animName));
+		combo.setSelectedItem(animName);
 		updateSelectedAnimPanel();
 	}
 

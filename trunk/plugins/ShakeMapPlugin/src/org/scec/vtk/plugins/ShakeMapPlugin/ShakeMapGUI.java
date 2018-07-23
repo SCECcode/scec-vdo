@@ -56,8 +56,6 @@ import org.scec.vtk.plugins.ShakeMapPlugin.Component.ShakeMap;
 import org.scec.vtk.plugins.SurfacePlugin.SurfaceTableModel;
 import org.scec.vtk.tools.Prefs;
 
-import com.lowagie.text.Font;
-
 import vtk.vtkActor;
 import vtk.vtkActor2D;
 
