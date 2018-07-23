@@ -1096,9 +1096,8 @@ public class MainMenu implements ActionListener, ItemListener{
 		try {
 			System.out.println("destinationData: " + destinationData);
 			System.out.println("root.asXML() inside saveXMLFile(): " + root.asXML());
-			writer = new XMLWriter(
-					new FileWriter( destinationData)
-					);
+			OutputFormat format = OutputFormat.createPrettyPrint();
+			writer = new XMLWriter(new FileWriter( destinationData), format);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

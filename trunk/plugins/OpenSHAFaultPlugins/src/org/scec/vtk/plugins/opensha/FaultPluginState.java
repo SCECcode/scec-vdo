@@ -20,6 +20,8 @@ import org.opensha.commons.util.cpt.CPT;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.gui.ColorerPanel;
+import org.scec.vtk.commons.opensha.gui.anim.MultiAnimPanel;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.plugins.PluginState;
@@ -90,6 +92,9 @@ public class FaultPluginState implements PluginState {
 		if (D) System.out.println("Loading colorer");
 		if (colorer != gui.getColorPanel().getSelectedColorer())
 			gui.getColorPanel().setSelectedColorer(colorer);
+		if (D) System.out.println("Loading colorer params");
+		waitOnColorerChange();
+		updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
 		if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
 			if (D) System.out.println("Loading CPT info");
 			CPTBasedColorer cptColor = (CPTBasedColorer) gui.getColorPanel().getSelectedColorer();
@@ -99,9 +104,6 @@ public class FaultPluginState implements PluginState {
 				gui.getColorPanel().cptChangedExternally();
 			}
 		}
-		if (D) System.out.println("Loading colorer params");
-		waitOnColorerChange();
-		updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
 		gui.getColorPanel().setLegendVisible(legendVisibile);
 		
 		// now update the tree itself
@@ -121,6 +123,7 @@ public class FaultPluginState implements PluginState {
 		}
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static void updateParams(ParameterList to, ParameterList from) {
 		if (to == null || from == null)
 			return;
@@ -147,6 +150,7 @@ public class FaultPluginState implements PluginState {
 //				System.out.println("To constraint: "+toParam.getConstraint());
 				try {
 					toParam.setValue(fromParam.getValue());
+					toParam.getEditor().refreshParamEditor();
 				} catch (ConstraintException e) {
 					System.err.println("WARNING: Couldn't set parameter '"+fromParam.getName()+"': "+e.getMessage());
 				}
@@ -155,15 +159,154 @@ public class FaultPluginState implements PluginState {
 			}
 		}
 	}
+	
+	// XML constants
+
+	private static final String BUILDER_PARAM_LIST_EL_NAME = "BuilderParams";
+	private static final String FAULT_PARAM_LIST_EL_NAME = "FaultParams";
+	private static final String GEOM_GEM_EL_NAME = "GeometryGenerator";
+	private static final String GEOM_GEM_PARAM_LIST_EL_NAME = "GeometryGeneratorParams";
+	private static final String ANIM_EL_NAME = "Animation";
+	private static final String ANIM_PARAM_LIST_EL_NAME = "AnimationParams";
+	private static final String COLORER_EL_NAME = "Colorer";
+	private static final String COLORER_PARAM_LIST_EL_NAME = "ColorerParams";
 
 	@Override
 	public void toXML(Element stateEl) {
-		// TODO
+		captureState();
+		
+		if (builderParams != null && !builderParams.isEmpty())
+			paramListToXML(stateEl, builderParams, BUILDER_PARAM_LIST_EL_NAME);
+		
+		if (faultParams != null && !faultParams.isEmpty())
+			paramListToXML(stateEl, faultParams, BUILDER_PARAM_LIST_EL_NAME);
+		
+		Element geomGenEl = stateEl.addElement(GEOM_GEM_EL_NAME);
+		geomGenEl.addAttribute("Name", geomGen.getName());
+		if (geomGenParams != null)
+			paramListToXML(geomGenEl, geomGenParams, GEOM_GEM_PARAM_LIST_EL_NAME);
+		
+		geomGen = gui.getGeomSelect().getSelectedGeomGen();
+		
+		if (anim != null && gui.getAnimPanel() != null && gui.getAnimPanel().getSelectedAnim() != null) {
+			if (D) System.out.println("Loading anim");
+			Element animEl = stateEl.addElement(ANIM_EL_NAME);
+			animEl.addAttribute("Name", anim.getName());
+			
+			if (animParams != null)
+				paramListToXML(animEl, animParams, ANIM_PARAM_LIST_EL_NAME);
+		}
+		
+		Element colorerEl = stateEl.addElement(COLORER_EL_NAME);
+		if (colorer == null) {
+			colorerEl.addAttribute("Name", ColorerPanel.COLORER_SELECTOR_CUSTOM);
+		} else {
+			colorerEl.addAttribute("Name", colorer.getName());
+			if (colorerParams != null)
+				paramListToXML(colorerEl, colorerParams, COLORER_PARAM_LIST_EL_NAME);
+			if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
+				cpt.toXMLMetadata(colorerEl);
+				colorerEl.addAttribute("CPTLog", cptLog+"");
+			}
+			colorerEl.addAttribute("LegendVisible", legendVisibile+"");
+		}
+		
+//		// update colorer
+//		if (D) System.out.println("Loading colorer");
+//		if (colorer != gui.getColorPanel().getSelectedColorer())
+//			gui.getColorPanel().setSelectedColorer(colorer);
+//		if (cpt != null && gui.getColorPanel().getSelectedColorer() instanceof CPTBasedColorer) {
+//			if (D) System.out.println("Loading CPT info");
+//			CPTBasedColorer cptColor = (CPTBasedColorer) gui.getColorPanel().getSelectedColorer();
+//			if (!cpt.equals(cptColor.getCPT()) || cptLog != cptColor.isCPTLog()) {
+//				waitOnColorerChange();
+//				cptColor.setCPT(cpt, cptLog);
+//				gui.getColorPanel().cptChangedExternally();
+//			}
+//		}
+		
+//		if (D) System.out.println("Loading colorer params");
+//		waitOnColorerChange();
+//		updateParams(gui.getColorPanel().getSelectedColorer().getColorerParameters(), colorerParams);
+//		gui.getColorPanel().setLegendVisible(legendVisibile);
+	}
+	
+	private static void paramListToXML(Element rootEl, ParameterList paramList, String elName) {
+		Element paramsEl = rootEl.addElement(elName);
+		for (Parameter<?> param : paramList)
+			param.toXMLMetadata(paramsEl);
 	}
 
 	@Override
 	public void fromXML(Element stateEl) {
-		// TODO
+		captureState();
+		
+		Element builderParamsEl = stateEl.element(BUILDER_PARAM_LIST_EL_NAME);
+		if (builderParamsEl != null)
+			paramListFromXML(builderParamsEl, builderParams);
+		
+		Element faultParamsEl = stateEl.element(FAULT_PARAM_LIST_EL_NAME);
+		if (faultParamsEl != null)
+			paramListFromXML(faultParamsEl, faultParams);
+		
+		Element geomGenEl = stateEl.element(GEOM_GEM_EL_NAME);
+		String geomGenName = geomGenEl.attributeValue("Name");
+		for (GeometryGenerator geomGen : gui.getGeomSelect().getAllGeomGens()) {
+			if (geomGen.getName().equals(geomGenName)) {
+				this.geomGen = geomGen;
+				geomGenParams = cloneParamList(geomGen.getDisplayParams());
+				Element geomGenParamsEl = geomGenEl.element(GEOM_GEM_PARAM_LIST_EL_NAME);
+				if (geomGenParamsEl != null)
+					paramListFromXML(geomGenParamsEl, geomGenParams);
+				break;
+			}
+		}
+		
+		Element animEl = stateEl.element(ANIM_EL_NAME);
+		if (animEl != null) {
+			String animName = animEl.attributeValue("Name");
+			MultiAnimPanel animPanel = gui.getAnimPanel();
+			for (FaultAnimation anim : animPanel.getAnimations()) {
+				if (anim.getName().equals(animName)) {
+					this.anim = anim;
+					animParams = cloneParamList(anim.getAnimationParameters());
+					Element animParamsEl = animEl.element(ANIM_PARAM_LIST_EL_NAME);
+					if (animParamsEl != null)
+						paramListFromXML(animParamsEl, animParams);
+					break;
+				}
+			}
+		}
+		
+		Element colorerEl = stateEl.element(COLORER_EL_NAME);
+		String colorerName = colorerEl.attributeValue("Name");
+		if (colorerName.equals(ColorerPanel.COLORER_SELECTOR_CUSTOM)) {
+			colorer = null;
+		} else {
+			for (FaultColorer colorer : gui.getColorPanel().getColorers()) {
+				if (colorer.getName().equals(colorerName)) {
+					this.colorer = colorer;
+					colorerParams = cloneParamList(colorer.getColorerParameters());
+					Element colorerParamsEl = colorerEl.element(COLORER_PARAM_LIST_EL_NAME);
+					if (colorerParamsEl != null)
+						paramListFromXML(colorerParamsEl, colorerParams);
+					Element cptEl = colorerEl.element(CPT.XML_METADATA_NAME);
+					if (cptEl != null) {
+						Preconditions.checkState(colorer instanceof CPTBasedColorer);
+						cpt = CPT.fromXMLMetadata(cptEl);
+						cptLog = Boolean.parseBoolean(colorerEl.attributeValue("CPTLog"));
+					}
+					legendVisibile = Boolean.parseBoolean(colorerEl.attributeValue("LegendVisible"));
+					break;
+				}
+			}
+		}
+	}
+	
+	private static void paramListFromXML(Element paramListEl, ParameterList params) {
+		boolean success = ParameterList.setParamsInListFromXML(params, paramListEl);
+		if (!success)
+			System.err.println("Warning: failed to set one or more parameters from XML");
 	}
 	
 	private void clearState() {
