@@ -471,30 +471,45 @@ AnimationListener {
 			}
 			
 			lockGUI();
-			currentCalcThread = new Thread() {
+			currentCalcThread = new ColorChangeThread(newColorer);
+			currentCalcThread.start();
+		}
+	}
+	
+	private class ColorChangeThread extends Thread {
+		
+		private FaultColorer newColorer;
 
-				@Override
-				public void run() {
-					try {
-//						if (pickBehavior != null
-//								&& newColorer instanceof PickHandler)
-//							pickBehavior
-//									.setPickHandler((PickHandler) newColorer);
-						if (D) System.out.println("Colorer changed");
-						for (FaultSectionNode node : nodes.values()) {
-							Color color = newColorer.getColor(node.getFault());
-							if (color == null || !color.equals(node.getColor()))
-								node.setColor(color);
-						}
-					} finally {
-						unlockGUI();
-						if (pickBehavior != null)
-							pickBehavior.setColorer(newColorer);
+		public ColorChangeThread(FaultColorer newColorer) {
+			this.newColorer = newColorer;
+		}
+		
+		@Override
+		public void run() {
+			try {
+//				if (pickBehavior != null
+//						&& newColorer instanceof PickHandler)
+//					pickBehavior
+//							.setPickHandler((PickHandler) newColorer);
+				if (D) System.out.println("Colorer change thread running");
+				for (FaultSectionNode node : nodes.values()) {
+//					if (D) System.out.println("getting color for "+node.getName());
+					Color color = newColorer.getColor(node.getFault());
+//					if (D) System.out.println("got color for "+node.getName());
+					if (color == null || !color.equals(node.getColor())) {
+//						if (D) System.out.println("setting color for "+node.getName());
+						node.setColor(color);
+//						if (D) System.out.println("done setting color for "+node.getName());
 					}
 				}
-				
-			};
-			currentCalcThread.start();
+				if (D) System.out.println("Colorer change thread loop done");
+			} finally {
+				if (D) System.out.println("Colorer change thread unlocking");
+				unlockGUI();
+				if (pickBehavior != null)
+					pickBehavior.setColorer(newColorer);
+				if (D) System.out.println("Colorer change thread done");
+			}
 		}
 	}
 	
