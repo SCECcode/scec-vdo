@@ -284,7 +284,8 @@ public class PoliticalBoundariesGUI implements ActionListener {
 		pointSetToLabelHierarchyFilter.SetLabelArrayName("labels");
 		//pointSetToLabelHierarchyFilter.SetInputConnection(pinSource.GetOutputPort());
 		pointSetToLabelHierarchyFilter.Update();
-		pointSetToLabelHierarchyFilter.GetTextProperty().SetFontSize(15);
+		pointSetToLabelHierarchyFilter.GetTextProperty().SetFontSize(22);
+		pointSetToLabelHierarchyFilter.GetTextProperty().SetBold(1);
 
 		vtkLabelPlacementMapper cellMapper = new vtkLabelPlacementMapper();
 		cellMapper.SetInputConnection(pointSetToLabelHierarchyFilter.GetOutputPort());
