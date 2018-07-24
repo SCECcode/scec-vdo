@@ -412,7 +412,17 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		return animParams;
 	}
 	
-	private synchronized void filterEvents() {
+	private void filterEvents() {
+		// first wait on any colorer change before entering synchronized block, as doing otherwise can cause deadlock
+		try {
+			eventManager.waitOnCalcThread();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		doFilterEvents();
+	}
+	
+	private synchronized void doFilterEvents() {
 		double minMag = magMinParam.getValue();
 		double maxMag = magMaxParam.getValue();
 		
@@ -503,8 +513,11 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		} else {
 			filterIndexes = null;
 		}
+		System.out.println("about to fire colorer change");
 		fireColorerChangeEvent();
+		System.out.println("about to check start preload");
 		checkStartPreloadThread();
+		System.out.println("about to fire range change");
 		fireRangeChangeEvent();
 //		setCurrentStep(0);
 //		try {
@@ -522,7 +535,9 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 ////				eventManager.waitOnCalcThread();
 ////			}
 ////		} catch (InterruptedException e) {}
+		System.out.println("about to update render window");
 		MainGUI.updateRenderWindow();
+		System.out.println("done filter events");
 	}
 
 	@Override

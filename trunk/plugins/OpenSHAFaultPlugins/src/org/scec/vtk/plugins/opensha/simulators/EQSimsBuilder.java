@@ -97,8 +97,6 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	
 	private ParameterList builderParams = new ParameterList();
 	
-	private JFileChooser chooser;
-	
 	private TreeChangeListener l;
 	
 	private EQSimsEventSlipAnim eventSlipAnim;
@@ -134,6 +132,15 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		builderParams.addParameter(geomPresetParam);
 		geomFileParam.addParameterChangeListener(this);
 		geomFileParam.setShowHiddenFiles(true);
+		// little kludge to make it convenient for me, but still defaults to the data dir for everyone else
+		File kevinDir = new File("/home/kevin/Simulators/catalogs");
+		File defaultDir;
+		if (kevinDir.exists())
+			defaultDir = kevinDir;
+		else
+			defaultDir = new File(MainGUI.getCWD(),	"data");
+		if (defaultDir.exists())
+			geomFileParam.setDefaultInitialDir(defaultDir);
 		builderParams.addParameter(geomFileParam);
 		eventFileParam.addParameterChangeListener(this);
 		eventFileParam.setShowHiddenFiles(true);
@@ -182,30 +189,6 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	@Override
 	public ParameterList getFaultParams() {
 		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	
-	
-	private File getCustomFile() {
-		if (chooser == null) {
-			chooser = new JFileChooser();
-			chooser.setFileHidingEnabled(false);
-			// little kludge to make it convenient for me, but still defaults to the data dir for everyone else
-			File kevinDir = new File("/home/kevin/Simulators/catalogs");
-			File defaultDir;
-			if (kevinDir.exists())
-				defaultDir = kevinDir;
-			else
-				defaultDir = new File(MainGUI.getCWD(),	"data");	    
-			if (defaultDir.exists())
-				chooser.setCurrentDirectory(defaultDir);
-		}
-		int retVal = chooser.showOpenDialog(null);
-		if (retVal == JFileChooser.APPROVE_OPTION) {
-			File file = chooser.getSelectedFile();
-			return file;
-		}
 		return null;
 	}
 	

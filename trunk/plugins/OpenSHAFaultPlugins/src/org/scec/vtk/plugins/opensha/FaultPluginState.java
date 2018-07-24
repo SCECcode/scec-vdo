@@ -83,9 +83,11 @@ public class FaultPluginState implements PluginState {
 			if (D) System.out.println("Loading anim");
 			if (anim != gui.getAnimPanel().getSelectedAnim())
 				gui.getAnimPanel().setSelectedAnim(anim);
+			waitOnColorerChange();
 			if (D) System.out.println("Loading anim params");
 			if (gui.getAnimPanel().getSelectedAnim() != null)
 				updateParams(gui.getAnimPanel().getSelectedAnim().getAnimationParameters(), animParams);
+			waitOnColorerChange();
 		}
 		
 		// update colorer
@@ -179,22 +181,28 @@ public class FaultPluginState implements PluginState {
 
 	@Override
 	public void toXML(Element stateEl) {
+		if (D) System.out.println("toXML: capturing tree");
 		captureState();
+		if (D) System.out.println("toXML: done capturing tree");
 		
-		if (builderParams != null && !builderParams.isEmpty())
+		if (builderParams != null && !builderParams.isEmpty()) {
+			if (D) System.out.println("toXML: capturing builder params");
 			paramListToXML(stateEl, builderParams, BUILDER_PARAM_LIST_EL_NAME);
+		}
 		
-		if (faultParams != null && !faultParams.isEmpty())
+		if (faultParams != null && !faultParams.isEmpty()) {
+			if (D) System.out.println("toXML: capturing fault params");
 			paramListToXML(stateEl, faultParams, BUILDER_PARAM_LIST_EL_NAME);
+		}
 		
 		Element geomGenEl = stateEl.addElement(GEOM_GEM_EL_NAME);
+		if (D) System.out.println("toXML: capturing geometry generator");
 		geomGenEl.addAttribute("Name", geomGen.getName());
 		if (geomGenParams != null)
 			paramListToXML(geomGenEl, geomGenParams, GEOM_GEM_PARAM_LIST_EL_NAME);
 		
-		geomGen = gui.getGeomSelect().getSelectedGeomGen();
-		
 		if (anim != null && gui.getAnimPanel() != null && gui.getAnimPanel().getSelectedAnim() != null) {
+			if (D) System.out.println("toXML: capturing animation");
 			if (D) System.out.println("Loading anim");
 			Element animEl = stateEl.addElement(ANIM_EL_NAME);
 			animEl.addAttribute("Name", anim.getName());
@@ -204,6 +212,7 @@ public class FaultPluginState implements PluginState {
 		}
 		
 		if (gui.getColorPanel() != null) {
+			if (D) System.out.println("toXML: capturing colorer");
 			Element colorerEl = stateEl.addElement(COLORER_EL_NAME);
 			if (colorer == null) {
 				colorerEl.addAttribute("Name", ColorerPanel.COLORER_SELECTOR_CUSTOM);
@@ -219,6 +228,7 @@ public class FaultPluginState implements PluginState {
 			}
 		}
 		
+		if (D) System.out.println("toXML: capturing tree");
 		Element treeEl = stateEl.addElement(TREE_EL_NAME);
 		for (Integer id : idToColorMap.keySet()) {
 			Element nodeEl = treeEl.addElement(TREE_NODE_EL_NAME);
@@ -228,6 +238,8 @@ public class FaultPluginState implements PluginState {
 			nodeEl.addAttribute("Color", color.getRGB()+"");
 			nodeEl.addAttribute("Visible", visible.toString());
 		}
+		
+		if (D) System.out.println("toXML: done");
 	}
 	
 	private static void paramListToXML(Element rootEl, ParameterList paramList, String elName) {
@@ -238,17 +250,24 @@ public class FaultPluginState implements PluginState {
 
 	@Override
 	public void fromXML(Element stateEl) {
+		if (D) System.out.println("fromXML: capturing state");
 		captureState();
+		if (D) System.out.println("fromXML: done capturing state");
 		
 		Element builderParamsEl = stateEl.element(BUILDER_PARAM_LIST_EL_NAME);
-		if (builderParamsEl != null)
+		if (builderParamsEl != null) {
+			if (D) System.out.println("fromXML: loading builder params");
 			paramListFromXML(builderParamsEl, builderParams);
+		}
 		
 		Element faultParamsEl = stateEl.element(FAULT_PARAM_LIST_EL_NAME);
-		if (faultParamsEl != null)
+		if (faultParamsEl != null) {
+			if (D) System.out.println("fromXML: loading fault params");
 			paramListFromXML(faultParamsEl, faultParams);
+		}
 		
 		Element geomGenEl = stateEl.element(GEOM_GEM_EL_NAME);
+		if (D) System.out.println("fromXML: loading geometry generator");
 		String geomGenName = geomGenEl.attributeValue("Name");
 		for (GeometryGenerator geomGen : gui.getGeomSelect().getAllGeomGens()) {
 			if (geomGen.getName().equals(geomGenName)) {
@@ -263,6 +282,7 @@ public class FaultPluginState implements PluginState {
 		
 		Element animEl = stateEl.element(ANIM_EL_NAME);
 		if (animEl != null) {
+			if (D) System.out.println("fromXML: loading animation");
 			String animName = animEl.attributeValue("Name");
 			MultiAnimPanel animPanel = gui.getAnimPanel();
 			for (FaultAnimation anim : animPanel.getAnimations()) {
@@ -279,6 +299,7 @@ public class FaultPluginState implements PluginState {
 		
 		Element colorerEl = stateEl.element(COLORER_EL_NAME);
 		if (colorerEl != null) {
+			if (D) System.out.println("fromXML: loading colorer");
 			String colorerName = colorerEl.attributeValue("Name");
 			if (colorerName.equals(ColorerPanel.COLORER_SELECTOR_CUSTOM)) {
 				colorer = null;
@@ -304,6 +325,7 @@ public class FaultPluginState implements PluginState {
 		}
 		
 		Element treeEl = stateEl.element(TREE_EL_NAME);
+		if (D) System.out.println("fromXML: loading tree");
 		for (Element nodeEl : XMLUtils.getSubElementsList(treeEl, TREE_NODE_EL_NAME)) {
 			Integer id = Integer.parseInt(nodeEl.attributeValue("ID"));
 			int rgb = Integer.parseInt(nodeEl.attributeValue("Color"));
@@ -312,6 +334,7 @@ public class FaultPluginState implements PluginState {
 			idToColorMap.put(id, color);
 			idToVisibleMap.put(id, visible);
 		}
+		if (D) System.out.println("fromXML: done");
 	}
 	
 	private static void paramListFromXML(Element paramListEl, ParameterList params) {
