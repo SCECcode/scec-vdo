@@ -1,27 +1,24 @@
 package org.scec.vtk.timeline;
 
 import java.awt.Dimension;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.scec.vtk.main.MainGUI;
-import org.scec.vtk.main.pngRenderer;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.Stateful;
-import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.timeline.camera.CameraAnimator;
 import org.scec.vtk.timeline.camera.CameraAnimator.SplineType;
+import org.scec.vtk.timeline.render.AnimatedGIFRenderer;
 import org.scec.vtk.timeline.render.H264Renderer;
 import org.scec.vtk.timeline.render.ImageSequenceRenderer;
 import org.scec.vtk.timeline.render.MP4JPEGSequenceRenderer;
 import org.scec.vtk.timeline.render.MP4PNGSequenceRenderer;
 import org.scec.vtk.timeline.render.Renderer;
-import org.scec.vtk.timeline.render.AnimatedGIFRenderer;
+
 import com.google.common.base.Preconditions;
 
 public class Timeline implements Stateful {
