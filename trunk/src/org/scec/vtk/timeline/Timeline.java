@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.main.pngRenderer;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.PluginInfo;
@@ -76,7 +77,6 @@ public class Timeline implements Stateful {
 		availableRenderers.add(ImageSequenceRenderer.getPNG());
 		availableRenderers.add(ImageSequenceRenderer.getJPEG());
 		availableRenderers.add(new AnimatedGIFRenderer());
-
 		availableRenderers = Collections.unmodifiableList(availableRenderers);
 		renderer = availableRenderers.get(0);
 	}
