@@ -138,13 +138,16 @@ public class LegendPluginState implements PluginState {
 				} 
 				else if (legend.getActor() instanceof vtkActor2D)
 				{
-					Element propertyEl = stateEl.addElement("ImageLegend");
-					propertyEl.addElement("legendName").addText(legend.toString());
-					propertyEl.addElement("imagePath").addText(legend.getImagePath());
-					propertyEl.addElement("x-coordinate").addText("" + legend.getActor().GetPosition()[0]);
-					propertyEl.addElement("y-coordinate").addText("" + legend.getActor().GetPosition()[1]);
-					propertyEl.addElement("visibility").addText("" + legend.getActor().GetVisibility());
-				
+					//Check if legend has a filepath before writing information to XML
+					if(legend.getImagePath() != null)
+					{
+						Element propertyEl = stateEl.addElement("ImageLegend");
+						propertyEl.addElement("legendName").addText(legend.toString());
+						propertyEl.addElement("imagePath").addText(legend.getImagePath());
+						propertyEl.addElement("x-coordinate").addText("" + legend.getActor().GetPosition()[0]);
+						propertyEl.addElement("y-coordinate").addText("" + legend.getActor().GetPosition()[1]);
+						propertyEl.addElement("visibility").addText("" + legend.getActor().GetVisibility());
+					}
 				}
 			}
 		}
