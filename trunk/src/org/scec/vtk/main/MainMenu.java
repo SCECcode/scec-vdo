@@ -667,8 +667,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		MainGUI.updateRenderWindow(actor);
 	}
 	
-	public void savePNG(File file) throws IOException
-	{
+	public void savePNG(File file) throws IOException {
 		pngRenderer.pngRender(file, Info.getMainGUI());
 	}
 
@@ -914,6 +913,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				}
 				catch(IOException e1)
 				{
+					e1.printStackTrace();
 					System.out.println("Error");
 				}
 			}
