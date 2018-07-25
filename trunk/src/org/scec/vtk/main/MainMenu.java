@@ -287,45 +287,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	// saveForToolbar(): saves new file, leaves out wizard functionality
 	 
 	public void saveForToolbar() {
-		JFileChooser chooser = new JFileChooser();
-		int ret = chooser.showSaveDialog(Info.getMainGUI());
-		if (ret == JFileChooser.APPROVE_OPTION) {
-			Document document = DocumentHelper.createDocument();
-			Element root = document.addElement("root");
-			File file = chooser.getSelectedFile();
-			String destinationData =  file.getPath();
-			currFileName = destinationData;
-			saved = true;
-
-			Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
-					loadedPlugins.values());
-			
-			if(activePlugins.isEmpty())
-				System.out.println("activePlugins is empty");
-			
-			if(pluginDescriptors.isEmpty())
-				System.out.println("pluginDescriptors.isEmpty");
-			
-			for(Plugin pluginDescriptor:pluginDescriptors)
-			{
-
-				Plugin plugin = activePlugins.get(pluginDescriptor.getId());
-				System.out.println("active plugins in Toolbar " + plugin.getId());
-				System.out.println("pluginDescriptor: " + pluginDescriptor.getId());
-				if (plugin instanceof StatefulPlugin) {
-					Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
-					((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
-
-				}
-			}
-			//save timeline state
-			Element pluginNameElement = root.addElement("Timeline-Plugin");
-			timeline.getState().toXML(pluginNameElement);
-			saveXMLFile(document, root, destinationData);
-		}
-		else {
-			System.out.println("Unhandled event");
-		}
+		saveCurrState();
 	}
 	
 	/*
@@ -741,56 +703,10 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 		else if(eventSource == saveItem)
 		{
-			
-			System.out.println("Saving norm file");
-			JFileChooser chooser = new JFileChooser(); //making a file
-			int ret = chooser.showSaveDialog(Info.getMainGUI()); //is this function accurately describing the image that the user sees???
-			if (ret == JFileChooser.APPROVE_OPTION) {//once user hits save -- we start to process the data to a file
-				
-				Document document = DocumentHelper.createDocument();
-				Element root = document.addElement("root");
-				File file = chooser.getSelectedFile();
-				String destinationData =  file.getPath();//Prefs.getLibLoc() + File.separator;
-
-				Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
-						loadedPlugins.values());
-				
-				int stateCntr= 0; //statecounter 
-				
-				getLoadedPluginsAsMap(); 
-				
-				for (Entry<Plugin, PluginActors> entry : pluginActors.entrySet())
-				{
-				    System.out.println(entry.getKey() + "/" + entry.getValue());
-				}
-				
-				for(Plugin pluginDescriptor:pluginDescriptors)
-				{
-					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
-					try {
-						if (plugin instanceof StatefulPlugin) { //what plug ins are not Stateful plugins??
-							System.out.println("Stateful plug-in #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
-							stateCntr++;
-							Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
-							//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
-							((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
-						}
-					}
-					catch(Exception e2)
-					{
-						System.out.println("ERROR: " + plugin.toString());
-					}
-				}
-				//save timeline state
-				Element pluginNameElement = root.addElement("Timeline-Plugin");
-				timeline.getState().toXML(pluginNameElement);
-				saveXMLFile(document, root, destinationData);
-			}
-			else {
-				System.out.println("Unhandled event");
-			}
-		System.out.println("done saving");
-		} else if(eventSource == resizeWindow) {
+			saveCurrState();
+		} 
+		
+		else if(eventSource == resizeWindow) {
 			if (sizePanel == null)
 				sizePanel = new ViewerSizePanel(null); // null means this isn't render mode, but rather actual size mode
 			int val = JOptionPane.showConfirmDialog(
@@ -1417,5 +1333,56 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 		return actorsList;
 	}
+	
+	public void saveCurrState()
+	{
+		System.out.println("Saving norm file");
+		JFileChooser chooser = new JFileChooser(); //making a file
+		int ret = chooser.showSaveDialog(Info.getMainGUI()); //is this function accurately describing the image that the user sees???
+		if (ret == JFileChooser.APPROVE_OPTION) {//once user hits save -- we start to process the data to a file
 
+			Document document = DocumentHelper.createDocument();
+			Element root = document.addElement("root");
+			File file = chooser.getSelectedFile();
+			String destinationData =  file.getPath();//Prefs.getLibLoc() + File.separator;
+
+			Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
+					loadedPlugins.values());
+
+			int stateCntr= 0; //statecounter 
+
+			getLoadedPluginsAsMap(); 
+
+			for (Entry<Plugin, PluginActors> entry : pluginActors.entrySet())
+			{
+				System.out.println(entry.getKey() + "/" + entry.getValue());
+			}
+
+			for(Plugin pluginDescriptor:pluginDescriptors)
+			{
+				Plugin plugin = activePlugins.get(pluginDescriptor.getId());
+				try {
+					if (plugin instanceof StatefulPlugin) { //what plug ins are not Stateful plugins??
+						System.out.println("Stateful plug-in #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
+						stateCntr++;
+						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
+						//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
+						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
+					}
+				}
+				catch(Exception e2)
+				{
+					System.out.println("ERROR: " + plugin.toString());
+				}
+			}
+			//save timeline state
+			Element pluginNameElement = root.addElement("Timeline-Plugin");
+			timeline.getState().toXML(pluginNameElement);
+			saveXMLFile(document, root, destinationData);
+		}
+		else {
+			System.out.println("Unhandled event");
+		}
+		System.out.println("done saving");
+	}
 }
