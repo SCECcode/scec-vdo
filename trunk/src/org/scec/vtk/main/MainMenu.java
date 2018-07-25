@@ -768,12 +768,18 @@ public class MainMenu implements ActionListener, ItemListener{
 				for(Plugin pluginDescriptor:pluginDescriptors)
 				{
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
-					if (plugin instanceof StatefulPlugin) { //what plug ins are not Stateful plugins??
-						System.out.println("Stateful plug-in #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
-						stateCntr++;
-						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
-						//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
-						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
+					try {
+						if (plugin instanceof StatefulPlugin) { //what plug ins are not Stateful plugins??
+							System.out.println("Stateful plug-in #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
+							stateCntr++;
+							Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
+							//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
+							((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
+						}
+					}
+					catch(Exception e2)
+					{
+						System.out.println("ERROR: " + plugin.toString());
 					}
 				}
 				//save timeline state
