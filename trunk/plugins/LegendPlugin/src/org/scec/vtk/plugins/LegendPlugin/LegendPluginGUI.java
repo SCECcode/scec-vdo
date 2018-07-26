@@ -44,6 +44,7 @@ import org.scec.vtk.plugins.PluginActorsChangeListener;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 import org.scec.vtk.plugins.LegendPlugin.Component.FontDialog;
 import org.scec.vtk.plugins.utils.components.ColorButton;
+import org.scec.vtk.plugins.utils.components.DataFileChooser;
 import org.scec.vtk.plugins.utils.components.ImageFileChooser;
 import org.scec.vtk.plugins.utils.components.SingleColorChooser;
 
@@ -214,6 +215,12 @@ PluginActorsChangeListener {
 		{
 			if (chooser == null) {
 				chooser = new ImageFileChooser();
+				File dataDir = new File(MainGUI.getCWD(),"data");
+			
+			if(dataDir.exists())
+				this.chooser.setCurrentDirectory(dataDir);
+				
+			
 			}
 
 			int returnVal = chooser.showOpenDialog(this);
