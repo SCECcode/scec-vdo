@@ -631,7 +631,10 @@ TableModelListener, PropertyChangeListener
 		// adds faults to table
 		else if (src == this.addFaultsButton) {
 			if (this.fileChooser == null) {
-				this.fileChooser = new DataFileChooser(this, "Import Fault Files", true,new File(MainGUI.getRootPluginDir() + File.separator + "Faults"));
+				//this.fileChooser = new DataFileChooser(this, "Import Fault Files", true,new File(MainGUI.getRootPluginDir() + File.separator + "Faults"));
+				this.fileChooser = new DataFileChooser(this, "Import Fault Files", true,new File(MainGUI.getCWD(),"data"));
+				if(new File(MainGUI.getCWD(),"data").exists())
+					this.fileChooser.setCurrentDirectory(new File(MainGUI.getCWD(),"data"));
 			}
 			this.fileChooser.setCurrentFilter("ts", "GoCAD (*.ts)");
 			final File[] f = this.fileChooser.getFiles();
