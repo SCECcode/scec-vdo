@@ -82,7 +82,7 @@ import com.google.common.base.Preconditions;
 
 public class MainMenu implements ActionListener, ItemListener{
 
-	private JMenuBar menuBar; 
+	private JMenuBar menuBar;
 	private JMenu fileMenu; 
 	private JMenuItem fileOpen;
 	private JMenuItem saveItem;
@@ -108,7 +108,9 @@ public class MainMenu implements ActionListener, ItemListener{
 	static public JMenu helpMenu;
 	static public Boolean saved = false;
 	public JFrame helpFrame;
-
+	private JFrame wizFrame;
+	private MainGUI main;
+	
 	Map<String, PluginInfo> availablePlugins = new HashMap<String, PluginInfo>();
 	Map<String, Plugin> loadedPlugins = new HashMap<String, Plugin>();
 	Map<Plugin, PluginActors> pluginActors = new HashMap<>();
@@ -872,6 +874,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		else if(eventSource == wizardActivation){
 			
 			frame = new JFrame ();
+			/*
 			Boolean toggle = getState();
 			if (!toggle) {
 				Wizard = true;
@@ -886,6 +889,17 @@ public class MainMenu implements ActionListener, ItemListener{
 				JOptionPane.showMessageDialog(
 						frame,  "You set Wizard to not display upon launching SCEC-VDO");
 			}
+			*/
+			JOptionPane.showMessageDialog(frame,  "You set Wizard to display upon launching SCEC-VDO");
+			//Wizard GUI to run with main
+
+			wizFrame = new JFrame();
+			Wizard wizGui = new Wizard(this,main);
+			wizFrame.getContentPane().add(wizGui);
+			wizFrame.setSize(550, 140);
+			wizFrame.setLocationRelativeTo(null);
+			wizFrame.setVisible(true);
+			
 		}
 		
 		else if(eventSource==escapeWindow)
