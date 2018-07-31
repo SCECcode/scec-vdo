@@ -213,10 +213,11 @@ PluginActorsChangeListener {
 
 		if (source == imageButton)
 		{
+			
 			if (chooser == null) {
 				chooser = new ImageFileChooser();
 				File dataDir = new File(MainGUI.getCWD(),"data");
-			
+	
 			if(dataDir.exists())
 				this.chooser.setCurrentDirectory(dataDir);
 				
