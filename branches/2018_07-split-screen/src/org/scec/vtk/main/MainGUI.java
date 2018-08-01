@@ -86,6 +86,7 @@ import vtk.vtkActor;
 import vtk.vtkActorCollection;
 import vtk.vtkCamera;
 import vtk.vtkCellPicker;
+import vtk.vtkMapper;
 import vtk.vtkNativeLibrary;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
@@ -102,9 +103,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private static JSplitPane splitPane;
 	private static JPanel rightPanel; 
 	private static Boolean splitMode = false;
-	//set which side EarthQuake Plugin Affects
-	public static Boolean leftEqc = true;
-	public static Boolean rightEqc = true;
+
 
 	//pluginTabPane contains tabs with all plugins
 	public static JTabbedPane pluginTabPane;
@@ -255,7 +254,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		pluginSplitPane.setBorder(BorderFactory.createEmptyBorder());
 		pluginSplitPane.setResizeWeight(1);
 		pluginSplitPane.setDividerLocation(0.5);
-	
+
 
 		//Set preferred sizes
 		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
@@ -764,7 +763,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 			System.out.println("Split Screen Image: " + ex);
 		}
-		
+
 		splitScreen.addActionListener(new ActionListener() { 
 			public void actionPerformed(ActionEvent e) { 
 				if(splitMode == false) {
@@ -1297,27 +1296,19 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	//	}
 
 	@Override
-	//On initialization provide actors, afterwards seperate
+	//On initialization provide actors, afterwards separate
 	public void actorAdded(vtkProp actor) {
 		// called when a plugin adds an actor
 		renderWindow.getRenderer().AddActor(actor);
-		vtkProp copy = (vtkProp)deepCopy(actor);
-		//System.out.println(actor);
-		//System.out.println(copy);
 		if(splitMode == true) {
-			if(copy != null) {
-			renderWindowSplit.getRenderer().AddActor(copy);
-			}
-			else {
 			renderWindowSplit.getRenderer().AddActor(actor);
-			}
 		}
-			
+
 		for (PluginActorsChangeListener l : actorsChangeListeners) 
 			l.actorAdded(actor);
 
 	}
-	
+
 	@Override
 	public void actorRemoved(vtkProp actor) {
 		// called when a plugin removes an actor
@@ -1329,24 +1320,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		for (PluginActorsChangeListener l : actorsChangeListeners)
 			l.actorAdded(actor);
 
-		/*else { 
-			renderWindow.getRenderer().RemoveActor(actor);
-			renderWindowSplit.getRenderer().RemoveActor(actor);	
-			for (PluginActorsChangeListener l : actorsChangeListeners)
-					l.actorRemoved(actor);
-			
-			if(leftEqc == true) {
-				
-			}
-			if(rightEqc == true) {
-				
-			}
-			
-			if(leftEqc || rightEqc) {
-			
-			}*/
 	}
-	
+
+	//Possible way of making copies of actors, which could be useful for dual screen
+	//However java runs out of memory
 	public vtkProp deepCopy(vtkProp actor) {
 		vtkActor copy = null;
 		if (actor instanceof vtkActor)
@@ -1359,21 +1336,25 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			copy.SetAllocatedRenderTime(actor.GetAllocatedRenderTime(), null);
 			copy.SetEstimatedRenderTime(actor.GetEstimatedRenderTime());
 			copy.SetRenderTimeMultiplier(actor.GetRenderTimeMultiplier());
-		
+
 			for (int i=0; i<actor.GetNumberOfConsumers(); i++)
 			{
 				copy.AddConsumer(actor.GetConsumer(i));
 			}
+
 			copy.SetPropertyKeys(actor.GetPropertyKeys());
 			copy.SetDebug(actor.GetDebug());
 			copy.SetReferenceCount(actor.GetReferenceCount());
-			copy.SetMapper(((vtkActor) actor).GetMapper());
+			copy.SetMapper(((vtkActor) actor).GetMapper());  //Problem Child
+			vtkMapper map = ((vtkActor) actor).GetMapper();
+			copy.SetMapper(map);
 			copy.GetProperty().SetColor(((vtkActor) actor).GetProperty().GetColor());
 			copy.GetProperty().SetOpacity(((vtkActor) actor).GetProperty().GetOpacity());
 			copy.GetProperty().SetTexture(0,((vtkActor) actor).GetProperty().GetTexture(0));
 			copy.SetPosition(((vtkActor) actor).GetPosition());
+
 		}
-		
+
 		return copy;
 	}
 
@@ -1566,7 +1547,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	public static boolean getSplitMode() {
 		return splitMode;
 	}
-	
+
 
 	public static void main(String[] args) {
 		try {

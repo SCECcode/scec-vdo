@@ -108,7 +108,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		JMenu trainingMenu = getCreateSubMenu(displayMenu, "Training");
 		trainingMenu.add(focalPointItem);
 		focalPointItem.addItemListener(new ItemListener() {
-			
+
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				Info.getMainGUI().setFocalPointVisible(focalPointItem.getState());
@@ -134,7 +134,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	{
 		return menuBar;
 	}
-	
+
 	//Help button on menu bar
 	private void helpMenu() {
 		helpMenu = new JMenu();
@@ -145,11 +145,11 @@ public class MainMenu implements ActionListener, ItemListener{
 		menuBar.add(helpMenu);
 		helpMenu.addActionListener(this);
 		this.tutorial.addActionListener(this);
-		
+
 		wizardActivation = new JMenuItem("Toggle Wizard");
 		helpMenu.add(wizardActivation);
 		this.wizardActivation.addActionListener(this);
-	
+
 	}
 	/*
 	 * setupTimeline(Timeline timeline, TimelineGUI timelineGUI)
@@ -157,7 +157,7 @@ public class MainMenu implements ActionListener, ItemListener{
 	 * @param: Timeline timeline: Receives timeline
 	 * @param: TimelineGUI timelineGUI: Receives timeline GUI. 
 	 */
-	
+
 	public void setupTimeline(Timeline timeline, TimelineGUI timelineGUI) {
 		Preconditions.checkState(this.timeline == null, "Timeline already initialized!");
 		this.timeline = timeline;
@@ -178,13 +178,13 @@ public class MainMenu implements ActionListener, ItemListener{
 		timelineItem.addItemListener(this);
 
 		menu.add(timelineItem);
-		
+
 		//Add help menu in menu bar
 		helpMenu();
-		
+
 	}
 
-	
+
 	private void setupFileMenu() {
 		//File menu - save and open a scene.
 		fileMenu = new JMenu("File");
@@ -212,16 +212,16 @@ public class MainMenu implements ActionListener, ItemListener{
 	public void quit() {
 		System.exit(0);
 	}
-	
-	
+
+
 	//save(): The saving function at the File button.  
-	 
+
 	public void save(){
 		JFileChooser chooser = new JFileChooser();
 		int ret = chooser.showSaveDialog(Info.getMainGUI());
 		if (ret == JFileChooser.CANCEL_OPTION) {
 			Info.getMainGUI().wizFrame.setVisible(true);
-			}
+		}
 		if (ret == JFileChooser.APPROVE_OPTION) {
 			Document document = DocumentHelper.createDocument();
 			Element root = document.addElement("root");
@@ -252,10 +252,10 @@ public class MainMenu implements ActionListener, ItemListener{
 			System.out.println("Unhandled event");
 		}
 	}
-	
-	
+
+
 	// saveForToolbar(): saves new file, leaves out wizard functionality
-	 
+
 	public void saveForToolbar() {
 		JFileChooser chooser = new JFileChooser();
 		int ret = chooser.showSaveDialog(Info.getMainGUI());
@@ -269,13 +269,13 @@ public class MainMenu implements ActionListener, ItemListener{
 
 			Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
 					loadedPlugins.values());
-			
+
 			if(activePlugins.isEmpty())
 				System.out.println("activePlugins is empty");
-			
+
 			if(pluginDescriptors.isEmpty())
 				System.out.println("pluginDescriptors.isEmpty");
-			
+
 			for(Plugin pluginDescriptor:pluginDescriptors)
 			{
 
@@ -297,14 +297,14 @@ public class MainMenu implements ActionListener, ItemListener{
 			System.out.println("Unhandled event");
 		}
 	}
-	
+
 	/*
 	 * Checks whether file has been saved
 	 */
 	public Boolean isSaved() {
 		return saved;
 	}
-	
+
 	/*
 	 * Saves without creating a new file
 	 */
@@ -314,18 +314,18 @@ public class MainMenu implements ActionListener, ItemListener{
 		Element root = document.addElement("root");
 		Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
 				loadedPlugins.values());
-		
+
 		if(activePlugins.isEmpty())
 			System.out.println("activePlugins is empty");
-		
+
 		if(pluginDescriptors.isEmpty())
 			System.out.println("pluginDescriptors.isEmpty");
-		
+
 		for(Plugin pluginDescriptor:pluginDescriptors)
 		{
 
 			Plugin plugin = activePlugins.get(pluginDescriptor.getId());
-			
+
 			System.out.println("active plugins in autoSave: " + plugin.getId());
 			System.out.println("pluginDescriptor: " + pluginDescriptor.getId());
 			if (plugin instanceof StatefulPlugin) {
@@ -338,13 +338,13 @@ public class MainMenu implements ActionListener, ItemListener{
 		timeline.getState().toXML(pluginNameElement);
 		saveXMLFile(document, root, currFileName);
 	}
-	
+
 	private static File getStatusFile() {
 		File libDir = new File(Prefs.getLibLoc());
 		Preconditions.checkState(libDir.exists() || libDir.mkdir());
 		return new File(libDir, "SCEC-VDO_STATUS.xml");
 	}
-	
+
 	public boolean getState(){
 		File statusFile = getStatusFile();
 		try {
@@ -367,26 +367,26 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 		return true;
 	}
-	
+
 	private static OutputFormat format = OutputFormat.createPrettyPrint();
-	
+
 	private void initStatusFile(File statusFile) throws IOException {
 		System.out.println("Initializing status file: "+statusFile.getAbsolutePath());
 		Document doc = DocumentHelper.createDocument();
-		
+
 		Element root = doc.addElement("SCECVDO");
 		Element wizardEl = root.addElement("Wizard");
 		wizardEl.setText(Wizard+"");
-		
+
 		writeXML(doc, statusFile);
 	}
-	
+
 	private static void writeXML(Document document, File file) throws IOException {
 		XMLWriter writer = new XMLWriter(new FileWriter(file), format);
 		writer.write(document);
 		writer.close();
 	}
-	
+
 	/*
 	 * updateWizard(Boolean wiz): 
 	 * @param Boolean wiz: Receives the wizard 
@@ -403,23 +403,23 @@ public class MainMenu implements ActionListener, ItemListener{
 			Element wizardEl = root.element("Wizard");
 			wizardEl.setText(Wizard+"");
 			writeXML(document, statusFile);
-			
+
 		} catch (Exception e){
 			e.printStackTrace();
 		}
 	}
-	
+
 	/*
 	 * open(): Opens a project file (File button)
 	 */
 	public void open(){
-		
+
 		JFileChooser chooser = new JFileChooser();
 		MainGUI.class.getConstructors();
 		int ret = chooser.showOpenDialog(Info.getMainGUI());
 		if (ret == JFileChooser.CANCEL_OPTION) {
 			Info.getMainGUI().wizFrame.setVisible(true);
-			}
+		}
 		if (ret == JFileChooser.APPROVE_OPTION) {
 			if(isSaved())
 				autoSave();
@@ -463,7 +463,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			}
 		}
 	}
-	
+
 	/*
 	 * openForToolbar(): l.opens new file, leaves out wizard functionality
 	 */
@@ -486,7 +486,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				// iterate through child elements of root
 				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 						availablePlugins.values());
-				
+
 				for(PluginInfo pluginDescriptor:pluginDescriptors) {
 					//System.out.println(pluginDescriptor.getName());
 					for (Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
@@ -515,10 +515,10 @@ public class MainMenu implements ActionListener, ItemListener{
 				e1.printStackTrace();
 			}
 		}
-		
-		
+
+
 	}
-	
+
 	public void saveObj(File file)
 	{
 		vtkActorCollection actorlist =  Info.getMainGUI().getRenderWindow().getRenderer().GetActors();
@@ -531,7 +531,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			System.out.println("done");
 		}
 	}
-	
+
 	public void saveVTKObj(File file)
 	{
 
@@ -552,12 +552,12 @@ public class MainMenu implements ActionListener, ItemListener{
 				{
 					vtkPolyDataMapper gmapper = (vtkPolyDataMapper) pbActor.GetMapper();
 					if(gmapper!=null){
-					vtkPolyData pd  = new vtkPolyData();
-					pd.SetPoints(gmapper.GetInput().GetPoints());
-					pd.SetLines(gmapper.GetInput().GetLines());
-					pd.SetPolys(gmapper.GetInput().GetPolys());
-					mainData.AddInputData(pd);
-					mainData.Update();
+						vtkPolyData pd  = new vtkPolyData();
+						pd.SetPoints(gmapper.GetInput().GetPoints());
+						pd.SetLines(gmapper.GetInput().GetLines());
+						pd.SetPolys(gmapper.GetInput().GetPolys());
+						mainData.AddInputData(pd);
+						mainData.Update();
 					}
 				}
 			}
@@ -565,9 +565,9 @@ public class MainMenu implements ActionListener, ItemListener{
 			objExporter.Write();
 			System.out.println("done");
 		}
-		
+
 	}
-	
+
 	public void openVTKObj()
 	{
 
@@ -671,12 +671,12 @@ public class MainMenu implements ActionListener, ItemListener{
 		}
 		else if(eventSource == saveItem)
 		{
-			
+
 			System.out.println("Saving norm file");
 			JFileChooser chooser = new JFileChooser(); //making a file
 			int ret = chooser.showSaveDialog(Info.getMainGUI()); //is this function accurately describing the image that the user sees???
 			if (ret == JFileChooser.APPROVE_OPTION) {//once user hits save -- we start to process the data to a file
-				
+
 				Document document = DocumentHelper.createDocument();
 				Element root = document.addElement("root");
 				File file = chooser.getSelectedFile();
@@ -684,16 +684,16 @@ public class MainMenu implements ActionListener, ItemListener{
 
 				Vector<Plugin> pluginDescriptors = new Vector<Plugin>(
 						loadedPlugins.values());
-				
+
 				int stateCntr= 0; //statecounter 
-				
+
 				getLoadedPluginsAsMap(); 
-				
+
 				for (Entry<Plugin, PluginActors> entry : pluginActors.entrySet())
 				{
-				    System.out.println(entry.getKey() + "/" + entry.getValue());
+					System.out.println(entry.getKey() + "/" + entry.getValue());
 				}
-				
+
 				for(Plugin pluginDescriptor:pluginDescriptors)
 				{
 					Plugin plugin = activePlugins.get(pluginDescriptor.getId());
@@ -713,7 +713,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			else {
 				System.out.println("Unhandled event");
 			}
-		System.out.println("done saving");
+			System.out.println("done saving");
 		} else if(eventSource == resizeWindow) {
 			if (sizePanel == null)
 				sizePanel = new ViewerSizePanel(null); // null means this isn't render mode, but rather actual size mode
@@ -723,49 +723,49 @@ public class MainMenu implements ActionListener, ItemListener{
 				Dimension dims = sizePanel.getCurDims();
 				Info.getMainGUI().resizeViewer(dims.width, dims.height);
 			}
-			
+
 		}
 		/*
 		 *Function for calling the userGuide 
 		 */
-		
+
 		else if(eventSource == tutorial) {
 			String url = "http://scecvdo.usc.edu/manual/UserGuide.html";
-				String os = System.getProperty("os.name").toLowerCase();
-			    Runtime rt = Runtime.getRuntime();
-				try{
-				    if (os.indexOf( "win" ) >= 0) {
-				        rt.exec( "rundll32 url.dll,FileProtocolHandler " + url);
-				    }
-				    else if (os.indexOf( "mac" ) >= 0) {
+			String os = System.getProperty("os.name").toLowerCase();
+			Runtime rt = Runtime.getRuntime();
+			try{
+				if (os.indexOf( "win" ) >= 0) {
+					rt.exec( "rundll32 url.dll,FileProtocolHandler " + url);
+				}
+				else if (os.indexOf( "mac" ) >= 0) {
 
-				        rt.exec( "open " + url);
-			            }
-				    else if (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0) {
-				        String[] browsers = {"firefox", "mozilla", "epiphany", "konqueror",
-				       			             "netscape","opera","links","seamonkey", "galeon", "kazehakase","lynx"};
-				        StringBuffer cmd = new StringBuffer();
-				        for (int i=0; i<browsers.length; i++)
-				            cmd.append( (i==0  ? "" : " || " ) + browsers[i] +" \"" + url + "\" ");
-				        rt.exec(new String[] { "sh", "-c", cmd.toString() });
-				        } 
-			            else {
-			                return;
-			           }
-			       }
-				catch (Exception e1){
-				    return;
-			       }
-			      return;
+					rt.exec( "open " + url);
+				}
+				else if (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0) {
+					String[] browsers = {"firefox", "mozilla", "epiphany", "konqueror",
+							"netscape","opera","links","seamonkey", "galeon", "kazehakase","lynx"};
+					StringBuffer cmd = new StringBuffer();
+					for (int i=0; i<browsers.length; i++)
+						cmd.append( (i==0  ? "" : " || " ) + browsers[i] +" \"" + url + "\" ");
+					rt.exec(new String[] { "sh", "-c", cmd.toString() });
+				} 
+				else {
+					return;
+				}
 			}
+			catch (Exception e1){
+				return;
+			}
+			return;
+		}
 		else if(eventSource == wizardActivation){
-			
+
 			frame = new JFrame ();
 			Boolean toggle = getState();
 			if (!toggle) {
 				Wizard = true;
 				updateWizard(true);
-				
+
 				JOptionPane.showMessageDialog(
 						frame,  "You set Wizard to display upon launching SCEC-VDO");
 			}
@@ -776,25 +776,25 @@ public class MainMenu implements ActionListener, ItemListener{
 						frame,  "You set Wizard to not display upon launching SCEC-VDO");
 			}
 		}
-		
+
 		else if(eventSource==escapeWindow)
 		{
 			if(MainGUI.getRenderWindow().getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=0) {
 				MainGUI.getRenderWindow().getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
 				MainGUI.getRenderWindow().getRenderer().GetActiveCamera().SetFocalPoint(MainGUI.camCord[3], MainGUI.camCord[4],MainGUI.camCord[5]);
 				MainGUI.getRenderWindow().getRenderer().GetActiveCamera().SetViewUp(MainGUI.camCord[6], MainGUI.camCord[7],MainGUI.camCord[8]);
-				
+
 				MainGUI.getRenderWindow().getRenderer().ResetCameraClippingRange();
 				MainGUI.getRenderWindow().getComponent().repaint();
+			}
+
 		}
-		
+
 	}
-			
-		}
-	
+
 
 	private void saveXMLFile(Document document,Element root,String destinationData) {
-		
+
 		System.out.println("document.toString() inside saveXMLFile(): " + document.toString());
 		XMLWriter writer = null;
 		try {
@@ -813,7 +813,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-				
+
 	}
 
 
@@ -859,11 +859,11 @@ public class MainMenu implements ActionListener, ItemListener{
 	public Map<String, Plugin> getActivePlugins() {
 		return activePlugins;
 	}
- 
+
 	public Map<String, Plugin> getLoadedPluginsAsMap() {
 		for (Entry<String, Plugin> entry : loadedPlugins.entrySet())
 		{
-		    System.out.println(entry.getKey() + "/" + entry.getValue());
+			System.out.println(entry.getKey() + "/" + entry.getValue());
 		}
 		return loadedPlugins;
 	}
@@ -895,7 +895,7 @@ public class MainMenu implements ActionListener, ItemListener{
 					if(candidate.getName().equalsIgnoreCase(menuName)){
 						return candidate;
 					}
-			}
+				}
 		}
 		return null;
 	}
@@ -948,8 +948,8 @@ public class MainMenu implements ActionListener, ItemListener{
 				// this is a dirty kludgey way to do this, bad interns
 				// TODO do it right with some sort of configuration file
 				if (candidate.getName().equalsIgnoreCase("GIS Hazus Events")
-						|| candidate.getName().equalsIgnoreCase("ShakeMap")
-//						|| candidate.getName().equals("Training")
+						//					|| candidate.getName().equalsIgnoreCase("ShakeMap")
+						//						|| candidate.getName().equals("Training")
 						) {
 					candidate.setVisible(false);;
 				}
@@ -965,7 +965,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		submenu.setLabel(submenuName);
 		submenu.setName(submenuName);
 		menu.add(submenu);
-		
+
 		return submenu;
 	}
 
@@ -1066,17 +1066,17 @@ public class MainMenu implements ActionListener, ItemListener{
 		Plugin plugin = loadedPlugins.remove(id);
 		plugin.unload();
 	}
-	
+
 	private void unloadAllPlugins(){
 		ArrayList<String> plugIds = new ArrayList<String>();
-		
+
 		for(Plugin plug: loadedPlugins.values()){
 			if( (!plug.getId().equals("org.scec.vdo.graticulePlugin")) && (!plug.getId().equals("org.scec.vdo.politicalBoundaries"))
 					&& (!plug.getId().equals("org.scec.vdo.drawingToolsPlugin")) ){
 				plugIds.add(plug.getId());
 			}	
 		}
-		
+
 		for(int i = 0; i < plugIds.size(); i ++ ){
 			Info.getMainGUI().timeline.removePlugin(loadedPlugins.get(plugIds));
 			String tabName = Info.getMainGUI().tabMap.get(plugIds.get(i));
@@ -1084,16 +1084,16 @@ public class MainMenu implements ActionListener, ItemListener{
 			int tabIndex = Info.getMainGUI().pluginTabPane.indexOfTab(tabName);
 			System.out.println("tabIndex: "+tabIndex);
 			System.out.println("pluginTabPane.getTabCount(): "+ Info.getMainGUI().pluginTabPane.getTabCount());
-			
+
 			loadedPlugins.remove(plugIds);
 			if( tabIndex != -1)
 				Info.getMainGUI().pluginTabPane.remove(tabIndex);
-			
+
 			updateMenu(plugIds.get(i));
 		}
-		
+
 	}
-	
+
 	public void updateMenu(String id){
 		JCheckBoxMenuItem mi = pluginMenuItems.get(id);
 		mi.setState(false);

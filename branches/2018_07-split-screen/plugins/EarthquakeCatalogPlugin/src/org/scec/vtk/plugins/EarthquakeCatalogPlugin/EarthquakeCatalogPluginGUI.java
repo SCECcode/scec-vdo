@@ -223,8 +223,8 @@ MouseListener
 	private LegendItem scalarBar;
 
 	//selectors for left or right screen while on split screen mode
-	private JCheckBox leftScreenButton;
-	private JCheckBox rightScreenButton;
+	//private JCheckBox leftScreenButton;
+	//private JCheckBox rightScreenButton;
 
 
 	// init data store
@@ -477,9 +477,9 @@ MouseListener
 		bar.add(Box.createHorizontalStrut(5));	
 		bar.add(helpButton);
 
-		addScreenSelector();
-		bar.add(leftScreenButton);
-		bar.add(rightScreenButton);
+		//addScreenSelector();
+		//bar.add(leftScreenButton);
+		//bar.add(rightScreenButton);
 
 		return bar;
 	}
@@ -909,8 +909,9 @@ MouseListener
 			}
 		}
 	}
-
-	//used to select left or right screen for plugins 
+	
+	//Used to select left or right screen for plugins for dual screen
+	/*
 	private void addScreenSelector() {
 		leftScreenButton = new JCheckBox("Left");
 		leftScreenButton.setMnemonic(KeyEvent.VK_L); 
@@ -923,18 +924,16 @@ MouseListener
 		//Register a listener for the check boxes.
 		leftScreenButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) { 
-				MainGUI.leftEqc = ! (MainGUI.leftEqc);
 			}
 		}
 				);
 		rightScreenButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) { 
-				MainGUI.rightEqc = !(MainGUI.rightEqc);
 			}
 		}
 				);
 	}
-
+*/
 	//****************************************
 	//     EVENT HANDLERS
 	//****************************************
