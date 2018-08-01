@@ -175,48 +175,18 @@ public class CatalogTable extends JTable {
 		//allows catalog actors to be added on split mode more than once, 
 		//giving the ability to manipulate catalogs on seperate sides   
 		boolean show = false;
-
-		MainGUI mainGui = Info.getMainGUI();
-		boolean splitMode =  MainGUI.getSplitMode();
-
 		if(libModel.getObjectAtRow(row).isDisplayed())
 		{
-			if( splitMode == true) {
-				if(MainGUI.leftEqc == true) {
-					for(vtkActor actor : libCat.getActors()) {
-						MainGUI.getRenderWindow().getRenderer().RemoveActor(actor);
-					}
-				}
-				if(MainGUI.rightEqc == true) {
-					for(vtkActor actor : libCat.getActors()) {
-						MainGUI.getRenderWindowSplit().getRenderer().RemoveActor(actor);
-					}
-				}
+			if(libCat.getActors().get(0)!=null){
+				libCat.getActors().get(0).SetVisibility(0);
+				libCat.getActors().get(1).SetVisibility(0);
+				MainGUI.updateRenderWindow();
+				show = false;
 			}
-			//only able to turn off visibilty when not in split mode or while both screens are selected
-			if(splitMode == false || (MainGUI.leftEqc && MainGUI.rightEqc)){
-				if(libCat.getActors().get(0)!=null){
-					libCat.getActors().get(0).SetVisibility(0);
-					libCat.getActors().get(1).SetVisibility(0);
-					show = false;
-				}
-			}
-			MainGUI.updateRenderWindow();
 		}
+
 		else
 		{
-			if( splitMode == true) {
-				if(MainGUI.leftEqc == true) {
-					for(vtkActor actor : libCat.getActors()) {
-						MainGUI.getRenderWindow().getRenderer().AddActor(actor);
-					}
-				}
-				if(MainGUI.rightEqc == true) {
-					for(vtkActor actor : libCat.getActors()) {
-						MainGUI.getRenderWindowSplit().getRenderer().AddActor(actor);
-					}
-				}
-			}
 			if(libCat.getActors().get(0)!=null){
 				libCat.getActors().get(0).SetVisibility(1);
 				libCat.getActors().get(1).SetVisibility(1);
