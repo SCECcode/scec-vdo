@@ -141,7 +141,6 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			defaultDir = new File(MainGUI.getCWD(),	"data");
 		if (defaultDir.exists())
 			geomFileParam.setDefaultInitialDir(defaultDir);
-		    eventFileParam.setDefaultInitialDir(defaultDir);
 		builderParams.addParameter(geomFileParam);
 		eventFileParam.addParameterChangeListener(this);
 		eventFileParam.setShowHiddenFiles(true);
