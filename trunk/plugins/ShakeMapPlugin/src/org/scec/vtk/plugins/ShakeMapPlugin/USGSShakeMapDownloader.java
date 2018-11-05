@@ -52,8 +52,6 @@ public class USGSShakeMapDownloader {
 		urlNumber = shakeUrl;
 	}
 	
-
-	
 	/*
 	 * Downloads the file from the USGS website and saves it
 	 * in the data/ShakeMapPlugin directory
@@ -84,14 +82,16 @@ public class USGSShakeMapDownloader {
 			//prune unneeded information (only want first 5 of 8 'columns' of grid_data)
 			FileWriter writ = new FileWriter(new File(filePath));
 			String gridString = eElement.getElementsByTagName("grid_data").item(0).getTextContent();
-			String[] lines = gridString.split(("\n"));
-			for(int i = 1; i < lines.length; i++)
-			{
-				String[] splitted = lines[i].split("\\s+");
-				writ.write(splitted[0] + " " + splitted[1] + " " + splitted[2] + " " +  splitted[3] + " " + splitted[4] );
-				writ.write("\n");		
-			}			
 			
+			Scanner scanner = new Scanner(gridString);
+			scanner.nextLine(); //skip first line
+			while (scanner.hasNextLine()) //go line by line and write first 5 numbers of each line to file 
+			{
+				String[] line = scanner.nextLine().split("\\s+");
+				writ.write(line[0] + " " + line[1] + " " + line[2] + " " +  line[3] + " " + line[4]);
+				writ.write("\n");		
+			}
+			scanner.close();
 			writ.close();
 			/*
 			//url for usgs website
