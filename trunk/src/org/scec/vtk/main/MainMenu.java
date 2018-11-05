@@ -1,7 +1,10 @@
 package org.scec.vtk.main;
 
+import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -31,7 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
+
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -44,6 +50,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
 
 import org.apache.log4j.Logger;
@@ -562,7 +570,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		
 	}
 	
-	public void saveVTPObj()
+	public void saveVTPObj(String title)
 	{
 
 		vtkJoglPanelComponent renderWindow = Info.getMainGUI().getRenderWindow();
@@ -571,7 +579,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		if(actorlist.GetNumberOfItems()>0){
 			System.out.println(actorlist.GetNumberOfItems());
 			vtkXMLPolyDataWriter objExporter = new vtkXMLPolyDataWriter();
-			objExporter.SetFileName(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/publish.vtp"); 
+			objExporter.SetFileName(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/" + title + ".vtp"); 
 			vtkAppendPolyData  mainData = new vtkAppendPolyData ();
 
 			for(int i = 0; i <actorlist.GetNumberOfItems();i++)
@@ -720,15 +728,23 @@ public class MainMenu implements ActionListener, ItemListener{
 			
 		}
 		
-		else if (eventSource == publishVTP) //provides input window for publishing information, writes xml and vtp files and sends them to server
+		else if (eventSource == publishVTP) //provides input window for publishing information, writes xml and vtp files and sends them to server, then displays link to project
 		{
-			UIManager.put("OptionPane.minimumSize",new Dimension(500,500)); 
+			UIManager.put("OptionPane.minimumSize",new Dimension(500,300)); 
 			JTextField title = new JTextField();
+			title.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+
 			JTextField author = new JTextField();
+			author.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+
 			JTextField server = new JTextField("http://scecvdo.usc.edu/viewer/publish.php");
-		//	JTextField username = new JTextField();
-		//	JTextField password = new JPasswordField();
+			server.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+			server.setEnabled(false);
+
 			JTextArea description = new JTextArea(20, 20);
+			description.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+			description.setFont(title.getFont());
+			
 
 			Object[] message = {
 			    "Title:", title,
@@ -748,6 +764,16 @@ public class MainMenu implements ActionListener, ItemListener{
 			
 			try 
 			{
+				String[] arr = title.getText().split("[~#@*+%{}<>\\[\\]|\"\\_^]", 2); //check if title has invalid characters (will be used in URL),
+			    if(arr.length > 1)
+			    {
+			    	JLabel words = new JLabel("Invalid characters in Title");
+					Object[] confirmation = {words};
+					JOptionPane.showMessageDialog(null, confirmation, "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+			    }
+				
+				
 				//set up the XML document with title, author, date, description info
 				 org.jdom.Element rootElement = new org.jdom.Element("model");
 				 org.jdom.Document doc = new org.jdom.Document(rootElement);
@@ -781,14 +807,17 @@ public class MainMenu implements ActionListener, ItemListener{
 				 outter.setFormat(Format.getPrettyFormat());
 				 
 				 //write XML file to tmp folder
-				 File publishXml = new File(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/publish.xml");
-				 
+				 //File publishXml = new File(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/publish.xml");
+
+				 final String projectTitle = title.getText().replaceAll("\\s",""); //get rid of spaces in title for URL
+				 File publishXml = new File(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/" + projectTitle + ".xml");
+
 				 if(!publishXml.exists()) //if tmp directory doesn't exist, create it
 				 {
 					 Files.createDirectories(Paths.get(System.getProperty("user.home") + File.separator + ".scec_vdo/tmp/"));
 				 }
 				 
-				 saveVTPObj(); //save vtp file to tmp folder
+				 saveVTPObj(projectTitle); //save vtp file to tmp folder
 				 
 				 Writer out = new FileWriter(publishXml);
 				 outter.output(doc, out);
@@ -799,10 +828,47 @@ public class MainMenu implements ActionListener, ItemListener{
 				 Object[] confirmation = {words};
 				 
 				 //if both files are successfully transferred
-				 if(transferFile(new File(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + "publish.vtp"), server.getText())
-				  && transferFile(new File(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + "publish.xml"), server.getText()))
+				 if(transferFile(new File(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + projectTitle + ".vtp"), server.getText())
+				  && transferFile(new File(System.getProperty("user.home") + File.separator + ".scec_vdo" + File.separator + "tmp" + File.separator + projectTitle + ".xml"), server.getText()))
 				 {
-					 JOptionPane.showMessageDialog(null, confirmation, "Success", JOptionPane.INFORMATION_MESSAGE);
+					 	//create clickable hyperlink in window if publishing is successful that directs user to link of their project
+					    JLabel label = new JLabel();
+					    label.setFont(label.getFont().deriveFont(16.0f));
+					    Font font = label.getFont();
+
+					
+					    //create css from the label's font
+					    StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
+					    style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
+					    style.append("font-size:" + font.getSize() + "pt;");
+					    
+					    //html content
+					    JEditorPane ep = new JEditorPane("text/html", "<html><body style=\"" + style + "\">" //
+					            + "Project successfully published online! \n<a href=\"http://google.com/\">View Project Here</a>" //
+					            + "</body></html>");
+					
+					    //handle link events
+					    ep.addHyperlinkListener(new HyperlinkListener()
+					    {
+					        @Override
+					        public void hyperlinkUpdate(HyperlinkEvent e)
+					        {
+					            if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
+					            {
+					            	String urlString = "http://scecvdo.usc.edu/viewer/?fileURL=objects/" + projectTitle + ".vtp&model=" + projectTitle;
+					                try {
+					                    Desktop.getDesktop().browse(new URL(urlString).toURI());
+					                } catch (Exception er) {
+					                    er.printStackTrace();
+					                }
+					            }
+					        }
+					    });
+					    ep.setEditable(false);
+					    ep.setBackground(label.getBackground());
+					
+					    // show
+					    JOptionPane.showMessageDialog(null, ep, "", JOptionPane.INFORMATION_MESSAGE);
 				 }
 				 else //if there are errors in file transfer
 				 {
