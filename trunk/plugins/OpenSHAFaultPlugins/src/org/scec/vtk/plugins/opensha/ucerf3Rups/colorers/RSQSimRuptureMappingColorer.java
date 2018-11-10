@@ -14,6 +14,7 @@ import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.IntegerParameter;
+import org.opensha.commons.util.IDPairing;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.simulators.RSQSimEvent;
 import org.opensha.sha.simulators.SimulatorElement;
@@ -29,7 +30,6 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 
 import scratch.UCERF3.FaultSystemRupSet;
 import scratch.UCERF3.FaultSystemSolution;
-import scratch.UCERF3.utils.IDPairing;
 
 public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChangeListener, UCERF3RupSetChangeListener {
 	

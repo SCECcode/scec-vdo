@@ -17,6 +17,10 @@ import org.opensha.sha.faultSurface.RuptureSurface;
 import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 
+import com.google.common.base.Preconditions;
+
+import vtk.vtkActor;
+
 public class PolygonSurfaceGenerator extends GeometryGenerator implements ParameterChangeListener {
 
 	/**
@@ -77,6 +81,24 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 		return createFaultActors(GeometryType.POLYGON, polygons, color, opacityParam.getValue(), fault);
 	}
 	
+	public vtkActor buildSimplePolygon(LocationList outline, Color color) {
+		List<PointArray> polygons = new ArrayList<>();
+		
+		double[][] points = new double[outline.size()][];
+		
+		for (int i=0; i<outline.size(); i++) {
+			Location loc = outline.get(i);
+			points[i] = getPointForLoc(loc);
+		}
+		
+		polygons.add(new PointArray(points));
+		
+		FaultSectionActorList actors = createFaultActors(GeometryType.POLYGON, polygons, color, opacityParam.getValue(), null);
+		Preconditions.checkState(actors.size() == 1, "unexpected size: %s", actors.size());
+		return actors.get(0);
+	}
+	
+	
 	public FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface,
 			Color color, AbstractFaultSection fault) {
 
@@ -105,7 +127,6 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 
 	@Override
 	public ParameterList getDisplayParams() {
-		// TODO Auto-generated method stub
 		return faultDisplayParams;
 	}
 
