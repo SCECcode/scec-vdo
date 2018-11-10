@@ -298,7 +298,7 @@ public abstract class GeometryGenerator implements Named {
 			GeometryType type, List<PointArray> cellDatas, Color color, double opacity, AbstractFaultSection fault) {
 		int myOpacity = (int)(255d*opacity);
 		FaultActorBundle currentBundle;
-		if (bundler != null && bundlerEnabled)
+		if (bundler != null && bundlerEnabled && fault != null)
 			currentBundle = bundler.getBundle(fault);
 		else
 			currentBundle = null;
@@ -309,7 +309,7 @@ public abstract class GeometryGenerator implements Named {
 		vtkPoints pts;
 		vtkUnsignedCharArray colors;
 		vtkCellArray cells;
-		PickEnabledActor<AbstractFaultSection> actor;
+		vtkActor actor;
 		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
 		Object synchOn = this;
 		if (newBundle) {
@@ -331,7 +331,10 @@ public abstract class GeometryGenerator implements Named {
 				currentBundle.initialize(myActor, polyData, pts, colors, cells);
 				synchOn = currentBundle;
 			} else {
-				actor = new PickEnabledActor<AbstractFaultSection>(getPickHandler(), fault);
+				if (fault == null)
+					actor = new vtkActor();
+				else
+					actor = new PickEnabledActor<AbstractFaultSection>(getPickHandler(), fault);
 			}
 		} else {
 			polyData = currentBundle.getPolyData();
@@ -399,7 +402,7 @@ public abstract class GeometryGenerator implements Named {
 				}
 				
 				actor.SetMapper(mapper);
-				setActorProperties(actor, bundle, color, myOpacity);
+				setActorProperties(actor, bundle, color, opacity);
 			} else {
 				if (currentBundle != null)
 					currentBundle.modified();

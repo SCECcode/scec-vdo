@@ -53,4 +53,14 @@
 		<menu-item menu="Display" submenu="OpenSHA"/>
 			
 	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.obsEqkRup.ObsEqkRupPlugin"
+		name="UCERF3 EQ Catalog Plugin"
+		short-name="UCERF3 EQ Catalog"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.obsEqkRup.ObsEqkRupPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
 </plugins>

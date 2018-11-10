@@ -3,6 +3,7 @@ package org.scec.vtk.commons.opensha.faults.faultSectionImpl;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.sha.earthquake.observedEarthquake.ObsEqkRupture;
 import org.opensha.sha.faultSurface.GriddedSurfaceImpl;
+import org.opensha.sha.faultSurface.PointSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 
@@ -16,17 +17,13 @@ public class ObsEqkRupSection extends AbstractFaultSection {
 		
 		this.rup = rup;
 		finiteSurf = rup.getRuptureSurface();
+		if (finiteSurf == null)
+			finiteSurf = new PointSurface(rup.getHypocenterLocation());
 	}
 
 	@Override
 	public RuptureSurface createSurface(ParameterList faultRepresentationParams) {
-		if (finiteSurf != null)
-			return finiteSurf;
-		
-		GriddedSurfaceImpl surf = new GriddedSurfaceImpl(1, 1, 1.0);
-		surf.set(0, 0, rup.getHypocenterLocation());
-		
-		return surf;
+		return finiteSurf;
 	}
 
 	@Override

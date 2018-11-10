@@ -52,6 +52,7 @@ import scratch.UCERF3.erf.FaultSystemSolutionERF;
 import scratch.UCERF3.erf.ETAS.ETAS_CatalogIO;
 import scratch.UCERF3.erf.ETAS.ETAS_EqkRupture;
 import scratch.UCERF3.erf.ETAS.ETAS_SimAnalysisTools;
+import scratch.UCERF3.erf.ETAS.launcher.ETAS_Launcher;
 import scratch.UCERF3.erf.utils.ProbabilityModelsCalc;
 import scratch.UCERF3.utils.FaultSystemIO;
 import scratch.kevin.ucerf3.etas.MPJ_ETAS_Simulator;
@@ -451,7 +452,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSe
 				return;
 		if (erf == null) {
 			System.out.println("Have to build ERF...");
-			erf = MPJ_ETAS_Simulator.buildERF(sol, false, 1d);
+			erf = ETAS_Launcher.buildERF(sol, false, 1d, 2012);
 			erf.updateForecast();
 			System.out.println("Done building ERF.");
 		} else if (sol != erf.getSolution()) {
