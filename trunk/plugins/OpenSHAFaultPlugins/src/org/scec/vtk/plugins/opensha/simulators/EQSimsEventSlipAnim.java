@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -260,7 +261,13 @@ ParameterChangeListener {
 			return;
 		try {
 			Map<Integer, List<RSQSimStateTime>> trans = transReader.getTransitions(curEvent);
-			curSlipTimeFunc = new RSQSimEventSlipTimeFunc(trans, slipVelParam.getValue());
+			Map<Integer, Double> slipVels = null;
+			if (!transReader.isVariableSlipSpeed()) {
+				slipVels = new HashMap<>();
+				for (SimulatorElement elem : elements)
+					slipVels.put(elem.getID(), slipVelParam.getValue());
+			}
+			curSlipTimeFunc = new RSQSimEventSlipTimeFunc(trans, slipVels, transReader.isVariableSlipSpeed());
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Error calculating/loading slip time function",
 					e.getMessage(), JOptionPane.ERROR_MESSAGE);
@@ -330,7 +337,8 @@ ParameterChangeListener {
 		File file = transFileParam.getValue();
 		if (file != null) {
 			try {
-				transReader = new RSQSimStateTransitionFileReader(file, elements);
+				boolean transV = file.getName().toLowerCase().contains("transv");
+				transReader = new RSQSimStateTransitionFileReader(file, elements, transV);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

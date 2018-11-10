@@ -41,7 +41,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 	private static final String OUTLINE_COLOR_PARAM_NAME = "Outline Color";
 	private ColorParameter outlineColorParam = new ColorParameter(OUTLINE_COLOR_PARAM_NAME, Color.WHITE);
 
-	private static final String POINT_SIZE_PARAM_NAME = "Point Size";
+	public static final String POINT_SIZE_PARAM_NAME = "Point Size";
 	private DiscreteSizeParam pointSizeParam = new DiscreteSizeParam(POINT_SIZE_PARAM_NAME, 1d, 10d, 1d);
 	
 	private enum SurfaceType {
@@ -98,53 +98,122 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 	
 	@Override
 	public FaultSectionActorList createFaultActors(Surface3D surface, Color color, AbstractFaultSection fault) {
+//		System.out.println("Building surface of type: "+surface.getClass().getName());
 		if (surface instanceof CompoundSurface)
 			return handleCompound((CompoundSurface)surface, color, fault);
 		if (surface instanceof EvenlyGriddedSurface)
 			return createFaultActors((EvenlyGriddedSurface)surface, color, fault);
 		
-		// TODO
-		throw new UnsupportedOperationException("Not yet implemented for non evenly gridded surfaces");
+		// generic approach
 		
-//		// TODO untested. should work, but we don't have any other surface representations to test with!
-//		String surfaceType = surfaceTypeParam.getValue();
-//		
-//		List<Point3f> coloredPts;
-//		List<Point3f> highlightPts;
-//		
-//		if (surfaceType.equals(SURFACE_TYPE_SOLID)) {
-//			coloredPts = getPointsForLocs(surface.getEvenlyDiscritizedListOfLocsOnSurface(), null);
-//			highlightPts = null;
-//		} else if (surfaceType.equals(SURFACE_TYPE_SOLID_WITH_OUTLINE)) {
-//			LocationList surfaceLocs = surface.getEvenlyDiscritizedListOfLocsOnSurface();
-//			LocationList outlinePts = surface.getEvenlyDiscritizedPerimeter();
-//			
-//			coloredPts = getPointsForLocs(surfaceLocs, outlinePts);
-//			highlightPts = getPointsForLocs(outlinePts, null);
-//		} else if (surfaceType.equals(SURFACE_TYPE_OUTLINE_ONLY)) {
-//			coloredPts = getPointsForLocs(surface.getEvenlyDiscritizedPerimeter(), null);
-//			highlightPts = null;
-//		} else { // trace only
-//			coloredPts = getPointsForLocs(surface.getEvenlyDiscritizedUpperEdge(), null);
-//			highlightPts = null;
-//		}
-//		
-//		PointAttributes pa = buildPA();
-//		BranchGroup bg = createBranchGroup();
-//		ArrayList<Node> colorNodes = new ArrayList<Node>();
-//		
-//		if (!coloredPts.isEmpty()) {
-//			Shape3D mainShape = getShape(pa, coloredPts, fault, color);
-//			colorNodes.add(mainShape);
-//			bg.addChild(mainShape);
-//		}
-//		
-//		if (highlightPts != null) {
-//			Shape3D highlightShape = getShape(pa, highlightPts, fault, outlineColorParam.getValue());
-//			bg.addChild(highlightShape);
-//		}
-//		
-//		return bg;
+		List<double[]> points = new ArrayList<>();
+		Iterator<Location> it = surface.getLocationsIterator();
+		while(it.hasNext()){
+			Location loc = (Location)it.next();
+			points.add(getPointForLoc(loc));
+		}
+		Preconditions.checkState(!points.isEmpty(), "NumSurfacePoints must be >0");
+		
+		double initialOpacity;
+		FaultActorBundle currentBundle;
+		if (isBundlerEnabled() && bundler != null) {
+			// initialized to transparent, will get updated when displayed
+			initialOpacity = 0;
+			currentBundle = bundler.getBundle(fault);
+		} else {
+			initialOpacity = 255;
+			currentBundle = null;
+		}
+		
+		boolean bundle = isBundlerEnabled() && currentBundle != null;
+		
+		vtkUnstructuredGrid gridData;
+		vtkPoints pts;
+		vtkUnsignedCharArray colors;
+		PickEnabledActor<AbstractFaultSection> actor;
+		boolean newBundle = currentBundle == null || !currentBundle.isInitialized();
+		
+		Object synchOn = this;
+		if (newBundle) {
+			gridData = new vtkUnstructuredGrid();
+			pts = new vtkPoints();
+			if (bundle) {
+				colors = new vtkUnsignedCharArray();
+				colors.SetNumberOfComponents(4);
+				colors.SetName("Colors");
+			} else {
+				colors = null;
+			}
+			
+			if (bundle) {
+				PointPickEnabledActor<AbstractFaultSection> myActor =
+						new PointPickEnabledActor<AbstractFaultSection>(getPickHandler());
+				actor = myActor;
+				currentBundle.initialize(myActor, gridData, pts, colors, null);
+				synchOn = currentBundle;
+			} else {
+				actor = new PickEnabledActor<AbstractFaultSection>(getPickHandler(), fault);
+			}
+		} else {
+			gridData = (vtkUnstructuredGrid) currentBundle.getVtkDataSet();
+			pts = currentBundle.getPoints();
+			colors = currentBundle.getColorArray();
+			Preconditions.checkState(colors.GetNumberOfComponents() == 4);
+			
+			actor = currentBundle.getActor();
+		}
+		
+		int firstIndex;
+		synchronized (synchOn) {
+			firstIndex = pts.GetNumberOfPoints();
+			
+			for (double[] point : points) {
+				pts.InsertNextPoint(point);
+				if (bundle)
+					colors.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), initialOpacity);
+			}
+			
+			for (int i=firstIndex; i<pts.GetNumberOfPoints(); i++) {
+				vtkVertex vertex = new vtkVertex();
+				
+				vertex.GetPointIds().SetId(0, i);
+				gridData.InsertNextCell(vertex.GetCellType(), vertex.GetPointIds());
+			}
+			
+			if (newBundle) {
+				// new bundle
+				gridData.SetPoints(pts);
+				if (bundle)
+					gridData.GetPointData().AddArray(colors);
+				
+				vtkDataSetMapper mapper = new vtkDataSetMapper();
+				mapper.SetInputData(gridData);
+				if (bundle) {
+					mapper.ScalarVisibilityOn();
+					mapper.SetScalarModeToUsePointFieldData();
+					mapper.SelectColorArray("Colors");
+				}
+				
+				actor.SetMapper(mapper);
+				actor.GetProperty().SetPointSize(pointSizeParam.getValue());
+				setActorProperties(actor, bundle, color, 1d);
+			} else {
+				if (currentBundle != null)
+					currentBundle.modified();
+			}
+		}
+
+		FaultSectionActorList list;
+		if (bundle) {
+			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
+			int totNumPoints = pts.GetNumberOfPoints()-firstIndex;
+			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, totNumPoints, totNumPoints, 255);
+		} else {
+			list = new FaultSectionActorList(fault);
+			list.add(actor);
+		}
+		
+		return list;
 	}
 	
 	private List<double[]> getPointsForLocs(LocationList locs, LocationList excludeLocs) {
@@ -165,9 +234,8 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 	}
 
 	private FaultSectionActorList createFaultActors(EvenlyGriddedSurface surface, Color color, AbstractFaultSection fault) {
-		// TODO Auto-generated method stub
-
 		int numSurfacePoints = (int) surface.size();
+//		System.out.println("Building for evenly gridded with "+numSurfacePoints+" points");
 		
 		Preconditions.checkState(numSurfacePoints>0, "NumSurfacePoints must be >0");
 
@@ -358,7 +426,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 				
 				actor.SetMapper(mapper);
 				actor.GetProperty().SetPointSize(pointSizeParam.getValue());
-				setActorProperties(actor, newBundle, color, 1d);
+				setActorProperties(actor, bundle, color, 1d);
 			} else {
 				if (currentBundle != null)
 					currentBundle.modified();
@@ -369,6 +437,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 		if (bundle) {
 			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
 			int totNumPoints = pts.GetNumberOfPoints()-firstIndex;
+//			System.out.println("Adding "+totNumPoints+" points");
 			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, totNumPoints, numMainColor, 255);
 		} else {
 			list = new FaultSectionActorList(fault);
