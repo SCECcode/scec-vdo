@@ -28,7 +28,6 @@ public class Timeline implements Stateful {
 	private KeyFrameList cameraKeys;
 	private CameraAnimator cameraAnim;
 	
-	
 	public List<Plugin> plugins;
 	// used to hide a plugin completely regardless of keyframes
 	private List<Boolean> pluginsDisplayed;
@@ -307,6 +306,17 @@ public class Timeline implements Stateful {
 	
 	public Plugin getPluginAt(int index) {
 		return plugins.get(index);
+	}
+	
+	public Plugin getPluginWith(String id) {
+		for(int i = 0; i < plugins.size(); i++)
+		{
+			if(plugins.get(i).getId().equals(id))
+			{
+				return plugins.get(i);
+			}
+		}
+		return null;
 	}
 	
 	public KeyFrameList getKeysForPlugin(int index) {

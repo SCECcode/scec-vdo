@@ -57,12 +57,22 @@ public class TimelinePluginState implements PluginState{
 	public void load() {
 		parent.setMaxTime(totalAnimationDuration);
 		parent.setCameraSplineType(SplineType.valueOf(splineIndex));
+		/*
 		for(int i=0;i<numPlugins;i++)
 		{
 			Plugin plugin = parent.getPluginAt(i);
 			parent.setDisplayed(plugin, pluginIsDisplayed.get(i));
 			parent.setFrozen(plugin, pluginIsFrozen.get(i));
 		}
+		*/
+		for(int i=0;i<pluginLayerId.size();i++)
+		{
+			System.out.println("pluginLayerid: " + pluginLayerId.get(i) + " should be equivalent to: " + parent.getPluginWith(pluginLayerId.get(i)).getId());
+			Plugin plugin = parent.getPluginWith(pluginLayerId.get(i));
+			parent.setDisplayed(plugin, pluginIsDisplayed.get(i));
+			parent.setFrozen(plugin, pluginIsFrozen.get(i));
+		}
+		
 
 	}
 
@@ -92,9 +102,13 @@ public class TimelinePluginState implements PluginState{
 		
 		for(int i =0;i<this.numPlugins;i++)
 		{
+			
 			Element timelineElement = stateEl.addElement( "TimelineLayer" );
 			timelineElement.addElement( "pluginIndex").addText( Integer.toString(i));
-			timelineElement.addElement( "pluginId").addText( pluginLayerId.get(i));
+			System.out.println(pluginLayerId.get(i));
+			System.out.println(parent.getPluginWith(pluginLayerId.get(i)).getId());
+			//timelineElement.addElement( "pluginId").addText( pluginLayerId.get(i));
+			timelineElement.addElement( "pluginId").addText( parent.getPluginWith(pluginLayerId.get(i)).getId());
 			timelineElement.addElement( "isFrozen").addText( Boolean.toString(pluginIsFrozen.get(i)));
 			timelineElement.addElement( "isDisplayed").addText( Boolean.toString(pluginIsDisplayed.get(i)));
 			timelineElement.addElement( "pluginNumKeyFrames").addText(Integer.toString(keyFrameTypeArray.get(i).size()));
@@ -130,6 +144,7 @@ public class TimelinePluginState implements PluginState{
 
 	@Override
 	public void fromXML(Element stateEl) {
+		
 		pluginLayerId.clear();
 		pluginStateArray.clear();
 		this.startTimeArray.clear();
@@ -174,7 +189,10 @@ public class TimelinePluginState implements PluginState{
 			Element e = (Element) i.next();
 			
 			pluginLayerId.add(e.elementText("pluginId"));
-			Plugin plugin = parent.getPluginAt(numPlugins);
+			System.out.println("LayerID: " + pluginLayerId.get(numPlugins));
+			//Plugin plugin = parent.getPluginAt(numPlugins);
+			Plugin plugin = parent.getPluginWith(pluginLayerId.get(numPlugins));
+			System.out.println("PluginId: " + plugin.getId());
 			pluginIsDisplayed.add(Boolean.parseBoolean(e.elementText("isDisplayed")));
 			pluginIsFrozen.add(Boolean.parseBoolean(e.elementText("isFrozen")));
 		
@@ -193,6 +211,7 @@ public class TimelinePluginState implements PluginState{
 				if (eSub.elementText("type").equals("Visibility")) {
 					VisibilityKeyFrame key = new VisibilityKeyFrame(Double.parseDouble(eSub.elementText("startTime")),parent.getActorsForPlugin(plugin),Boolean.parseBoolean(eSub.elementText("visiblity")));
 					parent.addKeyFrame(parent.getPluginAt(numPlugins),key);
+					System.out.println("visibility of " + Double.parseDouble(eSub.elementText("startTime")) + " being added to " + plugin.getId());
 				}
 				if (eSub.elementText("type").equals("Range")) {
 					double duration = Double.parseDouble(eSub.elementText("duration"));
