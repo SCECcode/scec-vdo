@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
@@ -60,6 +61,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	private JLabel maxLabel2 = new JLabel("Max");
 	private JLabel dateStartLabel = new JLabel("Start Date:");
 	private JLabel dateEndLabel   = new JLabel("End Date:");
+	private JLabel timeStartLabel = new JLabel("Start Time:");
+	private JLabel timeEndLabel   = new JLabel("End Time:");
 	//private JLabel srcLabel    	  = new JLabel("Src:");
 	//private JLabel eventTypeLabel = new JLabel("Type:");
 	private JLabel maxEventsLabel = new JLabel("Max EQs:");
@@ -74,6 +77,10 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	private JTextField magMaxField = new JTextField();
 	private JTextField dateStartField = new JTextField("2016/04/01");
 	private JTextField dateEndField   = new JTextField("2016/04/02");
+	
+	private JTextField timeStartField = new JTextField("00:00:00");
+	private JTextField timeEndField = new JTextField("23:59:59");
+	
 	private JTextField maxEventsField = new JTextField();
 	private JButton importButton = new JButton("Import");
 
@@ -121,7 +128,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		this.parent = (EarthquakeCatalogPluginGUI)parent;
 
 		this.setName("Network Sources");
-		this.setSize(500,220);
+		this.setSize(550,220);
 
 
 		BorderLayout layout = new BorderLayout();
@@ -145,6 +152,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		magMaxField.setMinimumSize(new Dimension(35, 20));
 		dateStartField.setPreferredSize(new Dimension(75, 20));
 		dateStartField.setMinimumSize(new Dimension(75, 20));
+		timeStartField.setPreferredSize(new Dimension(75, 20));
+		timeStartField.setMinimumSize(new Dimension(75, 20));
 
 		// Lower Panel Row 2
 		lonMinField.setPreferredSize(new Dimension(50, 20));
@@ -157,6 +166,9 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		depMaxField.setMinimumSize(new Dimension(35, 20));
 		dateEndField.setPreferredSize(new Dimension(75, 20));
 		dateEndField.setMinimumSize(new Dimension(75, 20));
+		timeEndField.setPreferredSize(new Dimension(75, 20));
+		timeEndField.setMinimumSize(new Dimension(75, 20));
+
 
 		// Lower Panel Row 3
 		/*sourceNetPulldown.setMinimumSize(new Dimension(104, 20));
@@ -236,6 +248,16 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		c.anchor = GridBagConstraints.EAST;
 		c.insets = new Insets(2,0,2,0);
 		this.add(dateStartField, c);
+		c.gridx = 8;
+		c.gridy = 1;
+		c.anchor = GridBagConstraints.EAST;
+		c.insets = new Insets(2,4,2,0);
+		this.add(timeStartLabel, c);
+		c.gridx = 9;
+		c.gridy = 1;
+		c.anchor = GridBagConstraints.EAST;
+		c.insets = new Insets(0,4,0,2);
+		this.add(timeStartField, c);
 
 
 		// Third row (2)
@@ -279,6 +301,16 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		c.anchor = GridBagConstraints.EAST;
 		c.insets = new Insets(2,0,2,0);
 		this.add(dateEndField, c);
+		c.gridx = 8;
+		c.gridy = 2;
+		c.anchor = GridBagConstraints.CENTER;
+		c.insets = new Insets(2,4,2,0);
+		this.add(timeEndLabel, c);
+		c.gridx = 9;
+		c.gridy = 2;
+		c.anchor = GridBagConstraints.EAST;
+		c.insets = new Insets(0,4,0,2);
+		this.add(timeEndField, c);
 
 
 		// Fourth row (3)
@@ -351,6 +383,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		double magMax = 0;
 		String dateStart;
 		String dateEnd;
+		String timeStart;
+		String timeEnd;
 
 		boolean latMinSet = false;
 		boolean latMaxSet = false;
@@ -362,6 +396,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		boolean magMaxSet = false;
 		boolean dateStartSet = false;
 		boolean dateEndSet = false;
+		boolean timeStartSet = false;
+		boolean timeEndSet = false;
 
 		///////////////
 		// Latitude //
@@ -503,14 +539,14 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		if ((dateStartSet && !dateEndSet) || (!dateStartSet && dateEndSet))
 			otherErrors += "    Start and end dates must both be valid\n";
 		if (dateStartSet && dateEndSet) {
-			if (Pattern.matches("[0-9]{4}/[0-9]{2}/[0-9]{2}", dateStart) &&
+			if (Pattern.matches("[0-9]{4}:[0-9]{2}/[0-9]{2}", dateStart) &&
 					Pattern.matches("[0-9]{4}/[0-9]{2}/[0-9]{2}", dateEnd)) {
 				DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
 				try {
 					Date start = df.parse(dateStart);
 					Date end = df.parse(dateEnd);
-					if (start.compareTo(end) >= 0)
-						otherErrors += "    Start date must be before end date\n";
+					if (start.compareTo(end) > 0)
+						otherErrors += "    Start date must be on or before end date\n";
 				} catch (ParseException e) {
 					formatErrors += "    Start or end date formatted incorrectly\n";
 				}
@@ -518,6 +554,50 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		} else {
 			otherErrors += "    Start and end date must be set\n";
 		}
+		
+		//////////
+		// Time //
+		//////////
+		timeStart = timeStartField.getText();
+		timeEnd   = timeEndField.getText();
+
+		if (timeStart.length() > 0) {
+			if (Pattern.matches("[0-9]{2}:[0-9]{2}:[0-9]{2}", timeStart)
+					)
+				timeStartSet = true;
+			else
+				formatErrors += "    Start date\n" +
+						"        Absolute: YYYY/MM/DD\n" +
+						"        Relative: -#s, -#m, -#h, or -#d\n";
+		}
+		if (timeEnd.length() > 0) {
+			if (Pattern.matches("[0-9]{2}:[0-9]{2}:[0-9]{2}", timeEnd)
+					)
+				timeEndSet = true;
+			else
+				formatErrors += "    End date\n" +
+						"        Absolute: YYYY/MM/DD\n" +
+						"        Relative: +#s, +#m, +#h, or +#d\n";
+		}
+		if ((timeStartSet && !timeEndSet) || (!timeStartSet && timeEndSet))
+			otherErrors += "    Start and end dates must both be valid\n";
+		if (timeStartSet && timeEndSet) {
+			if (Pattern.matches("[0-9]{2}:[0-9]{2}:[0-9]{2}", timeStart) &&
+					Pattern.matches("[0-9]{2}:[0-9]{2}:[0-9]{2}", timeEnd)) {
+				DateFormat df = new SimpleDateFormat("HH:mm:ss");
+				try {
+					Date start = df.parse(timeStart);
+					Date end = df.parse(timeEnd);
+					if (start.compareTo(end) >= 0)
+						otherErrors += "    Start time must be before end time\n";
+				} catch (ParseException e) {
+					formatErrors += "    Start or end time formatted incorrectly\n";
+				}
+			}
+		} else {
+			otherErrors += "    Start and end time must be set\n";
+		}
+		
 
 		////////////////
 		// Max Events //
@@ -720,9 +800,11 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 
 		Date startDate = null,endDate=null;
 		try {
-			startDate = new  SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH).parse(startTime);
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd'T'HH:mm:ss'Z'");
+			sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+			startDate = sdf.parse(startTime);
 			query.setStartTime(startDate);
-			endDate = new  SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH).parse(endTime);
+			endDate = sdf.parse(endTime);
 			query.setEndTime(endDate);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -853,8 +935,13 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				if (magMaxField.getText().length() > 0) {
 					magMax = Double.parseDouble(magMaxField.getText());
 				}
+				
+				String startPeriod =  dateStartField.getText() + "T" + timeStartField.getText() + "Z";
+				String endPeriod =  dateEndField.getText() + "T" + timeEndField.getText() + "Z";
+
+				
 				getComcatData(depthMin,depthMax, magMin,magMax, Double.parseDouble(latMinField.getText()),Double.parseDouble(latMaxField.getText()), 
-						Double.parseDouble(lonMinField.getText()), Double.parseDouble(lonMaxField.getText()), dateStartField.getText(), dateEndField.getText(),Integer.parseInt(maxEventsField.getText()));
+						Double.parseDouble(lonMinField.getText()), Double.parseDouble(lonMaxField.getText()), startPeriod, endPeriod,Integer.parseInt(maxEventsField.getText()));
 			}
 		}
 		//Describe catalog from which data is being retrieved
