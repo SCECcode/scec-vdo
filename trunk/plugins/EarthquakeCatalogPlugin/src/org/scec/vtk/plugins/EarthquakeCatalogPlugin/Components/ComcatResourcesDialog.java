@@ -517,6 +517,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 
 		dateStart = dateStartField.getText();
 		dateEnd   = dateEndField.getText();
+		boolean sameDate = false;
 
 		if (dateStart.length() > 0 && !dateStart.equals("YYYY/MM/DD")) {
 			if (Pattern.matches("[0-9]{4}/[0-9]{2}/[0-9]{2}", dateStart) || 
@@ -547,6 +548,10 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 					Date end = df.parse(dateEnd);
 					if (start.compareTo(end) > 0)
 						otherErrors += "    Start date must be on or before end date\n";
+					else if(start.compareTo(end) == 0)
+					{
+						sameDate = true;
+					}
 				} catch (ParseException e) {
 					formatErrors += "    Start or end date formatted incorrectly\n";
 				}
@@ -588,7 +593,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				try {
 					Date start = df.parse(timeStart);
 					Date end = df.parse(timeEnd);
-					if (start.compareTo(end) >= 0)
+					
+					if (sameDate && start.compareTo(end) > 0)
 						otherErrors += "    Start time must be before end time\n";
 				} catch (ParseException e) {
 					formatErrors += "    Start or end time formatted incorrectly\n";
@@ -936,8 +942,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 					magMax = Double.parseDouble(magMaxField.getText());
 				}
 				
-				String startPeriod =  dateStartField.getText() + "T" + timeStartField.getText() + "Z";
-				String endPeriod =  dateEndField.getText() + "T" + timeEndField.getText() + "Z";
+				String startPeriod =  dateStartField.getText() + "'T'" + timeStartField.getText() + "'Z'";
+				String endPeriod =  dateEndField.getText() + "'T'" + timeEndField.getText() + "'Z'";
 
 				
 				getComcatData(depthMin,depthMax, magMin,magMax, Double.parseDouble(latMinField.getText()),Double.parseDouble(latMaxField.getText()), 
