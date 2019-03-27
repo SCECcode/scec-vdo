@@ -10,11 +10,12 @@ import javax.swing.JPanel;
  * but you have to have a way for the GUI to make things happen in the non-GUI class.
  */
 
-public class DummyPluginGUI implements ItemListener {
+public class DummyPluginGUI extends JPanel implements ItemListener {
 
 	private JPanel mainPanel;
 	private JCheckBox checkbox;
-	private DummyPlugin db;
+	protected DummyPlugin db;
+	protected boolean sphereLoaded;
 	
 	public DummyPluginGUI(DummyPlugin d) {
 		this.db = d;
@@ -22,6 +23,7 @@ public class DummyPluginGUI implements ItemListener {
 		checkbox = new JCheckBox("Sphere");
 		checkbox.addItemListener(this);
 		mainPanel.add(checkbox);
+		sphereLoaded = false;
 	}
 
 	public JPanel getPanel() {
@@ -34,13 +36,17 @@ public class DummyPluginGUI implements ItemListener {
 			if (e.getStateChange()==ItemEvent.SELECTED) {
 				//Turn on the sphere
 				this.db.loadSphere();
+				sphereLoaded = true;
 			} else {
 				//Turn it off
 				this.db.unloadSphere();
+				sphereLoaded = false;
 			}
 		}
-		
 	}
 	
-	
+	public void setCheckBox(boolean checked)
+	{
+		checkbox.setSelected(checked);
+	}
 }
