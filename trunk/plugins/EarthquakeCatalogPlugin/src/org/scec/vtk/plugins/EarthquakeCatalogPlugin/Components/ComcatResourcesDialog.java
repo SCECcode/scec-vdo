@@ -61,8 +61,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	private JLabel maxLabel2 = new JLabel("Max");
 	private JLabel dateStartLabel = new JLabel("Start Date:");
 	private JLabel dateEndLabel   = new JLabel("End Date:");
-	private JLabel timeStartLabel = new JLabel("Start Time:");
-	private JLabel timeEndLabel   = new JLabel("End Time:");
+	private JLabel timeStartLabel = new JLabel("Start Time (UTC):");
+	private JLabel timeEndLabel   = new JLabel("End Time (UTC):");
 	//private JLabel srcLabel    	  = new JLabel("Src:");
 	//private JLabel eventTypeLabel = new JLabel("Type:");
 	private JLabel maxEventsLabel = new JLabel("Max EQs:");
