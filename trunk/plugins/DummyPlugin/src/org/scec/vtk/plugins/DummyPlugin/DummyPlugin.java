@@ -8,6 +8,8 @@ import javax.swing.JPanel;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.ActionPlugin;
+import org.scec.vtk.plugins.PluginState;
+import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.tools.Transform;
 
 import vtk.vtkActor;
@@ -19,10 +21,12 @@ import vtk.vtkSphereSource;
  */
 
 //Basically all plugins (any with a GUI) will extend ActionPlugin, which takes care of loading and unloading the GUI
-public class DummyPlugin extends ActionPlugin {
+public class DummyPlugin extends ActionPlugin implements StatefulPlugin{
 	private boolean sphereLoaded = false;
 	private vtkSphereSource sphere = null;
 	private vtkActor actor = null;
+	DummyPluginGUI gratPanel;
+	DummyPluginState state;
 	
 	public DummyPlugin() {
 	}
@@ -72,10 +76,22 @@ public class DummyPlugin extends ActionPlugin {
 
 	@Override
 	//This method creates the JPanel, which is returned to main to display
-	protected JPanel createGUI() throws IOException {
-		DummyPluginGUI dpg = new DummyPluginGUI(this);
-		return dpg.getPanel();
+	public JPanel createGUI() throws IOException {
+		//DummyPluginGUI dpg = new DummyPluginGUI(this);
+		//return dpg.getPanel();
+		this.gratPanel = new DummyPluginGUI(this);
+		return this.gratPanel.getPanel();
 	}
 
-	
+	public DummyPluginGUI getGraticuleGUI() {
+		return this.gratPanel;
+	}
+
+	@Override
+	public PluginState getState() {
+		if(state == null) {
+			state = new DummyPluginState(gratPanel);
+		}
+		return state;
+	}
 }
