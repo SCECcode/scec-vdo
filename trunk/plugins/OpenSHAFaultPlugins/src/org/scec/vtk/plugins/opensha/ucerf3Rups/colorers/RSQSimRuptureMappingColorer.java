@@ -162,8 +162,13 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 
 	@Override
 	public void setRupSet(FaultSystemRupSet rupSet, FaultSystemSolution sol) {
-		this.subSects = rupSet.getFaultSectionDataList();
-		this.distsCache = new HashMap<IDPairing, Double>();
+		if (rupSet == null) {
+			subSects = null;
+			distsCache = null;
+		} else {
+			this.subSects = rupSet.getFaultSectionDataList();
+			this.distsCache = new HashMap<IDPairing, Double>();
+		}
 	}
 
 }
