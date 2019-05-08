@@ -36,6 +36,7 @@ public class Timeline implements Stateful {
 	private List<PluginActors> pluginActors;
 	private List<KeyFrameList> pluginKeyFrameLists;
 	private List<KeyFrame> currentActivatedKeys;
+	private ArrayList<String> pluginLayerIds;
 	
 	private List<AnimationTimeListener> timeListeners;
 	private List<TimelinePluginChangeListener> pluginChangeListeners;
@@ -83,6 +84,7 @@ public class Timeline implements Stateful {
 		if(isDouble(p))
 			return;
 		plugins.add(p);
+		System.out.println("****************ADDED PLUGIN: " + p.getMetadata().getName());
 		pluginsDisplayed.add(true);
 		pluginsFrozen.add(false);
 		pluginActors.add(actors);
@@ -317,6 +319,16 @@ public class Timeline implements Stateful {
 			}
 		}
 		return null;
+	}
+	
+	public void saveLayerIDs(ArrayList<String> pluginLayerIds)
+	{
+		this.pluginLayerIds = pluginLayerIds;
+	}
+	
+	public ArrayList<String> getLayerIDs()
+	{
+		return pluginLayerIds;
 	}
 	
 	public KeyFrameList getKeysForPlugin(int index) {
