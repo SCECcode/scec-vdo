@@ -93,29 +93,7 @@ public class USGSShakeMapDownloader {
 			}
 			scanner.close();
 			writ.close();
-			/*
-			//url for usgs website
-			//URL usgs = new URL(URLSTART + "/" + network + "/shake/" + quakeId + "/" + URLEND);
-			//URL usgs = new URL(URLSTART + "/" + network + quakeId + "/" + network + "/" + urlNumber + "/" +  URLEND);
-			URL usgs = new URL(URLTEST);
-			ZipInputStream zipIn = new ZipInputStream(usgs.openStream());
-			ZipEntry entry = zipIn.getNextEntry();
-			while(entry != null){
-				String filePath = USGSDataPath + "/" + destinationFile;
 
-				FileWriter writ = new FileWriter(new File(filePath));
-				Scanner sc = new Scanner(zipIn);
-				header = sc.nextLine(); //skip the first line
-				System.out.println(header); 
-				while (sc.hasNextLine()) {
-					writ.append(sc.nextLine() + "\n");
-				}
-				writ.close();
-				sc.close();
-				entry = zipIn.getNextEntry();
-			}
-			zipIn.close();
-			*/
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
