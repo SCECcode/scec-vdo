@@ -62,44 +62,59 @@ import vtk.vtkActor2D;
 
 /*
  * This class reads the .xyz files from USGS.
- * Whenever you donwload a new .xyz file
+ * Whenever you download a new .xyz file
  * 	1. Remove the header
  * 	2. Convert it to a .txt file
  * 	3. Move it to the data/ShakeMapPlugin directory
  * The files in the data/ShakeMapPlugin directory will automatically 
  * be loaded when the ShakeMap plugin is opened in the program.
  */
+
+
+
 public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener, ListSelectionListener, TableModelListener{
 
 	private static final long serialVersionUID = 1L;
+	// Define file paths and map sources
 	
 	static final String dataPath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin"; //path to directory with local folders
 	static final String moreMaps = "More_USGS_Maps"; //the extra maps that the user may download
 	static final String openSHAFile = "openSHA.txt";
+	static final String openSHAMapURL = "http://zero.usc.edu/gmtData/1468263306257/map_data.txt"; 	//custom shakemaps which apparently can be uploaded to this link (from what is heard, i don't really know)
+	static final String colorFilePath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/";
 	
-	//custom shakemaps which apparently can be uploaded to this link (from what is heard, i don't really know)
-	static final String openSHAMapURL = "http://zero.usc.edu/gmtData/1468263306257/map_data.txt"; 
-
+	
+	
+	// Panels definition
 	private JPanel shakeMapLibraryPanel = new JPanel();
 	JPanel panel1 = new JPanel();
 	private JPanel loadFilePanel = new JPanel();
 	private JTabbedPane tabbedPane = new JTabbedPane();
-	JPanel bottomPane = new JPanel();
+	JPanel bottomPane = new JPanel();  // Panel for legend and transparency slider
+	JPanel presets = new JPanel();   // For Check boxes in presets tabs
+	JPanel panesPanel = new JPanel();
+	JPanel tab2 = new JPanel();  //Different tabs
 	
-	//Though they're separate lists, the values rely on each other.
-	//Make sure the indexes match up for each shake map and actor
-	private ArrayList<JCheckBox> checkBoxList; //for the local files in ShakeMapPlugin directory
-	private ArrayList<ShakeMap> shakeMapsList; //the shake map corresponding with the check box
-	private PluginActors pluginActors;         
-	private ArrayList<vtkActor> actorList;     //actor corresponding with the shake map
 	
-	//browse and load file button
-	JButton browse = new JButton("Load File");
-	
-	//for the usgs download option
-	
+	// Text boxes for USGS tab 
 	JTextField eventIdBox = new JTextField("Enter Shakemap XML Link");
-	JButton downloadUSGSButton = new JButton("Download USGS Shake Map");
+	final JTextField usgsURL = new JTextField("http://earthquake.usgs.gov/data/shakemap/");
+	
+	
+	//Lists are interdependent . Ensure the indexes match up for each shake map and actor
+	private ArrayList<JCheckBox> checkBoxList; //For the local files in ShakeMapPlugin directory
+	private ArrayList<ShakeMap> shakeMapsList; //The shake map corresponding with the check box
+	private PluginActors pluginActors;         
+	private ArrayList<vtkActor> actorList;     //Actor corresponding with the shake map
+	
+	
+	
+	// Buttons for Load Map and USGS tab
+	JButton browse = new JButton("Load File");  //browse and load file button
+	JButton downloadUSGSButton = new JButton("Download USGS Shake Map"); // Downloading the USGS map
+	JButton usgsLink = new JButton("Open USGS Website"); // Go to USGC website
+	JButton openSHAButton = new JButton("Download OpenSHA File");
+	
 	
 	//Table and transparency for preset shakemaps
 	String[] header = {"Name", "List Index"};
@@ -107,18 +122,17 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	public JTable surfaceTable = new JTable(surfaceTableModel);
 	private JSlider transparencySlider = new JSlider(); 
 	
-	//Different tabs
-	JPanel tab2 = new JPanel();
-	
+
 	private JCheckBox legendCheckBox;
 	private LegendItem legend;
 	private Plugin plugin;
 	
+	
+	
 	public ShakeMapGUI(Plugin plugin, PluginActors pluginActors) {
 		this.plugin = plugin;
 		
-		//First check if More_USGS_Maps directory exists...
-		//Otherwise, make that directory
+		//First check if More_USGS_Maps directory exists else create one
 		File f = new File(dataPath+"/"+moreMaps);
 		if(!(f.exists()))
 			f.mkdirs();	
@@ -128,9 +142,11 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		shakeMapsList = new ArrayList<ShakeMap>();
 		actorList = new ArrayList<>();
 		
-		//Make checkboxes of all the presets
-		JPanel presets = new JPanel();
+		//Make check boxes of all the presets  
+		
+		
 		presets.setLayout(new GridLayout(0,2)); //2 per row
+		
 		//Initialize all the preset files in the data/ShakeMapPlugin directory
 		File dataDirectory = new File(dataPath);
 		if (dataDirectory.isDirectory()) {
@@ -150,57 +166,41 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			}
 		}
 		
+		// Build surface table 
 		surfaceTable.setPreferredScrollableViewportSize(new Dimension(350, 70));
 		surfaceTable.getSelectionModel().addListSelectionListener(this);
 		surfaceTableModel.addTableModelListener(this);
 		
-		JPanel panesPanel = new JPanel();
 		JScrollPane scrollPane = new JScrollPane(surfaceTable);
 		panesPanel.setLayout(new GridLayout(1,2,10,10));
 		panesPanel.add(scrollPane);
-		
 		panel1.setLayout(new GridLayout(1,0,0,15));
 		panel1.add(new JScrollPane(presets));
 		
+		// Build slider for transparency
+		JPanel sliderPanel = new JPanel(new BorderLayout());
 		transparencySlider.setMajorTickSpacing(10);
 		transparencySlider.setMinorTickSpacing(5);
 		transparencySlider.setPaintLabels(true); 
 		transparencySlider.setPaintTicks(true);
 		transparencySlider.addChangeListener(this);
-		transparencySlider.setEnabled(false);
-		JPanel sliderPanel = new JPanel(new BorderLayout());
+		transparencySlider.setEnabled(false);	
 		sliderPanel.add(new JLabel("Transparency"), BorderLayout.NORTH);
 		sliderPanel.add(transparencySlider, BorderLayout.CENTER);
-		
+		// Add legend to slider pane
 		legendCheckBox = new JCheckBox("Add Legend");
-		legendCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e)
-			{
-				JCheckBox cb = (JCheckBox)e.getSource();
-				if (cb.isSelected()) {
-					addLegendScalarBar();
-				} else {
-					removeLegend();
-				}
-			}
-		});
 		legendCheckBox.setEnabled(false);
 		sliderPanel.add(legendCheckBox, BorderLayout.SOUTH);
 		
+		// Add slider and surface table to the Bottom panel
 		bottomPane.setLayout(new GridLayout(2,0,0,15));
 		bottomPane.add(panesPanel);
 		bottomPane.add(sliderPanel);
 		
-		browse.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				loadShakeMapFile();
-			}
-		});
 		
 		//Checkboxes for the USGS Table
 		loadFilePanel.setLayout(new GridLayout(0,2)); //2 per row
+		
 		//Initialize all the usgs files in the data/ShakeMapPlugin/More_USGS_Maps directory
 		File usgsDirectory = new File(dataPath + "/" + moreMaps);
 		if (usgsDirectory.isDirectory()) {
@@ -208,8 +208,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			File files[] = usgsDirectory.listFiles();
 			for (int i = 0; i < files.length; i++) {
 				if (files[i].isFile()) {
-//					System.out.println(files[i].getPath());
-//					System.out.println(files[i].getName());
 					String tempName = files[i].getName();
 					JCheckBox tempCheckbox = new JCheckBox(tempName);
 					tempCheckbox.setName(files[i].getPath()); //set it to the ENTIRE file path, not just the file name
@@ -222,15 +220,57 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			}
 		}
 		
-//		JScrollPane loadFileScroll = new JScrollPane(loadFilePanel);
-		
 		JPanel USGSPanel = new JPanel();
 		USGSPanel.setLayout(new FlowLayout());
-		//calChooser.add(nc);
-		//calChooser.add(sc);
-		JButton usgsLink = new JButton("Open USGS Website");
-		final JTextField usgsURL = new JTextField("http://earthquake.usgs.gov/data/shakemap/");
-
+		USGSPanel.add(new JLabel("Visit website, locate shakemap, and enter URL of Shakemap's XML file"));
+		eventIdBox.setPreferredSize(new Dimension(200,40));
+		USGSPanel.add(eventIdBox);
+		USGSPanel.add(downloadUSGSButton);
+		USGSPanel.add(usgsURL);
+		USGSPanel.add(usgsLink);
+		
+		
+		tabbedPane.setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()/2));
+		tabbedPane.addTab("Presets", panel1);
+		tab2.setLayout(new BorderLayout());	
+		tab2.add(loadFilePanel, BorderLayout.NORTH);
+		tab2.add(browse, BorderLayout.SOUTH);
+		tabbedPane.addTab("Load Map", tab2);
+		tabbedPane.addTab("Download USGS Map", USGSPanel);
+		JPanel shaPanel = new JPanel(new FlowLayout());
+		shaPanel.add(openSHAButton);
+//		tabbedPane.addTab("OpenSHA", shaPanel);
+		shakeMapLibraryPanel.setLayout(new BorderLayout());
+		shakeMapLibraryPanel.add(tabbedPane, BorderLayout.NORTH);
+		shakeMapLibraryPanel.add(bottomPane, BorderLayout.SOUTH);
+		this.add(shakeMapLibraryPanel);
+		
+		
+		// Event listener for Legend check box
+		legendCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e)
+			{
+				JCheckBox cb = (JCheckBox)e.getSource();
+				if (cb.isSelected()) {
+					addLegendScalarBar();
+				} else {
+					removeLegend();
+				}
+			}
+		});
+		
+		
+		// Event listener for loading new map file on Load Map tab
+		browse.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				loadShakeMapFile();
+			}
+		});
+		
+		
+		// Listener for opening USGS web-site
 		usgsLink.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -244,16 +284,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			}
 		});
 		
-		USGSPanel.add(new JLabel("Visit website, locate shakemap, and enter URL of Shakemap's XML file"));
 		
-		//USGSPanel.add(nc);
-		//USGSPanel.add(sc);
-		eventIdBox.setPreferredSize(new Dimension(200,40));
-		USGSPanel.add(eventIdBox);
-		USGSPanel.add(downloadUSGSButton);
-		USGSPanel.add(usgsURL);
-		USGSPanel.add(usgsLink);
-		
+		// Listener for Text box with XML link  
 		eventIdBox.addFocusListener(new FocusListener(){
 			@Override
 			public void focusGained(FocusEvent arg0) {
@@ -270,6 +302,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			}
 		});
 		
+		
+		// Downloads the new shape map based on URL that is provided in the TextField
 		downloadUSGSButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -303,7 +337,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		});
 		
 		
-		JButton openSHAButton = new JButton("Download OpenSHA File");
+		// Need to confirm
 		openSHAButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -323,22 +357,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 			}		
 		});
 		
-		tabbedPane.setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()/2));
-		tabbedPane.addTab("Presets", panel1);
-//		JPanel tab2 = new JPanel(); //it's global now
-		tab2.setLayout(new BorderLayout());	
-		tab2.add(loadFilePanel, BorderLayout.NORTH);
-		tab2.add(browse, BorderLayout.SOUTH);
-		tabbedPane.addTab("Load Map", tab2);
-		tabbedPane.addTab("Download USGS Map", USGSPanel);
-		JPanel shaPanel = new JPanel(new FlowLayout());
-		shaPanel.add(openSHAButton);
-//		tabbedPane.addTab("OpenSHA", shaPanel);
-		
-		shakeMapLibraryPanel.setLayout(new BorderLayout());
-		shakeMapLibraryPanel.add(tabbedPane, BorderLayout.NORTH);
-		shakeMapLibraryPanel.add(bottomPane, BorderLayout.SOUTH);
-		this.add(shakeMapLibraryPanel);
 	}
 
 
@@ -349,40 +367,49 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	}
 	
 	
+	
+	//  Create check box for new map and display it on map 
 	public void addMap(String name, String filepath, String scaleChoice){
 		showNewMap(filepath, scaleChoice);
 		addNewCheckBox(name, filepath);
 	}
 
-	/*
-	 * This immediately shows the map after loading it
-	 */
-	private void showNewMap(String path, String scaleChoice){
+	// Get path for color file based on scale choice
+	private String getColorFilePath(String scaleChoice) {
 		String colorFile = "";
-		System.out.println("file path: " + path);
 		if(scaleChoice.equals("pga")){
 			colorFile = "colors_pga.cpt";
 		}else if(scaleChoice.equals("pgv")){
 			colorFile = "colors_pgv.cpt";
-		}else if(scaleChoice.equals("mmi")){
-			colorFile = "colors.cpt"; //mmi format by default
+		}else if (scaleChoice.equals("mmi")){
+			colorFile = "colors.cpt"; 
 		}
-		ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/" + colorFile, scaleChoice);
-		try{ //try loading a usgs-format shakemap
-			shakeMap.loadFromFileToGriddedGeoDataSet(path); 
-		}catch(Exception e){ //otherwise, try loading  the opensha-form shakemap
-			shakeMap.loadOpenSHAFileToGriddedGeoDataSet(path); 
+		
+		return  colorFilePath + colorFile;
+	}
+	
+	// Plot the newly loaded map
+	private void showNewMap(String path, String scaleChoice){
+		System.out.println("file path: " + path);					
+		ShakeMap shakeMap = new ShakeMap(getColorFilePath(scaleChoice), scaleChoice);
+		try{ 			
+			shakeMap.loadFromFileToGriddedGeoDataSet(path); //try loading a usgs-format shakemap
+		}catch(Exception e){ 
+			shakeMap.loadOpenSHAFileToGriddedGeoDataSet(path); //otherwise, try loading  the opensha-form shakemap
 		}
 		shakeMap.setActor(shakeMap.builtPolygonSurface());
 		shakeMap.getActor().GetProperty().SetOpacity(0.5);
 		actorList.add(shakeMap.getActor());
 		pluginActors.addActor(shakeMap.getActor());
 		shakeMapsList.add(shakeMap);
-//		parameterList.add(scaleChoice);
+		System.out.println("Entry in list"+shakeMapsList.size());
 		Info.getMainGUI().updateRenderWindow();
 	}
 	
-	//appends a CheckBox after loading a new shake map
+	
+	
+	
+	//Appends a CheckBox after loading a new shake map
 	private void addNewCheckBox(String checkBoxName, String filepath){
 		JCheckBox tempCheckbox = new JCheckBox(checkBoxName);
 		tempCheckbox.setName(filepath);
@@ -394,34 +421,26 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		tab2.revalidate(); //make gui display new checkbox
 	}
 	
-	/*
-	 * Lets the user load a shakemap file that
-	 * is saved on their computer
-	 */
+	
+	// Lets the users load Shakemap files that are saved on their local machines	
 	private void loadShakeMapFile(){
 		JFileChooser chooser = new JFileChooser();
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
 	        "Text files", "txt", "xyz");
-	    chooser.setFileFilter(filter);
-	    
-	    
+	    chooser.setFileFilter(filter);	    
 	    String s = File.separator;
 	    File defaultDir = new File(MainGUI.getCWD(),
 				"data"+s+"ShakeMapPlugin");	    
 		if (defaultDir.exists())
 			chooser.setCurrentDirectory(defaultDir);
 		
-		
-//	    chooser.setCurrentDirectory(new File(dataPath+"/"+moreMaps));
 	    int returnVal = chooser.showOpenDialog(this);
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    	try{
 	    		//add new JOption Pane for user to choose mmi, pga, and pgv
 	    		String[] choices = { "mmi", "pga", "pgv" };
 	    	    String scaleChoice = (String) JOptionPane.showInputDialog(shakeMapLibraryPanel, "Choose a scale",
-	    	        "Choose a scale", JOptionPane.QUESTION_MESSAGE, null, // Use
-	    	                                                                        // default
-	    	                                                                        // icon
+	    	        "Choose a scale", JOptionPane.QUESTION_MESSAGE, null,
 	    	        choices, // Array of choices
 	    	        choices[1]); // Initial choice
 	    	    if(scaleChoice==null)
@@ -439,6 +458,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	    }
 	}
 	
+	
+	// Plot a legend scale on the map specifying scale of earthquake
 	private void addLegendScalarBar() {
 		ListSelectionModel model = surfaceTable.getSelectionModel();
 		int idx = (int) surfaceTableModel.getValueAt(model.getMinSelectionIndex(), 1);
@@ -473,6 +494,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		}
 	}
 	
+	
+	// Remove Legend
 	private void removeLegend() {
 		if (legend != null) {
 			plugin.getPluginActors().removeLegend(legend);
@@ -488,29 +511,24 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		for(int i=0; i<checkBoxList.size(); i++){
 			if(src == checkBoxList.get(i)){
 				File f = new File(checkBoxList.get(i).getName());
+				System.out.println(f.getPath());
 				if (e.getStateChange()==ItemEvent.SELECTED) {
 					
-					if(shakeMapsList.get(i) == null){ //if it has never been selected before, load the file
-						ShakeMap shakeMap = new ShakeMap(Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/colors.cpt", "mmi"); //load mmi by default
-						if(f.getName().equals("openSHA.txt")){
-							//The file format for data from openSHA files are a little different.
-							//Open declaration of method for more details
-							shakeMap.loadOpenSHAFileToGriddedGeoDataSet(f.getPath());
-						}else{
-							shakeMap.loadFromFileToGriddedGeoDataSet(f.getPath());			
-						}
-						shakeMap.setActor(shakeMap.builtPolygonSurface());
-						actorList.set(i, shakeMap.getActor());
-						pluginActors.addActor(shakeMap.getActor());
-						shakeMapsList.set(i, shakeMap);
-						shakeMapsList.get(i).getActor().GetProperty().SetOpacity(0.5);
-					}else{
+					if(shakeMapsList.get(i) == null){ 
+						System.out.println();
+						addShakemap(f.getName(),f.getPath(),i,getColorFilePath("mmi"),"mmi");
+					}
+					else{
 						shakeMapsList.get(i).getActor().SetVisibility(1);
 					}
-					//add to table
+					//Add the file name and index to the surface table
 					surfaceTableModel.addRow(new Object[]{f.getName(), i});
-				}else{ //checkbox is unselected
+				}
+				else  { 
+					// If a check box is unselected make objects visibility 0 and remove from surface table 
 					shakeMapsList.get(i).getActor().SetVisibility(0);
+					System.out.println(f.getName());
+					System.out.println(surfaceTableModel.getRowCount());
 					for(int j=0; j<surfaceTableModel.getRowCount(); j++){
 						if(f.getName().equals(surfaceTableModel.getValueAt(j, 0))){
 							System.out.println("list index is " + surfaceTableModel.getValueAt(j, 1));
@@ -561,12 +579,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		if (selectedRows.length > 0) {
 			this.transparencySlider.setEnabled(true);
 			this.legendCheckBox.setEnabled(true);
-			
-			/*
-			double shakeMapOpacity = shakeMapsList.get(selectedRows[0]).getActor().GetProperty().GetOpacity() * 100; //set transparency slider value to the shakemap's current opacity
-			this.transparencySlider.setValue((int) shakeMapOpacity);
-			*/
-		} else {
+		} 
+		else {
 			this.transparencySlider.setEnabled(false);
 			this.legendCheckBox.setEnabled(false);
 		}
@@ -595,7 +609,8 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
 	        try {
 	            desktop.browse(uri);
-	        } catch (Exception e) {
+	        } 
+	        catch (Exception e) {
 	            e.printStackTrace();
 	        }
 	    }
@@ -604,11 +619,33 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	public static void openWebpage(URL url) {
 	    try {
 	        openWebpage(url.toURI());
-	    } catch (URISyntaxException e) {
+	    } 
+	    catch (URISyntaxException e) {
 	        e.printStackTrace();
 	    }
 	}
 
+	
+	
+	// Plots a new Shakemap
+	void addShakemap(String fname,String path,int i,String color_file_path ,String scaleMode) {
+			
+			ShakeMap shakeMap = new ShakeMap(color_file_path, scaleMode); 
+			if(fname.equals("openSHA.txt")){
+				shakeMap.loadOpenSHAFileToGriddedGeoDataSet(path); // The file format for data from openSHA files are a little different. See method declaration for more details.
+			}
+			else{
+				shakeMap.loadFromFileToGriddedGeoDataSet(path);	
+			}		
+			
+			// Plot the data read from the file on the Map Surface
+			shakeMap.setActor(shakeMap.builtPolygonSurface());		
+			actorList.set(i, shakeMap.getActor());
+			pluginActors.addActor(shakeMap.getActor());
+			shakeMapsList.set(i, shakeMap);
+			shakeMapsList.get(i).getActor().GetProperty().SetOpacity(0.5);
+	}
+	
 	//GETTERS and SETTERS
 	public ArrayList<JCheckBox> getCheckBoxList() {
 		return checkBoxList;

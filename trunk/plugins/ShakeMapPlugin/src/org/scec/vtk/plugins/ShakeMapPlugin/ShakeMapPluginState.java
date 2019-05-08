@@ -33,6 +33,8 @@ public class ShakeMapPluginState implements PluginState{
 	private ArrayList<Integer> selectedIndexes;
 	private ArrayList<Double> setTransparencies;
 	
+	
+	// Initialize the GUI element and lists needed to store values for individual elements
 	ShakeMapPluginState(ShakeMapGUI parent)
 	{
 		this.parent = parent;
@@ -44,8 +46,8 @@ public class ShakeMapPluginState implements PluginState{
 		setTransparencies = new ArrayList<Double>();
 	}
 
-	//Gets the latest details. This function is called
-	//in toXML()
+	// Gets the latest details from existing elements. 
+	// This function is called in toXML()
 	void copyLatestCatalogDetails()
 	{
 		filePath.clear();
@@ -109,7 +111,7 @@ public class ShakeMapPluginState implements PluginState{
 		}
 	}
 
-	//Writes to a xml file
+	//Writes to a XML file after fetching all the current element details and creating element tags.
 	@Override
 	public void toXML(Element stateEl) {
 		copyLatestCatalogDetails();
