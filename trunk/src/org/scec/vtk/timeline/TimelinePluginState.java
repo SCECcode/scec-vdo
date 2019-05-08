@@ -73,7 +73,7 @@ public class TimelinePluginState implements PluginState{
 			parent.setFrozen(plugin, pluginIsFrozen.get(i));
 		}
 		
-
+		parent.saveLayerIDs(pluginLayerId);
 	}
 
 	@Override
@@ -187,12 +187,10 @@ public class TimelinePluginState implements PluginState{
 		numPlugins = 0;
 		for ( Iterator i = stateEl.elementIterator( "TimelineLayer" ); i.hasNext(); ) {
 			Element e = (Element) i.next();
-			
 			pluginLayerId.add(e.elementText("pluginId"));
 			System.out.println("LayerID: " + pluginLayerId.get(numPlugins));
 			//Plugin plugin = parent.getPluginAt(numPlugins);
 			Plugin plugin = parent.getPluginWith(pluginLayerId.get(numPlugins));
-			System.out.println("PluginId: " + plugin.getId());
 			pluginIsDisplayed.add(Boolean.parseBoolean(e.elementText("isDisplayed")));
 			pluginIsFrozen.add(Boolean.parseBoolean(e.elementText("isFrozen")));
 		
@@ -211,7 +209,7 @@ public class TimelinePluginState implements PluginState{
 				if (eSub.elementText("type").equals("Visibility")) {
 					VisibilityKeyFrame key = new VisibilityKeyFrame(Double.parseDouble(eSub.elementText("startTime")),parent.getActorsForPlugin(plugin),Boolean.parseBoolean(eSub.elementText("visiblity")));
 					parent.addKeyFrame(parent.getPluginAt(numPlugins),key);
-					System.out.println("visibility of " + Double.parseDouble(eSub.elementText("startTime")) + " being added to " + plugin.getId());
+					//System.out.println("visibility of " + Double.parseDouble(eSub.elementText("startTime")) + " being added to " + plugin.getId());
 				}
 				if (eSub.elementText("type").equals("Range")) {
 					double duration = Double.parseDouble(eSub.elementText("duration"));
@@ -252,7 +250,6 @@ public class TimelinePluginState implements PluginState{
 				visibilityArray.add(visibilityAtKeyframe);	
 			numPlugins++;
 		}
-
 	}
 
 	private PluginState loadAndCreateStateKeyFrame(Element eSub,Plugin plugin)
