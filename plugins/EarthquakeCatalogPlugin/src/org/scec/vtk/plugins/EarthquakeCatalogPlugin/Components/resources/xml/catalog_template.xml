@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+	<!-- $Id: catalog_template.xml 548 2005-05-04 19:48:48Z pmpowers $-->
+
+<catalog_template>
+    <object_attributes>
+        <data num_events="" scope="">
+            <latitude min="" max=""/>
+            <longitude min="" max=""/>
+            <depth min="" max=""/>
+            <magnitude min="" max=""/>
+            <date min="" max=""/>
+        </data>
+    </object_attributes>
+</catalog_template>

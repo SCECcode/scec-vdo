@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state-vector>
+  <view-range>
+    <lower-latitude>-90</lower-latitude>
+    <upper-latitude>90</upper-latitude>
+    <left-longitude>-180</left-longitude>
+    <right-longitude>180</right-longitude>
+  </view-range>
+  <transforms>
+    <transform>
+      <dimension-0>0.9510565162951536</dimension-0>
+      <dimension-1>-0.10060609255454922</dimension-1>
+      <dimension-2>0.29218130835738243</dimension-2>
+      <dimension-3>2921.8130835738243</dimension-3>
+      <dimension-4>1.3877787807814457E-17</dimension-4>
+      <dimension-5>0.9455185755993168</dimension-5>
+      <dimension-6>0.32556815445715664</dimension-6>
+      <dimension-7>3255.681544571567</dimension-7>
+      <dimension-8>-0.3090169943749475</dimension-8>
+      <dimension-9>-0.3096337147946659</dimension-9>
+      <dimension-10>0.899241602601842</dimension-10>
+      <dimension-11>8992.41602601842</dimension-11>
+      <dimension-12>0.0</dimension-12>
+      <dimension-13>0.0</dimension-13>
+      <dimension-14>0.0</dimension-14>
+      <dimension-15>1.0</dimension-15>
+    </transform>
+    <transform>
+      <dimension-0>1.0</dimension-0>
+      <dimension-1>0.0</dimension-1>
+      <dimension-2>0.0</dimension-2>
+      <dimension-3>0.0</dimension-3>
+      <dimension-4>0.0</dimension-4>
+      <dimension-5>1.0</dimension-5>
+      <dimension-6>0.0</dimension-6>
+      <dimension-7>0.0</dimension-7>
+      <dimension-8>0.0</dimension-8>
+      <dimension-9>0.0</dimension-9>
+      <dimension-10>1.0</dimension-10>
+      <dimension-11>0.0</dimension-11>
+      <dimension-12>0.0</dimension-12>
+      <dimension-13>0.0</dimension-13>
+      <dimension-14>0.0</dimension-14>
+      <dimension-15>1.0</dimension-15>
+    </transform>
+  </transforms>
+  <background>
+    <color x="0.0" y="0.0" z="0.0" />
+  </background>
+  <grid>
+    <color x="1.0" y="1.0" z="1.0" />
+  </grid>
+  <plugins>
+    <plugin>
+      <id>org.scec.vdo.plugins.PoliticalBoundariesPlugin</id>
+      <state active="true">
+        <politicalPlugin>
+          <boundary_group loaded="true" displayed="false" groupSize="34" row="3" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary_group loaded="false" groupSize="0" color="-1" />
+          <boundary on="false" color="-1">Aleutian</boundary>
+          <boundary on="false" color="-1">Anguilla</boundary>
+          <boundary on="false" color="-1">Antigua</boundary>
+          <boundary on="false" color="-1">Bahamas</boundary>
+          <boundary on="false" color="-1">Barbados</boundary>
+          <boundary on="false" color="-1">Belize</boundary>
+          <boundary on="false" color="-1">Bermuda</boundary>
+          <boundary on="false" color="-1">Canada</boundary>
+          <boundary on="false" color="-1">Clipperton_Island</boundary>
+          <boundary on="false" color="-1">Costa_Rica</boundary>
+          <boundary on="false" color="-1">Cuba</boundary>
+          <boundary on="false" color="-1">Dominica</boundary>
+          <boundary on="false" color="-1">Dominican_Rep</boundary>
+          <boundary on="false" color="-1">El_Salvador</boundary>
+          <boundary on="false" color="-1">Greenland</boundary>
+          <boundary on="false" color="-1">Grenada</boundary>
+          <boundary on="false" color="-1">Guadeloupe</boundary>
+          <boundary on="false" color="-1">Guatemala</boundary>
+          <boundary on="true" color="-1">Haiti</boundary>
+          <boundary on="false" color="-1">Honduras</boundary>
+          <boundary on="false" color="-1">Jamaica</boundary>
+          <boundary on="false" color="-1">Mexico</boundary>
+          <boundary on="false" color="-1">Midway_Islands</boundary>
+          <boundary on="false" color="-1">Montserrat</boundary>
+          <boundary on="false" color="-1">Navassa_Island</boundary>
+          <boundary on="false" color="-1">Netherlands_Antilles</boundary>
+          <boundary on="false" color="-1">Nicaragua</boundary>
+          <boundary on="false" color="-1">Panama</boundary>
+          <boundary on="false" color="-1">Puerto_Rico</boundary>
+          <boundary on="false" color="-1">St_Lucia</boundary>
+          <boundary on="false" color="-1">St_Pierre</boundary>
+          <boundary on="false" color="-1">St_Vincent</boundary>
+          <boundary on="false" color="-1">Trinidad</boundary>
+          <boundary on="false" color="-1">Virgin_Islands</boundary>
+        </politicalPlugin>
+      </state>
+    </plugin>
+    <plugin>
+      <id>org.scec.vdo.plugins.GraticulePlugin</id>
+      <state active="true">
+        <graticulePlugin>
+          <Graticule on="true" upperLat="22" lowerLat="17" upperLon="-70" lowerLon="-75" gridWidth="1.0" />
+        </graticulePlugin>
+      </state>
+    </plugin>
+  </plugins>
+</state-vector>
+
