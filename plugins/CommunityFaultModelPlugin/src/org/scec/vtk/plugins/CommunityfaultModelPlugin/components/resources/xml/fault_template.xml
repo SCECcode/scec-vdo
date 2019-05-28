@@ -1,0 +1,12 @@
+<!DOCTYPE root>
+
+	<!-- $Id: fault_template.xml 2109 2008-07-08 20:35:22Z ihrig $-->
+
+<display_template>
+    <object_attributes>
+        <display>
+            <mesh_state value="0"/>
+            <color r="1.0" g="0.0" b="0.0"/>
+        </display>
+    </object_attributes>
+</display_template>

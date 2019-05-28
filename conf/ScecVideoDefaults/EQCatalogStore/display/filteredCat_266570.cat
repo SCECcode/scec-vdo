@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: object_template.xml 20 2005-05-04 19:44:40Z pmpowers $-->
+<scec_video_object>
+  <object_info>
+    <class>org.scec.geo3d.plugins.EQCatalogPlugin.components.EQCatalog</class>
+    <source_file>\EQCatalogStore\source\felzer.cat</source_file>
+    <attribute_file>\EQCatalogStore\display\filteredCat_266570.cat</attribute_file>
+    <data_file>\EQCatalogStore\display\data\filteredCat_266570.dat</data_file>
+    <display_name>UCERF 3 Earthquake Catalog</display_name>
+    <source_info>
+      <citation />
+      <reference />
+    </source_info>
+    <notes />
+  </object_info>
+  <object_attributes>
+    <data num_events="60568" scope="11">
+      <latitude min="31.517" max="42.992" />
+      <longitude min="-126.0" max="-113.732" />
+      <depth min="0.0" max="87.0" />
+      <magnitude min="2.5" max="7.9" />
+      <date min="August 01, 1769  (04:40:40)" max="December 31, 2011  (19:14:44)" />
+    </data>
+    <display>
+      <geometry value="0" />
+      <scaling value="0" />
+      <focal_mech value="0" />
+      <colors apply_gradient="0">
+        <color_1 r="1.0" g="0.0" b="0.0" />
+        <color_2 r="1.0" g="0.0" b="0.0" />
+      </colors>
+      <recentEQcoloring value="0" />
+    </display>
+  </object_attributes>
+</scec_video_object>
+

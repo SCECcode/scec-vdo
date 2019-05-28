@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<plugins xmlns="http://www.scec.org/vdo/plugin-descriptor" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.scec.org/vdo/plugin-descriptor plugin.xsd"
+	version="1.0">
+	
+	<plugin id="org.scec.vtk.plugins.opensha.faultModels.FaultModelPlugin"
+		name="WGCEP Fault Models Plugin"
+		short-name="WGCEP Fault Models Plugin"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.faultModels.FaultModelPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesPlugin"
+		name="UCERF3 Fault System Ruptures Plugin"
+		short-name="UCERF3 Fault System Ruptures Plugin"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.simulators.EQSimsPlugin"
+		name="Earthquake Simulators"
+		short-name="Earthquake Simulators"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.simulators.EQSimsPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.regions.RegionsPlugin"
+		name="OpenSHA Regions"
+		short-name="OpenSHA Regions"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.regions.RegionsPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.ucerf3Disagg.UCERF3DisaggPlugin"
+		name="UCERF3 Disaggregation Plugin"
+		short-name="UCERF3 Disagg Plugin"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.ucerf3Disagg.UCERF3DisaggPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
+	
+	<plugin id="org.scec.vtk.plugins.opensha.obsEqkRup.ObsEqkRupPlugin"
+		name="UCERF3 EQ Catalog Plugin"
+		short-name="UCERF3 EQ Catalog"
+		version="1.0" creator="Kevin Milner"
+		plugin-class="org.scec.vtk.plugins.opensha.obsEqkRup.ObsEqkRupPlugin">
+		
+		<menu-item menu="Display" submenu="OpenSHA"/>
+			
+	</plugin>
+</plugins>
