@@ -11,6 +11,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -306,7 +307,8 @@ MouseListener
 		this.propsTabbedPane.setBorder(BorderFactory.createEmptyBorder(0,10,0,10));
 		this.propsTabbedPane.add(getPropsExtentsPanel());
 		this.propsTabbedPane.add(getPropsDisplayPanel());
-
+		// Keep display pane disabled by default
+		this.propsTabbedPane.setEnabledAt(1, false);
 
 		// assemble lower pane
 		JPanel lowerPane = new JPanel();
@@ -426,6 +428,21 @@ MouseListener
 
 		// set up table
 		this.catalogTable = new CatalogTable(this, getPluginActors());
+		
+		// Add event listener to save VTP object
+		final CatalogTable table = this.catalogTable;
+		this.catalogTable.addMouseListener(new MouseAdapter() {        
+		public void mouseClicked(MouseEvent e) {
+		             
+		             if (e.getButton() == MouseEvent.BUTTON1) {
+		              int col = table.getColumnModel().getColumnIndexAtX(e.getX());
+		              if(col==0)
+		               plugin.toVTP();              
+		             }
+		              }
+		            }
+		);
+		
 		scroller.setViewportView(this.catalogTable);
 		scroller.getViewport().setBackground(this.catalogTable.getBackground());
 
@@ -657,7 +674,6 @@ MouseListener
 		this.dispProp_slider.setPaintTicks(true);
 		this.dispProp_slider.addChangeListener(this);
 		this.dispProp_slider.setSnapToTicks(true);
-
 
 		//Transparency
 		transparencySlider=new JSlider(0,100,100);
@@ -915,6 +931,7 @@ MouseListener
 	 * @see javax.swing.event.TableModelListener#tableChanged(javax.swing.event.TableModelEvent)
 	 */
 	public void tableChanged(TableModelEvent e) {
+
 	}
 
 	/**
@@ -923,7 +940,7 @@ MouseListener
 	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
 	 */
 	public void valueChanged(ListSelectionEvent e) {
-
+		
 		Object src = e.getSource();
 		if (src == this.catalogTable.getSelectionModel()) {
 			if (e.getValueIsAdjusting()) return;
@@ -937,6 +954,7 @@ MouseListener
 	 * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
 	 */
 	public void stateChanged(ChangeEvent e) {
+		System.out.println("Changed state");
 		Object src = e.getSource();
 		if(src == dispProp_slider){
 			//earthquake magnitude scaling
@@ -962,6 +980,7 @@ MouseListener
 	}
 	
 	public void setTransparency(EQCatalog cat, int transparencyVal) {
+		
 		// TODO Auto-generated method stub
 		double transparency = (transparencyVal*255/100);
 		
@@ -975,6 +994,7 @@ MouseListener
 	}
 	public void setMagnitudeScale(EQCatalog cat,int scale) {
 		// TODO Auto-generated method stub
+		
 		double[] scaleMenuItems = {0.05,0.1,0.2,0.5,1.0,2.0,3.0,4.0,5.0,6.0};
 
 		double scaleSet = 0.05;
@@ -1045,10 +1065,11 @@ MouseListener
 	}
 	private void updateActorsAndRender(final EQCatalog cat) {
 		// TODO make this not disgusting please. it's not a branch group anymore. and it should at leass
-		
+	
 		for (vtkActor actor : cat.getActors())
 			pluginActors.addActor(actor);
 		MainGUI.updateRenderWindow();
+
 	}
 
 	public void setAnimationColor(Color c1, Color c2){
@@ -1064,7 +1085,7 @@ MouseListener
 
 	//if catalogs opacity has to be changed
 	public List<vtkActor> animateEarthquakeOpacity(int lastIndex,Earthquake eq,EQCatalog cat,int opacity)
-	{
+	{	
 		//also called on every animation tick
 		ArrayList<Earthquake> eqList = cat.getSelectedEqList();
 		vtkActor actorPointsOld = (vtkActor) cat.getActors().get(0);
@@ -1152,7 +1173,7 @@ MouseListener
 			setCatalogVisible(cat,cat.getGeometry(),true);
 		}
 		else if (src == this.dispProp_geomSphere) {
-
+			
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			cat.setGeometry(1);
 			setCatalogVisible(cat,cat.getGeometry(),true);
@@ -1241,7 +1262,7 @@ MouseListener
 	
 	public void setCatalogVisible(final EQCatalog cat, final int geometry,final boolean visible) {
 		// TODO Auto-generated method stub
-	
+			
 				vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
 				vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
 				System.out.println(geometry);

@@ -540,6 +540,7 @@ public class MainMenu implements ActionListener, ItemListener{
 		vtkJoglPanelComponent renderWindow = Info.getMainGUI().getRenderWindow();
 
 		vtkActorCollection actorlist = renderWindow.getRenderer().GetActors();
+	
 		if(actorlist.GetNumberOfItems()>0){
 			System.out.println(actorlist.GetNumberOfItems());
 			vtkPolyDataWriter objExporter = new vtkPolyDataWriter();

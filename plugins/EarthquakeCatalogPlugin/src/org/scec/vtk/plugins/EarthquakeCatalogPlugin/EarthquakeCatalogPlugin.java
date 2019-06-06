@@ -1,7 +1,9 @@
 package org.scec.vtk.plugins.EarthquakeCatalogPlugin;
 
+
 import java.util.ArrayList;
 import java.util.Date;
+
 
 import javax.swing.JPanel;
 
@@ -13,9 +15,11 @@ import org.scec.vtk.plugins.PluginState;
 import org.scec.vtk.plugins.StatefulPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.EQCatalog;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.Components.Earthquake;
+import org.scec.vtk.tools.SaveVTP;
 
 import vtk.vtkActor;
 import vtk.vtkTextActor;
+
 
 public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlugin, AnimatablePlugin{
 
@@ -25,8 +29,9 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 	private Earthquake starteq;
 	private Earthquake endeq;
 	private long diff;
+	ArrayList<vtkActor> actorlist = new ArrayList<vtkActor>();
 	vtkTextActor screenTextDate; //the date of the earthquake event
-
+	
 	/**
 	 * Static field for location of fault data in <i>ScecVideo</i> data library.
 	 */
@@ -53,6 +58,7 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 		return eQGui;
 	}
 	public void unload() {
+		System.out.println("Unload Called");
 		for (EQCatalog eqc : eQGui.getCatalogs())
 			for (vtkActor actor : eqc.getActors())
 				getPluginActors().removeActor(actor);
@@ -60,6 +66,20 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 		super.unload();
 		Info.getMainGUI().updateRenderWindow();
 		eQGui=null;
+	}
+	
+
+	public void toVTP() {
+		 actorlist.clear() ;
+		 for (EQCatalog eqc : eQGui.getCatalogs()) {
+		  int count=0;
+		   for (vtkActor actor : eqc.getActors()) {
+		     if(actor.GetVisibility()==1 && count==1)
+		       actorlist.add(actor);
+		     count++;
+		   }
+		 }
+		 SaveVTP.saveVTPObj(actorlist,"EarthquakeCatalog"); 
 	}
 
 
