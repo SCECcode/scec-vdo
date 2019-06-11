@@ -1,6 +1,7 @@
 package org.scec.vtk.commons.opensha.tree.builders;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 
 import javax.swing.JPanel;
@@ -8,6 +9,7 @@ import javax.swing.JPanel;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.refFaultParamDb.dao.db.DB_AccessAPI;
 import org.opensha.refFaultParamDb.dao.db.DB_ConnectionPool;
@@ -24,50 +26,72 @@ public abstract class MultiDBBuilder implements FaultTreeBuilder, ParameterChang
 	
 	private TreeChangeListener l;
 	
-	protected static final String DB_SELECT_PARAM_NAME = "Fault Database";
-	public static final String DB_SELECT_UCERF2 = "UCERF2";
-	public static final String DB_SELECT_UCERF3 = "UCERF3 (development)";
-	protected static final String DB_SELECT_DEFAULT = DB_SELECT_UCERF3;
+	protected enum DB_Source {
+		UCERF3("UCERF3 DB") {
+			@Override
+			protected DB_AccessAPI build() {
+				return DB_ConnectionPool.getDB3ReadOnlyConn();
+			}
+		},
+		UCERF2("UCERF2 DB") {
+			@Override
+			protected DB_AccessAPI build() {
+				return DB_ConnectionPool.getDB2ReadOnlyConn();
+			}
+		},
+		CACHED("UCERF3 Cached (XML)") {
+			@Override
+			protected DB_AccessAPI build() {
+				return null;
+			}
+		};
+		
+		private String name;
+
+		private DB_Source(String name) {
+			this.name = name;
+		}
+		
+		public String toString() {
+			return name;
+		}
+		
+		protected abstract DB_AccessAPI build();
+	}
 	
-	protected StringParameter dbSelectParam;
+	protected static final String DB_SELECT_PARAM_NAME = "Fault Database";
+	protected static final DB_Source DB_SELECT_DEFAULT = DB_Source.CACHED;
+	
+	protected EnumParameter<DB_Source> dbSelectParam;
 	
 	private ParameterList builderParams = new ParameterList();
 	
-	private HashMap<String, DB_AccessAPI> dbs = new HashMap<String, DB_AccessAPI>();
+	private HashMap<DB_Source, DB_AccessAPI> dbs = new HashMap<>();
 	
-	private HashMap<String, ViewFaultSection> viewFSMap = new HashMap<String, ViewFaultSection>();
+	private HashMap<DB_Source, ViewFaultSection> viewFSMap = new HashMap<>();
 	
 	public MultiDBBuilder() {
 		this(DB_SELECT_DEFAULT);
 	}
 	
-	public MultiDBBuilder(String defaultDB) {
-		ArrayList<String> values = new ArrayList<String>();
-		values.add(DB_SELECT_UCERF3);
-		values.add(DB_SELECT_UCERF2);
-		
-		dbSelectParam = new StringParameter(DB_SELECT_PARAM_NAME, values, defaultDB);
+	public MultiDBBuilder(DB_Source defaultDB) {
+		dbSelectParam = new EnumParameter<MultiDBBuilder.DB_Source>(DB_SELECT_PARAM_NAME, EnumSet.allOf(DB_Source.class), defaultDB, null);
 		dbSelectParam.addParameterChangeListener(this);
 		builderParams.addParameter(dbSelectParam);
 	}
 	
 	protected DB_AccessAPI getSelectedDB() {
-		String dbName = dbSelectParam.getValue();
+		DB_Source dbName = dbSelectParam.getValue();
 		DB_AccessAPI db = dbs.get(dbName);
 		if (db == null) {
-			if (dbName.equals(DB_SELECT_UCERF2))
-				db = DB_ConnectionPool.getDB2ReadOnlyConn();
-			else if (dbName.equals(DB_SELECT_UCERF3))
-				db = DB_ConnectionPool.getDB3ReadOnlyConn();
-			else
-				throw new RuntimeException("Unkown database selected: " + dbName);
+			db = dbName.build();
 			dbs.put(dbName, db);
 		}
 		return db;
 	}
 	
 	private ViewFaultSection getSelectedViewFS() {
-		String dbName = dbSelectParam.getValue();
+		DB_Source dbName = dbSelectParam.getValue();
 		DB_AccessAPI db = getSelectedDB();
 		
 		if (!viewFSMap.containsKey(dbName)) {
