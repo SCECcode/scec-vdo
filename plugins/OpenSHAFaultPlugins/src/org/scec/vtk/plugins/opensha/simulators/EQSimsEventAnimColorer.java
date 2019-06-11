@@ -513,11 +513,11 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		} else {
 			filterIndexes = null;
 		}
-		System.out.println("about to fire colorer change");
+//		System.out.println("about to fire colorer change");
 		fireColorerChangeEvent();
-		System.out.println("about to check start preload");
+//		System.out.println("about to check start preload");
 		checkStartPreloadThread();
-		System.out.println("about to fire range change");
+//		System.out.println("about to fire range change");
 		fireRangeChangeEvent();
 //		setCurrentStep(0);
 //		try {
@@ -535,9 +535,9 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 ////				eventManager.waitOnCalcThread();
 ////			}
 ////		} catch (InterruptedException e) {}
-		System.out.println("about to update render window");
+//		System.out.println("about to update render window");
 		MainGUI.updateRenderWindow();
-		System.out.println("done filter events");
+//		System.out.println("done filter events");
 	}
 
 	@Override

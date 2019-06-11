@@ -22,6 +22,8 @@ import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.iden.EventIDsRupIden;
 import org.opensha.sha.simulators.iden.RuptureIdentifier;
 import org.opensha.sha.simulators.parsers.RSQSimFileReader;
+import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper;
+import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping;
 import org.opensha.sha.simulators.utils.RSQSimUtils;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
@@ -45,8 +47,7 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 	private RSQSimEvent event;
 	private HashSet<Integer> sects;
 	private List<FaultSectionPrefData> subSects;
-	private Map<IDPairing, Double> distsCache;
-	private Map<Integer, Double> subSectAreas;
+	private RSQSimSubSectionMapper mapper;
 	
 	public RSQSimRuptureMappingColorer() {
 		params = new ParameterList();
@@ -100,13 +101,6 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 		if (e.getParameter() == geomFileParam) {
 			try {
 				elems = RSQSimFileReader.readGeometryFile(geomFileParam.getValue(), 11, 'S');
-				subSectAreas = new HashMap<>();
-				for (SimulatorElement elem : elems) {
-					Double prevArea = subSectAreas.get(elem.getSectionID());
-					if (prevArea == null)
-						prevArea = 0d;
-					subSectAreas.put(elem.getSectionID(), prevArea + elem.getArea());
-				}
 				tryLoad();
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -134,6 +128,8 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 			System.out.println("Loading events, looking for "+eventIDParam.getValue());
 			List<RSQSimEvent> events = RSQSimFileReader.readEventsFile(geomFileParam.getValue().getParentFile(), elems, loadIdens);
 			
+			mapper = new RSQSimSubSectionMapper(subSects, elems);
+			
 			if (events.size() == 1) {
 				System.out.println("Found it!");
 				
@@ -151,23 +147,22 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 	private void tryBuildRupture() {
 		if (event == null || elems == null || subSects == null)
 			return;
-		int offset = RSQSimUtils.getSubSectIndexOffset(elems, subSects);
-		List<List<FaultSectionPrefData>> rupSects = RSQSimUtils.getSectionsForRupture(
-				event, offset, subSects, distsCache, sectFractParam.getValue(), subSectAreas);
+		List<List<SubSectionMapping>> bundles = mapper.getFilteredSubSectionMappings(event, sectFractParam.getValue());
+		if (bundles.isEmpty() && sectFractParam.getValue() > 0d)
+			bundles = mapper.getAllSubSectionMappings(event);
 		this.sects = new HashSet<Integer>();
-		for (List<FaultSectionPrefData> parentSects : rupSects)
-			for (FaultSectionPrefData sect : parentSects)
-				sects.add(sect.getSectionId());
+		for (List<SubSectionMapping> bundle : bundles)
+			for (SubSectionMapping mapping : bundle)
+				sects.add(mapping.getSubSect().getSectionId());
 	}
 
 	@Override
 	public void setRupSet(FaultSystemRupSet rupSet, FaultSystemSolution sol) {
 		if (rupSet == null) {
 			subSects = null;
-			distsCache = null;
+			mapper = null;
 		} else {
 			this.subSects = rupSet.getFaultSectionDataList();
-			this.distsCache = new HashMap<IDPairing, Double>();
 		}
 	}
 
