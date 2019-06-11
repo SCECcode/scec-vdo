@@ -49,8 +49,9 @@ public class FaultModelBuilder extends MultiDBBuilder {
 				List<FaultSectionPrefData> sects = fm.fetchFaultSections();
 				
 				List<Integer> ids = new ArrayList<>();
-				for (FaultSectionPrefData sect : sects)
+				for (FaultSectionPrefData sect : sects) {
 					ids.add(sect.getSectionId());
+				}
 				
 				if (common == null)
 					common = new HashSet<>(ids);
@@ -64,17 +65,29 @@ public class FaultModelBuilder extends MultiDBBuilder {
 				FaultModels fm = fms[f];
 				List<FaultSectionPrefData> sects = sectsList.get(f);
 				
+				// ID numbers must be unique in the tree, but there are duplicates in each fault model
+				// add the fault model number, plus a bunch of zeros, to each ID number
+				String addIntStr = "";
+				for (char c : fm.name().toCharArray())
+					if (Character.isDigit(c))
+						addIntStr += c;
+				addIntStr += "000000";
+				int idAdd = Integer.parseInt(addIntStr);
+//				System.out.println("ID add: "+idAdd);
+				
 				FaultCategoryNode fmNode = new FaultCategoryNode(fm.getName());
 				
 				List<FaultSectionNode> commonNodes = new ArrayList<>();
 				List<FaultSectionNode> uniqueNodes = new ArrayList<>();
 				
 				for (FaultSectionPrefData sect : sects) {
+					int origID = sect.getSectionId();
+					sect.setSectionId(origID+idAdd);
 					PrefDataSection fault = new PrefDataSection(sect);
 					
 					// add it to the tree
 					FaultSectionNode faultNode = new FaultSectionNode(fault);
-					if (common.contains(sect.getSectionId()))
+					if (common.contains(origID))
 						commonNodes.add(faultNode);
 					else
 						uniqueNodes.add(faultNode);
