@@ -464,7 +464,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		bx.add(this.customTextBox);
 		this.displayPanel.add(bx);
 
-		JLabel userInstructions = new JLabel("Hello Interns   ");
+		JLabel userInstructions = new JLabel("Select Grid Color   ");
 		Box bx2 = new Box(0);
 		bx2.add(userInstructions);
 		bx2.add(colorChooser);
