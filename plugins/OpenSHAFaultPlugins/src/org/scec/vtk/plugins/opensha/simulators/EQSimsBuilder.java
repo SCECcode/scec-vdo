@@ -174,6 +174,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		EQSimsSubSectDASColorer dasColorer = new EQSimsSubSectDASColorer();
 		colorers.add(dasColorer);
 		eventListeners.add(dasColorer);
+		EQSimsDroughtColorer droughtColorer = new EQSimsDroughtColorer();
+		colorers.add(droughtColorer);
+		eventListeners.add(droughtColorer);
 		
 		animations = new ArrayList<>();
 		EQSimsEventAnimColorer eventAnim = new EQSimsEventAnimColorer();
