@@ -571,7 +571,7 @@ AnimationListener {
 	}
 	
 	private void processAllChildren(TreeNode node, FaultColorer colorer) {
-		Enumeration<TreeNode> children = node.children();
+		Enumeration<? extends TreeNode> children = node.children();
 		while (children.hasMoreElements()) {
 			TreeNode child = children.nextElement();
 			if (child instanceof FaultSectionNode) {
