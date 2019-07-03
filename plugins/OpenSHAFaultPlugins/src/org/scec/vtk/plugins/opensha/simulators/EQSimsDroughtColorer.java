@@ -1,13 +1,13 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.JOptionPane;
 
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
 import org.opensha.commons.param.ParameterList;
@@ -26,6 +26,7 @@ import org.scec.useit.forecasting.droughts.DroughtType;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
+import org.scec.vtk.plugins.ProgressBar.ProgressBar;
 
 import com.google.common.base.Preconditions;
 
@@ -33,6 +34,9 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 	
 	private List<SimulatorElement> elements;
 	private List<? extends SimulatorEvent> events;
+	
+	JOptionPane hey = new JOptionPane();
+	
 	
 	// we will eventually define droughts in multiple ways
 	private enum DroughtTypes {
@@ -106,6 +110,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		
 		// build parameters
 		params = new ParameterList();
+		
 		
 		// drought type
 		droughtTypeParam = new EnumParameter<>("Drought Type",
@@ -224,8 +229,12 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		if (events == null || elements == null || events.size() < 2)
 			return;
 		System.out.println("Computing drought rates");
-		DroughtCalculator calc = new DroughtCalculator(elements, events, droughtTypeParam.getValue().type);
+		//Progress Bar experiment
+		// @Joses (7/3/2019)
+		ProgressBar progress = new ProgressBar("Loading");
+		progress.runProgressBar();
 		
+		DroughtCalculator calc = new DroughtCalculator(elements, events, droughtTypeParam.getValue().type);
 		double droughtDuration = droughtDurationParam.getValue();
 		double forecastMinMag = forecastMinMagParam.getValue();
 		double forecastDuration = forecastDurationParam.getValue();
@@ -235,6 +244,9 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		afterProbs = calc.getElementProbAfterDroughtYears(forecastMinMag, droughtDuration, forecastDuration);
 		
 		System.out.println("Done computing drought rates");
+		//Progress Bar experiment
+		//@Joses (7/3/19)
+		progress.stopProgressBar();
 	}
 
 	@Override
