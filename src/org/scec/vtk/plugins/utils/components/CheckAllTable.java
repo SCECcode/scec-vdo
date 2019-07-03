@@ -411,8 +411,8 @@ public class CheckAllTable extends JPanel {
             this.setLayout(new BorderLayout());
             buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
             buttonPanel.setBorder(new EmptyBorder(4, 1, 4, 0));
-        	JButton selectButton = new JButton(new SelectionAction("Select", true));    	//These buttons use SelectionAction as their action when clicked.
-        	JButton deselectButton = new JButton(new SelectionAction("Deselect", false));
+        	JButton selectButton = new JButton(new SelectionAction("Select All", true));    	//These buttons use SelectionAction as their action when clicked.
+        	JButton deselectButton = new JButton(new SelectionAction("Deselect All", false));
         	buttonPanel.add(selectButton, FlowLayout.LEFT);
             buttonPanel.add(deselectButton, FlowLayout.LEFT);
             this.add(buttonPanel, BorderLayout.LINE_START);
@@ -466,9 +466,9 @@ public class CheckAllTable extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (int i = 0; i < dataModel.getRowCount(); i++) {
-                if (selectionModel.isSelectedIndex(i)) {										
+               // if (selectionModel.isSelectedIndex(i)) {										
                     dataModel.setValueAt(value, table.convertRowIndexToModel(i), CHECK_COL);
-                }
+                //}
             }
         }
     }
