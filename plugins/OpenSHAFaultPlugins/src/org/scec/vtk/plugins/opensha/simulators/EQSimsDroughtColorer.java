@@ -26,7 +26,7 @@ import org.scec.useit.forecasting.droughts.DroughtType;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
-import org.scec.vtk.plugins.ProgressBar.ProgressBar;
+//import org.scec.vtk.plugins.ProgressBar.ProgressBar;
 
 import com.google.common.base.Preconditions;
 
@@ -231,8 +231,8 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		System.out.println("Computing drought rates");
 		//Progress Bar experiment
 		// @Joses (7/3/2019)
-		ProgressBar progress = new ProgressBar("Loading");
-		progress.runProgressBar();
+		//ProgressBar progress = new ProgressBar("Loading");
+		//progress.runProgressBar();
 		
 		DroughtCalculator calc = new DroughtCalculator(elements, events, droughtTypeParam.getValue().type);
 		double droughtDuration = droughtDurationParam.getValue();
@@ -246,7 +246,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		System.out.println("Done computing drought rates");
 		//Progress Bar experiment
 		//@Joses (7/3/19)
-		progress.stopProgressBar();
+		//progress.stopProgressBar();
 	}
 
 	@Override
