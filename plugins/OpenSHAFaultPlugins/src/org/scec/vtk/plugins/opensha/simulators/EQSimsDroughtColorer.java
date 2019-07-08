@@ -251,9 +251,13 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 
 		double difference;
 		droughtGain = new HashMap<>();
+		
+		//goes through each event in the tiProbs hashMap and sees if it is in the afterProbs 
+		//hashMap. it it is the get the percent difference between the time independent 
+		//probability (tiProbs value) and the after drought probability (afterProbs value)
+		//then adds the difference in the droughtGain hash Map
 		for (SimulatorElement event : tiProbs.keySet()) {
 			if ( event != null && afterProbs.containsKey(event)) {
-				System.out.println(afterProbs.get(event)+ "  "+ tiProbs.get(event));
 				difference = (afterProbs.get(event) - tiProbs.get(event))/tiProbs.get(event);
 				droughtGain.put(event, difference);
 			}
