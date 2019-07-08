@@ -392,11 +392,23 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 				}
 			}
 		} else if (event.getSource() == geomFileParam) {
+			//Loading Screen
+			CalcProgressBar progress = new CalcProgressBar("Loading Events", "Please Wait");
+			//progress.runProgressBar();
+			progress.getMousePosition();
+			progress.setVisible(true);
+			progress.setIndeterminate(true);
+			
 			File file = geomFileParam.getValue();
 			if (file != null && eventFileParam.getValue() == null)
 				eventFileParam.setDefaultInitialDir(file.getParentFile());
 			fireNewGeometry(null);
 			fireTreeChangeEvent();
+			
+			//End
+			progress.toFront();
+			progress.setVisible(false);	
+			progress.dispose();
 		} else if (event.getSource() == eventFileParam) {
 			File outFile = eventFileParam.getValue();
 			if (outFile == null || elements == null) {

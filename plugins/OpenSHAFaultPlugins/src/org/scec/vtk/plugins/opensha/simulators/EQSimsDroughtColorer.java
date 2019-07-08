@@ -1,7 +1,6 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.ParameterListParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
+import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.SimulatorEvent;
 import org.scec.useit.forecasting.droughts.CatalogMinMagDroughtType;
@@ -237,8 +237,11 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		System.out.println("Computing drought rates");
 		//Progress Bar experiment
 		// @Joses (7/3/2019)
-		//ProgressBar progress = new ProgressBar("Loading");
+		CalcProgressBar progress = new CalcProgressBar("Loading Events", "Please Wait");
 		//progress.runProgressBar();
+		progress.getMousePosition();
+		progress.setVisible(true);
+		progress.setIndeterminate(true);
 
 		DroughtCalculator calc = new DroughtCalculator(elements, events, droughtTypeParam.getValue().type);
 		double droughtDuration = droughtDurationParam.getValue();
@@ -267,6 +270,9 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		//Progress Bar experiment
 		//@Joses (7/3/19)
 		//progress.stopProgressBar();
+		progress.toFront();
+		progress.setVisible(false);	
+		progress.dispose();
 	}
 
 	@Override
