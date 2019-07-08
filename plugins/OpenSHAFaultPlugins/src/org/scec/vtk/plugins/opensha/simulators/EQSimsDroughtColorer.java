@@ -31,13 +31,13 @@ import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFaul
 import com.google.common.base.Preconditions;
 
 public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener {
-	
+
 	private List<SimulatorElement> elements;
 	private List<? extends SimulatorEvent> events;
-	
+
 	JOptionPane hey = new JOptionPane();
-	
-	
+
+
 	// we will eventually define droughts in multiple ways
 	private enum DroughtTypes {
 		STATEWIDE(new CatalogMinMagDroughtType(7.5));
@@ -53,26 +53,26 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 			return type.getName();
 		}
 	}
-	
+
 	// this will allow the user to calculate/color the faults by different things
 	private enum PlotType {
 		TIME_INDEPENDENT("Time-Independent"),
 		DURING_DROUGHT("During Drought"),
 		AFTER_DROUGHT("After Drought"),
 		DROUGHT_GAIN("Drought Gain");
-		
+
 		private String name;
 		private PlotType(String name) {
 			this.name = name;
 		}
-		
+
 		@Override
 		public String toString() {
 			// this is what the drop down menu will show
 			return name;
 		}
 	}
-	
+
 	/*
 	 * PARAMETERS
 	 */
@@ -86,7 +86,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 	private EnumParameter<PlotType> plotTypeParam;
 	private DoubleParameter forecastMinMagParam;
 	private DoubleParameter forecastDurationParam;
-	
+
 	/*
 	 * Cached data
 	 */
@@ -108,41 +108,41 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 
 	public EQSimsDroughtColorer() {
 		super(getDefaultCPT(), true); // true here means that the CPT is in Log10 space
-		
+
 		// build parameters
 		params = new ParameterList();
-		
-		
+
+
 		// drought type
 		droughtTypeParam = new EnumParameter<>("Drought Type",
 				EnumSet.allOf(DroughtTypes.class), DroughtTypes.STATEWIDE, null);
 		droughtTypeParam.addParameterChangeListener(this);
 		params.addParameter(droughtTypeParam);
-		
+
 		// duration of the drought
 		droughtDurationParam = new DoubleParameter("Drought Duration", 0d, 1000);
 		droughtDurationParam.setUnits("Years");
 		droughtDurationParam.setValue(50);
 		droughtDurationParam.addParameterChangeListener(this);
 		params.addParameter(droughtDurationParam);
-		
+
 		// add all drought parameters
 		droughtParamsParam = new ParameterListParameter("Dought Parameters", droughtTypeParam.getValue().type.getParameters());
 		droughtParamsParam.addParameterChangeListener(this);
 		params.addParameter(droughtParamsParam);
-		
+
 		// drought type
 		plotTypeParam = new EnumParameter<>("Plot Type",
 				EnumSet.allOf(PlotType.class), PlotType.TIME_INDEPENDENT, null);
 		plotTypeParam.addParameterChangeListener(this);
 		params.addParameter(plotTypeParam);
-		
+
 		// minimum magnitude that we are forecasting
 		forecastMinMagParam = new DoubleParameter("Forecast Min Mag", 0d, 10d);
 		forecastMinMagParam.setValue(7d);
 		forecastMinMagParam.addParameterChangeListener(this);
 		params.addParameter(forecastMinMagParam);
-		
+
 		// duration of the forecast
 		forecastDurationParam = new DoubleParameter("Forecast Duration", 0d, 1000d);
 		forecastDurationParam.setUnits("Years");
@@ -169,7 +169,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		Preconditions.checkState(fault instanceof SimulatorElementFault);
 		SimulatorElementFault simFault = (SimulatorElementFault)fault;
 		SimulatorElement elem = simFault.getElement();
-		
+
 		if (tiProbs == null) {
 			// need to compute everything
 			calculateProbs();
@@ -177,7 +177,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 				// if null here, we don't have events loaded
 				return Double.NaN;
 		}
-		
+
 		Double ret;
 		switch (plotTypeParam.getValue()) {
 		case TIME_INDEPENDENT:
@@ -199,7 +199,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		}
 		if (ret == null)
 			ret = Double.NaN;
-		
+
 		return ret;
 	}
 
@@ -215,7 +215,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		this.elements = elements;
 		clear();
 	}
-	
+
 	/**
 	 * clear any cached data (when a parameter has changed, or a new geometry or event file
 	 * has been loaded)
@@ -226,7 +226,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		afterProbs = null;
 		droughtGain = null;
 	}
-	
+
 	/**
 	 * Calculate and cache time-independent, drought, and storm rates. Do this lazily when needed
 	 */
@@ -238,24 +238,25 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		// @Joses (7/3/2019)
 		//ProgressBar progress = new ProgressBar("Loading");
 		//progress.runProgressBar();
-		
+
 		DroughtCalculator calc = new DroughtCalculator(elements, events, droughtTypeParam.getValue().type);
 		double droughtDuration = droughtDurationParam.getValue();
 		double forecastMinMag = forecastMinMagParam.getValue();
 		double forecastDuration = forecastDurationParam.getValue();
-		
+
 		tiProbs = calc.getElementTimeIndependentProbs(forecastMinMag, forecastDuration);
 		droughtProbs = calc.getElementProbsDuringDrought(forecastMinMag, droughtDuration);
 		afterProbs = calc.getElementProbAfterDroughtYears(forecastMinMag, droughtDuration, forecastDuration);
-		
+
 		double difference;
 		for (SimulatorElement event : tiProbs.keySet()) {
-			if (afterProbs.containsKey(event)) {
-				difference = (afterProbs.get(event) - tiProbs.get(event))/tiProbs.get(event);
-				droughtGain.put(event, difference);
+			if (event!= null) {
+				if (afterProbs.containsKey(event)) {
+					difference = (afterProbs.get(event) - tiProbs.get(event))/tiProbs.get(event);
+					droughtGain.put(event, difference);
+				}
 			}
 		}
-		
 		System.out.println("Done computing drought rates");
 		//Progress Bar experiment
 		//@Joses (7/3/19)
@@ -266,7 +267,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 	public void parameterChange(ParameterChangeEvent e) {
 		if (e.getParameter() != plotTypeParam) {
 			// if any parameter but plot type was changed, clear cached data
-			
+
 			// don't do this if only plot type was changed, as we calculate values
 			// for each plot type at once
 			clear();
