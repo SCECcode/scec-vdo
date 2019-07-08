@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,7 +95,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 	private Map<SimulatorElement, Double> droughtProbs; // event rates during drought
 	private Map<SimulatorElement, Double> afterProbs; // event rates after drought
 	private Map<SimulatorElement, Double> droughtGain;
-	private static CPT getDefaultCPT() {
+	static CPT getDefaultCPT() {
 		// default color palette, in log space
 		// goes from 10^-5 to 10^0
 		try {
@@ -249,14 +250,15 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		afterProbs = calc.getElementProbAfterDroughtYears(forecastMinMag, droughtDuration, forecastDuration);
 
 		double difference;
+		droughtGain = new HashMap<>();
 		for (SimulatorElement event : tiProbs.keySet()) {
-			if (event!= null) {
-				if (afterProbs.containsKey(event)) {
-					difference = (afterProbs.get(event) - tiProbs.get(event))/tiProbs.get(event);
-					droughtGain.put(event, difference);
-				}
+			if ( event != null && afterProbs.containsKey(event)) {
+				System.out.println(afterProbs.get(event)+ "  "+ tiProbs.get(event));
+				difference = (afterProbs.get(event) - tiProbs.get(event))/tiProbs.get(event);
+				droughtGain.put(event, difference);
 			}
 		}
+
 		System.out.println("Done computing drought rates");
 		//Progress Bar experiment
 		//@Joses (7/3/19)
