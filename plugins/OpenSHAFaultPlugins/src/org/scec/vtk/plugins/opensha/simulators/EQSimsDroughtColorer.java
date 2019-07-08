@@ -58,7 +58,8 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 	private enum PlotType {
 		TIME_INDEPENDENT("Time-Independent"),
 		DURING_DROUGHT("During Drought"),
-		AFTER_DROUGHT("After Drought");
+		AFTER_DROUGHT("After Drought"),
+		DROUGHT_GAIN("Drought Gain");
 		
 		private String name;
 		private PlotType(String name) {
@@ -92,7 +93,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 	private Map<SimulatorElement, Double> tiProbs; // time independent rates
 	private Map<SimulatorElement, Double> droughtProbs; // event rates during drought
 	private Map<SimulatorElement, Double> afterProbs; // event rates after drought
-
+	private Map<SimulatorElement, Double> droughtGain;
 	private static CPT getDefaultCPT() {
 		// default color palette, in log space
 		// goes from 10^-5 to 10^0
@@ -188,6 +189,9 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		case AFTER_DROUGHT:
 			ret = afterProbs.get(elem);
 			break;
+		case DROUGHT_GAIN:
+			ret = droughtGain.get(elem);
+			break;
 
 		default:
 			ret = Double.NaN;
@@ -220,6 +224,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		tiProbs = null;
 		droughtProbs = null;
 		afterProbs = null;
+		droughtGain = null;
 	}
 	
 	/**
@@ -242,6 +247,14 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		tiProbs = calc.getElementTimeIndependentProbs(forecastMinMag, forecastDuration);
 		droughtProbs = calc.getElementProbsDuringDrought(forecastMinMag, droughtDuration);
 		afterProbs = calc.getElementProbAfterDroughtYears(forecastMinMag, droughtDuration, forecastDuration);
+		
+		double difference;
+		for (SimulatorElement event : tiProbs.keySet()) {
+			if (afterProbs.containsKey(event)) {
+				difference = (afterProbs.get(event) - tiProbs.get(event))/tiProbs.get(event);
+				droughtGain.put(event, difference);
+			}
+		}
 		
 		System.out.println("Done computing drought rates");
 		//Progress Bar experiment
