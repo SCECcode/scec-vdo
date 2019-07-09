@@ -303,6 +303,8 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 			// update drought type parameters
 			droughtParamsParam.setValue(droughtTypeParam.getValue().type.getParameters());
 		} else {
+			//for when after pressed Drought Gain the scale goes back to the original scale instead of 
+			//being stuck on the Drought Gain scale
 			setCPT(getDefaultCPT(), true);
 			droughtParamsParam.setValue(droughtTypeParam.getValue().type.getParameters());
 		}
