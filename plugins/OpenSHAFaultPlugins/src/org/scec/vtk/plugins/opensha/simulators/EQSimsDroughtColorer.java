@@ -107,6 +107,18 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 		}
 	}
 
+	static CPT getGainCPT() {
+		// default color palette, in log space
+		// goes from 10^-5 to 10^0
+		try {
+			CPT cpt = GMT_CPT_Files.GMT_POLAR.instance().rescale(-1, 1);
+			cpt.setNanColor(Color.GRAY);
+			return cpt;
+		} catch (IOException e) {
+			throw ExceptionUtils.asRuntimeException(e);
+		}
+	}
+
 	public EQSimsDroughtColorer() {
 		super(getDefaultCPT(), true); // true here means that the CPT is in Log10 space
 
@@ -254,7 +266,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 
 		double difference;
 		droughtGain = new HashMap<>();
-		
+
 		//goes through each event in the tiProbs hashMap and sees if it is in the afterProbs 
 		//hashMap. it it is the get the percent difference between the time independent 
 		//probability (tiProbs value) and the after drought probability (afterProbs value)
@@ -278,14 +290,20 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 	@Override
 	public void parameterChange(ParameterChangeEvent e) {
 		if (e.getParameter() != plotTypeParam) {
-			// if any parameter but plot type was changed, clear cached data
 
+			// if any parameter but plot type was changed, clear cached data
 			// don't do this if only plot type was changed, as we calculate values
 			// for each plot type at once
 			clear();
 		}
-		if (e.getParameter() == droughtTypeParam) {
+		
+		if (e.getNewValue().equals(PlotType.DROUGHT_GAIN)) {
+			// we just switched to a gain plot
+			setCPT(getGainCPT(), true);
 			// update drought type parameters
+			droughtParamsParam.setValue(droughtTypeParam.getValue().type.getParameters());
+		} else {
+			setCPT(getDefaultCPT(), true);
 			droughtParamsParam.setValue(droughtTypeParam.getValue().type.getParameters());
 		}
 		// fire an event telling the plugin to redraw everything
