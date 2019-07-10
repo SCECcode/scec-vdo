@@ -106,6 +106,18 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 			throw ExceptionUtils.asRuntimeException(e);
 		}
 	}
+	
+	static CPT getGainCPT() {
+		// default color palette, in log space
+		// goes from 10^-5 to 10^0
+		try {
+			CPT cpt = GMT_CPT_Files.GMT_POLAR.instance().rescale(-1, 1);
+			cpt.setNanColor(Color.GRAY);
+			return cpt;
+		} catch (IOException e) {
+			throw ExceptionUtils.asRuntimeException(e);
+		}
+	}
 
 	static CPT getGainCPT() {
 		// default color palette, in log space

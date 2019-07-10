@@ -12,6 +12,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -21,14 +22,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import javax.swing.ButtonGroup;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
@@ -46,8 +48,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.opensha.commons.util.cpt.CPT;
 import org.scec.vtk.commons.legend.LegendItem;
 import org.scec.vtk.commons.legend.LegendUtils;
-import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
-import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
@@ -97,7 +97,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	
 	
 	// Text boxes for USGS tab 
-	JTextField eventIdBox = new JTextField("Enter Shakemap XML Link");
+	JTextField eventIdBox = new JTextField("Enter Shakemap XML Link Here");
 	final JTextField usgsURL = new JTextField("http://earthquake.usgs.gov/data/shakemap/");
 	
 	
@@ -222,12 +222,12 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		
 		JPanel USGSPanel = new JPanel();
 		USGSPanel.setLayout(new FlowLayout());
-		USGSPanel.add(new JLabel("Visit website, locate shakemap, and enter URL of Shakemap's XML file"));
-		eventIdBox.setPreferredSize(new Dimension(200,40));
+		USGSPanel.add(new JLabel("Visit website, locate shakemap, and enter URL of Shakemap's XML file: "));
+		//eventIdBox.setPreferredSize(new Dimension(200,40));
+		USGSPanel.add(usgsLink);
 		USGSPanel.add(eventIdBox);
 		USGSPanel.add(downloadUSGSButton);
-		USGSPanel.add(usgsURL);
-		USGSPanel.add(usgsLink);
+		//USGSPanel.add(usgsURL);
 		
 		
 		tabbedPane.setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()/2));
@@ -320,12 +320,14 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 								    "File not found on USGS site.");
 					}
 					else
+
 					{
 						System.out.println("Loaded!");
 						System.out.println("showing new map: " + dataPath + "/" + moreMaps + "/" + d +".txt");
 						showNewMap(dataPath + "/" + moreMaps + "/" + d+".txt", "mmi");
 						addNewCheckBox(d+".txt", dataPath + "/" + moreMaps + "/" + d+".txt");
 					}
+
 				}
 				else
 				{
