@@ -88,9 +88,6 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 	private static final String FAULT_FILTER_PARAM_DEFAULT = "(all faults)";
 	private StringParameter faultFilterParam;
 	
-
-	private static final String DURATION_YEARS_PARAM_NAME = "Cat Duration To Animate (years)";
-	private DoubleParameter durationYearsParam;
 	
 	private static final String FADE_YEARS_PARAM_NAME = "Fade Out Time (years)";
 	private DoubleParameter fadeYearsParam;
@@ -166,14 +163,9 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 
 
 		
-		durationYearsParam = new DoubleParameter(DURATION_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
-		animParams.addParameter(durationYearsParam);
-		durationYearsParam.addParameterChangeListener(this);
-
-		
 		onlyCurrentVisibleParam = new BooleanParameter("Hide Other Elements", false);
 		animParams.addParameter(onlyCurrentVisibleParam);
-		onlyCurrentVisibleParam.addParameterChangeListener(this);;
+		onlyCurrentVisibleParam.addParameterChangeListener(this);
 		
 		// cache for event colors for faster loading
 		// PreloadThread below will actively try to preload this cache with the next steps 
@@ -348,7 +340,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 				idToUnfilteredStepMap.put(events.get(step).getID(), step);
 		}
 //		clearCache();
-//		filterEvents();
+		//filterEvents();
 	}
 
 	@Override
@@ -393,11 +385,11 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 	
 	private void filterEvents() {
 		// first wait on any colorer change before entering synchronized block, as doing otherwise can cause deadlock
-		try {
-			eventManager.waitOnCalcThread();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			eventManager.waitOnCalcThread();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		doFilterEvents();
 	}
 	
@@ -682,7 +674,6 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 		if (colorBlender == null)
 			colorBlender = new LinearBlender();
 		Color nanColor = getCPT().getNaNColor();
-//		System.out.println("Time changed: "+time);
 		Map<Integer, Color> fadeColors = Maps.newHashMap();
 		for (int step=currentStep; step >= 0; step--) {
 			SimulatorEvent event = getEventForStep(step);
@@ -702,7 +693,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 					// patch already present in more recent event, skip
 					continue;
 				Color eventColor = eventColors.get(patchID);
-				Color faded = colorBlender.blend(eventColor, nanColor, (float)fade);
+				Color faded = colorBlender.blend(eventColor,  nanColor, (float)fade);
 				fadeColors.put(patchID, faded);
 			}
 		}
@@ -712,6 +703,8 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 	
 
 
+	
+	//Most likely not needed
 	@Override
 	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor, AbstractFaultSection reference,
 			vtkCellPicker picker, MouseEvent e) {
