@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,9 +28,13 @@ import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.commons.util.cpt.LinearBlender;
+import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
+import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper;
+import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping;
+import org.opensha.sha.simulators.utils.RSQSimUtils;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
@@ -49,13 +54,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
+import scratch.UCERF3.enumTreeBranches.DeformationModels;
+import scratch.UCERF3.enumTreeBranches.FaultModels;
 import vtk.vtkCellPicker;
 
-public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
+public class EQSimsAnimDroughtColorerTemp extends CPTBasedColorer implements
 		TimeBasedFaultAnimation, IDBasedFaultAnimation, ParameterChangeListener, EQSimsEventListener, PickHandler<AbstractFaultSection> {
 
 	/**
-	 * 
+	 * DISCLAIMER: this has all been taken from EQSimsEventAnimColorer.java, and we simply only use it 
+	 * for reference. at the moment, none of these functionatlities are final, nor are tey working 
+	 * towards the goal. This is a huge TODO list. 
 	 */
 	private static final long serialVersionUID = 1L;
 	
@@ -108,6 +117,9 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 	
 	private ParameterList animParams = new ParameterList();
 	
+	private List<FaultSectionPrefData> subSects;
+	private RSQSimSubSectionMapper subSectMapper;
+	
 	private static CPT getDefaultCPT() {
 		CPT cpt = new CPT();
 		
@@ -133,7 +145,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 		return cpt;
 	}
 	
-	public EQSimsAnimDroughtColorer() {
+	public EQSimsAnimDroughtColorerTemp() {
 		super(getDefaultCPT(), false);
 		
 		animParams.addParameter(magMinParam);
@@ -190,6 +202,8 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 		});
 	}
 	
+	
+	
 	public void setEventManager(EventManager eventManager) {
 		this.eventManager = eventManager;
 	}
@@ -201,6 +215,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 
 	@Override
 	public Color getColor(AbstractFaultSection fault) {
+		SimulatorElement elem = ((SimulatorElementFault)fault).getElement();
 		if (!isStepValid(currentStep))
 			return getCPT().getNaNColor();
 		else {
@@ -381,6 +396,22 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 	@Override
 	public ParameterList getAnimationParameters() {
 		return animParams;
+	}
+	
+	public List<FaultSectionPrefData> getSubSectsForEvent(SimulatorEvent event) {
+		List<List<SubSectionMapping>> mappingsBundled = subSectMapper.getFilteredSubSectionMappings(event);
+		if (mappingsBundled == null)
+			// this will happen for small events which break no subsections
+			return null;
+		List<FaultSectionPrefData> sects = new ArrayList<>();
+		for (List<SubSectionMapping> bundle : mappingsBundled)
+			for (SubSectionMapping mapping : bundle)
+				sects.add(mapping.getSubSect());
+		return sects;
+	}
+	
+	public Collection<SimulatorElement> getElementsForSubSect(FaultSectionPrefData subSect) {
+		return subSectMapper.getElementsForSection(subSect);
 	}
 	
 	private void filterEvents() {
@@ -595,12 +626,22 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer implements
 		faultMappings = null;
 		faultNamesMap = null;
 		sectNamesMap = null;
+		subSectMapper = null;
 		this.tools = null;
 		this.elements = elements;
 		if (elements != null) {
 			faultMappings = Maps.newHashMap();
 			faultNamesMap = Maps.newHashMap();
 			sectNamesMap = Maps.newHashMap();
+			if (subSects == null) {
+				FaultModels fm = FaultModels.FM3_1;
+				DeformationModels geom = DeformationModels.GEOLOGIC;
+				subSects = RSQSimUtils.getUCERF3SubSectsForComparison(fm, geom);
+			}
+			// TODO make this a parameter
+			// a rupture is mapped to a subsection if at least this fraction of the subsection (by area) participates
+			double minSectFractForInclusion = 0.2;
+			subSectMapper = new RSQSimSubSectionMapper(subSects, controlClickedElements, minSectFractForInclusion);
 			Map<Integer, HashSet<String>> faultNames = Maps.newHashMap();
 			for (SimulatorElement e : elements) {
 				Integer sectID = e.getSectionID();
