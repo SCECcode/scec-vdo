@@ -181,7 +181,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		animations = new ArrayList<>();
 		EQSimsEventAnimColorer eventAnim = new EQSimsEventAnimColorer();
 		//Me
-		EQSimsAnimDroughtColorerTemp eventDrought  = new EQSimsAnimDroughtColorerTemp();
+		EQSimsAnimDroughtColorer eventDrought  = new EQSimsAnimDroughtColorer();
 		animations.add(eventDrought);
 		eventListeners.add(eventDrought);
 		
