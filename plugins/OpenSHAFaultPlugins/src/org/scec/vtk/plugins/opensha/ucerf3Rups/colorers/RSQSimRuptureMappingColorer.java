@@ -112,6 +112,8 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 				e1.printStackTrace();
 			}
 		} else if (e.getParameter() == sectFractParam) {
+			if (mapper != null)
+				mapper.setMinFractForInclusion(sectFractParam.getValue());
 			tryBuildRupture();
 			fireChangeEvent();
 		}
@@ -128,7 +130,7 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 			System.out.println("Loading events, looking for "+eventIDParam.getValue());
 			List<RSQSimEvent> events = RSQSimFileReader.readEventsFile(geomFileParam.getValue().getParentFile(), elems, loadIdens);
 			
-			mapper = new RSQSimSubSectionMapper(subSects, elems);
+			mapper = new RSQSimSubSectionMapper(subSects, elems, sectFractParam.getValue());
 			
 			if (events.size() == 1) {
 				System.out.println("Found it!");
@@ -147,7 +149,7 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 	private void tryBuildRupture() {
 		if (event == null || elems == null || subSects == null)
 			return;
-		List<List<SubSectionMapping>> bundles = mapper.getFilteredSubSectionMappings(event, sectFractParam.getValue());
+		List<List<SubSectionMapping>> bundles = mapper.getFilteredSubSectionMappings(event);
 		if (bundles.isEmpty() && sectFractParam.getValue() > 0d)
 			bundles = mapper.getAllSubSectionMappings(event);
 		this.sects = new HashSet<Integer>();

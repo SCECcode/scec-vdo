@@ -56,7 +56,7 @@ public class EQSimsSubSectDASColorer extends CPTBasedColorer implements EQSimsEv
 			// try to build it
 			try {
 				List<FaultSectionPrefData> subSects = RSQSimUtils.getUCERF3SubSectsForComparison(fmParam.getValue(), DeformationModels.GEOLOGIC);
-				mapper = new RSQSimSubSectionMapper(subSects, elements);
+				mapper = new RSQSimSubSectionMapper(subSects, elements, 0.2);
 			} catch (Exception e) {
 				System.err.println("Error building mapper:");
 				e.printStackTrace();
