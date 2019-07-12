@@ -544,7 +544,12 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	public void parameterChange(ParameterChangeEvent event) {
 		if (event.getSource() == magMinParam) {
 			filterEvents();
-		} else if (event.getSource() == sectFilterParam) {
+		} 
+		else if (event.getSource() == magMaxParam){
+			filterEvents();
+		}
+		else if (event.getSource() == sectFilterParam) {
+		
 			filterEvents();
 		} else if (event.getSource() == faultFilterParam) {
 			filterEvents();
