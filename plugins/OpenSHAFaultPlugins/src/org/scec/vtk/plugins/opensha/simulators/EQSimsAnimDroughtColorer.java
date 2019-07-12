@@ -1,6 +1,7 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.event.ChangeListener;
@@ -8,6 +9,8 @@ import javax.swing.event.ChangeListener;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.DoubleParameter;
+import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.SimulatorEvent;
@@ -15,6 +18,7 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.gui.EventManager;
 
 public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 		implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
@@ -27,15 +31,54 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 		return cpt;
 	}
 	
+	private EventManager eventManager;
+	
+	private ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
+	
+	
+	//Title on drop down menu
+	private static String TITLE = "Drought Duration Animation";
+	
+	//Min magnitude option
+	private static final String MIN_MAG_PARAM_NAME = "Min Mag";
+	private static final Double MIN_MAG_PARAM = 0d;
+	private static final Double MAX_MAG_PARAM = 10d;
+	private DoubleParameter minMagParam = 
+			new DoubleParameter(MIN_MAG_PARAM_NAME, MIN_MAG_PARAM, MAX_MAG_PARAM, MIN_MAG_PARAM);
+	
+	//Color Bounds
+	private static final String MAX_VALUE_COLOR_WHEEL = "Drought Indicator";
+	private static final int MIN_YEAR_PARAM = 100;
+	private static final int MAX_YEAR_PARAM = 1000;
+	private DoubleParameter droughtYearParam = 
+			new DoubleParameter(MAX_VALUE_COLOR_WHEEL, MIN_YEAR_PARAM, MAX_YEAR_PARAM);
+	
+	//Parameter List
+	private ParameterList animParams = new ParameterList();
+	
 	public EQSimsAnimDroughtColorer() {
 		super(getDefaultCPT(), false);
+		//add minMag
+		animParams.addParameter(minMagParam);
+		minMagParam.addParameterChangeListener(this);
+		
+		//add Color Bounds
+		animParams.addParameter(droughtYearParam);
+		droughtYearParam.addParameterChangeListener(this);
+		
+	}
+	
+	//we dont know why yet 
+	public void setEventManager(EventManager eventManager) {
+		this.eventManager = eventManager; 
 	}
 
 	@Override
 	public void addRangeChangeListener(ChangeListener l) {
-		// TODO Auto-generated method stub
+		listeners.add(l);
 
 	}
+	
 
 	@Override
 	public int getNumSteps() {
@@ -69,8 +112,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 
 	@Override
 	public ParameterList getAnimationParameters() {
-		// TODO Auto-generated method stub
-		return null;
+		return animParams;
 	}
 
 	@Override
@@ -81,8 +123,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 
 	@Override
 	public FaultColorer getFaultColorer() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	@Override
@@ -94,7 +135,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return null;
+		return TITLE;
 	}
 
 	@Override
@@ -144,6 +185,14 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 		// if saturation, change color here
 		return color;
 	}
+	
+	//new functions added below
+	@Override
+	public void setCPT(CPT cpt) {
+		super.setCPT(cpt);
+	}
+	
+	
 	
 	
 
