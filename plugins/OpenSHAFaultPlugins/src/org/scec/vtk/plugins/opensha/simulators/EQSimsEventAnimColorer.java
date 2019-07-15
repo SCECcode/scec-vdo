@@ -51,7 +51,6 @@ import com.google.common.primitives.Ints;
 
 import vtk.vtkCellPicker;
 
-//Slip Animation
 public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		TimeBasedFaultAnimation, IDBasedFaultAnimation, ParameterChangeListener, EQSimsEventListener, PickHandler<AbstractFaultSection> {
 
@@ -321,7 +320,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		}
 	}
 	
-	public class PreloadThread extends Thread {
+	private class PreloadThread extends Thread {
 		
 		// number of steps ahead to preload
 		final int preload_num = 100;
@@ -349,6 +348,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 				currentIteration++;
 			}
 		}
+		
 	}
 	
 	@Override
@@ -421,6 +421,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		}
 		doFilterEvents();
 	}
+	
 	private synchronized void doFilterEvents() {
 		double minMag = magMinParam.getValue();
 		double maxMag = magMaxParam.getValue();
@@ -459,7 +460,6 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		if (minMag > MAG_PARAM_MIN || maxMag < MAG_PARAM_MAX || filterSectionID >= 0 || filterFault != null
 				|| supraSeis || !Double.isNaN(startTime) || !controlClickedElements.isEmpty()) {
 			filterIndexes = new ArrayList<Integer>();
-			System.out.println(unfilteredevents.size());
 			for (int i=0; i<unfilteredevents.size(); i++) {
 				SimulatorEvent event = unfilteredevents.get(i);
 //				if (i % 1000 == 0) {
@@ -544,7 +544,12 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	public void parameterChange(ParameterChangeEvent event) {
 		if (event.getSource() == magMinParam) {
 			filterEvents();
-		} else if (event.getSource() == sectFilterParam) {
+		} 
+		else if (event.getSource() == magMaxParam){
+			filterEvents();
+		}
+		else if (event.getSource() == sectFilterParam) {
+		
 			filterEvents();
 		} else if (event.getSource() == faultFilterParam) {
 			filterEvents();
@@ -612,7 +617,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 
 	@Override
 	public FaultColorer getFaultColorer() {
-		return this;   
+		return this;
 	}
 	
 	private void updateSectionNames() {
