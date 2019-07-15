@@ -15,7 +15,6 @@ import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.DoubleParameter;
-import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.sha.simulators.SimulatorElement;
@@ -26,7 +25,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.main.MainGUI;
-import org.scec.vtk.plugins.opensha.simulators.EQSimsEventAnimColorer.PreloadThread;
+
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -182,7 +181,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 			return unfilteredevents.get(filterIndexes.get(step));
 	}
 
-	//new functions added below
 		@Override
 		public void setCPT(CPT cpt) {
 			super.setCPT(cpt);
@@ -317,10 +315,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 	
 	private synchronized void doFilterEvents() {
 		double minMag = minMagParam .getValue();
-		double startTime=-1;
-		double endTime = getCurrentDuration();
-		
-		
 		if (minMag > MIN_MAG_PARAM) {
 			for (int i = 0; i < unfilteredevents.size(); i++) {
 				SimulatorEvent event = unfilteredevents.get(i);
@@ -328,13 +322,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 				filterIndexes = new ArrayList<Integer>();
 				if (event.getMagnitude() < minMag) {
 					continue;
-				}
-				
-				if (!Double.isNaN(startTime)) {
-					if (event.getTime() < startTime)
-						continue;
-					if (event.getTime() > endTime)
-						break;
 				}
 
 				filterIndexes.add(i);
