@@ -188,6 +188,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 					
 					MainGUI.updateRenderWindow();
 				}
+				if (e.getClickCount() == 3) {
+					runObjectInfoDialog();
+				}
 			}
 		});
 
@@ -298,7 +301,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		this.showDrawingToolsButton = new ShowButton(this, "Toggle visibility of selected Text(s)");
 		this.colorDrawingToolsButton = new ColorButton(this, "Change color of selected Text(s)");
 		//this.meshDrawingToolsButton = new MeshButton(this, "Toggle mesh state of selected DrawingTool(s)s");
-		this.editDrawingToolsButton = new EditButton(this, "Edit DrawingTool information");
+		this.editDrawingToolsButton = new EditButton(this, "Edit Text");
 		this.addDrawingToolsButton = new AddButton(this, "Add new Text");
 		this.remDrawingToolsButton = new RemoveButton(this, "Remove selected Text(s)");
 
@@ -330,8 +333,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	//grouping actor 
 	public DrawingTool addDrawingTool(DrawingTool drawingTool, String text){
 	
-		//indivisual text as actors
-//		String text = "Text";
+		//individual text as actors
 		double[] pt= {Transform.calcRadius(37),37,-120};
 		//ArrayList<DataAccessor> a = this.drawingToolTable.getLibraryModel().getAllObjects();
 
