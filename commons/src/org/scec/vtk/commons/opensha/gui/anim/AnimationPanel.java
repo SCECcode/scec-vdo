@@ -43,10 +43,12 @@ import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
+import org.scec.vtk.plugins.PluginActors;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
+import vtk.vtkActor2D;
 import vtk.vtkTextActor;
 
 public class AnimationPanel extends JPanel implements ChangeListener, ActionListener, FocusListener, ParameterChangeListener {
@@ -81,6 +83,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 	private JCheckBox legendIDCheck = new JCheckBox("ID", false);
 	private JCheckBox legendLabelCheck = new JCheckBox("Label", false);
 	private LegendItem legend;
+	private LegendItem graphicLegend;
 
 	private static final String DURATION_PARAM_NAME = "Duration (seconds)";
 	private static final Double DURATION_MIN = 1d;
@@ -828,5 +831,6 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		}
 		return legendJoin.join(elems);
 	}
+	
 
 }

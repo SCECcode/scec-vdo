@@ -33,6 +33,7 @@ import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.ButtonParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
+import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
@@ -108,6 +109,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private File dataDir;
 	
 	private List<SimulatorElement> elements;
+	private IntegerParameter startIDParam;
 	
 	public EQSimsBuilder() {
 		dataDir = new File(Prefs.getDefaultLocation() + File.separator + "data" + File.separator + "EQSims");
