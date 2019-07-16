@@ -7,16 +7,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -31,8 +27,6 @@ import javax.swing.event.TableModelListener;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.CommunityfaultModelPlugin.components.Fault3D;
-import org.scec.vtk.plugins.utils.DataAccessor;
 import org.scec.vtk.plugins.utils.components.AddButton;
 import org.scec.vtk.plugins.utils.components.ColorButton;
 import org.scec.vtk.plugins.utils.components.EditButton;
@@ -45,15 +39,14 @@ import org.scec.vtk.tools.actors.AppendActors;
 
 import vtk.vtkActor;
 import vtk.vtkActor2D;
-import vtk.vtkProp;
 import vtk.vtkConeSource;
 import vtk.vtkGlyph3D;
 import vtk.vtkLabelPlacementMapper;
-import vtk.vtkObject;
 import vtk.vtkPointSetToLabelHierarchy;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkProp;
 import vtk.vtkStringArray;
 
 public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelectionListener, TableModelListener{

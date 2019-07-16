@@ -2,9 +2,6 @@ package org.scec.vtk.drawingTools;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -12,8 +9,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
-
-import org.scec.vtk.plugins.utils.DataAccessor;
 
 public class DrawingToolsTable  extends JTable implements ChangeListener {
 

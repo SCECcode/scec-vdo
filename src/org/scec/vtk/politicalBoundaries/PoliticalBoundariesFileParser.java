@@ -8,16 +8,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
-import org.opensha.nshmp2.erf.source.PointSource;
 import org.scec.vtk.drawingTools.DisplayAttributes;
 import org.scec.vtk.drawingTools.DrawingTool;
 import org.scec.vtk.main.Info;
-import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.tools.Transform;
 
-import oracle.net.aso.i;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.DBFReaderJGeom;
 import oracle.spatial.util.ShapefileReaderJGeom;

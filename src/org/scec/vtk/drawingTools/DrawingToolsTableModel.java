@@ -1,12 +1,6 @@
 package org.scec.vtk.drawingTools;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-
-import org.scec.vtk.plugins.utils.AbstractLibraryModel;
 
 public class DrawingToolsTableModel extends DefaultTableModel {
     
