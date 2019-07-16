@@ -28,7 +28,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-//import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
