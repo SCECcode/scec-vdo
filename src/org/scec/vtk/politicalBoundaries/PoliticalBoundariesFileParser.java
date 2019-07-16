@@ -13,7 +13,7 @@ import java.util.Vector;
 import org.opensha.nshmp2.erf.source.PointSource;
 import org.scec.vtk.drawingTools.DisplayAttributes;
 import org.scec.vtk.drawingTools.DrawingTool;
-import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
+//import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.tools.Transform;

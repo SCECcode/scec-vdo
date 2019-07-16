@@ -683,7 +683,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		this.displayAttributes.fontSizeField.setEnabled(enable);
 	}
 
-
+//
 //	//GETTERS and SETTERS
 //	public DefaultLocationsGUI getDefaultLocaitons(){
 //		return defaultLocations;
