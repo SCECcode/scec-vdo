@@ -31,6 +31,7 @@ import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFaul
 
 import com.google.common.base.Preconditions;
 
+//Drought Probabilities
 public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener {
 
 	private List<SimulatorElement> elements;
@@ -118,6 +119,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 			throw ExceptionUtils.asRuntimeException(e);
 		}
 	}
+
 
 	public EQSimsDroughtColorer() {
 		super(getDefaultCPT(), true); // true here means that the CPT is in Log10 space
@@ -266,7 +268,7 @@ public class EQSimsDroughtColorer extends CPTBasedColorer implements EQSimsEvent
 
 		double difference;
 		droughtGain = new HashMap<>();
-		
+
 		//goes through each event in the tiProbs hashMap and sees if it is in the afterProbs 
 		//hashMap. it it is the get the percent difference between the time independent 
 		//probability (tiProbs value) and the after drought probability (afterProbs value)

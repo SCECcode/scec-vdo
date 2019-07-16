@@ -34,6 +34,9 @@ public class EQSimsPlugin extends AbstractFaultPlugin {
 		for (FaultAnimation anim : faultAnims) {
 			if (anim instanceof EQSimsEventAnimColorer)
 				((EQSimsEventAnimColorer)anim).setEventManager(gui.getEventManager());
+			if (anim instanceof EQSimsAnimDroughtColorer)
+				((EQSimsAnimDroughtColorer)anim).setEventManager(gui.getEventManager());
+			
 		}
 //		gui.addDistTab(); // TODO?
 		
