@@ -20,7 +20,6 @@ public class DrawingToolsPluginState implements PluginState {
 	ArrayList<Integer> visibility;
 	private ArrayList<String> textString;
 	private ArrayList<HashMap<String, String>> attributes;
-//	private boolean dt;
 	private ArrayList<String> dispName;
 
 	DrawingToolsPluginState(DrawingToolsGUI parent)
@@ -64,7 +63,6 @@ public class DrawingToolsPluginState implements PluginState {
 			visibility.add(((vtkProp) dt.getActorPin()).GetVisibility());
 			System.out.println(visibility.get(row));
 		}
-//		dt = parent.getDefaultLocation().dt;
 
 	}
 	@Override
