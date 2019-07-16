@@ -14,6 +14,7 @@ import javax.swing.event.ChangeListener;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
@@ -61,7 +62,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 	//Color Bounds
 	private static final String MAX_VALUE_COLOR_WHEEL = "Drought Indicator";
 	private static final Double MIN_YEAR_PARAM = 100d;
-	private static final Double MAX_YEAR_PARAM = 100d;
+	private static final Double MAX_YEAR_PARAM = 100d; 
 	private DoubleParameter droughtYearParam = 
 			new DoubleParameter(MAX_VALUE_COLOR_WHEEL, MIN_YEAR_PARAM, MAX_YEAR_PARAM,MIN_YEAR_PARAM );
 
@@ -75,6 +76,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 	private LoadingCache<Integer, Map<Integer, Color>> eventColorCache;
 	private int currentStep = -1;
+	private BooleanParameter onlyCurrentVisibleParam;
    
 	public EQSimsAnimDroughtColorer() {
 		super(getDefaultCPT(), false);
@@ -85,6 +87,10 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		//add Color Bounds
 		animParams.addParameter(droughtYearParam);
 		droughtYearParam.addParameterChangeListener(this);
+		
+		//makes the faults visible
+		onlyCurrentVisibleParam = new BooleanParameter("Hide Other Elements", false);
+		animParams.addParameter(onlyCurrentVisibleParam);
 
 		// cache for event colors for faster loading
 		// PreloadThread below will actively try to preload this cache with the next steps 
@@ -110,7 +116,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 	}
 
-	//we dont know why yet 
 	public void setEventManager(EventManager eventManager) {
 		this.eventManager = eventManager; 
 	}
@@ -148,7 +153,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 			else
 				return filterIndexes.size();
 		else
-			return 0;
+			return 0;  
 	}
 	
 	@Override
@@ -184,6 +189,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		@Override
 		public void setCPT(CPT cpt) {
 			super.setCPT(cpt);
+			clearCache();
 		}
 
 	
@@ -263,7 +269,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		listeners.add(l);
 
 	}
-
 	@Override
 	public void fireRangeChangeEvent() {
 		ChangeEvent e = new ChangeEvent(this);
@@ -346,7 +351,10 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 	
 	@Override
 	public Boolean getFaultVisibility(AbstractFaultSection fault) {
-		return !getColor(fault).equals(getCPT().getNaNColor());
+		if (onlyCurrentVisibleParam.getValue()) {
+			return !getColor(fault).equals(getCPT().getNaNColor());
+		}
+		return null;
 	}
 
 	@Override
