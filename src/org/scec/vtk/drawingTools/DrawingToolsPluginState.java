@@ -9,7 +9,6 @@ import org.dom4j.Element;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.PluginState;
 
-import oracle.net.jdbc.TNSAddress.AddressList;
 import vtk.vtkProp;
 
 public class DrawingToolsPluginState implements PluginState {
