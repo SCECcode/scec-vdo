@@ -15,8 +15,6 @@ public class DrawingToolsPlugin extends ActionPlugin implements StatefulPlugin{
 		DrawingToolsGUI gratPanel;
 		DrawingToolsPluginState state;
 		public DrawingToolsPlugin() {
-			// this.metadata = new PluginInfo("Grids", "Grids", "David & Genia",
-			// "1.0");
 		}
 
 		public JPanel createGUI() {

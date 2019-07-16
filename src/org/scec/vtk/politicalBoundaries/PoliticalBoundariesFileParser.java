@@ -13,7 +13,6 @@ import java.util.Vector;
 import org.opensha.nshmp2.erf.source.PointSource;
 import org.scec.vtk.drawingTools.DisplayAttributes;
 import org.scec.vtk.drawingTools.DrawingTool;
-import org.scec.vtk.drawingTools.DefaultLocationsGUI.PresetLocationGroup;
 import org.scec.vtk.main.Info;
 import org.scec.vtk.plugins.utils.components.CheckAllTable;
 import org.scec.vtk.tools.Transform;
@@ -34,8 +33,8 @@ public class PoliticalBoundariesFileParser {
 	public class PresetLocationGroup {
 		public ArrayList<DrawingTool> locations = null;
 		public ArrayList<String> locationNames = null;
-		public String name			= null;
-		public File file			= null;
+		public String name = null;
+		public File file = null;
 		public DrawingTool[] counties = null;
 	}
 	
