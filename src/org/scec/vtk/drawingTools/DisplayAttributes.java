@@ -15,12 +15,12 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 	private static final long serialVersionUID = -1L;
 
 	protected JPanel textPanel = new JPanel();
-	protected JLabel textSizeLabel = new JLabel("Font Size:");
-	protected JLabel latText = new JLabel("Lat:");
-	protected JLabel lonText = new JLabel("Lon:");
-	protected JLabel altText = new JLabel("Alt:");
-	protected JLabel coneSizeText = new JLabel("Cone pin's height:");
-	protected JLabel coneBaseRadiusText = new JLabel("Cone pin's base radius:");
+	protected JLabel textSizeLabel = new JLabel("Label font Size:");
+	protected JLabel latText = new JLabel("Latitude:");
+	protected JLabel lonText = new JLabel("Longitude:");
+	protected JLabel altText = new JLabel("Altitude:");
+	protected JLabel coneSizeText = new JLabel("Cone pin height:");
+	protected JLabel coneBaseRadiusText = new JLabel("Cone pin base radius:");
 
 	protected JFormattedTextField fontSizeField;
 	protected JFormattedTextField coneHeightField;
@@ -29,8 +29,11 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 	protected JFormattedTextField lonField;
 	protected JFormattedTextField altField;
 
+	/*
+	 * Constructor
+	 */
 	public DisplayAttributes() {
-		//Font Size Field
+		// Font size text field
 		DecimalFormat formatInt = new DecimalFormat();
 		formatInt.setMinimumIntegerDigits(1);
 		formatInt.setMaximumFractionDigits(0);
@@ -38,43 +41,46 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		fontSizeField = new JFormattedTextField(formatInt);
 		fontSizeField.setText("21");
 
-		//Rotate XYZ
-		DecimalFormat rotateX = new DecimalFormat();
-		rotateX.setGroupingUsed(false);
-		rotateX.setMinimumIntegerDigits(1);
-		rotateX.setMaximumIntegerDigits(10);
-		coneHeightField = new JFormattedTextField(rotateX);
+		// Cone height text field
+		DecimalFormat formatConeHeight = new DecimalFormat();
+		formatConeHeight.setGroupingUsed(false);
+		formatConeHeight.setMinimumIntegerDigits(1);
+		formatConeHeight.setMaximumIntegerDigits(10);
+		coneHeightField = new JFormattedTextField(formatConeHeight);
 		coneHeightField.setText("10");
-
-		DecimalFormat rotateY = new DecimalFormat();
-		rotateY.setGroupingUsed(false);
-		rotateY.setMinimumIntegerDigits(1);
-		rotateY.setMaximumIntegerDigits(10);
-		coneBaseRadiusField = new JFormattedTextField(rotateY);
+		
+		// Cone radius text field
+		DecimalFormat formatConeRadius = new DecimalFormat();
+		formatConeRadius.setGroupingUsed(false);
+		formatConeRadius.setMinimumIntegerDigits(1);
+		formatConeRadius.setMaximumIntegerDigits(10);
+		coneBaseRadiusField = new JFormattedTextField(formatConeRadius);
 		coneBaseRadiusField.setText("5");
 
-		//lat Long and altitude
+		// Latitude text field
 		DecimalFormat lat = new DecimalFormat();
 		lat.setGroupingUsed(false);
 		lat.setMinimumIntegerDigits(1);
 		lat.setMaximumIntegerDigits(10);
 		latField = new JFormattedTextField(lat);
 		latField.setText("37");
-
+		
+		// Longitude text field
 		DecimalFormat lon = new DecimalFormat();
 		lon.setGroupingUsed(false);
 		lon.setMinimumIntegerDigits(1);
 		lon.setMaximumIntegerDigits(10);
 		lonField = new JFormattedTextField(lon);
 		lonField.setText("-120");
-
+		
+		// Altitude text field
 		DecimalFormat alt = new DecimalFormat();
 		alt.setGroupingUsed(false);
 		alt.setMinimumIntegerDigits(1);
 		alt.setMaximumIntegerDigits(10);
 		altField = new JFormattedTextField(alt);
 		altField.setText("0");
-
+		
 		this.coneBaseRadiusField.setEnabled(false);
 		this.coneHeightField.setEnabled(false);
 		this.latField.setEnabled(false);
@@ -88,7 +94,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		enableLabelPanel.setLayout(new BoxLayout(enableLabelPanel, BoxLayout.Y_AXIS));
 
 		JPanel translatePanel = new JPanel();
-		translatePanel.setLayout(new BoxLayout(translatePanel, BoxLayout.X_AXIS));
+		translatePanel.setLayout(new BoxLayout(translatePanel, BoxLayout.Y_AXIS));
 		translatePanel.add(latText);
 		translatePanel.add(latField);
 		translatePanel.add(Box.createHorizontalGlue());
@@ -99,7 +105,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		translatePanel.add(altField);
 
 		JPanel rotatePanel = new JPanel();
-		translatePanel.setLayout(new BoxLayout(translatePanel, BoxLayout.X_AXIS));
+		rotatePanel.setLayout(new BoxLayout(rotatePanel, BoxLayout.Y_AXIS));
 		rotatePanel.add(Box.createHorizontalGlue());
 		rotatePanel.add(coneSizeText);
 		rotatePanel.add(coneHeightField);
@@ -108,7 +114,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		rotatePanel.add(coneBaseRadiusField);
 
 		JPanel textSettingPanel = new JPanel();
-		textSettingPanel.setLayout(new BoxLayout(textSettingPanel, BoxLayout.X_AXIS));
+		textSettingPanel.setLayout(new BoxLayout(textSettingPanel, BoxLayout.Y_AXIS));
 		textSettingPanel.add(Box.createHorizontalGlue());
 		textSettingPanel.add(textSizeLabel);
 		textSettingPanel.add(fontSizeField);
@@ -143,24 +149,35 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		coneBaseRadiusField.setPreferredSize(new Dimension(40, 20));
 		coneBaseRadiusField.setMaximumSize(new Dimension(40, 20));
 	}
-
+	
+	/*
+	 * @param Nothing
+	 * @return String Size of the cone label's text
+	 */
 	public String getTextSize() {
 		String fontSize;
 		try {
 			int fontTempSize = Integer.parseInt(fontSizeField.getText());
-			if (fontTempSize <= 0) throw new NumberFormatException();
+			if (fontTempSize <= 0) { // Invalid font size if <0
+				throw new NumberFormatException(); // Go to the catch block
+			}
 			fontSize = fontSizeField.getText();
 		} catch (NumberFormatException nfe) {
-			fontSizeField.setText("18");
-			fontSize = "18";
+			fontSizeField.setText("21"); // If the number format is off, set it to default size (21)
+			fontSize = "21";
 		}
 		return fontSize;
 	}
-
+	
+	/*
+	 * @param fontSize Font size to change cone label to
+	 * @return nothing
+	 */
 	public void setTextSize(String fontSize) {
 		fontSizeField.setText(fontSize);
 	}
-
+	
+	// Never used
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// Auto-generated method stub
