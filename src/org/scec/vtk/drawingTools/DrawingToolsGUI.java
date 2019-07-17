@@ -63,7 +63,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	private EditButton editDrawingToolsButton;
 
 	private DisplayAttributes displayAttributes;
-//	private DefaultLocationsGUI defaultLocations;
 	private JPanel drawingToolSubPanelLowest;
 
 	AppendActors appendActors = new AppendActors();
@@ -75,7 +74,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 	public DrawingToolsGUI(PluginActors pluginActors){
 		pluginActors.addActor(appendActors.getAppendedActor());
 
-		//setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		setPreferredSize(new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight()));
 		setName("Drawing Tools");
 		this.drawingToolTable = new DrawingToolsTable(this);
@@ -138,17 +137,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 						}else{
 							((vtkActor) actorPin).GetProperty().SetColor(1.0,1.0,0.0); //sets color to yellow
 							((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).GetTextProperty().SetColor(1.0,1.0,0.0);
-//							for(int i1 = 0; i1 < defaultLocations.presetLocationGroups.size(); i1++)
-//							{ 
-//								PresetLocationGroup tempGroup = defaultLocations.presetLocationGroups.get(i1);
-//								if (tempGroup != null && tempGroup.name.equals("CA Cities") && tempGroup.checkbox.isSelected())
-//								{
-//									JOptionPane.showMessageDialog(defaultLocations.frame,"City Name: " + (String)target.getValueAt(i,target.getSelectedColumn()) + "\n"
-//											+"City Population: "  + defaultLocations.getPopulation((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "County: " +
-//											defaultLocations.getCounty((String)target.getValueAt(i,target.getSelectedColumn())) + "\n" + "Population Density: " + defaultLocations.getPopulationDensity((String)target.getValueAt(i,target.getSelectedColumn())) + " people/sq. mile\n",
-//											"City Information",JOptionPane.DEFAULT_OPTION);
-//								}
-//							}
 						}
 					}
 					
@@ -161,10 +149,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		});
 
 	}
-//	public DefaultLocationsGUI getDefaultLocation()
-//	{
-//		return this.defaultLocations;
-//	}
+
 	public DrawingToolsTable getDrawingToolTable()
 	{
 		return this.drawingToolTable;
@@ -578,7 +563,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		}
 	}
 
-
 	public void setText(DrawingTool dr, String displayTextInput) {
 		vtkProp actor = dr.getActorText();
 		dr.setTextString(displayTextInput);
@@ -593,10 +577,12 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).SetLabelArrayName("labels");
 		((vtkPointSetToLabelHierarchy) ((vtkActor2D) actor).GetMapper().GetInputAlgorithm()).Update();
 	}
+	
 	@Override
 	public void tableChanged(TableModelEvent e) {
 
 	}
+	
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		Object src = e.getSource();
@@ -637,11 +623,4 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		this.displayAttributes.altField.setEnabled(enable);
 		this.displayAttributes.fontSizeField.setEnabled(enable);
 	}
-
-//
-//	//GETTERS and SETTERS
-//	public DefaultLocationsGUI getDefaultLocaitons(){
-//		return defaultLocations;
-//	}
-
 }

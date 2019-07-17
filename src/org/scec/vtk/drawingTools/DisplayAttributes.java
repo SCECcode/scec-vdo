@@ -81,6 +81,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		altField = new JFormattedTextField(alt);
 		altField.setText("0");
 		
+		// Initialize all the textfields as greyed out to prevent user input
 		this.coneBaseRadiusField.setEnabled(false);
 		this.coneHeightField.setEnabled(false);
 		this.latField.setEnabled(false);
@@ -131,6 +132,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		this.add(Box.createHorizontalGlue());
 		this.add(labelPropertiesPanel);
 
+		// Set the text field sizes
 		fontSizeField.setPreferredSize(new Dimension(40, 20));
 		fontSizeField.setMaximumSize(new Dimension(40, 20));
 
@@ -177,7 +179,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		fontSizeField.setText(fontSize);
 	}
 	
-	// Never used
+	// Never used - ActionListeners added in DrawingToolsGUI
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// Auto-generated method stub
