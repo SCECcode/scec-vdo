@@ -94,8 +94,11 @@ public class EarthquakeCatalogPlugin extends ActionPlugin implements StatefulPlu
 				if(index<=cat.getSelectedEqList().size())
 					for(int i=0;i<index;i++)
 					{
+						
 						Earthquake eq = cat.getSelectedEqList().get(i);
 						eQGui.animateEarthquakeOpacity(i,eq,cat,opacity);
+				
+						
 					}
 			}
 		}
