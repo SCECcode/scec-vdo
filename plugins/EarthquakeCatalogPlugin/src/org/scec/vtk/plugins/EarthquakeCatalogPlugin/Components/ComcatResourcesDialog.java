@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
@@ -35,6 +34,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.opensha.commons.util.ExceptionUtils;
+import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPlugin;
 import org.scec.vtk.plugins.EarthquakeCatalogPlugin.EarthquakeCatalogPluginGUI;
 import org.scec.vtk.tools.Prefs;
@@ -73,10 +73,10 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	private JTextField lonMaxField = new JTextField("-114");
 	private JTextField depMinField = new JTextField();
 	private JTextField depMaxField = new JTextField();
-	private JTextField magMinField = new JTextField();
-	private JTextField magMaxField = new JTextField();
-	private JTextField dateStartField = new JTextField("2016/04/01");
-	private JTextField dateEndField   = new JTextField("2016/04/02");
+	private JTextField magMinField = new JTextField("0.0");
+	private JTextField magMaxField = new JTextField("9.0");
+	private JTextField dateStartField = new JTextField("2019/07/01");
+	private JTextField dateEndField   = new JTextField("2019/07/01");
 	
 	private JTextField timeStartField = new JTextField("00:00:00");
 	private JTextField timeEndField = new JTextField("23:59:59");
@@ -114,6 +114,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 
 
 	private String defaultName="";
+	//for catalog import tracking
+	private int count =1;
 
 	//private ArrayList<vtkActor> masterEarthquakeCatalogBranchGroup; //to keep actors
 	private ArrayList<Earthquake> masterEarthquakeCatalogsList = new ArrayList<>(); //to keep earthquakeInfo in memory
@@ -352,19 +354,6 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.NORTHWEST;
 		this.add(importButton,c);
-		//this.add(srcExplainText, c);
-		//srcExplainText.setLineWrap(true);
-		//srcExplainText.setColumns(50);
-		//srcExplainText.getPreferredSize();
-		/*srcExplainText.setBackground(null);
-			srcExplainText.setEnabled(false);
-			srcExplainText.setDisabledTextColor(Color.black);
-			srcExplainText.setText(						
-					"SCSN: Default Southern California Catalog \n" +
-					"Earthquakes located by the Southern California Seismic Network \n" +
-					"1932-present \n" +
-					"Includes global data provided by the NEIC");
-		}*/
 	}
 
 	public boolean processRequest() {
@@ -650,8 +639,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		}
 
 		String requestString = "";
-		//String requestString = "EVENT";
-		//String requestString = "ALTLOC";
+
 
 		if (dateStartSet && dateEndSet)
 			requestString += " -t0 " + dateStart + " " + dateEnd;
@@ -742,7 +730,6 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				masterEarthquakeCatalogsList.add(eq);
 		}
 		//parent.getCatalogTable().addCatalog(cat);
-
 		//setting minimas and maximas
 		if(jsonArray.size()!=0)
 		{
@@ -760,9 +747,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			cat.setMinLongitude((float)minLon);
 			cat.addComcatEqList();
 		}
-		else{
 			System.out.println("no events found");
-		}
+		
 		}
 		else{
 			System.out.println("no events found");
@@ -829,7 +815,12 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		} catch (Exception e) {
 			throw ExceptionUtils.asRuntimeException(e);
 		}
-		System.out.println(events);
+		
+		//Do not make a catalog if there are no events. 
+		if (events.size() ==0) {
+			JOptionPane.showMessageDialog(this, "No events found. Please change your query.");
+		}
+		else {
 		
 		JSONObject obj = new JSONObject();
 		JSONArray catalogList = new JSONArray();
@@ -842,7 +833,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		EQCatalog cat = new EQCatalog(parent);
 		int index=0;
 		cat.initializeArrays(events.size());
-		cat.setDisplayName("_New-Comcat-Catalog-"+ parent.getCatalogTable().getRowCount());
+		cat.setDisplayName("Cat " + count + ": " + startDate + " - " + endDate);
+		count ++;
 		for (JsonEvent event : events) {
 			//plot the earthquakes as spheres with radius as magnitude
 			//				double[] xForm = new double[3];
@@ -874,8 +866,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 
 			//create a json object
 			catalogList.add(event);
-
 		}
+		
 		//write json object to file
 		obj.put(cat.getDisplayName(), catalogList);
 		writeToJSONFile(cat,obj);
@@ -883,9 +875,11 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		
 		parent.getCatalogTable().addCatalog(cat);
 		
+		if (events.size() != 0) {
+		
 		//setting minimas and maximas
-		if(events.size()!=0)
-		{
+//		if(events.size()!=0)
+//		{
 			cat.setComcatQuery(query);
 			cat.setMaxMagnitude((float)max_mag);
 			cat.setMinMagnitude((float)min_mag);
@@ -900,9 +894,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			cat.setMinLongitude((float)minLon);
 			cat.addComcatEqList();
 		}
-		else{
-			System.out.println("no events found. Please change your query");
-		}
+	}
 	}
 
 	private void writeToJSONFile(EQCatalog cat,JSONObject obj) {
@@ -944,10 +936,20 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 				
 				String startPeriod =  dateStartField.getText() + "T" + timeStartField.getText() + "Z";
 				String endPeriod =  dateEndField.getText() + "T" + timeEndField.getText() + "Z";
-
 				
+				CalcProgressBar progress = new CalcProgressBar("Loading Catalog", "Please Wait");
+				progress.setVisible(true);
+				progress.setIndeterminate(true);
+				//Attempts to keep it in the front. 
+				progress.toFront();
+				//Catalog calling. 
 				getComcatData(depthMin,depthMax, magMin,magMax, Double.parseDouble(latMinField.getText()),Double.parseDouble(latMaxField.getText()), 
 						Double.parseDouble(lonMinField.getText()), Double.parseDouble(lonMaxField.getText()), startPeriod, endPeriod,Integer.parseInt(maxEventsField.getText()));
+				progress.setVisible(false);	
+				progress.dispose();
+				
+				//Closes the window automatically 
+				super.dispose();
 			}
 		}
 		//Describe catalog from which data is being retrieved

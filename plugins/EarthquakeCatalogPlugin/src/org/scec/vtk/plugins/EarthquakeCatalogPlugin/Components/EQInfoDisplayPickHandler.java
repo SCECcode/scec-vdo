@@ -4,6 +4,8 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 import org.scec.vtk.main.Info;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
@@ -61,6 +63,9 @@ public class EQInfoDisplayPickHandler  implements PickHandler<EQCatalog> {
 						textActor.Modified();
 						Info.getMainGUI().getRenderWindow().getRenderer().AddActor2D(textActor);
 						Info.getMainGUI().updateRenderWindow();
+						
+						JOptionPane.showMessageDialog(null, "Earthquake:- Latitude:"+df.format(eqList.get(i).getEq_latitude())+"; Longitude:"+df.format(eqList.get(i).getEq_longitude())+"; Magnitude:"+df.format(eqList.get(i).getEq_magnitude())+"; Depth:"+df.format(eqList.get(i).getEq_depth()));
+						
 						break;
 					}
 				}
