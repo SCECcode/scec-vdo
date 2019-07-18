@@ -1,9 +1,12 @@
 package org.scec.vtk.drawingTools;
 
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFormattedTextField;
@@ -15,12 +18,12 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 	private static final long serialVersionUID = -1L;
 
 	protected JPanel textPanel = new JPanel();
-	protected JLabel textSizeLabel = new JLabel("Label font Size:");
-	protected JLabel latText = new JLabel("Latitude:");
-	protected JLabel lonText = new JLabel("Longitude:");
-	protected JLabel altText = new JLabel("Altitude:");
-	protected JLabel coneSizeText = new JLabel("Cone pin height:");
-	protected JLabel coneBaseRadiusText = new JLabel("Cone pin base radius:");
+	protected JLabel textSizeLabel = new JLabel("Label font Size: ");
+	protected JLabel latText = new JLabel("Latitude: ");
+	protected JLabel lonText = new JLabel("Longitude: ");
+	protected JLabel altText = new JLabel("Altitude: ");
+	protected JLabel coneSizeText = new JLabel("Cone pin height: ");
+	protected JLabel coneBaseRadiusText = new JLabel("Cone pin base radius: ");
 
 	protected JFormattedTextField fontSizeField;
 	protected JFormattedTextField coneHeightField;
@@ -93,9 +96,10 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 
 		JPanel enableLabelPanel = new JPanel();
 		enableLabelPanel.setLayout(new BoxLayout(enableLabelPanel, BoxLayout.Y_AXIS));
-
+		
+		// Initialize panel with translation textboxes
 		JPanel translatePanel = new JPanel();
-		translatePanel.setLayout(new BoxLayout(translatePanel, BoxLayout.Y_AXIS));
+		translatePanel.setLayout(new BoxLayout(translatePanel, BoxLayout.X_AXIS));
 		translatePanel.add(latText);
 		translatePanel.add(latField);
 		translatePanel.add(Box.createHorizontalGlue());
@@ -104,32 +108,41 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		translatePanel.add(Box.createHorizontalGlue());
 		translatePanel.add(altText);
 		translatePanel.add(altField);
-
+		translatePanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15),
+				BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Translate"),
+						BorderFactory.createEmptyBorder(15, 15, 15, 15))));
+		
+		// Initialize panel with cone properties textboxes
 		JPanel rotatePanel = new JPanel();
-		rotatePanel.setLayout(new BoxLayout(rotatePanel, BoxLayout.Y_AXIS));
+		rotatePanel.setLayout(new BoxLayout(rotatePanel, BoxLayout.X_AXIS));
 		rotatePanel.add(Box.createHorizontalGlue());
 		rotatePanel.add(coneSizeText);
 		rotatePanel.add(coneHeightField);
 		rotatePanel.add(Box.createHorizontalGlue());
 		rotatePanel.add(coneBaseRadiusText);
 		rotatePanel.add(coneBaseRadiusField);
-
+		rotatePanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15),
+				BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Cone properties"),
+						BorderFactory.createEmptyBorder(15, 15, 15, 15))));
+		
+		// Initialize panel with label properties textboxes
 		JPanel textSettingPanel = new JPanel();
-		textSettingPanel.setLayout(new BoxLayout(textSettingPanel, BoxLayout.Y_AXIS));
+		textSettingPanel.setLayout(new BoxLayout(textSettingPanel, BoxLayout.X_AXIS));
 		textSettingPanel.add(Box.createHorizontalGlue());
 		textSettingPanel.add(textSizeLabel);
 		textSettingPanel.add(fontSizeField);
+		textSettingPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15),
+				BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Label properties"),
+						BorderFactory.createEmptyBorder(15, 15, 15, 15))));
 
 		JPanel labelPropertiesPanel = new JPanel();
 		labelPropertiesPanel.setLayout(new BoxLayout(labelPropertiesPanel, BoxLayout.Y_AXIS));
 		labelPropertiesPanel.add(translatePanel);
 		labelPropertiesPanel.add(rotatePanel);
-		rotatePanel.add(Box.createVerticalGlue());
 		labelPropertiesPanel.add(textSettingPanel);
 
-		this.add(Box.createVerticalGlue());
+
 		this.add(enableLabelPanel);
-		this.add(Box.createHorizontalGlue());
 		this.add(labelPropertiesPanel);
 
 		// Set the text field sizes
