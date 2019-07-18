@@ -1,5 +1,6 @@
 package org.scec.vtk.drawingTools;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -92,7 +93,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		this.altField.setEnabled(false);
 		this.fontSizeField.setEnabled(false);
 		
-		this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
 		JPanel enableLabelPanel = new JPanel();
 		enableLabelPanel.setLayout(new BoxLayout(enableLabelPanel, BoxLayout.Y_AXIS));
@@ -131,6 +132,7 @@ public class DisplayAttributes extends JPanel implements ActionListener {
 		textSettingPanel.add(Box.createHorizontalGlue());
 		textSettingPanel.add(textSizeLabel);
 		textSettingPanel.add(fontSizeField);
+
 		textSettingPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15),
 				BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Label properties"),
 						BorderFactory.createEmptyBorder(15, 15, 15, 15))));
