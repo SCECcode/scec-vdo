@@ -183,9 +183,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		this.drawingToolSubPanelLower.add(scroller);
 		this.drawingToolSubPanelLower.add(getDrawingToolLibraryBar(),BorderLayout.PAGE_END);
 
-
 		return this.drawingToolSubPanelLower;
 	}
+	
 	private JPanel getDrawingToolLibraryBar() {
 
 		this.showDrawingToolsButton = new ShowButton(this, "Toggle visibility of selected Text");
@@ -204,21 +204,18 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(this.colorDrawingToolsButton);
 		bar.add(Box.createHorizontalStrut(buttonSpace));
-		//bar.add(this.meshDrawingToolsButton);
-		// bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(this.editDrawingToolsButton);
 		bar.add(Box.createHorizontalGlue());
 		bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(Box.createHorizontalGlue());
-		//bar.add(this.savDrawingToolsButton);
-		// bar.add(this.editDrawingToolsButton);
-		//bar.add(Box.createHorizontalStrut(buttonSpace));
+
 		bar.add(this.addDrawingToolsButton);
 		bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(this.remDrawingToolsButton);
 
 		return bar;
 	}
+	
 	//grouping actor 
 	public DrawingTool addDrawingTool(DrawingTool drawingTool, String text){
 	
@@ -440,14 +437,11 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			MainGUI.updateRenderWindow();
 		}
 		if (src == this.remDrawingToolsButton) {
-			// TODO: stop showing text boxes
-			enablePropertyEditButtons(false);
 			removeTextActors();
 		}
 		if (src == this.displayAttributes.latField || src == this.displayAttributes.lonField || src == this.displayAttributes.altField ) {
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
-				//int row = model.getMinSelectionIndex();
 				DrawingTool dr = drawingToolsArray.get(i);
 				if ((vtkActor) dr.getActorPin() != null)
 				{
