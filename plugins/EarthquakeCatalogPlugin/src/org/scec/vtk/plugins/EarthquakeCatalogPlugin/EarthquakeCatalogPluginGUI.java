@@ -744,9 +744,11 @@ MouseListener
 			public void actionPerformed(ActionEvent e)
 			{
 				JCheckBox cb = (JCheckBox)e.getSource();
+				
 				if (cb.isSelected())
 				{
 					addLegendScalarBar();
+					
 				}
 				else
 				{
@@ -944,7 +946,6 @@ MouseListener
 			int scale = dispProp_slider.getValue();
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			cat.setScaling(scale);
-			System.out.println(scale);
 			setMagnitudeScale(cat,scale);
 		}
 		if(src == transparencySlider)
@@ -1045,8 +1046,7 @@ MouseListener
 	}
 	private void updateActorsAndRender(final EQCatalog cat) {
 		// TODO make this not disgusting please. it's not a branch group anymore. and it should at leass
-		
-		for (vtkActor actor : cat.getActors())
+		for (vtkActor actor : cat.getActors()) 
 			pluginActors.addActor(actor);
 		MainGUI.updateRenderWindow();
 	}
@@ -1194,6 +1194,7 @@ MouseListener
 			}
 			EQCatalog cat = this.catalogTable.getSelectedValue();
 			setColGradient(cat,newColor);
+			addLegendScalarBar();
 			
 			
 		}
@@ -1244,8 +1245,6 @@ MouseListener
 	
 				vtkActor actorPoints = (vtkActor) cat.getActors().get(0);
 				vtkActor actorSpheres = (vtkActor) cat.getActors().get(1);
-				System.out.println(geometry);
-				System.out.println(visible);
 				if(geometry==0)
 				{
 					if(visible)
