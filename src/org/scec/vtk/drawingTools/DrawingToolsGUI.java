@@ -183,9 +183,9 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		this.drawingToolSubPanelLower.add(scroller);
 		this.drawingToolSubPanelLower.add(getDrawingToolLibraryBar(),BorderLayout.PAGE_END);
 
-
 		return this.drawingToolSubPanelLower;
 	}
+	
 	private JPanel getDrawingToolLibraryBar() {
 
 		this.showDrawingToolsButton = new ShowButton(this, "Toggle visibility of selected Text");
@@ -204,21 +204,18 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(this.colorDrawingToolsButton);
 		bar.add(Box.createHorizontalStrut(buttonSpace));
-		//bar.add(this.meshDrawingToolsButton);
-		// bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(this.editDrawingToolsButton);
 		bar.add(Box.createHorizontalGlue());
 		bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(Box.createHorizontalGlue());
-		//bar.add(this.savDrawingToolsButton);
-		// bar.add(this.editDrawingToolsButton);
-		//bar.add(Box.createHorizontalStrut(buttonSpace));
+
 		bar.add(this.addDrawingToolsButton);
 		bar.add(Box.createHorizontalStrut(buttonSpace));
 		bar.add(this.remDrawingToolsButton);
 
 		return bar;
 	}
+	
 	//grouping actor 
 	public DrawingTool addDrawingTool(DrawingTool drawingTool, String text){
 	
@@ -290,7 +287,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		if(drawingTool.getTextString()==null)
 		{
 			drawingTool = new DrawingTool(pt[1],pt[2],pt[0],text,null,Color.white,actorPin,actor);
-			drawingTool.setDisplayName(text +" -"+ numText++); 
+			drawingTool.setDisplayName(text +" ("+ numText++ + ")"); 
 		}
 		else
 		{
@@ -445,7 +442,6 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		if (src == this.displayAttributes.latField || src == this.displayAttributes.lonField || src == this.displayAttributes.altField ) {
 			ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 			for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
-				//int row = model.getMinSelectionIndex();
 				DrawingTool dr = drawingToolsArray.get(i);
 				if ((vtkActor) dr.getActorPin() != null)
 				{
@@ -495,23 +491,17 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 				{
 					for(int i =model.getMinSelectionIndex();i<=model.getMaxSelectionIndex();i++) {
 						DrawingTool dr = drawingToolsArray.get(i);
-						if(!(dr.getTextString().contains("County")))
-						{
-							dr.setColor(newColor);
-							setColor(dr,  newColor);
-							Info.getMainGUI().updateRenderWindow();
-						}
-						
+						dr.setColor(newColor);
+						setColor(dr,  newColor);
+						Info.getMainGUI().updateRenderWindow();
 					}
 				}
 			}
 			MainGUI.updateRenderWindow();
 		}
-
 	}
 
 	public void removeTextActors() {
-		//remove actors
 		DrawingToolsTableModel drawingTooltablemodel = this.drawingToolTable.getLibraryModel();
 		ListSelectionModel model = this.drawingToolTable.getSelectionModel();
 		while (model.getMinSelectionIndex() >= 0) {
@@ -522,6 +512,7 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 			drawingTooltablemodel.removeRow(row);
 			drawingToolsArray.remove(row);
 		}
+		enablePropertyEditButtons(false);
 		Info.getMainGUI().updateRenderWindow();
 	}
 	
@@ -589,31 +580,25 @@ public class DrawingToolsGUI extends JPanel implements ActionListener, ListSelec
 		if (e.getValueIsAdjusting()) return;
 	
 		if (src == this.drawingToolTable.getSelectionModel()) {
-			this.highwayToolTable.clearSelection();
 			processTableSelectionChange(this.drawingToolTable.getSelectedRows());
 			enablePropertyEditButtons(true);
 		}
-		else if (src == this.highwayToolTable.getSelectionModel()) {
-			this.drawingToolTable.clearSelection();
-			processTableSelectionChange(this.highwayToolTable.getSelectedRows());
-			enablePropertyEditButtons(false);
-		}
 	}
+	
 	public void processTableSelectionChange(int[] selectedRows) { 
-		if (selectedRows.length > 0) {
+		if (selectedRows.length > 0) { // If row is selected, enable the color, visibility toggle, and remove buttons
 			this.remDrawingToolsButton.setEnabled(true);
 			this.colorDrawingToolsButton.setEnabled(true);
 			this.showDrawingToolsButton.setEnabled(true);
 
-		} else {
+		} else { // If no rows on the table are selected, disable text boxes and all buttons except for add
 			enablePropertyEditButtons(false);
 			this.remDrawingToolsButton.setEnabled(false);
 			this.showDrawingToolsButton.setEnabled(false);
 			this.colorDrawingToolsButton.setEnabled(false);
 		}
-
-
 	}
+	
 	private void enablePropertyEditButtons(boolean enable) {
 		this.editDrawingToolsButton.setEnabled(enable);
 		this.displayAttributes.coneBaseRadiusField.setEnabled(enable);
