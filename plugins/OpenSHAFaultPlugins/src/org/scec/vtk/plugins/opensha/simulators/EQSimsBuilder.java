@@ -1,28 +1,18 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -30,10 +20,8 @@ import org.opensha.commons.data.NamedComparator;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
-import org.opensha.commons.param.impl.ButtonParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
-import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
@@ -52,11 +40,11 @@ import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.RakeColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.StrikeColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
-import org.scec.vtk.commons.opensha.surfaces.params.ColorParameter;
 import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
+import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.Prefs;
 
@@ -75,6 +63,25 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		hardcodedInputs.add("UCERF3.D3.1.1km.tri.2.flt");
 	}
 	
+	//Filtering Tools Drop Down Location
+	private static ArrayList<String> filteringOptions = new ArrayList<String>();
+	static {
+		//Helps filter out for 2019 Grand Challenge. 
+		filteringOptions.add("San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)");
+	}
+	private StringParameter filterOptions;
+	String buttonchosen = "";
+	
+	
+	/*
+	 * Initialization of all buttons/drop downs. 
+	 */
+	private static final String EVENT_MIN_MAG_PARAM_NAME = "Min Event Mag To Load";
+	private DoubleParameter eventMinMagParam;
+	
+	private static final String MAX_CAT_DURATION_PARAM_NAME = "Max Catalog Years To Load";
+	private DoubleParameter catDurationParam;
+	
 	private static final String GEOM_PRESET_PARAM_NAME = "Geometry File Presets";
 	private static final String GEOM_PRESET_NONE = "(none selected)";
 	private StringParameter geomPresetParam;
@@ -82,58 +89,65 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private static final String GEOM_FILE_SELECTOR_PARAM_NAME = "Geometry File";
 	private FileParameter geomFileParam = new FileParameter(GEOM_FILE_SELECTOR_PARAM_NAME);
 	
-	// no longer working
-//	private static final String LOAD_PARAM_NAME = "Load Catalogs";
-//	private static final String LOAD_PARAM_BUTTON_NAME = "Browse";
-//	private ButtonParameter loadParam;
-	
 	private static final String EVENT_SELECTOR_PARAM_NAME = "Simulator Event File";
 	private FileParameter eventFileParam = new FileParameter(EVENT_SELECTOR_PARAM_NAME);
 	
-	private static final String EVENT_MIN_MAG_PARAM_NAME = "Min Event Mag To Load";
-	private DoubleParameter eventMinMagParam;
-	
-	private static final String MAX_CAT_DURATION_PARAM_NAME = "Max Catalog Years To Load";
-	private DoubleParameter catDurationParam;
-	
+	//builderParams is the main list for all objects displayed on this plugin.
 	private ParameterList builderParams = new ParameterList();
 	
 	private TreeChangeListener l;
 	
-	private EQSimsEventSlipAnim eventSlipAnim;
+	//Color by Faults List
 	private ArrayList<FaultColorer> colorers;
+	//Animations List
 	private ArrayList<FaultAnimation> animations;
+	private EQSimsEventSlipAnim eventSlipAnim;
+
 	
+	//List of all Possible listeners
 	private ArrayList<EQSimsEventListener> eventListeners = new ArrayList<EQSimsEventListener>();
 	
 	private File dataDir;
-	
+
 	private List<SimulatorElement> elements;
-	private IntegerParameter startIDParam;
+	
 	
 	public EQSimsBuilder() {
+		//File Directory
 		dataDir = new File(Prefs.getDefaultLocation() + File.separator + "data" + File.separator + "EQSims");
 		if (!dataDir.exists())
 			dataDir.mkdirs();
 		
+		//Adding Geometry Presets
 		ArrayList<String> strings = new ArrayList<String>();
 		strings.add(GEOM_PRESET_NONE);
 		for (String name : hardcodedInputs) {
 			strings.add(name);
 		}
+		//Adding Filtering Options
+		ArrayList<String> strings2 = new ArrayList<String>();
+		strings2.add(GEOM_PRESET_NONE);
+		for (String name : filteringOptions) {
+			strings2.add(name);
+		}
 		
 		//Min Event Mag input area
 		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(7d));
 		builderParams.addParameter(eventMinMagParam);
+		
 		//Max Catalog Yrs Loaded input area
 		catDurationParam = new DoubleParameter(MAX_CAT_DURATION_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
 		builderParams.addParameter(catDurationParam);
 		
+		//Geometry File Presets
 		geomPresetParam = new StringParameter(GEOM_PRESET_PARAM_NAME, strings, GEOM_PRESET_NONE);
 		geomPresetParam.addParameterChangeListener(this);
 		builderParams.addParameter(geomPresetParam);
+		
+		//Geometry File
 		geomFileParam.addParameterChangeListener(this);
 		geomFileParam.setShowHiddenFiles(true);
+		
 		// little kludge to make it convenient for me, but still defaults to the data dir for everyone else
 		File kevinDir = new File("/home/kevin/Simulators/catalogs");
 		File defaultDir;
@@ -143,55 +157,74 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			defaultDir = new File(MainGUI.getCWD(),	"data");
 		if (defaultDir.exists())
 			geomFileParam.setDefaultInitialDir(defaultDir);
+		
+		//Geometry file Initilization 
 		builderParams.addParameter(geomFileParam);
+		
+		//Simulator Event File Initialization 
+		builderParams.addParameter(eventFileParam);
 		eventFileParam.addParameterChangeListener(this);
 		eventFileParam.setShowHiddenFiles(true);
-		builderParams.addParameter(eventFileParam);
-		//Added button to load catalogs from RSQSimServer.
-//		loadParam = new ButtonParameter(LOAD_PARAM_NAME, LOAD_PARAM_BUTTON_NAME);
-//		loadParam.addParameterChangeListener(this);
-//		builderParams.addParameter(loadParam);
-
 		
+		//Filtering Options Initialization
+		filterOptions = new StringParameter("Filtering Tools", strings2, GEOM_PRESET_NONE);
+		builderParams.addParameter(filterOptions);
+		filterOptions.addParameterChangeListener(this);
+			
+		/*
+		 * Initialization for all Coloring Options
+		 */
 		colorers = new ArrayList<FaultColorer>();
+		
 		EQSlipRateColorer slipColorer = new EQSlipRateColorer();
 		eventListeners.add(slipColorer);
 		colorers.add(slipColorer);
+		
 		EQSimsParticipationColorer particColor = new EQSimsParticipationColorer();
 		eventListeners.add(particColor);
 		colorers.add(particColor);
-		colorers.add(new EQSimsDepthColorer());
+		
+		EQSimsDepthColorer depthColor = new EQSimsDepthColorer();
+		colorers.add(depthColor);
+		
 		EQSimsPatchScalarColorer patchColorer = new EQSimsPatchScalarColorer();
 		colorers.add(patchColorer);
 		eventListeners.add(patchColorer);
-//		EQSimTimeDepParticColorer timeDepParticColor = new EQSimTimeDepParticColorer();
-//		eventListeners.add(timeDepParticColor);
-//		colorers.add(timeDepParticColor);
-//		EQSimMultiFaultRupColorer multiFault = new EQSimMultiFaultRupColorer();
-//		eventListeners.add(multiFault);
-//		colorers.add(multiFault);
-		colorers.add(new StrikeColorer());
-		colorers.add(new DipColorer());
-		colorers.add(new RakeColorer());
+		
+		StrikeColorer strikeColor = new StrikeColorer();
+		colorers.add(strikeColor);
+		
+		DipColorer dipColor = new DipColorer();
+		colorers.add(dipColor);
+		
+		RakeColorer rakeColor = new RakeColorer();
+		colorers.add(rakeColor);
+		
 		EQSimsSubSectDASColorer dasColorer = new EQSimsSubSectDASColorer();
 		colorers.add(dasColorer);
 		eventListeners.add(dasColorer);
+		
 		EQSimsDroughtColorer droughtColorer = new EQSimsDroughtColorer();
 		colorers.add(droughtColorer);
 		eventListeners.add(droughtColorer);
-		
+			
+		/*
+		 * Initialization of Animation Tabs
+		 */
 		animations = new ArrayList<>();
+		
 		EQSimsEventAnimColorer eventAnim = new EQSimsEventAnimColorer();
-		//Me
+		animations.add(eventAnim);
+		eventListeners.add(eventAnim);
+		
 		EQSimsAnimDroughtColorer eventDrought  = new EQSimsAnimDroughtColorer();
 		animations.add(eventDrought);
 		eventListeners.add(eventDrought);
 		
-		animations.add(eventAnim);
-		eventListeners.add(eventAnim);
 		eventSlipAnim = new EQSimsEventSlipAnim();
 		animations.add(eventSlipAnim);
 		eventListeners.add(eventSlipAnim);
+		
 	}
 
 	@Override
@@ -201,7 +234,6 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 
 	@Override
 	public ParameterList getFaultParams() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
@@ -231,7 +263,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private void downloadGeomAsynchronous(final String fName) {
 		final CalcProgressBar progress = new CalcProgressBar(null, "Downloading...",
 				"Downloading selected geometry file.This requires an active internet connection.", false);
-//		progress.setModal(true);
+		progress.setModal(true);
 		progress.setIndeterminate(true);
 		progress.setVisible(true);
 		final File file = getCachePath(fName);
@@ -270,41 +302,28 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 //		downloadURL(url, file);
 //		return file;
 //	}
+	
+
 
 	@Override
 	public void buildTree(DefaultMutableTreeNode root) {
 		File geomFile = geomFileParam.getValue();
 		
 		elements = null;
-		if (geomFile == null)
+		if (geomFile == null) {
 			return;
+		}
 		
-//		if (input.equals(GEOM_PRESET_NONE)) {
-//			file = getCustomFile();
-//			if (file == null)
-//				return;
-//			// set directory for loading events file
-//			if (eventFileParam.getValue() == null)
-//				eventFileParam.setDefaultInitialDir(file.getParentFile());
-//		} else {
-////			try {
-//				if (isFileCached(input)) {
-//					file = getCachePath(input);
-//				} else {
-//					// load asynchronous
-//					fireNewGeometry(null);
-//					downloadGeomAsynchronous(input); // will fire new tree change event when done
-//					return;
-//				}
-////			} catch (IOException e) {
-////				throw ExceptionUtils.asRuntimeException(e);
-////			}
-//		}
+		//Catches an incompatible file
 		try {
 			elements = loadGeometry(geomFile);
 		} catch (Exception e) {
-			throw ExceptionUtils.asRuntimeException(e);
+			JOptionPane.showMessageDialog(Info.getMainGUI(), "Incompatible File. "
+					+ "Please Choose Another (.flt or .in recommended)");
+			return;
+			//throw ExceptionUtils.asRuntimeException(e);
 		}
+		
 		eventFileParam.setValue(null);
 		
 		// this is a mapping of all fault IDs to category node for the fault
@@ -312,30 +331,55 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		// this is a mapping of all fault nodes to a list of section nodes;
 		HashMap<FaultCategoryNode, ArrayList<SimulatorElementFault>> sectionsMap =
 			new HashMap<FaultCategoryNode, ArrayList<SimulatorElementFault>>();
-		
 		// this list is for sorting;
 		ArrayList<FaultCategoryNode> faultNodes = new ArrayList<FaultCategoryNode>();
 		
 		for (SimulatorElement element : elements) {
 			int secID = element.getSectionID();
-			if (!faultNodesMap.containsKey(secID)) {
-				FaultCategoryNode tempNode = new FaultCategoryNode(element.getSectionName());
-				faultNodesMap.put(secID, tempNode);
-				faultNodes.add(tempNode);
-			}
-			FaultCategoryNode faultNode = faultNodesMap.get(secID);
 			
-			if (!sectionsMap.containsKey(faultNode)) {
-				sectionsMap.put(faultNode, new ArrayList<SimulatorElementFault>());
+			//Switch is based on SAF, algorithm remains the same regardless if needed to be unimplemented. 
+			
+			switch(buttonchosen) {
+				case "San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)":
+					//Elsinore, Hayward, San Andreas, San Jacinto fault IDs
+					if ((secID >=512 && secID <=537) || (secID >=819 && secID <=843) || (secID >=1773 && secID <=1974) || (secID>=2154 && secID<=2197)) {
+						if (!faultNodesMap.containsKey(secID)) {
+							FaultCategoryNode tempNode = new FaultCategoryNode(element.getSectionName());
+							faultNodesMap.put(secID, tempNode);
+							faultNodes.add(tempNode);
+						}
+						FaultCategoryNode faultNode = faultNodesMap.get(secID);
+						
+						if (!sectionsMap.containsKey(faultNode)) {
+							sectionsMap.put(faultNode, new ArrayList<SimulatorElementFault>());
+						}
+						ArrayList<SimulatorElementFault> secsForFault = sectionsMap.get(faultNode);
+						SimulatorElementFault secNode = new SimulatorElementFault(element);
+						secsForFault.add(secNode);
+						
+					}
+					break;
+			//Original code parsing. All fault IDs will be added. 
+				default:
+					if (!faultNodesMap.containsKey(secID)) {
+						FaultCategoryNode tempNode = new FaultCategoryNode(element.getSectionName());
+						faultNodesMap.put(secID, tempNode);
+						faultNodes.add(tempNode);
+					}
+					FaultCategoryNode faultNode = faultNodesMap.get(secID);
+					
+					if (!sectionsMap.containsKey(faultNode)) {
+						sectionsMap.put(faultNode, new ArrayList<SimulatorElementFault>());
+					}
+					ArrayList<SimulatorElementFault> secsForFault = sectionsMap.get(faultNode);
+					SimulatorElementFault secNode = new SimulatorElementFault(element);
+					secsForFault.add(secNode);
+					break;
 			}
-			ArrayList<SimulatorElementFault> secsForFault = sectionsMap.get(faultNode);
-			SimulatorElementFault secNode = new SimulatorElementFault(element);
-			secsForFault.add(secNode);
 		}
 		
 		// now sort the fault nodes
 		Collections.sort(faultNodes, new NamedComparator());
-		
 		FaultCategoryNode faultRoot = new FaultCategoryNode(geomFile.getName());
 		
 		for (FaultCategoryNode faultNode : faultNodes) {
@@ -348,8 +392,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		}
 		
 		root.add(faultRoot);
-		
 		fireNewGeometry(elements);
+
 	}
 
 	@Override
@@ -382,6 +426,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 
 	@Override
 	public void parameterChange(ParameterChangeEvent event) {
+		//Presets
 		if (event.getSource() == geomPresetParam) {
 			String preset = geomPresetParam.getValue();
 			if (!preset.equals(GEOM_PRESET_NONE)) {
@@ -398,10 +443,11 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 					return;
 				}
 			}
-		} else if (event.getSource() == geomFileParam) {
+		}
+		//Geometry file upload
+		else if (event.getSource() == geomFileParam) {
 			//Loading Screen
 			CalcProgressBar progress = new CalcProgressBar("Loading Events", "Please Wait");
-			//progress.runProgressBar();
 			progress.getMousePosition();
 			progress.setVisible(true);
 			progress.setIndeterminate(true);
@@ -416,47 +462,74 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			progress.toFront();
 			progress.setVisible(false);	
 			progress.dispose();
-		} else if (event.getSource() == eventFileParam) {
+		} 
+		//Simulator Event upload
+		else if (event.getSource() == eventFileParam) {
 			File outFile = eventFileParam.getValue();
 			if (outFile == null || elements == null) {
 				fireNewEvents(null);
 			} else if (elements != null) {
 				loadEvents(outFile);
 			}
-//		} else if (event.getSource() == loadParam) {
-//			final EQSimsCatalogQuery EQSimQueryFrame = new EQSimsCatalogQuery();
-//			EQSimQueryFrame.downloadButton.addActionListener(new ActionListener() {
-//				@Override
-//				public void actionPerformed(ActionEvent e) {
-//					//Create a new folder in the .scecvdo folder and download to that folder
-//					HashMap<String, ArrayList<URL>> downloadURLs = EQSimQueryFrame.getDownloadURLs();
-//					for (Entry<String, ArrayList<URL>> entry : downloadURLs.entrySet()) {
-//						String title = entry.getKey();
-//						ArrayList<URL> urls = entry.getValue();
-//						File catalogDir = new File(dataDir + File.separator + title);
-//						if (!catalogDir.exists())
-//							catalogDir.mkdirs();
-//						for (int i = 0; i < urls.size(); i++) {
-//							String[] fileName = urls.get(i).getFile().split("/");
-//							File file = new File(catalogDir.getAbsolutePath() + File.separator + fileName[fileName.length - 1]);
-//							if (!file.exists()) {
-//								try {
-//									downloadURL(urls.get(i), file);
-//								} catch (IOException e1) {
-//									e1.printStackTrace();
-//								}
+
+		} 
+	//} else if (event.getSource() == loadParam) {
+//		final EQSimsCatalogQuery EQSimQueryFrame = new EQSimsCatalogQuery();
+//		EQSimQueryFrame.downloadButton.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				//Create a new folder in the .scecvdo folder and download to that folder
+//				HashMap<String, ArrayList<URL>> downloadURLs = EQSimQueryFrame.getDownloadURLs();
+//				for (Entry<String, ArrayList<URL>> entry : downloadURLs.entrySet()) {
+//					String title = entry.getKey();
+//					ArrayList<URL> urls = entry.getValue();
+//					File catalogDir = new File(dataDir + File.separator + title);
+//					if (!catalogDir.exists())
+//						catalogDir.mkdirs();
+//					for (int i = 0; i < urls.size(); i++) {
+//						String[] fileName = urls.get(i).getFile().split("/");
+//						File file = new File(catalogDir.getAbsolutePath() + File.separator + fileName[fileName.length - 1]);
+//						if (!file.exists()) {
+//							try {
+//								downloadURL(urls.get(i), file);
+//							} catch (IOException e1) {
+//								e1.printStackTrace();
 //							}
 //						}
-//						File outFile = catalogDir; //outFile contains all downloaded files.
-//						//Work with the outFile. Copied from above.
-//						if (outFile == null || elements == null) {
-//							fireNewEvents(null);
-//						} else if (elements != null) {
-//							loadEvents(outFile);
-//						}
+//					}
+//					File outFile = catalogDir; //outFile contains all downloaded files.
+//					//Work with the outFile. Copied from above.
+//					if (outFile == null || elements == null) {
+//						fireNewEvents(null);
+//					} else if (elements != null) {
+//						loadEvents(outFile);
 //					}
 //				}
-//			});
+//			}
+//		});
+		
+		
+		//Filtering Options Upload
+		else if (event.getSource() == filterOptions) {
+			//no chosen geometry file
+			if (geomFileParam.getValue() == null) {
+				JOptionPane.showMessageDialog(Info.getMainGUI(), "No Geometry File Detected.\n Try again after uploading it.  ");
+				return;
+			}
+			else  {
+				if (filterOptions.getValue() == GEOM_PRESET_NONE) {
+					buttonchosen = "";
+				}
+				else if (filterOptions.getValue() == "San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)") {
+					buttonchosen= "San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)";
+				}
+			}
+			CalcProgressBar progress = new CalcProgressBar("Loading," ," please wait");
+			progress.setVisible(true);
+			progress.setIndeterminate(true);	
+			fireTreeChangeEvent();
+			progress.setVisible(false);	
+			progress.dispose();
 		}
 	}
 

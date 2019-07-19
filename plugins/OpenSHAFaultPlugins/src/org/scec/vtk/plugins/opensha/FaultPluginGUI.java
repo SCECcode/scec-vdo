@@ -176,7 +176,7 @@ public class FaultPluginGUI extends JSplitPane {
 				JComponent comp = param.getEditor().getComponent();
 				comp.setMaximumSize(new Dimension(Integer.MAX_VALUE, comp.getPreferredSize().height));
 				topPanel.add(comp);
-				tableHeight -= 55;
+				tableHeight -= 50;
 			}
 		}
 		tablePanel.setPreferredSize(new Dimension(Prefs.getPluginWidth()-100, tableHeight));
