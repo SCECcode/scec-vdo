@@ -833,7 +833,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		EQCatalog cat = new EQCatalog(parent);
 		int index=0;
 		cat.initializeArrays(events.size());
-		cat.setDisplayName("Cat " + count + ": " + startDate + " - " + endDate);
+		cat.setDisplayName("_Imported_Catalog_" + count);
 		count ++;
 		for (JsonEvent event : events) {
 			//plot the earthquakes as spheres with radius as magnitude
