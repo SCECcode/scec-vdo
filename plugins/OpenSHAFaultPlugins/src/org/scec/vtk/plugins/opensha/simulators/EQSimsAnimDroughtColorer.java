@@ -32,6 +32,7 @@ import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
 import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper;
+import org.opensha.sha.simulators.utils.RSQSimUtils;
 import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping;
 //import org.opensha.sha.simulators.utils.RSQSimUtils;
 //import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping;
@@ -39,6 +40,7 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 //import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.main.MainGUI;
@@ -53,6 +55,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 //import com.google.common.primitives.Ints;
 
+import scratch.UCERF3.enumTreeBranches.DeformationModels;
+import scratch.UCERF3.enumTreeBranches.FaultModels;
+
 //import scratch.UCERF3.enumTreeBranches.DeformationModels;
 //import scratch.UCERF3.enumTreeBranches.FaultModels;
 //import vtk.vtkCellPicker;
@@ -61,7 +66,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
 	private static CPT getDefaultCPT() {
-		CPT cpt = new CPT(0d,200d, Color.BLUE, Color.WHITE, Color.RED);
+		CPT cpt = new CPT(0d,1000d, Color.BLUE,  Color.RED);
 		cpt.setNanColor(Color.GRAY);
 		cpt.setBelowMinColor(cpt.getMinColor());
 		cpt.setAboveMaxColor(cpt.getMaxColor());
@@ -120,7 +125,8 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 	private Map<String, Integer> faultNamesMap;
 	private Map<String, Integer> sectNamesMap;
 
-
+	private List<FaultSectionPrefData> subSects;
+	private RSQSimSubSectionMapper subSectMapper;
 
 	public EQSimsAnimDroughtColorer() {
 		super(getDefaultCPT(), false);
@@ -143,7 +149,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		faultDroughtColor= new HashMap<>();
 
 		//Putting section ids in the hash maps and setting default drought length to zero and the color gray
-		for (int i = 2186; i <= 2197; i++)	{	
+		for (int i = 0; i <= 921; i++)	{	
 			faultDroughtLength.put(i, 0);
 			faultDroughtColor.put(i, null);
 		}
@@ -196,16 +202,26 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		}
 		return Double.NaN;
 	}
+	
+	int max = 0;
 
 	@Override
 	public Color getColor(AbstractFaultSection fault) {
-		if (!isStepValid(currentStep))
+		if (!isStepValid(currentStep)|| !(fault instanceof SimulatorElementFault)) {
 			return getCPT().getNaNColor();
+		}
 		else {
 			Color c;
+			SimulatorElement elem = ((SimulatorElementFault)fault).getElement();
+			FaultSectionPrefData sect = subSectMapper.getMappedSection(elem);
+			int parentID = sect.getParentSectionId();
+			if (parentID > max) {
+				max = parentID;
+			}
+			String parentt = sect.getName();
 			if (faultDroughtColor != null) {
-				c = faultDroughtColor.get(fault.getId());
-				System.out.println (" color of fault ID " + fault.getId()+ " is "+ c);
+				c = faultDroughtColor.get(parentID);
+				//System.out.println (" color of parent ID " + max+ " is "+ c + " size " + faultDroughtColor.size());
 			} else {
 				c = getColorCacheForStep(currentStep).get(fault.getId());
 			}
@@ -487,7 +503,17 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		faultMappings = null;
 		faultNamesMap = null;
 		sectNamesMap = null;
+		subSectMapper = null;
 		if (elements != null) {
+			if (subSects == null) {
+				FaultModels fm = FaultModels.FM3_1;
+				DeformationModels geom = DeformationModels.GEOLOGIC;
+				subSects = RSQSimUtils.getUCERF3SubSectsForComparison(fm, geom);
+			}
+			// TODO make this a parameter
+			// a rupture is mapped to a subsection if at least this fraction of the subsection (by area) participates
+			double minSectFractForInclusion = 0.2;
+			subSectMapper = new RSQSimSubSectionMapper(subSects, elements, minSectFractForInclusion);
 			faultMappings = Maps.newHashMap();
 			faultNamesMap = Maps.newHashMap();
 			sectNamesMap = Maps.newHashMap();
@@ -622,16 +648,21 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 				if (faultDroughtColor.get(key)!= null) {
 				//System.out.println("Color of fault "+ key + " is "+ droughtColor + "  (normal)");
 					Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
+					//System.out.println("first:" + fade);
 					faultDroughtColor.put(key, fade);
+
 				} else if  (numDroughtLength >= 100) {
 					//System.out.println("Color of fault "+ key + " is "+ droughtColor + "  (speacil)");
 					Color fade = colorBlender.blend(droughtColor, nanColor, (float) .1);
+					//System.out.println("third:" + droughtColor);
 					faultDroughtColor.put(key, fade);	  
 				}
 			} else {
+				
 				faultDroughtLength.put(key, 0);
 				faultDroughtColor.put(key, nanColor);	
 			}
+
 		}
 
 		return true;
@@ -655,8 +686,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		// if saturation, change color here
 		return color;
 	}
-
-	private RSQSimSubSectionMapper subSectMapper;
+	
 	public List<FaultSectionPrefData> getSubSectsForEvent(SimulatorEvent event) {
 		List<List<SubSectionMapping>> mappingsBundled = subSectMapper.getFilteredSubSectionMappings(event);
 		if (mappingsBundled == null)
