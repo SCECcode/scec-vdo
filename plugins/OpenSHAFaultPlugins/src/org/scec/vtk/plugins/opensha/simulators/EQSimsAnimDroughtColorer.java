@@ -25,6 +25,7 @@ import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
+import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.commons.util.cpt.LinearBlender;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 //import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
@@ -66,7 +67,7 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
 	private static CPT getDefaultCPT() {
-		CPT cpt = new CPT(0d,1000d, Color.BLUE,  Color.RED);
+		CPT cpt = new CPT(0d,500d, Color.BLUE, Color.WHITE, Color.RED);
 		cpt.setNanColor(Color.GRAY);
 		cpt.setBelowMinColor(cpt.getMinColor());
 		cpt.setAboveMaxColor(cpt.getMaxColor());
@@ -202,7 +203,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		}
 		return Double.NaN;
 	}
-	
+
 	int max = 0;
 
 	@Override
@@ -620,8 +621,10 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 
 		int step = currentStep;
-		//System.out.println ("step is " + step);
+		System.out.println ("step is " + step);
 		SimulatorEvent event = getEventForStep(step);
+		HashMap<Integer, Integer> eventParentIDS = 	getSubSectsForEvent(event);
+
 		if (step  == 1) {
 			eventPrevTime = 0;
 		} else if (step > 0) {
@@ -630,39 +633,40 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		} else {
 			return true;
 		}
-		
+
 		double eventTime = event.getTimeInYears(); 
 		double timeSinceYears = eventTime-eventPrevTime;
-		
+
 		if (timeSinceYears < 0) {
 			timeSinceYears = 0;  
 		}
-		
+
 		for(Integer key :faultDroughtLength.keySet()) {
-			if (key != event.getID()) {
-				Color eventColor = faultDroughtColor.get(key);
-				numDroughtLength = (int) (faultDroughtLength.get(key) + timeSinceYears);
-				//System.out.println("Fault section " + key + " has drought legnth "+ numDroughtLength);
-				faultDroughtLength.put (key, numDroughtLength);
-				droughtColor= getColorForValue(numDroughtLength);
-				if (faultDroughtColor.get(key)!= null) {
-				//System.out.println("Color of fault "+ key + " is "+ droughtColor + "  (normal)");
-					Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
-					//System.out.println("first:" + fade);
-					faultDroughtColor.put(key, fade);
+			for (Integer eventParentID : eventParentIDS.keySet()) {
+				if (key != eventParentID) {
+					Color eventColor = faultDroughtColor.get(key);
+					numDroughtLength = (int) (faultDroughtLength.get(key) + timeSinceYears);
+					//System.out.println("Fault section " + key + " has drought legnth "+ numDroughtLength);
+					faultDroughtLength.put (key, numDroughtLength);
+					droughtColor= getColorForValue(numDroughtLength);
+					if (faultDroughtColor.get(key)!= null) {
+						//System.out.println("Color of fault "+ key + " is "+ droughtColor + "  (normal)");
+						Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
+						//System.out.println("first:" + fade);
+						faultDroughtColor.put(key, fade);
 
-				} else if  (numDroughtLength >= 100) {
-					//System.out.println("Color of fault "+ key + " is "+ droughtColor + "  (speacil)");
-					Color fade = colorBlender.blend(droughtColor, nanColor, (float) .1);
-					//System.out.println("third:" + droughtColor);
-					faultDroughtColor.put(key, fade);	  
+					} else if  (numDroughtLength >= 100) {
+						//System.out.println("Color of fault "+ key + " is "+ droughtColor + "  (speacil)");
+						Color fade = colorBlender.blend(droughtColor, nanColor, (float) .1);
+						//System.out.println("third:" + droughtColor);
+						faultDroughtColor.put(key, fade);	  
+					}
+				} else {
+					faultDroughtLength.put(key, 0);
+					faultDroughtColor.put(key, nanColor);	
 				}
-			} else {
-				
-				faultDroughtLength.put(key, 0);
-				faultDroughtColor.put(key, nanColor);	
-			}
 
+			}
 		}
 
 		return true;
@@ -686,17 +690,17 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		// if saturation, change color here
 		return color;
 	}
-	
-	public List<FaultSectionPrefData> getSubSectsForEvent(SimulatorEvent event) {
+
+	public HashMap <Integer, Integer> getSubSectsForEvent(SimulatorEvent event) {
 		List<List<SubSectionMapping>> mappingsBundled = subSectMapper.getFilteredSubSectionMappings(event);
 		if (mappingsBundled == null)
 			// this will happen for small events which break no subsections
 			return null;
-		List<FaultSectionPrefData> sects = new ArrayList<>();
+		HashMap<Integer, Integer> sects = new HashMap<>();
 		for (List<SubSectionMapping> bundle : mappingsBundled)
 			for (SubSectionMapping mapping : bundle)
-				sects.add(mapping.getSubSect());
-		return sects;
+				sects.put(mapping.getSubSect().getParentSectionId(), 0);
+		return  sects;
 	}
 
 	public Collection<SimulatorElement> getElementsForSubSect(FaultSectionPrefData subSect) {
