@@ -223,7 +223,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		JPanel USGSPanel = new JPanel();
 		USGSPanel.setLayout(new FlowLayout());
 		USGSPanel.add(new JLabel("Visit website, locate shakemap, and enter URL of Shakemap's XML file: "));
-		//eventIdBox.setPreferredSize(new Dimension(200,40));
+		eventIdBox.setPreferredSize(new Dimension(200,20));
 		USGSPanel.add(usgsLink);
 		USGSPanel.add(eventIdBox);
 		USGSPanel.add(downloadUSGSButton);
