@@ -642,33 +642,30 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		}
 
 		for(Integer key :faultDroughtLength.keySet()) {
-			for (Integer eventParentID : eventParentIDS.keySet()) {
-				if (key != eventParentID) {
+			System.out.println(" key in fault Drought Length "+ key);
+				if (!eventParentIDS.containsKey(key)) {
 					Color eventColor = faultDroughtColor.get(key);
 					numDroughtLength = (int) (faultDroughtLength.get(key) + timeSinceYears);
-					//System.out.println("Fault section " + key + " has drought legnth "+ numDroughtLength);
 					faultDroughtLength.put (key, numDroughtLength);
 					droughtColor= getColorForValue(numDroughtLength);
 					if (faultDroughtColor.get(key)!= null) {
-						//System.out.println("Color of fault "+ key + " is "+ droughtColor + "  (normal)");
+						System.out.println("Color of fault "+ key + " is "+ numDroughtLength + "  (normal)");
 						Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
-						//System.out.println("first:" + fade);
 						faultDroughtColor.put(key, fade);
+						
 
 					} else if  (numDroughtLength >= 100) {
-						//System.out.println("Color of fault "+ key + " is "+ droughtColor + "  (speacil)");
+						System.out.println("Color of fault "+ key + " is "+ numDroughtLength + "  (speacil)");
 						Color fade = colorBlender.blend(droughtColor, nanColor, (float) .1);
-						//System.out.println("third:" + droughtColor);
 						faultDroughtColor.put(key, fade);	  
-					}
+					}  
 				} else {
 					faultDroughtLength.put(key, 0);
 					faultDroughtColor.put(key, nanColor);	
 				}
 
 			}
-		}
-
+		//eventParentIDS.clear();
 		return true;
 	}
 
@@ -700,7 +697,8 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		for (List<SubSectionMapping> bundle : mappingsBundled)
 			for (SubSectionMapping mapping : bundle)
 				sects.put(mapping.getSubSect().getParentSectionId(), 0);
-		return  sects;
+		
+		return sects;
 	}
 
 	public Collection<SimulatorElement> getElementsForSubSect(FaultSectionPrefData subSect) {
