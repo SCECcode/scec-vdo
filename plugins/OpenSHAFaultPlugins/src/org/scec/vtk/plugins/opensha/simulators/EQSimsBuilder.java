@@ -61,6 +61,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		hardcodedInputs.add("NCAL3a_Ward_Geometry.dat");
 		hardcodedInputs.add("NCAL4a_Ward_Geometry.dat");
 		hardcodedInputs.add("UCERF3.D3.1.1km.tri.2.flt");
+		hardcodedInputs.add("zfault_Deepen.in");
 	}
 	
 	//Filtering Tools Drop Down Location
@@ -161,15 +162,16 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		//Geometry file Initilization 
 		builderParams.addParameter(geomFileParam);
 		
+		//Filtering Options Initialization
+		filterOptions = new StringParameter("Filtering Tools", strings2, GEOM_PRESET_NONE);
+		builderParams.addParameter(filterOptions);
+		filterOptions.addParameterChangeListener(this);
+		
 		//Simulator Event File Initialization 
 		builderParams.addParameter(eventFileParam);
 		eventFileParam.addParameterChangeListener(this);
 		eventFileParam.setShowHiddenFiles(true);
 		
-		//Filtering Options Initialization
-		filterOptions = new StringParameter("Filtering Tools", strings2, GEOM_PRESET_NONE);
-		builderParams.addParameter(filterOptions);
-		filterOptions.addParameterChangeListener(this);
 			
 		/*
 		 * Initialization for all Coloring Options
@@ -336,11 +338,15 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		
 		for (SimulatorElement element : elements) {
 			int secID = element.getSectionID();
+			if (element.getName().equals("nn0.008")|| element.getName().equals("nn0.0196") || element.getName().equals("nn0.0143") || element.getName().equals("nn0.0167")) {
+				System.out.println(element.getName() + " " +secID);
+			}
 			
 			//Switch is based on SAF, algorithm remains the same regardless if needed to be unimplemented. 
 			
 			switch(buttonchosen) {
 				case "San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)":
+
 					//Elsinore, Hayward, San Andreas, San Jacinto fault IDs
 					if ((secID >=512 && secID <=537) || (secID >=819 && secID <=843) || (secID >=1773 && secID <=1974) || (secID>=2154 && secID<=2197)) {
 						if (!faultNodesMap.containsKey(secID)) {
