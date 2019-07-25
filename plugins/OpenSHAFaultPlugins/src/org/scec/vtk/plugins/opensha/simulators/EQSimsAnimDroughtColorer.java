@@ -1,11 +1,9 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
 import java.awt.Color;
-import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-//import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,28 +23,20 @@ import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
-import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.commons.util.cpt.LinearBlender;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
-//import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.SimulatorEvent;
-import org.opensha.sha.simulators.utils.General_EQSIM_Tools;
 import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper;
 import org.opensha.sha.simulators.utils.RSQSimUtils;
 import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping;
-//import org.opensha.sha.simulators.utils.RSQSimUtils;
-//import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
-//import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.main.MainGUI;
-//import org.scec.vtk.tools.picking.PickEnabledActor;
-//import org.scec.vtk.tools.picking.PickHandler;
 
 import com.google.common.base.Joiner;
 import com.google.common.cache.CacheBuilder;
@@ -54,20 +44,18 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-//import com.google.common.primitives.Ints;
+
 
 import scratch.UCERF3.enumTreeBranches.DeformationModels;
 import scratch.UCERF3.enumTreeBranches.FaultModels;
 
-//import scratch.UCERF3.enumTreeBranches.DeformationModels;
-//import scratch.UCERF3.enumTreeBranches.FaultModels;
-//import vtk.vtkCellPicker;
 
 public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
 	private static CPT getDefaultCPT() {
-		CPT cpt = new CPT(0d,500d, Color.BLUE, Color.WHITE, Color.RED);
+		System.out.println(droughtYearParam.getValue()*2);
+		CPT cpt = new CPT(0, droughtYearParam.getValue()*2, Color.white, Color.red, Color.magenta);
 		cpt.setNanColor(Color.GRAY);
 		cpt.setBelowMinColor(cpt.getMinColor());
 		cpt.setAboveMaxColor(cpt.getMaxColor());
@@ -80,31 +68,21 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 
 	//Title on drop down menu
-	private static String TITLE = "Drought Duration Animation";
+	private static String TITLE = "Drought Duration Animation (yrs)";
 
 	//Min magnitude option
 	private static final String MIN_MAG_PARAM_NAME = "Min Mag";
-	private static final Double MIN_MAG_PARAM = 0d;
+	private static Double MIN_MAG_PARAM = 7.0d;
 	private static final Double MAX_MAG_PARAM = 10d;
 	private DoubleParameter minMagParam = 
 			new DoubleParameter(MIN_MAG_PARAM_NAME, MIN_MAG_PARAM, MAX_MAG_PARAM, MIN_MAG_PARAM);
 
 	//Color Bounds
-	private static final String MAX_VALUE_COLOR_WHEEL = "Drought Indicator";
-	private static final Double MIN_YEAR_PARAM = 100d;
-	private static final Double MAX_YEAR_PARAM = 100d; 
+	private static final String MAX_VALUE_COLOR_WHEEL = "Drought  Period Indicator (years)";
+	private static  Double MIN_YEAR_PARAM = 100d;
+	private static final Double MAX_YEAR_PARAM = 1000d; 
 	private static DoubleParameter droughtYearParam = 
 			new DoubleParameter(MAX_VALUE_COLOR_WHEEL, MIN_YEAR_PARAM, MAX_YEAR_PARAM,MIN_YEAR_PARAM );
-
-	private static final String FAULT_FILTER_PARAM_NAME = "Filter By Fault";
-	private static final String FAULT_FILTER_PARAM_DEFAULT = "(all faults)";
-	private StringParameter faultFilterParam;
-
-
-	private static final String SECT_FILTER_PARAM_NAME = "Only Events Involing";
-	private static final String SECT_FILTER_PARAM_DEFAULT = "(all sections)";
-	private StringParameter sectFilterParam;
-
 
 
 	//Parameter List
@@ -143,9 +121,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		onlyCurrentVisibleParam = new BooleanParameter("Hide Other Elements", false);
 		animParams.addParameter(onlyCurrentVisibleParam);
 
-		ArrayList<String> strings = new ArrayList<String>();
-		strings.add(SECT_FILTER_PARAM_DEFAULT);
-
 		faultDroughtLength=new HashMap<>();
 		faultDroughtColor= new HashMap<>();
 
@@ -154,18 +129,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 			faultDroughtLength.put(i, 0);
 			faultDroughtColor.put(i, null);
 		}
-
-
-		sectFilterParam = new StringParameter(SECT_FILTER_PARAM_NAME, strings, SECT_FILTER_PARAM_DEFAULT);
-		animParams.addParameter(sectFilterParam);
-		sectFilterParam.addParameterChangeListener(this);
-
-		strings = new ArrayList<String>();
-		strings.add(FAULT_FILTER_PARAM_DEFAULT);
-
-		faultFilterParam = new StringParameter(FAULT_FILTER_PARAM_NAME, strings, FAULT_FILTER_PARAM_DEFAULT);
-		animParams.addParameter(faultFilterParam);
-		faultFilterParam.addParameterChangeListener(this);
 
 
 		// cache for event colors for faster loading
@@ -219,7 +182,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 			if (parentID > max) {
 				max = parentID;
 			}
-			String parentt = sect.getName();
 			if (faultDroughtColor != null) {
 				c = faultDroughtColor.get(parentID);
 				//System.out.println (" color of parent ID " + max+ " is "+ c + " size " + faultDroughtColor.size());
@@ -414,39 +376,15 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 	private synchronized void doFilterEvents() {
 		double minMag = minMagParam .getValue();
-
-		String sectFilterName = sectFilterParam.getValue();
-		int filterSectionID;
-		if (!sectFilterName.equals(SECT_FILTER_PARAM_DEFAULT))
-			filterSectionID = sectNamesMap.get(sectFilterName);
-		else
-			filterSectionID = -1;
-		if (filterSectionID >= 0)
-			System.out.println("Filtering on sect id="+filterSectionID);
-
-		String faultFilterName = faultFilterParam.getValue();
-		HashSet<Integer> filterFault;
-
-		if (!faultFilterName.equals(FAULT_FILTER_PARAM_DEFAULT))
-			filterFault = faultMappings.get(faultNamesMap.get(faultFilterName));
-		else
-			filterFault = null;
-
-
 		double startTime = Double.NaN;
 		double endTime = Double.NaN;
 
-		if (minMag > MIN_MAG_PARAM ||filterSectionID >= 0 || filterFault != null
-				|| !Double.isNaN(startTime)) {
+		if (minMag > MIN_MAG_PARAM || !Double.isNaN(startTime)) {
 			filterIndexes = new ArrayList<Integer>();
 			for (int i = 0; i < unfilteredevents.size(); i++) {
 				SimulatorEvent event = unfilteredevents.get(i);
 
 				if (event.getMagnitude() < minMag) 
-					continue;
-				if (filterSectionID >= 0 && !event.doesEventIncludeSection(filterSectionID))
-					continue;
-				if (filterFault != null && !event.doesEventIncludeFault(filterFault)) 
 					continue;
 				if (!Double.isNaN(startTime)) {
 					if (event.getTime() < startTime)
@@ -468,10 +406,12 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 	@Override
 	public void parameterChange(ParameterChangeEvent arg0) {
 		if (arg0.getSource() == minMagParam ) {
+			MIN_MAG_PARAM = (Double) arg0.getNewValue();
 			filterEvents();
-		} else if (arg0.getSource()==MAX_VALUE_COLOR_WHEEL) {
-			fireColorerChangeEvent();
-		}
+		} else if (arg0.getSource()== droughtYearParam ) {
+			MIN_YEAR_PARAM = (Double) arg0.getNewValue();
+			setCPT(getDefaultCPT());
+		} 
 	}
 
 
@@ -525,7 +465,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 				if (!sectNamesMap.containsKey(sectName))
 					sectNamesMap.put(sectName, sectID);
 				Integer faultID = e.getFaultID();
-				if (faultID < 0)
+				if (faultID < 0) 
 					continue;
 				HashSet<Integer> sectsForFault = faultMappings.get(faultID);
 				if (sectsForFault == null) {
@@ -568,38 +508,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 				faultNamesMap.put(faultIDstr+". "+commonPrefix, faultID);
 			}
 		}
-
-		updateSectionNames();
-		updateFaultNames();
-
-	}
-
-	private void updateSectionNames() {
-		ArrayList<String> strings = Lists.newArrayList();
-		strings.add(SECT_FILTER_PARAM_DEFAULT);
-		if (sectNamesMap != null && !sectNamesMap.isEmpty()) {
-			List<String> names = Lists.newArrayList(sectNamesMap.keySet());
-			Collections.sort(names);
-			strings.addAll(names);
-		}
-		StringConstraint sconst = (StringConstraint)sectFilterParam.getConstraint();
-		sectFilterParam.setValue(SECT_FILTER_PARAM_DEFAULT);
-		sconst.setStrings(strings);
-		sectFilterParam.getEditor().setParameter(sectFilterParam);
-	}
-
-	private void updateFaultNames() {
-		ArrayList<String> strings = Lists.newArrayList();
-		strings.add(FAULT_FILTER_PARAM_DEFAULT);
-		if (faultNamesMap != null && !faultNamesMap.isEmpty()) {
-			List<String> names = Lists.newArrayList(faultNamesMap.keySet());
-			Collections.sort(names);
-			strings.addAll(names);
-		}
-		StringConstraint sconst = (StringConstraint)faultFilterParam.getConstraint();
-		faultFilterParam.setValue(FAULT_FILTER_PARAM_DEFAULT);
-		sconst.setStrings(strings);
-		faultFilterParam.getEditor().setParameter(faultFilterParam);
 	}
 
 	@Override
@@ -623,7 +531,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		int step = currentStep;
 		System.out.println ("step is " + step);
 		SimulatorEvent event = getEventForStep(step);
-		HashMap<Integer, Integer> eventParentIDS = 	getSubSectsForEvent(event);
+		HashMap<Integer, Integer> eventParentIDS = 	getParentIDsForEvent(event);
 
 		if (step  == 1) {
 			eventPrevTime = 0;
@@ -642,20 +550,17 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		}
 
 		for(Integer key :faultDroughtLength.keySet()) {
-			System.out.println(" key in fault Drought Length "+ key);
 				if (!eventParentIDS.containsKey(key)) {
 					Color eventColor = faultDroughtColor.get(key);
 					numDroughtLength = (int) (faultDroughtLength.get(key) + timeSinceYears);
 					faultDroughtLength.put (key, numDroughtLength);
 					droughtColor= getColorForValue(numDroughtLength);
 					if (faultDroughtColor.get(key)!= null) {
-						System.out.println("Color of fault "+ key + " is "+ numDroughtLength + "  (normal)");
 						Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
 						faultDroughtColor.put(key, fade);
 						
 
-					} else if  (numDroughtLength >= 100) {
-						System.out.println("Color of fault "+ key + " is "+ numDroughtLength + "  (speacil)");
+					} else if  (numDroughtLength >= droughtYearParam.getValue().intValue()) {
 						Color fade = colorBlender.blend(droughtColor, nanColor, (float) .1);
 						faultDroughtColor.put(key, fade);	  
 					}  
@@ -665,7 +570,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 				}
 
 			}
-		//eventParentIDS.clear();
 		return true;
 	}
 
@@ -688,7 +592,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 		return color;
 	}
 
-	public HashMap <Integer, Integer> getSubSectsForEvent(SimulatorEvent event) {
+	public HashMap <Integer, Integer> getParentIDsForEvent(SimulatorEvent event) {
 		List<List<SubSectionMapping>> mappingsBundled = subSectMapper.getFilteredSubSectionMappings(event);
 		if (mappingsBundled == null)
 			// this will happen for small events which break no subsections
