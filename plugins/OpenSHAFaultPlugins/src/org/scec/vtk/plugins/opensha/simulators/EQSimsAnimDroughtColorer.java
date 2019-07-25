@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+//import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,12 +15,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.opensha.commons.param.ParameterList;
-import org.opensha.commons.param.constraint.impl.StringConstraint;
+//import org.opensha.commons.param.constraint.impl.StringConstraint;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
-import org.opensha.commons.param.impl.StringParameter;
+//import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.LinearBlender;
@@ -42,7 +42,7 @@ import com.google.common.base.Joiner;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
+//import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 
@@ -54,7 +54,6 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
 	private static CPT getDefaultCPT() {
-		System.out.println(droughtYearParam.getValue()*2);
 		CPT cpt = new CPT(0, droughtYearParam.getValue()*2, Color.white, Color.red, Color.magenta);
 		cpt.setNanColor(Color.GRAY);
 		cpt.setBelowMinColor(cpt.getMinColor());
@@ -68,7 +67,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 
 	//Title on drop down menu
-	private static String TITLE = "Drought Duration Animation (yrs)";
+	private static String TITLE = "Open Interval Animation (yrs)";
 
 	//Min magnitude option
 	private static final String MIN_MAG_PARAM_NAME = "Min Mag";
@@ -129,6 +128,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 			faultDroughtLength.put(i, 0);
 			faultDroughtColor.put(i, null);
 		}
+
 
 
 		// cache for event colors for faster loading
@@ -376,10 +376,11 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 	private synchronized void doFilterEvents() {
 		double minMag = minMagParam .getValue();
+
 		double startTime = Double.NaN;
 		double endTime = Double.NaN;
 
-		if (minMag > MIN_MAG_PARAM || !Double.isNaN(startTime)) {
+		if (minMag > MIN_MAG_PARAM|| !Double.isNaN(startTime)) {
 			filterIndexes = new ArrayList<Integer>();
 			for (int i = 0; i < unfilteredevents.size(); i++) {
 				SimulatorEvent event = unfilteredevents.get(i);
@@ -465,7 +466,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 				if (!sectNamesMap.containsKey(sectName))
 					sectNamesMap.put(sectName, sectID);
 				Integer faultID = e.getFaultID();
-				if (faultID < 0) 
+				if (faultID < 0)
 					continue;
 				HashSet<Integer> sectsForFault = faultMappings.get(faultID);
 				if (sectsForFault == null) {
@@ -508,6 +509,8 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 				faultNamesMap.put(faultIDstr+". "+commonPrefix, faultID);
 			}
 		}
+
+
 	}
 
 	@Override
@@ -529,7 +532,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 
 		int step = currentStep;
-		System.out.println ("step is " + step);
 		SimulatorEvent event = getEventForStep(step);
 		HashMap<Integer, Integer> eventParentIDS = 	getParentIDsForEvent(event);
 
@@ -555,6 +557,12 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 					numDroughtLength = (int) (faultDroughtLength.get(key) + timeSinceYears);
 					faultDroughtLength.put (key, numDroughtLength);
 					droughtColor= getColorForValue(numDroughtLength);
+					
+					if (key ==234) {
+						System.out.println (numDroughtLength);
+						System.out.println(droughtColor);
+					}
+					
 					if (faultDroughtColor.get(key)!= null) {
 						Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
 						faultDroughtColor.put(key, fade);
