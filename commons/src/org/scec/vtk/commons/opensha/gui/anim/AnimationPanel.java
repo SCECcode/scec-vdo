@@ -155,6 +155,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 	private ParameterList faultAnimParams;
 
 	private JTextField idField = new JTextField(6);
+	private JTextField timeField = new JTextField(5);
 
 	private List<AnimationListener> listeners = new ArrayList<>();
 	
@@ -229,6 +230,12 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			controlPanel.add(idField);
 			idField.addActionListener(this);
 			idField.addFocusListener(this);
+			
+			timeField.setMaximumSize(timeField.getPreferredSize());
+			controlPanel.add(new JLabel("  Year: "));
+			controlPanel.add(timeField);
+			timeField.addActionListener(this);
+			timeField.addFocusListener(this);
 		}
 		
 		// legend
@@ -340,6 +347,7 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			idField.setText(""+id);
 			labelStr += " (ID: " + id + ")";
 		}
+		timeField.setText(""+df.format(curAbsTime / secsPerYear));
 		if (D) System.out.println("Label: "+labelStr);
 		
 //		Geo3dInfo.getMainWindow().setMessage(labelStr); // TODO label support
@@ -592,6 +600,8 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 			idField.setEnabled(!playing);
 			nextButton.setEnabled(!playing && !isLast);
 			prevButton.setEnabled(!playing && !isFirst);
+			
+			timeField.setEnabled(!playing);
 		}
 		
 	};
@@ -655,7 +665,10 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		} else if (e.getSource() == idField) {
 			if (D) System.out.println("idField: action performed");
 			idFieldUpdated();
-		} else if (e.getSource() == legendCheck) {
+		} else if (e.getSource() == timeField) {
+			yearFieldUpdated();
+		}
+		else if (e.getSource() == legendCheck) {
 			boolean displayed = legendCheck.isSelected();
 			setLegendChecksEnabled(displayed);
 			
@@ -696,6 +709,22 @@ public class AnimationPanel extends JPanel implements ChangeListener, ActionList
 		} catch (Exception e) {
 			// couldn't parse, reset it to the current ID
 			idField.setText(((IDBasedFaultAnimation)faultAnim).getIDForStep(curStep)+"");
+		}
+	}
+	//Changing the year Parameters
+	private void yearFieldUpdated() {
+		String year = timeField.getText();
+		try {
+			Double yearText = Double.parseDouble(year);
+			curAbsTime = yearText*secsPerYear;
+			Double updatedTime = getTimeCalc().getAnimTime(curAbsTime);
+			setCurrentAnimTime(updatedTime);	
+			updateStep();
+			updateTime();
+			updateLegend();		
+		}
+		catch (Exception e) {
+			timeField.setText("");
 		}
 	}
 
