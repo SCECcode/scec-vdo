@@ -536,6 +536,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			fireTreeChangeEvent();
 			progress.setVisible(false);	
 			progress.dispose();
+		
 		}
 	}
 
