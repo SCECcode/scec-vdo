@@ -34,6 +34,7 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
+import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.main.MainGUI;
@@ -51,7 +52,7 @@ import scratch.UCERF3.enumTreeBranches.FaultModels;
 
 
 public class EQSimsAnimDroughtColorer extends CPTBasedColorer
-implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
+implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
 	private static CPT getDefaultCPT() {
 		CPT cpt = new CPT(0, droughtYearParam.getValue()*2, Color.white, Color.red, Color.magenta);
@@ -438,6 +439,8 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 	public int getPreferredInitialStep() {
 		return 0;
 	}
+	
+
 
 
 	@Override
@@ -558,11 +561,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 					faultDroughtLength.put (key, numDroughtLength);
 					droughtColor= getColorForValue(numDroughtLength);
 					
-					if (key ==234) {
-						System.out.println (numDroughtLength);
-						System.out.println(droughtColor);
-					}
-					
 					if (faultDroughtColor.get(key)!= null) {
 						Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
 						faultDroughtColor.put(key, fade);
@@ -580,8 +578,8 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 			}
 		return true;
 	}
-
-
+	
+	@Override
 	public synchronized int getIDForStep(int step) {
 		if (filterIndexes == null && step >= 0 && unfilteredevents != null && step < unfilteredevents.size()) {
 			return unfilteredevents.get(step).getID();
@@ -615,6 +613,30 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 
 	public Collection<SimulatorElement> getElementsForSubSect(FaultSectionPrefData subSect) {
 		return subSectMapper.getElementsForSection(subSect);
+	}
+
+	@Override
+	public int getStepForID(int id) {
+		
+		Integer step = (Integer) idToUnfilteredStepMap.get(id);
+		if (step == null)
+			// it's not a valid ID
+			return -1;
+		int filterIndex = -1;
+		if (filterIndexes == null)
+			return step;
+		else
+			filterIndex = filterIndexes.indexOf(step);
+		if (filterIndex >= 0) {
+			// this is a valid ID, and it's in the filter
+			return filterIndex;
+		} else if (id > 0 && id <= unfilteredevents.size()) {
+			// this is a valid ID, but it's currently filtered out. remove the filter.
+			return step;
+		} else {
+			// it's not a valid ID
+			return -1;
+		}
 	}
 
 }
