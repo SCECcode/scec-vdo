@@ -50,7 +50,18 @@ import com.google.common.collect.Maps;
 import scratch.UCERF3.enumTreeBranches.DeformationModels;
 import scratch.UCERF3.enumTreeBranches.FaultModels;
 
-
+/**  
+ * This file builds up the Open Interval Animation class, which allows the user to 
+ * input a geometry file and a simulator event file, and can visualize the length 
+ * between events on every fault. Many functions were brought in from the other 
+ * animation class, EQSimsEventAnimColorer.java, and just simply focuses on 
+ * coloring faults inbetween events rather than at event time. 
+ * timeChanged is the main function that determines the count of every fault when 
+ * rendering. 
+ * 
+ * @authors:  Joses Galdamez, Gina Yang, Afe Addeh, Brandon O'Neil, Kevin Milner 
+ * @version: 2019 Grand Challenge.  
+ */
 public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
