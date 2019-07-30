@@ -1,5 +1,6 @@
 package org.scec.vtk.plugins.opensha.simulators;
 
+import java.awt.Cursor;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -48,7 +49,39 @@ import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.Prefs;
 
+
 public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener {
+	
+	/*
+	 * ProgressBar represents a class that may be implemented elsewhere in its own 
+	 * package so that any file may use it. 
+	 */
+	public class ProgressBar {
+		CalcProgressBar progress;
+		private Cursor waitCursor;
+		
+		//Default Constructor, loadingString represents the title of the 
+		//Loading Screen you would want 
+		public ProgressBar(String titleString, String loadingString) {
+			waitCursor = new Cursor(Cursor.WAIT_CURSOR);
+			progress = new CalcProgressBar(titleString, loadingString);
+		}
+		public void runProgressBar() {
+			progress.setCursor(waitCursor);
+			progress.setVisible(true);
+			progress.setIndeterminate(true); 
+			progress.setAlwaysOnTop(true);
+		}
+		public void stopProgressBar() {
+			progress.toFront();
+			progress.setVisible(false);	
+			progress.dispose();
+		}
+		public void changeLoadingMessage(String loadingString) {
+			progress.setProgressMessage(loadingString);
+		}
+
+	}
 	
 	private static ArrayList<String> hardcodedInputs = new ArrayList<String>();
 	static {
@@ -69,9 +102,11 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	static {
 		//Helps filter out for 2019 Grand Challenge. 
 		filteringOptions.add("San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)");
+		filteringOptions.add("San Andreas, San Jacinto, Elsinore, Hayward (RSQSim catalog data (zfault))");
 	}
 	private StringParameter filterOptions;
 	String buttonchosen = "";
+	List<? extends SimulatorEvent> events;
 	
 	
 	/*
@@ -111,6 +146,9 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private File dataDir;
 
 	private List<SimulatorElement> elements;
+	
+	//use for Simulator Event Reloading
+	private File reloadFile;
 	
 	
 	public EQSimsBuilder() {
@@ -338,17 +376,14 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		
 		for (SimulatorElement element : elements) {
 			int secID = element.getSectionID();
-			if (element.getName().equals("nn0.008")|| element.getName().equals("nn0.0196") || element.getName().equals("nn0.0143") || element.getName().equals("nn0.0167")) {
-				System.out.println(element.getName() + " " +secID);
-			}
+			String secName = element.getName();
 			
-			//Switch is based on SAF, algorithm remains the same regardless if needed to be unimplemented. 
-			
+			//Switch is based on SAFS, algorithm remains the same regardless if needed to be unimplemented. 
 			switch(buttonchosen) {
 				case "San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)":
-
 					//Elsinore, Hayward, San Andreas, San Jacinto fault IDs
-					if ((secID >=512 && secID <=537) || (secID >=819 && secID <=843) || (secID >=1773 && secID <=1974) || (secID>=2154 && secID<=2197)) {
+					if(secName.contains("SanAndreas")||secName.contains("SanJacinto")||secName.contains("Hayward")||secName.contains("Elsinore")) {
+					//if ((secID >=512 && secID <=537) || (secID >=819 && secID <=843) || (secID >=1773 && secID <=1974) || (secID>=2154 && secID<=2197)) {
 						if (!faultNodesMap.containsKey(secID)) {
 							FaultCategoryNode tempNode = new FaultCategoryNode(element.getSectionName());
 							faultNodesMap.put(secID, tempNode);
@@ -364,6 +399,24 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 						secsForFault.add(secNode);
 						
 					}
+					break;
+				case "San Andreas, San Jacinto, Elsinore, Hayward (RSQSim catalog data (zfault))":
+					if ((secID >=511 && secID <=536) || (secID >=818 && secID <=842) || (secID >=1772 && secID <=1973) || (secID>=2153 && secID<=2196)) {
+					if (!faultNodesMap.containsKey(secID)) {
+						FaultCategoryNode tempNode = new FaultCategoryNode(element.getSectionName());
+						faultNodesMap.put(secID, tempNode);
+						faultNodes.add(tempNode);
+					}
+					FaultCategoryNode faultNode = faultNodesMap.get(secID);
+					
+					if (!sectionsMap.containsKey(faultNode)) {
+						sectionsMap.put(faultNode, new ArrayList<SimulatorElementFault>());
+					}
+					ArrayList<SimulatorElementFault> secsForFault = sectionsMap.get(faultNode);
+					SimulatorElementFault secNode = new SimulatorElementFault(element);
+					secsForFault.add(secNode);
+					
+				}
 					break;
 			//Original code parsing. All fault IDs will be added. 
 				default:
@@ -452,26 +505,42 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		}
 		//Geometry file upload
 		else if (event.getSource() == geomFileParam) {
-			//Loading Screen
-			CalcProgressBar progress = new CalcProgressBar("Loading Events", "Please Wait");
-			progress.getMousePosition();
-			progress.setVisible(true);
-			progress.setIndeterminate(true);
+			ProgressBar progress = new ProgressBar("Loading Geometry File", "Please Wait");
+			progress.runProgressBar();
 			
 			File file = geomFileParam.getValue();
 			if (file != null && eventFileParam.getValue() == null)
 				eventFileParam.setDefaultInitialDir(file.getParentFile());
+		
 			fireNewGeometry(null);
-			fireTreeChangeEvent();
 			
-			//End
-			progress.toFront();
-			progress.setVisible(false);	
-			progress.dispose();
+			final Runnable fireRunnable = new Runnable() {
+				
+				@Override
+				public void run() {
+					fireTreeChangeEvent();
+					progress.stopProgressBar();
+				}
+			};
+			
+			Runnable fileRunnable = new Runnable() {
+				
+				@Override
+				public void run() {
+					SwingUtilities.invokeLater(fireRunnable);
+				}
+			};
+			new Thread(fileRunnable).start();
+			
+			
 		} 
 		//Simulator Event upload
 		else if (event.getSource() == eventFileParam) {
 			File outFile = eventFileParam.getValue();
+			//for reloading purposes
+			if (reloadFile == null) {
+			setEventFile(eventFileParam.getValue());
+			}		
 			if (outFile == null || elements == null) {
 				fireNewEvents(null);
 			} else if (elements != null) {
@@ -479,41 +548,7 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			}
 
 		} 
-	//} else if (event.getSource() == loadParam) {
-//		final EQSimsCatalogQuery EQSimQueryFrame = new EQSimsCatalogQuery();
-//		EQSimQueryFrame.downloadButton.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				//Create a new folder in the .scecvdo folder and download to that folder
-//				HashMap<String, ArrayList<URL>> downloadURLs = EQSimQueryFrame.getDownloadURLs();
-//				for (Entry<String, ArrayList<URL>> entry : downloadURLs.entrySet()) {
-//					String title = entry.getKey();
-//					ArrayList<URL> urls = entry.getValue();
-//					File catalogDir = new File(dataDir + File.separator + title);
-//					if (!catalogDir.exists())
-//						catalogDir.mkdirs();
-//					for (int i = 0; i < urls.size(); i++) {
-//						String[] fileName = urls.get(i).getFile().split("/");
-//						File file = new File(catalogDir.getAbsolutePath() + File.separator + fileName[fileName.length - 1]);
-//						if (!file.exists()) {
-//							try {
-//								downloadURL(urls.get(i), file);
-//							} catch (IOException e1) {
-//								e1.printStackTrace();
-//							}
-//						}
-//					}
-//					File outFile = catalogDir; //outFile contains all downloaded files.
-//					//Work with the outFile. Copied from above.
-//					if (outFile == null || elements == null) {
-//						fireNewEvents(null);
-//					} else if (elements != null) {
-//						loadEvents(outFile);
-//					}
-//				}
-//			}
-//		});
-		
+	
 		
 		//Filtering Options Upload
 		else if (event.getSource() == filterOptions) {
@@ -529,18 +564,44 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 				else if (filterOptions.getValue() == "San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)") {
 					buttonchosen= "San Andreas, San Jacinto, Elsinore, Hayward (UCERF3 catalog data)";
 				}
+				else if (filterOptions.getValue() == "San Andreas, San Jacinto, Elsinore, Hayward (RSQSim catalog data (zfault))") {
+					buttonchosen = "San Andreas, San Jacinto, Elsinore, Hayward (RSQSim catalog data (zfault))";
+				}
 			}
-			CalcProgressBar progress = new CalcProgressBar("Loading," ," please wait");
-			progress.setVisible(true);
-			progress.setIndeterminate(true);	
-			fireTreeChangeEvent();
-			progress.setVisible(false);	
-			progress.dispose();
+			ProgressBar progress = new ProgressBar("Loading Filter" ,"Loading " + buttonchosen);
+			progress.runProgressBar();
+			
+			final Runnable fireRunnable = new Runnable() {
+				
+				@Override
+				public void run() {
+					progress.stopProgressBar();
+					//reloads the simulator event file if it exists 
+					if (reloadFile != null) {
+						loadEvents(reloadFile);
+					}
+				}
+			};
+			Runnable filteringRunnable = new Runnable() {
+				
+				@Override
+				public void run() {
+					fireTreeChangeEvent();
+					SwingUtilities.invokeLater(fireRunnable);
+					
+				}
+			};
+			new Thread(filteringRunnable).start();
 		
 		}
 	}
+	
+	private void setEventFile(File outFile) {
+		reloadFile = outFile;
+	}
 
 	private void loadEvents(File outFile) {
+		ProgressBar progress = new ProgressBar("Reading Events File", "Loading events...");
 		try {
 			eventSlipAnim.setInitialDir(outFile.getParentFile());
 			List<RuptureIdentifier> rupIdens = new ArrayList<>();
@@ -548,19 +609,46 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			if (catDurationParam.getValue() > 0d)
 				loadIden = new LogicalAndRupIden(loadIden, new CatalogLengthLoadIden(catDurationParam.getValue()));
 			rupIdens.add(loadIden);
-			List<? extends SimulatorEvent> events;
-			CalcProgressBar progress = new CalcProgressBar("Reading Events File", "Loading events...");
-			progress.setIndeterminate(true);
-			if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
-				System.out.println("Detected RSQSim output file/dir");
-				events = RSQSimFileReader.readEventsFile(outFile, elements, rupIdens);
-			} else {
-				events = EQSIMv06FileReader.readEventsFile(outFile, elements, rupIdens);
-			}
-			System.out.println("Done reading events file!");
-			fireNewEvents(events);
-			progress.setVisible(false);
-			progress.dispose();
+			progress.runProgressBar();
+			
+			final Runnable eventRunnable = new Runnable() {
+				
+				@Override
+				public void run() {
+					fireNewEvents(events);
+					progress.stopProgressBar();
+				}
+			};
+			Runnable simulatorRunnable = new Runnable() {
+				
+				@Override
+				public void run() {
+					
+					try {
+					if (outFile.isDirectory() || outFile.getName().endsWith("List")) {
+						System.out.println("Detected RSQSim output file/dir");
+						progress.changeLoadingMessage("Detected RSQSim output file/dir");
+						events = RSQSimFileReader.readEventsFile(outFile, elements, rupIdens);
+					} else {
+						events = EQSIMv06FileReader.readEventsFile(outFile, elements, rupIdens);
+					}
+					}
+					catch(Exception e) {
+						JOptionPane.showMessageDialog(Info.getMainGUI(), "Incompatible File. "
+								+ "Please Choose Another (Files Ending With \"List\" Preferred)");
+						progress.stopProgressBar();
+						eventFileParam.setValue(null);
+						return;
+						
+					}
+					
+					System.out.println("Done reading events file!");
+					progress.changeLoadingMessage("Done reading events file!");
+					SwingUtilities.invokeLater(eventRunnable);		
+				}
+			};
+			new Thread(simulatorRunnable).start();
+
 			System.out.println("Done loadEvents()");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
