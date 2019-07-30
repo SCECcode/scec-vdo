@@ -23,6 +23,7 @@ import org.opensha.commons.param.impl.DoubleParameter;
 //import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
+import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.commons.util.cpt.LinearBlender;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.simulators.SimulatorElement;
@@ -34,7 +35,6 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.main.MainGUI;
@@ -50,23 +50,15 @@ import com.google.common.collect.Maps;
 import scratch.UCERF3.enumTreeBranches.DeformationModels;
 import scratch.UCERF3.enumTreeBranches.FaultModels;
 
-/**  
- * This file builds up the Open Interval Animation class, which allows the user to 
- * input a geometry file and a simulator event file, and can visualize the length 
- * between events on every fault. Many functions were brought in from the other 
- * animation class, EQSimsEventAnimColorer.java, and just simply focuses on 
- * coloring faults inbetween events rather than at event time. 
- * timeChanged is the main function that determines the count of every fault when 
- * rendering. 
- * 
- * @authors:  Joses Galdamez, Gina Yang, Afe Addeh, Brandon O'Neil, Kevin Milner 
- * @version: 2019 Grand Challenge.  
- */
+
 public class EQSimsAnimDroughtColorer extends CPTBasedColorer
-implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
+implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
 	private static CPT getDefaultCPT() {
-		CPT cpt = new CPT(0, droughtYearParam.getValue()*2, Color.white, Color.red, Color.magenta);
+		CPT cpt = new CPT();
+		cpt.add(new CPTVal(0f, Color.WHITE, (float)(droughtYearParam.getValue()-0.1), Color.RED));
+		cpt.add(new CPTVal((float)(droughtYearParam.getValue()-0.1), Color.RED, (float)(droughtYearParam.getValue()-0.0), Color.CYAN));
+		cpt.add(new CPTVal((float)(droughtYearParam.getValue()-0.0), Color.CYAN, (float)(droughtYearParam.getValue()*2), Color.BLUE));
 		cpt.setNanColor(Color.GRAY);
 		cpt.setBelowMinColor(cpt.getMinColor());
 		cpt.setAboveMaxColor(cpt.getMaxColor());
@@ -450,8 +442,6 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 	public int getPreferredInitialStep() {
 		return 0;
 	}
-	
-
 
 
 	@Override
@@ -572,6 +562,11 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 					faultDroughtLength.put (key, numDroughtLength);
 					droughtColor= getColorForValue(numDroughtLength);
 					
+					if (key ==234) {
+						System.out.println (numDroughtLength);
+						System.out.println(droughtColor);
+					}
+					
 					if (faultDroughtColor.get(key)!= null) {
 						Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
 						faultDroughtColor.put(key, fade);
@@ -589,8 +584,8 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 			}
 		return true;
 	}
-	
-	@Override
+
+
 	public synchronized int getIDForStep(int step) {
 		if (filterIndexes == null && step >= 0 && unfilteredevents != null && step < unfilteredevents.size()) {
 			return unfilteredevents.get(step).getID();
@@ -624,30 +619,6 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 
 	public Collection<SimulatorElement> getElementsForSubSect(FaultSectionPrefData subSect) {
 		return subSectMapper.getElementsForSection(subSect);
-	}
-
-	@Override
-	public int getStepForID(int id) {
-		
-		Integer step = (Integer) idToUnfilteredStepMap.get(id);
-		if (step == null)
-			// it's not a valid ID
-			return -1;
-		int filterIndex = -1;
-		if (filterIndexes == null)
-			return step;
-		else
-			filterIndex = filterIndexes.indexOf(step);
-		if (filterIndex >= 0) {
-			// this is a valid ID, and it's in the filter
-			return filterIndex;
-		} else if (id > 0 && id <= unfilteredevents.size()) {
-			// this is a valid ID, but it's currently filtered out. remove the filter.
-			return step;
-		} else {
-			// it's not a valid ID
-			return -1;
-		}
 	}
 
 }
