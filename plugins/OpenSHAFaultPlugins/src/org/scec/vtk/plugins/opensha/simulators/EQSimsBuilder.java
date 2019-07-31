@@ -70,7 +70,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 			progress.setCursor(waitCursor);
 			progress.setVisible(true);
 			progress.setIndeterminate(true); 
-			progress.setAlwaysOnTop(true);
+			//progress.setAlwaysOnTop(true);
+
 		}
 		public void stopProgressBar() {
 			progress.toFront();
