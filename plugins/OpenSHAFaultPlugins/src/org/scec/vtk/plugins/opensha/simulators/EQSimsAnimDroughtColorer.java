@@ -38,6 +38,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.SimulatorElementFault;
 import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 
 import com.google.common.base.Joiner;
 import com.google.common.cache.CacheBuilder;
@@ -50,9 +51,20 @@ import com.google.common.collect.Maps;
 import scratch.UCERF3.enumTreeBranches.DeformationModels;
 import scratch.UCERF3.enumTreeBranches.FaultModels;
 
-
+/**  
+ * This file builds up the Open Interval Animation class, which allows the user to 
+ * input a geometry file and a simulator event file, and can visualize the length 
+ * between events on every fault. Many functions were brought in from the other 
+ * animation class, EQSimsEventAnimColorer.java, and just simply focuses on 
+ * coloring faults inbetween events rather than at event time. 
+ * timeChanged is the main function that determines the count of every fault when 
+ * rendering. 
+ * 
+ * @authors:  Joses Galdamez, Gina Yang, Afe Addeh, Brandon O'Neil, Kevin Milner 
+ * @version: 2019 Grand Challenge.  
+ */
 public class EQSimsAnimDroughtColorer extends CPTBasedColorer
-implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
+implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
 	private static CPT getDefaultCPT() {
 	//	CPT cpt = new CPT();
@@ -457,7 +469,6 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 				DeformationModels geom = DeformationModels.GEOLOGIC;
 				subSects = RSQSimUtils.getUCERF3SubSectsForComparison(fm, geom);
 			}
-			// TODO make this a parameter
 			// a rupture is mapped to a subsection if at least this fraction of the subsection (by area) participates
 			double minSectFractForInclusion = 0.2;
 			subSectMapper = new RSQSimSubSectionMapper(subSects, elements, minSectFractForInclusion);
@@ -562,11 +573,7 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 					numDroughtLength = (int) (faultDroughtLength.get(key) + timeSinceYears);
 					faultDroughtLength.put (key, numDroughtLength);
 					droughtColor= getColorForValue(numDroughtLength);
-					
-					if (key ==234) {
-						System.out.println (numDroughtLength);
-						System.out.println(droughtColor);
-					}
+	
 					
 					if (faultDroughtColor.get(key)!= null) {
 						Color fade = colorBlender.blend(droughtColor, eventColor, (float) .1);
@@ -585,8 +592,8 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 			}
 		return true;
 	}
-
-
+	
+	@Override 
 	public synchronized int getIDForStep(int step) {
 		if (filterIndexes == null && step >= 0 && unfilteredevents != null && step < unfilteredevents.size()) {
 			return unfilteredevents.get(step).getID();
@@ -594,6 +601,29 @@ implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener
 			return unfilteredevents.get(filterIndexes.get(step)).getID();
 		}
 		return -1;
+	}
+	@Override
+	public int getStepForID(int id) {
+
+		Integer step = (Integer) idToUnfilteredStepMap.get(id);
+		if (step == null)
+			// it's not a valid ID
+			return -1;
+		int filterIndex = -1;
+		if (filterIndexes == null)
+			return step;
+		else
+			filterIndex = filterIndexes.indexOf(step);
+		if (filterIndex >= 0) {
+			// this is a valid ID, and it's in the filter
+			return filterIndex;
+		} else if (id > 0 && id <= unfilteredevents.size()) {
+			// this is a valid ID, but it's currently filtered out. remove the filter.
+			return step;
+		} else {
+			// it's not a valid ID
+			return -1;
+		}
 	}
 
 
