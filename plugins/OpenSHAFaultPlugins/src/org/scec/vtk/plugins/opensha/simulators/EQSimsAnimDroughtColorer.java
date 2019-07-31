@@ -55,10 +55,11 @@ public class EQSimsAnimDroughtColorer extends CPTBasedColorer
 implements TimeBasedFaultAnimation, EQSimsEventListener, ParameterChangeListener {
 
 	private static CPT getDefaultCPT() {
-		CPT cpt = new CPT();
-		cpt.add(new CPTVal(0f, Color.WHITE, (float)(droughtYearParam.getValue()-0.1), Color.RED));
-		cpt.add(new CPTVal((float)(droughtYearParam.getValue()-0.1), Color.RED, (float)(droughtYearParam.getValue()-0.0), Color.CYAN));
-		cpt.add(new CPTVal((float)(droughtYearParam.getValue()-0.0), Color.CYAN, (float)(droughtYearParam.getValue()*2), Color.BLUE));
+	//	CPT cpt = new CPT();
+//		cpt.add(new CPTVal(0f, Color.WHITE, (float)(droughtYearParam.getValue()-0.1), Color.RED));
+//		cpt.add(new CPTVal((float)(droughtYearParam.getValue()-0.1), Color.RED, (float)(droughtYearParam.getValue()-0.0), Color.CYAN));
+//		cpt.add(new CPTVal((float)(droughtYearParam.getValue()-0.0), Color.CYAN, (float)(droughtYearParam.getValue()*2), Color.BLUE));
+		CPT cpt = new CPT(0, droughtYearParam.getValue()*2, Color.white, Color.red, Color.blue);
 		cpt.setNanColor(Color.GRAY);
 		cpt.setBelowMinColor(cpt.getMinColor());
 		cpt.setAboveMaxColor(cpt.getMaxColor());
