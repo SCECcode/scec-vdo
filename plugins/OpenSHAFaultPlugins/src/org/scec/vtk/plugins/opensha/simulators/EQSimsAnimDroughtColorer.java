@@ -214,7 +214,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 
 	@Override
 	public String getName() {
-		return TITLE;
+		return "Drought Duration";
 	}
 
 
