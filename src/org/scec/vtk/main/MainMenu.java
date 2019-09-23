@@ -939,33 +939,31 @@ public class MainMenu implements ActionListener, ItemListener{
 			}
 		else if(eventSource == wizardActivation){
 			
-			frame = new JFrame ();
-			/*
-			Boolean toggle = getState();
-			if (!toggle) {
-				Wizard = true;
-				updateWizard(true);
-				
+			//MainMenu.Wizard is true when it  has been asked to be displayed, false otherwise. 
+			if (MainMenu.Wizard) {
 				JOptionPane.showMessageDialog(
-						frame,  "You set Wizard to display upon launching SCEC-VDO");
+						frame,  "You have disabled the Wizard."
+								+ "\nTo reactivate it, go to the 'Help' menu and click on 'Toggle Wizard'"
+								+ "\n\nNote: AutoSave will also be disabled.");
+				MainMenu.Wizard = false;
+				this.updateWizard(true);
 			}
 			else {
-				Wizard = false;
-				updateWizard(false);
-				JOptionPane.showMessageDialog(
-						frame,  "You set Wizard to not display upon launching SCEC-VDO");
-			}
-			*/
-			JOptionPane.showMessageDialog(frame,  "You set Wizard to display upon launching SCEC-VDO");
-			//Wizard GUI to run with main
+				JOptionPane.showMessageDialog(frame, "You have re-enabled the Wizard."
+								+"\n To deactivate it, go to the 'Help' menu and click on 'Toggle Wizard'");
+				// Wizard GUI to run with main
 
-			wizFrame = new JFrame();
-			Wizard wizGui = new Wizard(this,main);
-			wizFrame.getContentPane().add(wizGui);
-			wizFrame.setSize(550, 140);
-			wizFrame.setLocationRelativeTo(null);
-			wizFrame.setVisible(true);
-			
+				wizFrame = new JFrame();
+				Wizard wizGui = new Wizard(this, main);
+				wizFrame.getContentPane().add(wizGui);
+				wizFrame.setSize(550, 140);
+				wizFrame.setLocationRelativeTo(null);
+				wizFrame.setVisible(true);
+				//Brings the Wizard Back. 
+				MainMenu.Wizard = true;
+				this.updateWizard(true);
+			}
+
 		}
 		
 		else if(eventSource==escapeWindow)
