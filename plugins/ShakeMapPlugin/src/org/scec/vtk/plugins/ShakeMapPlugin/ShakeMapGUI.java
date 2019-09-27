@@ -12,7 +12,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -23,8 +22,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -37,6 +34,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -46,6 +44,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opensha.commons.util.cpt.CPT;
+import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.scec.vtk.commons.legend.LegendItem;
 import org.scec.vtk.commons.legend.LegendUtils;
 import org.scec.vtk.main.Info;
@@ -77,11 +76,11 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 	private static final long serialVersionUID = 1L;
 	// Define file paths and map sources
 	
-	static final String dataPath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin"; //path to directory with local folders
+	static final String dataPath = MainGUI.getCWD()+File.separator+"data/ShakeMapPlugin"; //path to directory with local folders
 	static final String moreMaps = "More_USGS_Maps"; //the extra maps that the user may download
 	static final String openSHAFile = "openSHA.txt";
 	static final String openSHAMapURL = "http://zero.usc.edu/gmtData/1468263306257/map_data.txt"; 	//custom shakemaps which apparently can be uploaded to this link (from what is heard, i don't really know)
-	static final String colorFilePath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/Extra/";
+	static final String colorFilePath = MainGUI.getCWD()+File.separator+"data/ShakeMapPlugin/Extra/";
 	
 	
 	
@@ -143,8 +142,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		actorList = new ArrayList<>();
 		
 		//Make check boxes of all the presets  
-		
-		
+			
 		presets.setLayout(new GridLayout(0,2)); //2 per row
 		
 		//Initialize all the preset files in the data/ShakeMapPlugin directory
@@ -187,6 +185,7 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		transparencySlider.setEnabled(false);	
 		sliderPanel.add(new JLabel("Transparency"), BorderLayout.NORTH);
 		sliderPanel.add(transparencySlider, BorderLayout.CENTER);
+		
 		// Add legend to slider pane
 		legendCheckBox = new JCheckBox("Add Legend");
 		legendCheckBox.setEnabled(false);
@@ -307,31 +306,53 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		downloadUSGSButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
 				String id = eventIdBox.getText();
 				if(id.length() > 0)
 				{
-					USGSShakeMapDownloader smd = new USGSShakeMapDownloader(id);
-					String d = smd.downloadShakeMap(id+".txt");
-					if(d.length() <= 0)
-					{
-						System.out.println("Failure");
-						JOptionPane.showMessageDialog(shakeMapLibraryPanel,
-								    "File not found on USGS site.");
-					}
-					else
-
-					{
-						System.out.println("Loaded!");
-						System.out.println("showing new map: " + dataPath + "/" + moreMaps + "/" + d +".txt");
-						showNewMap(dataPath + "/" + moreMaps + "/" + d+".txt", "mmi");
-						addNewCheckBox(d+".txt", dataPath + "/" + moreMaps + "/" + d+".txt");
-					}
-
+					final CalcProgressBar progress = new CalcProgressBar(null, "Downloading the ShakeMap...","Please Wait.", false);
+					progress.setVisible(true);
+					progress.setIndeterminate(true); 
+					
+					final Runnable fireRunnable = new Runnable() {
+						
+						@Override
+						public void run() {
+							USGSShakeMapDownloader smd = new USGSShakeMapDownloader(id);
+							
+							String d = smd.downloadShakeMap(id+".txt");
+							if(d.length() <= 0)
+							{
+								System.out.println("Failure");
+								JOptionPane.showMessageDialog(Info.getMainGUI(),
+										    "File not found on USGS site.\nPlease Try Again.");
+							}
+							else
+							{
+								progress.setProgressMessage("Loaded!");
+								progress.setProgressMessage("Adding...");
+								System.out.println("showing new map: " + dataPath + "/" + moreMaps + "/" + d +".txt");
+								showNewMap(dataPath + "/" + moreMaps + "/" + d+".txt", "mmi");
+								addNewCheckBox(d+".txt", dataPath + "/" + moreMaps + "/" + d+".txt");
+								progress.setProgressMessage("Finished!");
+							}
+							
+							progress.setVisible(false);
+							progress.dispose();
+							
+						}
+					};
+					Runnable downloadRunnable = new Runnable() {
+						
+						@Override
+						public void run() {
+								progress.setIndeterminate(true); 
+								SwingUtilities.invokeLater(fireRunnable);
+						}
+					};
+					new Thread(downloadRunnable).start();
 				}
 				else
 				{
-					System.out.println("Enter an earthquake ID!");
 					JOptionPane.showMessageDialog(shakeMapLibraryPanel,
 							"Enter link to Shakemap XML");
 				}
@@ -343,7 +364,6 @@ public class ShakeMapGUI extends JPanel implements ItemListener, ChangeListener,
 		openSHAButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
 				try {
 					URL openSHA = new URL(openSHAMapURL);
 					Files.copy(openSHA.openStream(), Paths.get(dataPath+"/openSHA.txt"), StandardCopyOption.REPLACE_EXISTING);
