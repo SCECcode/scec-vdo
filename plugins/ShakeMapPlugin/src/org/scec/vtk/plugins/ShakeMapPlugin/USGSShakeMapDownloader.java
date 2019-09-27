@@ -3,6 +3,7 @@ package org.scec.vtk.plugins.ShakeMapPlugin;
 //xml builder stuff
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -17,10 +18,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.scec.vtk.main.Info;
+import org.scec.vtk.main.MainGUI;
 
 /*
  * This class is responsible for loading shake map files from the USGS
@@ -37,14 +37,11 @@ public class USGSShakeMapDownloader {
 	static final String URLTEST = "http://earthquake.usgs.gov/realtime/product/shakemap/nc73027396/nc/1528505370051/download/grid.xml.zip";
 	
 	//path to local directory where all the downloaded USGS shakemaps are stored
-	static final String USGSDataPath = Info.getMainGUI().getCWD()+File.separator+"data/ShakeMapPlugin/More_USGS_Maps";
+	static final String USGSDataPath = MainGUI.getCWD()+File.separator+"data/ShakeMapPlugin/More_USGS_Maps";
 	
 	//private String network; //the network that recorded the earthquake
 	//private String quakeId; //the earthquake's id
 	private String urlNumber;
-	private String shakeName;
-	
-	
 	
 	public USGSShakeMapDownloader(String shakeUrl){
 		//this.network = network;
@@ -74,7 +71,17 @@ public class USGSShakeMapDownloader {
 			Element eElement = (Element)gridData;
 			
 			//get id of earthquake and assign to name that appears on inde list
-			idName = eElement.getAttribute("shakemap_id");
+			String tempName = JOptionPane.showInputDialog(Info.getMainGUI(), "Input the name of this ShakeMap. \nPressing \"Cancel\" will default name to ID Name.");
+			
+			//If no name shows up, or if there are only whitespaces, we default the ID name. 
+			if (tempName == null || tempName.length() ==0 || tempName.matches("\\s*")) {
+				idName = eElement.getAttribute("shakemap_id");
+			}
+			else {
+				tempName.trim();
+				idName = tempName;
+			}
+			
 			System.out.println("id: " + idName);
 			
 			String filePath = USGSDataPath + "/" + idName + ".txt";
@@ -95,16 +102,12 @@ public class USGSShakeMapDownloader {
 			writ.close();
 
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SAXException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		//return header;
