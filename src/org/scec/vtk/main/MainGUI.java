@@ -598,7 +598,32 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		centerImage.setOpaque(false);
 		centerImage.setToolTipText("Center");
 		
+		JButton focalPoint = new JButton();
+		try {
+			focalPoint.setToolTipText("Focal Point");
+			File file = new File("resources/FocalPointIcon.png");
+			Image img = ImageIO.read(file);
+			img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
+			focalPoint.setIcon(new ImageIcon(img));
+		} catch(IOException ex) {
+			System.out.println("focal point: " + ex);
+		}
+		focalPoint.addActionListener(new ActionListener() {
+			boolean on = false;
+			public void actionPerformed(ActionEvent e) {
+				if (!on) {
+					Info.getMainGUI().setFocalPointVisible(true);
+					on = true;
+				}
+				else if (on) {
+					Info.getMainGUI().setFocalPointVisible(false);
+					on = false;
+				}
+			}
+		});
 		
+		focalPoint.setOpaque(false);
+		focalPoint.setToolTipText("Focal Point");
 		JButton zoomIn = new JButton();
 		
 		try {
@@ -703,6 +728,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		toolBar.add(zoomOut);
 		toolBar.add(save);
 		toolBar.add(open);
+		//JOSES add 
+		toolBar.add(focalPoint);
 		toolBar.setOpaque(false);
 		
 		toolBarGUI = new JPanel(new BorderLayout());
