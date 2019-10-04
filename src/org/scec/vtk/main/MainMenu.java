@@ -145,6 +145,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				Info.getMainGUI().setFocalPointVisible(focalPointItem.getState());
+
 			}
 		});
 		menuBar.add(displayMenu);
