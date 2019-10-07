@@ -15,8 +15,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -26,6 +26,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -50,84 +51,87 @@ import org.scec.vtk.tools.Prefs;
 
 import vtk.vtkActor;
 
-
-
-
-
 public class MapSetCreatePluginGUI extends JFrame implements ActionListener, DocumentListener {
 
 	private SurfacePluginGUI parent;
 	private static final long serialVersionUID = 1L;
-	private JPanel instructionsPanel = new JPanel();
-	private JPanel centerPanel = new JPanel();
-	private JPanel topPanel = new JPanel();
-		private JPanel surfaceFilePanel = new JPanel();
+	
+	//Main Panel and TabbedPane
+	private JPanel mainPanel = new JPanel();
+	JTabbedPane surfaceImageTabPane;
+	
+	//All initialized objects specifically for the "Load Surface" Tab
+	private JPanel surfacePanel = new JPanel();
+	private JPanel surfaceFilePanel = new JPanel();
 	private JPanel surfaceCoordPanel = new JPanel();
 	private JPanel surfaceLabelPanel = new JPanel();
 	private JPanel surfaceCoordLabelPanel = new JPanel();
-	private JPanel surfacePanel = new JPanel();
+			
+	protected JTextField surfaceFilePath = new JTextField("",30);
+	protected JTextField surfaceRightLatitude = new JTextField("32",6); 
+	protected JTextField surfaceLeftLatitude = new JTextField("43",6); 
+	protected JTextField surfaceUpperLongitude = new JTextField("-125",6); 
+	protected JTextField surfaceLowerLongitude = new JTextField("-114",6); 
+	protected JTextField surfaceAltitude = new JTextField("0.0",6);
+	protected JTextField surfaceScale = new JTextField("1.0");
+	private JTextField surfacePixelField = new JTextField("1",5);
+	private JLabel surfaceUpperLeftCorner = new JLabel("Upper left corner (lat,long): ");
+	private JLabel surfaceLowerRightCorner = new JLabel("Lower right corner (lat,long): ");
+	private JLabel surfaceAltitudeLabel = new JLabel("Altitude, in km:  ");
+	private JLabel surfaceScaleLabel = new JLabel("Scale Factor: ");
+	private JLabel surfacePixelLabel = new JLabel("Pixel Spacing (1/2 min): ");
+	private JRadioButton surfaceDiskButton = new JRadioButton("Disk");
+	private JRadioButton surfaceWebButton = new JRadioButton("Internet");
+	
+	//All initialized objects specifically for the "Load Image" Tab
+	private JPanel imagePanel = new JPanel();
 	private JPanel imageFilePanel = new JPanel();
 	private JPanel imageCoordPanel = new JPanel();
 	private JPanel imageLabelPanel = new JPanel();
 	private JPanel imageCoordLabelPanel = new JPanel();
-	private JPanel imagePanel = new JPanel();
-	private JPanel addFilePanel = new JPanel();
-	private JPanel buttonsPanel = new JPanel();
-	private JPanel bottomPanel = new JPanel(new BorderLayout());
-	private JPanel mainPanel = new JPanel();
-	private JLabel iconLabel = new JLabel();
-	private JLabel instructions = new JLabel("Enter the address of a surface(topography) or an image file to display.");
-	protected JTextField surfaceFilePath = new JTextField("",30);
+	private JLabel selectImage = new JLabel("Image File:    ");
+	private JLabel imageSourceLabel = new JLabel("Load Image From: ");
+	
 	protected JTextField imageFilePath = new JTextField("",30);
 	protected JTextField imageRightLatitude = new JTextField("32",6); 
 	protected JTextField imageLeftLatitude = new JTextField("43",6); 
 	protected JTextField imageUpperLongitude = new JTextField("-125",6); 
 	protected JTextField imageLowerLongitude = new JTextField("-114",6);
 	protected JTextField imageAltitude = new JTextField("0.0",6);
-	protected JTextField surfaceRightLatitude = new JTextField("32",6); 
-	protected JTextField surfaceLeftLatitude = new JTextField("43",6); 
-	protected JTextField surfaceUpperLongitude = new JTextField("-125",6); 
-	protected JTextField surfaceLowerLongitude = new JTextField("-114",6); 
-	protected JTextField surfaceAltitude = new JTextField("0.0",6);
-private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): ");
+	private JTextField imagePixelField = new JTextField("240",5);
+	private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): ");
 	private JLabel imageLowerRightCorner = new JLabel("Lower right corner (lat,long): ");
 	private JLabel imageAltitudeLabel = new JLabel("Altitude, in km:  ");
-	private JLabel surfaceUpperLeftCorner = new JLabel("Upper left corner (lat,long): ");
-	private JLabel surfaceLowerRightCorner = new JLabel("Lower right corner (lat,long): ");
-	private JLabel surfaceAltitudeLabel = new JLabel("Altitude, in km:  ");
-	private JLabel selectSurface = new JLabel("Surface(topography):  ");
-	private JLabel selectImage = new JLabel("Image:    ");
+	private JLabel imagePixelLabel = new JLabel("Pixels/Degree: ");
+	private JRadioButton imageDiskButton = new JRadioButton("Disk");
+	private JRadioButton imageWebButton = new JRadioButton("Internet");
+	private JCheckBox differentImageBox = new JCheckBox("Different Image Coordinates?", false);
 
+	
+	//Initializing all Buttons (Bottom buttons, Browsing, etc)
+	private JPanel buttonsPanel = new JPanel();
+	private JPanel bottomPanel = new JPanel(new BorderLayout());
 	private JButton displayButton = new JButton("Display");
 	private JButton saveDisplayButton = new JButton("Save & Display");
 	private JButton cancelButton = new JButton("Cancel");
 	private JButton browseSurfaceButton = new JButton("...");
 	private JButton browseImageButton = new JButton("...");
-	private JLabel surfaceScaleLabel = new JLabel("Scale Factor: ");
-	protected JTextField surfaceScale = new JTextField("1.0");
-
+	
 	private boolean surfaceFile = false;
 	private boolean imageFile = false;
-
 	
+	//Arrays used to hold input data for coordinates. 
 	private double[] surfaceData = new double[5];
 	private double[] imageData = new double[5];
 
-	private JLabel surfaceSourceLabel = new JLabel("Load Surface(topography) From: ");
-	private JRadioButton surfaceDiskButton = new JRadioButton("Disk");
-	private JRadioButton surfaceWebButton = new JRadioButton("Internet");
-	private JLabel surfacePixelLabel = new JLabel("Pixel Spacing (1/2 min): ");
-	private JTextField surfacePixelField = new JTextField("1",5);
+	
+	//TODO: I have not grouped yet. 
+	private JPanel addFilePanel = new JPanel();
 	private JPanel surfaceSourcePanel = new JPanel(new BorderLayout());
 	private JPanel surfaceSourceChoosePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 	private boolean webSurface = false;
 	private String surfaceServerURL = "http://scecdata.usc.edu/topo/cgi-bin/topo.pl";
 	
-	private JLabel imageSourceLabel = new JLabel("Load Image From: ");
-	private JRadioButton imageDiskButton = new JRadioButton("Disk");
-	private JRadioButton imageWebButton = new JRadioButton("Internet");
-	private JLabel imagePixelLabel = new JLabel("Pixels/Degree: ");
-	private JTextField imagePixelField = new JTextField("240",5);
 	private JPanel imageSourcePanel = new JPanel(new BorderLayout());
 	private JPanel imageSourceChoosePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 	private boolean webImage = false;
@@ -135,10 +139,11 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	private JPanel imageLoadPanel = new JPanel(new BorderLayout());
 	private JPanel imageWebLayerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 	
+	//Bottom Progress Bar
 	private JProgressBar downloadProgressBar = new JProgressBar(0,100);
 	
+	//reDownload Internet?
 	private JCheckBox reDownloadBox = new JCheckBox("Delete and Re-Download Internet Content?", false);
-	private JCheckBox differentImageBox = new JCheckBox("Different Image Coordinates?", false);
 	
 	private File groupFile;
 	private Document groupDoc;
@@ -163,35 +168,43 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	private static final String wms_layer_default = "bmng200407";
 	private String imageName;
 	
+	
+	//Constructor called by SurfacePluginGUI everytime that a default surface is chosen
 	public MapSetCreatePluginGUI(String imgName, double[] imageData){
 		this.imageData= imageData;
-		this.imageName = imgName;
-		
+		this.imageName = imgName;		
 	}
+	
 	private vtkActor mapSetActor = new vtkActor();
+
 	public MapSetCreatePluginGUI(SurfacePluginGUI ipg){
 	parent = ipg;
-	ImageIcon pic = new ImageIcon("./scecvdo_sm.jpg");
-	iconLabel = new JLabel(pic);
-	instructionsPanel.setLayout(new GridLayout(1,1,10,10));
-	instructionsPanel.add(instructions);
+	
+//TODO:
+	surfaceImageTabPane = new JTabbedPane();
+	JPanel surfaceTab = new JPanel();
+	JPanel imageTab = new JPanel();
+
+	surfaceImageTabPane.add("Load a Surface (topography)", surfaceTab);
+	surfaceImageTabPane.add("Load an Image", imageTab);
+	
+//TODO: End of my project. 
 	FlowLayout layout = new FlowLayout();
 	layout.setAlignment(FlowLayout.LEFT);
-	topPanel.setLayout(new FlowLayout());
-	topPanel.add(iconLabel);
-	topPanel.add(instructionsPanel);
+	//First Line
 	surfaceDiskButton.setSelected(true);
-	surfaceWebButton.setSelected(false);
 	surfaceDiskButton.addActionListener(this);
+	surfaceWebButton.setSelected(false);
 	surfaceWebButton.addActionListener(this);
 	surfacePixelField.setEnabled(false);
-	surfaceSourceChoosePanel.add(surfaceSourceLabel);
+	surfaceSourceChoosePanel.add(new JLabel("Load Surface(topography) From: "));
 	surfaceSourceChoosePanel.add(surfaceDiskButton);
 	surfaceSourceChoosePanel.add(surfaceWebButton);
 	surfaceSourceChoosePanel.add(surfacePixelLabel);
 	surfaceSourceChoosePanel.add(surfacePixelField);
 	surfaceFilePanel.setLayout(layout);
-	surfaceFilePanel.add(selectSurface);
+	
+	surfaceFilePanel.add(new JLabel("Surface(topography) File:  "));
 	surfaceFilePanel.add(surfaceFilePath);
 	surfaceFilePanel.add(browseSurfaceButton);
 	surfaceSourcePanel.add(reDownloadBox, BorderLayout.NORTH);
@@ -231,11 +244,6 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	imageFilePanel.add(selectImage);
 	imageFilePanel.add(imageFilePath);
 	imageFilePanel.add(browseImageButton);
-	/*imageWebLayerPanel.add(mapLayerLabel);
-	imageWebLayerPanel.add(mapLayersBox);
-	imageWebLayerPanel.add(mapStyleLabel);
-	imageWebLayerPanel.add(mapStylesBox);
-	this.setImageLoadPanel(false);*/
 	imageSourcePanel.add(imageSourceChoosePanel, BorderLayout.NORTH);
 	imageLoadPanel.add(imageFilePanel, BorderLayout.NORTH);
 	imageLoadPanel.add(imageWebLayerPanel, BorderLayout.SOUTH);
@@ -260,10 +268,17 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	imagePanel.add(imageSourcePanel, BorderLayout.NORTH);
 	imagePanel.add(differentImageBox, BorderLayout.CENTER);
 	imagePanel.add(imageCoordLabelPanel, BorderLayout.SOUTH);
-	centerPanel.setLayout(new BorderLayout());
-	centerPanel.add(surfacePanel, BorderLayout.NORTH);
-	centerPanel.add(imagePanel, BorderLayout.SOUTH);
 	addFilePanel.setLayout(layout);
+//TODO:
+	surfaceTab.setLayout(new BorderLayout());
+	surfaceTab.add(surfacePanel,BorderLayout.CENTER);
+	surfaceTab.setLayout(layout);
+	
+
+	imageTab.setLayout(new BorderLayout());
+	imageTab.add(imagePanel, BorderLayout.CENTER);
+	imageTab.setLayout(layout);
+//TODO : end of it
 	
 	differentImageBox.addActionListener(this);
 	imageLeftLatitude.setEnabled(false);
@@ -285,19 +300,22 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 
 	bottomPanel.add(buttonsPanel, BorderLayout.NORTH);
 	bottomPanel.add(downloadProgressBar, BorderLayout.SOUTH);
-
+//TODO:
 	mainPanel.setLayout(new BorderLayout());
-	mainPanel.add(topPanel, BorderLayout.NORTH);
-	mainPanel.add(centerPanel, BorderLayout.CENTER);
+	//mainPanel.add(topPanel, BorderLayout.NORTH);
+	//mainPanel.add(centerPanel, BorderLayout.CENTER);
+	//mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+	mainPanel.add(surfaceImageTabPane,BorderLayout.NORTH);
 	mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+//TODO: End of it
 	
+	//Action Listeners for buttons. 
 	displayButton.addActionListener(this);
 	saveDisplayButton.addActionListener(this);
 	cancelButton.addActionListener(this);
 	browseSurfaceButton.addActionListener(this);
 	browseImageButton.addActionListener(this);
 
-	
 	saveDisplayButton.setEnabled(false);
 	
 
@@ -306,9 +324,8 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	setResizable(false);
 	setVisible(true);																			//
 	setLocationRelativeTo(null);
+	toFront();
 	setTitle("Add new: Surface/Image/Preset Surface & Image");
-	
-	//mapLayersBox.addActionListener(this);
 	
 	imageRightLatitude.getDocument().addDocumentListener(this);
 	imageLeftLatitude.getDocument().addDocumentListener(this);
@@ -858,25 +875,24 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 	
 	@Override
 	public void changedUpdate(DocumentEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 	@Override
 	public void insertUpdate(DocumentEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 	@Override
 	public void removeUpdate(DocumentEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
 		Object source = e.getSource();
 		File sFileName;
 		File iFileName;
+		
+		//Disk Button for Surface 
 		if (source == surfaceDiskButton) {
 			surfaceWebButton.setSelected(!surfaceDiskButton.isSelected());
 			
@@ -893,7 +909,9 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 				if (!surfaceFile && !imageFile && !webImage)
 					displayButton.setEnabled(false);
 			}
-		} else if (source == surfaceWebButton) {
+		} 
+		//Web Button for Surface
+		else if (source == surfaceWebButton) {
 			surfaceDiskButton.setSelected(!surfaceWebButton.isSelected());
 			
 			webSurface = surfaceWebButton.isSelected();
@@ -910,6 +928,7 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 					displayButton.setEnabled(false);
 			}
 		}
+		//Disk Button for Image
 		else if (source == imageDiskButton) {
 			imageWebButton.setSelected(!imageDiskButton.isSelected());
 			
@@ -965,6 +984,10 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 				if(surfaceFile)
 					saveDisplayButton.setEnabled(true);
 			}
+		}
+		//If the cancel Button is pressed, just simply dispose of the Panel. 
+		if (source == cancelButton) {
+			dispose();
 		}
 		if(source == displayButton)
 		{
@@ -1074,6 +1097,15 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 				}
 			//}.start();
 		//}
+		
+		//TODO: JOSES
+		if (source == differentImageBox) {
+			imageLeftLatitude.setEnabled(true);
+			imageRightLatitude.setEnabled(true);
+			imageLowerLongitude.setEnabled(true);
+			imageUpperLongitude.setEnabled(true);
+			imageAltitude.setEnabled(true);
+		}
 	}
 
 	private void setImageLoadPanel(boolean internet) {
@@ -1154,7 +1186,6 @@ private JLabel imageUpperLeftCorner = new JLabel("Upper left corner (lat,long): 
 
 		@Override
 		public String getDescription() {
-			// TODO Auto-generated method stub
 			return "JPEG and PNG image files";
 		}
 		

@@ -111,6 +111,9 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 	private double scaleFactor;
 	private ArrayList<double[]> data = new ArrayList<double[]>();
 	private int latIncrements;
+	
+	
+	boolean isWindowOpen = false;
 	public SurfacePluginGUI(PluginActors surfaceActors) {
 		// TODO Auto-generated constructor stub
 		this.surfaceActors = surfaceActors;
@@ -240,9 +243,18 @@ public class SurfacePluginGUI extends JPanel implements ActionListener,ChangeLis
 		// TODO Auto-generated method stub
 		Object source = e.getSource();
 		LoadedFilesProperties lfp;
-
+		
+		//Discard other windows if the new button is pressed. 
 		if (source == newISButton) {
-			mscpg = new MapSetCreatePluginGUI(this);
+			if (mscpg != null) {
+				mscpg.dispose();
+				mscpg = new MapSetCreatePluginGUI(this);
+				mscpg.toFront();
+			}
+			else {
+				mscpg = new MapSetCreatePluginGUI(this);
+			}
+			
 		}
 		if (source == cm) {
 			if(cm.isSelected()){
