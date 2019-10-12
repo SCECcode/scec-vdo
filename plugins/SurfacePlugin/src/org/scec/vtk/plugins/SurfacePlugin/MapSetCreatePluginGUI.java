@@ -83,6 +83,7 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	private JRadioButton surfaceDiskButton = new JRadioButton("Disk");
 	private JRadioButton surfaceWebButton = new JRadioButton("Internet");
 	
+	
 	//All initialized objects specifically for the "Load Image" Tab
 	private JPanel imagePanel = new JPanel();
 	private JPanel imageFilePanel = new JPanel();
@@ -195,6 +196,8 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	surfaceDiskButton.setSelected(true);
 	surfaceDiskButton.addActionListener(this);
 	surfaceWebButton.setSelected(false);
+	surfaceWebButton.setEnabled(false); //remove after internet capability works 
+	reDownloadBox.setEnabled(false); //remove after internet capability works 
 	surfaceWebButton.addActionListener(this);
 	surfacePixelField.setEnabled(false);
 	surfaceSourceChoosePanel.add(new JLabel("Load Surface(topography) From: "));
@@ -232,6 +235,7 @@ public class MapSetCreatePluginGUI extends JFrame implements ActionListener, Doc
 	
 	imageDiskButton.setSelected(true);
 	imageWebButton.setSelected(false);
+	imageWebButton.setEnabled(false); // remove after internet capability works 
 	imageDiskButton.addActionListener(this);
 	imageWebButton.addActionListener(this);
 	imagePixelField.setEnabled(false);
