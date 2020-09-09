@@ -50,6 +50,7 @@ import org.opensha.sha.earthquake.param.IncludeBackgroundOption;
 import org.opensha.sha.earthquake.param.IncludeBackgroundParam;
 import org.opensha.sha.earthquake.param.ProbabilityModelOptions;
 import org.opensha.sha.earthquake.param.ProbabilityModelParam;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
 import org.opensha.sha.magdist.IncrementalMagFreqDist;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
@@ -393,7 +394,7 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 		
 		int faultID = fault.getId();
 		
-		FaultSectionPrefData sect = sol.getRupSet().getFaultSectionData(faultID);
+		FaultSection sect = sol.getRupSet().getFaultSectionData(faultID);
 		
 		GraphWindow graph = null;
 		

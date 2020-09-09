@@ -16,6 +16,7 @@ import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.faultSurface.FaultTrace;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
@@ -72,7 +73,7 @@ public class CompoundMapPlotColorer extends CPTBasedColorer implements
 	@Override
 	public double getValue(AbstractFaultSection fault) {
 		if (fault instanceof PrefDataSection && faultsByTraceSize != null) {
-			FaultSectionPrefData subSect = ((PrefDataSection) fault)
+			FaultSection subSect = ((PrefDataSection) fault)
 					.getFaultSection();
 			FaultTrace trace = subSect.getFaultTrace();
 			// look for identical traces

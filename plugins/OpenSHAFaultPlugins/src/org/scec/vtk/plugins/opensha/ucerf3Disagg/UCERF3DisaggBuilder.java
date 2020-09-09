@@ -34,6 +34,7 @@ import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.earthquake.ERF;
 import org.opensha.sha.earthquake.ProbEqkRupture;
 import org.opensha.sha.earthquake.ProbEqkSource;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.faultSurface.PointSurface;
 import org.opensha.sha.faultSurface.utils.PtSrcDistCorr;
 import org.opensha.sha.gui.beans.IMR_MultiGuiBean;
@@ -240,9 +241,9 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 		
 		FaultCategoryNode catNode = new FaultCategoryNode("Fault Based Sources", "");
 
-		List<FaultSectionPrefData> sectionData = rupSet.getFaultSectionDataList();
+		List<? extends FaultSection> sectionData = rupSet.getFaultSectionDataList();
 
-		for (FaultSectionPrefData data : sectionData) {
+		for (FaultSection data : sectionData) {
 			String name = data.getSectionId()+". "+data.getName();
 			PrefDataSection fault = new PrefDataSection(name, data);
 
@@ -743,7 +744,7 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 		public double getValue(AbstractFaultSection fault) {
 			if (sectVals == null || !(fault instanceof PrefDataSection))
 				return Double.NaN;
-			FaultSectionPrefData sect = ((PrefDataSection)fault).getFaultSection();
+			FaultSection sect = ((PrefDataSection)fault).getFaultSection();
 			Double val = sectVals.get(sect.getSectionId());
 			if (val == null || val == 0)
 				return Double.NaN;

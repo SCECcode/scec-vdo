@@ -295,6 +295,12 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		clearCache();
 	}
 
+	@Override
+	public void setCPT(CPT cpt, boolean isLog) {
+		super.setCPT(cpt, isLog);
+		clearCache();
+	}
+
 	@SuppressWarnings("unchecked")
 	private void clearCache() {
 		eventColorCache.invalidateAll();

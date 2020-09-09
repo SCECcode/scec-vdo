@@ -26,6 +26,7 @@ import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.earthquake.observedEarthquake.ObsEqkRupList;
 import org.opensha.sha.earthquake.observedEarthquake.ObsEqkRupture;
 import org.opensha.sha.earthquake.observedEarthquake.parsers.UCERF3_CatalogParser;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.faultSurface.PointSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
@@ -185,11 +186,11 @@ public class SectionResetAnim implements FaultAnimation, ParameterChangeListener
 						curAreaInsideSects.add(s);
 				
 				SectRupDistances[] dists = removeOverlapsParam.getValue() ? sectCalc.getSectRupDistances(surf, areas) : null;
-				List<FaultSectionPrefData> sects = sectCalc.getMatchingSections(surf, areas, dists);
+				List<FaultSection> sects = sectCalc.getMatchingSections(surf, areas, dists);
 				if (sects != null) {
 					System.out.println("Found "+sects.size()+" sections to reset");
 					curResetSects = new HashSet<>();
-					for (FaultSectionPrefData sect : sects)
+					for (FaultSection sect : sects)
 						curResetSects.add(sect.getSectionId());
 				} else {
 					System.out.println("Found no sections to reset");
@@ -211,7 +212,7 @@ public class SectionResetAnim implements FaultAnimation, ParameterChangeListener
 			}
 			
 			System.out.println("=== "+getRupName(rup)+" ===");
-			for (FaultSectionPrefData sect : rupSet.getFaultSectionDataList()) {
+			for (FaultSection sect : rupSet.getFaultSectionDataList()) {
 				int index = sect.getSectionId();
 				boolean hasArea = contained(curAreaInsideSects, index);
 				boolean isMapped = contained(curMappedSects, index);

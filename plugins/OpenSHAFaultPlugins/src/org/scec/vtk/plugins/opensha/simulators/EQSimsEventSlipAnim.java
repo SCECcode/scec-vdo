@@ -29,6 +29,7 @@ import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.srf.RSQSimEventSlipTimeFunc;
 import org.opensha.sha.simulators.srf.RSQSimStateTime;
 import org.opensha.sha.simulators.srf.RSQSimStateTransitionFileReader;
+import org.opensha.sha.simulators.srf.RSQSimStateTransitionFileReader.TransVersion;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
@@ -262,12 +263,12 @@ ParameterChangeListener {
 		try {
 			Map<Integer, List<RSQSimStateTime>> trans = transReader.getTransitions(curEvent);
 			Map<Integer, Double> slipVels = null;
-			if (!transReader.isVariableSlipSpeed()) {
+			if (transReader.getVersion() == TransVersion.TRANSV) {
 				slipVels = new HashMap<>();
 				for (SimulatorElement elem : elements)
 					slipVels.put(elem.getID(), slipVelParam.getValue());
 			}
-			curSlipTimeFunc = new RSQSimEventSlipTimeFunc(trans, slipVels, transReader.isVariableSlipSpeed());
+			curSlipTimeFunc = new RSQSimEventSlipTimeFunc(trans);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Error calculating/loading slip time function",
 					e.getMessage(), JOptionPane.ERROR_MESSAGE);
@@ -337,8 +338,7 @@ ParameterChangeListener {
 		File file = transFileParam.getValue();
 		if (file != null) {
 			try {
-				boolean transV = file.getName().toLowerCase().contains("transv");
-				transReader = new RSQSimStateTransitionFileReader(file, elements, transV);
+				transReader = new RSQSimStateTransitionFileReader(file, elements);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

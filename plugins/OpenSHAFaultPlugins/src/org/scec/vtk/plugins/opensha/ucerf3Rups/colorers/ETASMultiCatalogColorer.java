@@ -44,6 +44,7 @@ import org.opensha.sha.earthquake.param.MagDependentAperiodicityOptions;
 import org.opensha.sha.earthquake.param.MagDependentAperiodicityParam;
 import org.opensha.sha.earthquake.param.ProbabilityModelOptions;
 import org.opensha.sha.earthquake.param.ProbabilityModelParam;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.main.MainGUI;
@@ -61,6 +62,7 @@ import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.analysis.FaultSysSolutionERF_Calc;
 import scratch.UCERF3.erf.FaultSystemSolutionERF;
 import scratch.UCERF3.erf.ETAS.ETAS_CatalogIO;
+import scratch.UCERF3.erf.ETAS.ETAS_CatalogIO.ETAS_Catalog;
 import scratch.UCERF3.erf.ETAS.ETAS_EqkRupture;
 import scratch.UCERF3.erf.ETAS.ETAS_SimAnalysisTools;
 import scratch.UCERF3.erf.utils.ProbabilityModelsCalc;
@@ -116,7 +118,7 @@ public class ETASMultiCatalogColorer extends CPTBasedColorer implements Paramete
 	
 	private ParameterList params;
 	
-	private List<List<ETAS_EqkRupture>> catalogs;
+	private List<ETAS_Catalog> catalogs;
 	
 	private FaultSystemRupSet rupSet;
 	private FaultSystemSolution sol;
@@ -427,7 +429,7 @@ public class ETASMultiCatalogColorer extends CPTBasedColorer implements Paramete
 				}
 			}
 			// clear any old last event data
-			for (FaultSectionPrefData sect : rupSet.getFaultSectionDataList())
+			for (FaultSection sect : rupSet.getFaultSectionDataList())
 				sect.setDateOfLastEvent(Long.MIN_VALUE);
 			LastEventData.populateSubSects(rupSet.getFaultSectionDataList(), lastEventData);
 			if (index >= 0) {

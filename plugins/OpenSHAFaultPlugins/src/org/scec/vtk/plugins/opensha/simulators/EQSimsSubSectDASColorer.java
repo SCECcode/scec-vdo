@@ -11,6 +11,7 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper;
@@ -55,7 +56,7 @@ public class EQSimsSubSectDASColorer extends CPTBasedColorer implements EQSimsEv
 		if (elements != null && mapper == null && !mapperFail) {
 			// try to build it
 			try {
-				List<FaultSectionPrefData> subSects = RSQSimUtils.getUCERF3SubSectsForComparison(fmParam.getValue(), DeformationModels.GEOLOGIC);
+				List<? extends FaultSection> subSects = RSQSimUtils.getUCERF3SubSectsForComparison(fmParam.getValue(), DeformationModels.GEOLOGIC);
 				mapper = new RSQSimSubSectionMapper(subSects, elements, 0.2);
 			} catch (Exception e) {
 				System.err.println("Error building mapper:");
@@ -67,7 +68,7 @@ public class EQSimsSubSectDASColorer extends CPTBasedColorer implements EQSimsEv
 			return Double.NaN;
 		SimulatorElement elem = ((SimulatorElementFault)fault).getElement();
 		double das = mapper.getElemSubSectDAS(elem).midDAS;
-		FaultSectionPrefData sect = mapper.getMappedSection(elem);
+		FaultSection sect = mapper.getMappedSection(elem);
 		double len = sect.getFaultTrace().getTraceLength();
 		return das/len;
 	}

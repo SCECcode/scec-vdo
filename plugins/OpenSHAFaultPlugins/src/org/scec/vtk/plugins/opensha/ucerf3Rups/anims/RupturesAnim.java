@@ -27,6 +27,7 @@ import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.AnimMultiColorerPickHandlerWrapper;
 import org.scec.vtk.commons.opensha.faults.anim.AnimMultiColorerWrapper;
@@ -561,7 +562,7 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 		sectionNames = new ArrayList<String>();
 		sectionNames.add(SECTION_SELECT_PARAM_DEFAULT);
 		if (rupSet != null) {
-			for (FaultSectionPrefData data : rupSet.getFaultSectionDataList()) {
+			for (FaultSection data : rupSet.getFaultSectionDataList()) {
 				String name = data.getSectionId()+". "+data.getSectionName();
 				name = name.replaceAll("Subsection", "#");
 				sectionNames.add(name);

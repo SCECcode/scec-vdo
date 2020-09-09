@@ -16,6 +16,7 @@ import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.util.IDPairing;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.simulators.RSQSimEvent;
 import org.opensha.sha.simulators.SimulatorElement;
 import org.opensha.sha.simulators.SimulatorEvent;
@@ -46,7 +47,7 @@ public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChang
 	private List<SimulatorElement> elems;
 	private RSQSimEvent event;
 	private HashSet<Integer> sects;
-	private List<FaultSectionPrefData> subSects;
+	private List<? extends FaultSection> subSects;
 	private RSQSimSubSectionMapper mapper;
 	
 	public RSQSimRuptureMappingColorer() {

@@ -27,6 +27,7 @@ import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.TimeBasedFaultAnimation;
@@ -334,7 +335,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSe
 					int fssIndex = Integer.parseInt(line);
 					ETAS_EqkRupture rup = new ETAS_EqkRupture();
 					rup.setOriginTime(ot);
-					rup.setRuptureSurface(sol.getRupSet().getSurfaceForRupupture(fssIndex, 1d, false));
+					rup.setRuptureSurface(sol.getRupSet().getSurfaceForRupture(fssIndex, 1d));
 					rup.setMag(mag);
 					rup.setFSSIndex(fssIndex);
 					rup.setID(0);
@@ -382,7 +383,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSe
 			int fssIndex = rup.getFSSIndex();
 			if (fssIndex >= 0)
 				// set the finite fault surface for later
-				rup.setRuptureSurface(sol.getRupSet().getSurfaceForRupupture(fssIndex, 1d, false));
+				rup.setRuptureSurface(sol.getRupSet().getSurfaceForRupture(fssIndex, 1d));
 		}
 		filterCatalog();
 		fireRangeChangeEvent();
@@ -761,7 +762,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSe
 		this.sol = sol;
 		ArrayList<String> subSectNames = Lists.newArrayList(ALL_SUB_SECTS);
 		if (sol != null) {
-			for (FaultSectionPrefData sect : sol.getRupSet().getFaultSectionDataList())
+			for (FaultSection sect : sol.getRupSet().getFaultSectionDataList())
 				subSectNames.add(sect.getSectionId()+". "+sect.getName());
 		}
 		((StringConstraint)subSectParam.getConstraint()).setStrings(subSectNames);
