@@ -14,6 +14,7 @@ import org.opensha.refFaultParamDb.dao.db.FaultModelSummaryDB_DAO;
 import org.opensha.refFaultParamDb.dao.db.PrefFaultSectionDataDB_DAO;
 import org.opensha.refFaultParamDb.vo.FaultModelSummary;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
@@ -43,13 +44,13 @@ public class FaultModelBuilder extends MultiDBBuilder {
 			HashSet<Integer> common = null;
 			
 			FaultModels[] fms = { FaultModels.FM3_1, FaultModels.FM3_2 };
-			List<List<FaultSectionPrefData>> sectsList = new ArrayList<>();
+			List<List<FaultSection>> sectsList = new ArrayList<>();
 			
 			for (FaultModels fm : fms) {
-				List<FaultSectionPrefData> sects = fm.fetchFaultSections();
+				List<FaultSection> sects = fm.fetchFaultSections();
 				
 				List<Integer> ids = new ArrayList<>();
-				for (FaultSectionPrefData sect : sects) {
+				for (FaultSection sect : sects) {
 					ids.add(sect.getSectionId());
 				}
 				
@@ -63,7 +64,7 @@ public class FaultModelBuilder extends MultiDBBuilder {
 			
 			for (int f = 0; f < fms.length; f++) {
 				FaultModels fm = fms[f];
-				List<FaultSectionPrefData> sects = sectsList.get(f);
+				List<FaultSection> sects = sectsList.get(f);
 				
 				// ID numbers must be unique in the tree, but there are duplicates in each fault model
 				// add the fault model number, plus a bunch of zeros, to each ID number
@@ -80,7 +81,7 @@ public class FaultModelBuilder extends MultiDBBuilder {
 				List<FaultSectionNode> commonNodes = new ArrayList<>();
 				List<FaultSectionNode> uniqueNodes = new ArrayList<>();
 				
-				for (FaultSectionPrefData sect : sects) {
+				for (FaultSection sect : sects) {
 					int origID = sect.getSectionId();
 					sect.setSectionId(origID+idAdd);
 					PrefDataSection fault = new PrefDataSection(sect);

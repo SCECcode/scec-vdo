@@ -44,6 +44,7 @@ import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ClassUtils;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.AseismicityColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.CouplingCoefficientColorer;
@@ -394,9 +395,9 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		info = "<html>" + info.replaceAll("\n", "<br>") + "</html>";
 		FaultCategoryNode catNode = new FaultCategoryNode(catName, info);
 
-		List<FaultSectionPrefData> sectionData = rupSet.getFaultSectionDataList();
+		List<? extends FaultSection> sectionData = rupSet.getFaultSectionDataList();
 		
-		for (FaultSectionPrefData data : sectionData) {
+		for (FaultSection data : sectionData) {
 			String name = data.getSectionId()+". "+data.getName(); 
 
 			PrefDataSection fault = new PrefDataSection(name, data);

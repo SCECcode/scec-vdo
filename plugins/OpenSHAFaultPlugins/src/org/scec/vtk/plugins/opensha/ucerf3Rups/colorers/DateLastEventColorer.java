@@ -14,6 +14,7 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
@@ -113,7 +114,7 @@ public class DateLastEventColorer extends CPTBasedColorer implements UCERF3RupSe
 			LastEventData.populateSubSects(rupSet.getFaultSectionDataList(), data);
 			populated = true;
 		}
-		FaultSectionPrefData sect = ((PrefDataSection)fault).getFaultSection();
+		FaultSection sect = ((PrefDataSection)fault).getFaultSection();
 		long curTime = System.currentTimeMillis();
 		long eventTime = sect.getDateOfLastEvent();
 		if (eventTime == Long.MIN_VALUE)

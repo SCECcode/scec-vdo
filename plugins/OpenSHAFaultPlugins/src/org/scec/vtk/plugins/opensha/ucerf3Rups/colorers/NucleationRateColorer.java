@@ -21,6 +21,7 @@ import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.util.DataUtils.MinMaxAveTracker;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.magdist.IncrementalMagFreqDist;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
@@ -137,7 +138,7 @@ public class NucleationRateColorer extends CPTBasedColorer implements
 		
 		int faultID = fault.getId();
 		
-		FaultSectionPrefData sect = sol.getRupSet().getFaultSectionData(faultID);
+		FaultSection sect = sol.getRupSet().getFaultSectionData(faultID);
 		
 		GraphWindow graph = null;
 		

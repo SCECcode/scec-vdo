@@ -4,6 +4,7 @@ import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.refFaultParamDb.vo.FaultSectionSummary;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.faultSurface.SimpleFaultData;
 import org.scec.vtk.commons.opensha.faults.AbstractSimpleFaultDataFaultSection;
 import org.scec.vtk.commons.opensha.faults.attributeInterfaces.AseismicityFaultSection;
@@ -18,13 +19,13 @@ implements AseismicityFaultSection, CouplingCoefficientFaultSection{
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private FaultSectionPrefData prefData;
+	private FaultSection prefData;
 	
-	public PrefDataSection(FaultSectionPrefData prefData) {
+	public PrefDataSection(FaultSection prefData) {
 		this(prefData.getName(), prefData);
 	}
 	
-	public PrefDataSection(String name, FaultSectionPrefData prefData) {
+	public PrefDataSection(String name, FaultSection prefData) {
 		super(name, prefData.getSectionId());
 		this.prefData = prefData;
 	}
@@ -60,7 +61,7 @@ implements AseismicityFaultSection, CouplingCoefficientFaultSection{
 		return new FaultSectionSummary(prefData.getSectionId(), prefData.getSectionName());
 	}
 	
-	public FaultSectionPrefData getFaultSection() {
+	public FaultSection getFaultSection() {
 		return prefData;
 	}
 	

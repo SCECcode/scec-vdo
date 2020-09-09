@@ -28,7 +28,7 @@ import com.google.common.base.Preconditions;
 import scratch.UCERF3.FaultSystemRupSet;
 import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.inversion.InversionFaultSystemSolution;
-import scratch.UCERF3.inversion.InversionInputGenerator;
+import scratch.UCERF3.inversion.UCERF3InversionInputGenerator;
 import scratch.UCERF3.utils.FaultSystemIO;
 import scratch.UCERF3.utils.paleoRateConstraints.PaleoProbabilityModel;
 
@@ -257,7 +257,8 @@ public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetCh
 				break;
 			case SOLUTION_RATES_VS_PALEO_VISIBLE:
 				try {
-					val1 = sol.calcTotPaleoVisibleRateForSect(secID, InversionInputGenerator.loadDefaultPaleoProbabilityModel());
+					val1 = sol.calcTotPaleoVisibleRateForSect(secID,
+							UCERF3InversionInputGenerator.loadDefaultPaleoProbabilityModel());
 				} catch (IOException e) {
 					throw ExceptionUtils.asRuntimeException(e);
 				}

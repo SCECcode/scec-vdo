@@ -10,6 +10,7 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
@@ -77,7 +78,7 @@ ParameterChangeListener {
 	public double getValue(AbstractFaultSection fault) {
 		if (fault instanceof PrefDataSection) {
 			PrefDataSection prefFault = (PrefDataSection)fault;
-			FaultSectionPrefData pref = prefFault.getFaultSection();
+			FaultSection pref = prefFault.getFaultSection();
 			switch (typeParam.getValue()) {
 			case ORIGINAL:
 				return pref.getOrigAveSlipRate();

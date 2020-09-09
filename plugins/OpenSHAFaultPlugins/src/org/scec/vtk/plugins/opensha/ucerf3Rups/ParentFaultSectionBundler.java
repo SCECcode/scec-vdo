@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.opensha.commons.util.DataUtils.MinMaxAveTracker;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 import org.scec.vtk.commons.opensha.surfaces.FaultActorBundle;
@@ -22,7 +23,7 @@ public class ParentFaultSectionBundler implements FaultActorBundler {
 			if (D) System.out.println("Can't bundle for non PrefDataSection");
 			return null;
 		}
-		FaultSectionPrefData sect = ((PrefDataSection)fault).getFaultSection();
+		FaultSection sect = ((PrefDataSection)fault).getFaultSection();
 		Integer parentID = sect.getParentSectionId();
 		if (parentID < 0) {
 			if (D) System.out.println("Can't bundle for no parent. Sect: "+sect.getName());
