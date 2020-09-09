@@ -225,6 +225,8 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 			List<Integer> list = rupSet.getSectionsIndicesForRup(rupID);
 			int ind = list.indexOf(fault.getId());
 			if (ind >= 0) {
+				if (list.size() == 1)
+					return 0d;
 //				System.out.println("ind: "+ind+"/"+list.size());
 				return (double)ind / (double)(list.size()-1);
 			}
