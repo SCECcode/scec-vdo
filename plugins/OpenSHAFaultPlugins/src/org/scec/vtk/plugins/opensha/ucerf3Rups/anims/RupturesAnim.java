@@ -26,7 +26,6 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
-import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.AnimMultiColorerPickHandlerWrapper;
@@ -38,7 +37,6 @@ import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.RakeColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.StrikeColorer;
-import org.scec.vtk.commons.opensha.surfaces.FaultSectionActorList;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
@@ -46,7 +44,6 @@ import org.scec.vtk.tools.picking.PickHandler;
 import scratch.UCERF3.FaultSystemRupSet;
 import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.inversion.InversionFaultSystemRupSet;
-import vtk.vtkActor;
 import vtk.vtkCellPicker;
 
 public class RupturesAnim implements IDBasedFaultAnimation,

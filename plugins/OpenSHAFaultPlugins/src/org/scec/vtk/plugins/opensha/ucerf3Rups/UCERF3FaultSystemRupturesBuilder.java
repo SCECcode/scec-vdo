@@ -70,6 +70,7 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.SectionResetAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.DateLastEventColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ETASMultiCatalogColorer;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.EternalDatasetColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.InversionSlipRateColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.MaxMagColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.MultiFaultRupColorer;
@@ -274,6 +275,8 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		StiffnessColorer stiffnessColorer = new StiffnessColorer();
 		colorers.add(stiffnessColorer);
 		rupSetChangeListeners.add(stiffnessColorer);
+		
+		colorers.add(new EternalDatasetColorer());
 		
 //		SegmentationColorer segColorer = new SegmentationColorer();
 //		colorers.add(segColorer);
