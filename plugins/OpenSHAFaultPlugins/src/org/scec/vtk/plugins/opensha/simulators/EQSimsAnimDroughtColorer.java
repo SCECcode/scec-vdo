@@ -114,6 +114,8 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 	private Map<Integer, HashSet<Integer>> faultMappings;
 	private Map<String, Integer> faultNamesMap;
 	private Map<String, Integer> sectNamesMap;
+	
+	private List<SimulatorElement> elements;
 
 	private List<? extends FaultSection> subSects;
 	private RSQSimSubSectionMapper subSectMapper;
@@ -187,6 +189,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 			return getCPT().getNaNColor();
 		}
 		else {
+			checkInit();
 			Color c;
 			SimulatorElement elem = ((SimulatorElementFault)fault).getElement();
 			FaultSection sect = subSectMapper.getMappedSection(elem);
@@ -458,7 +461,11 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 		faultNamesMap = null;
 		sectNamesMap = null;
 		subSectMapper = null;
-		if (elements != null) {
+		this.elements = elements;
+	}
+	
+	private void checkInit() {
+		if (elements != null && subSectMapper == null) {
 			if (subSects == null) {
 				FaultModels fm = FaultModels.FM3_1;
 				DeformationModels geom = DeformationModels.GEOLOGIC;
@@ -561,6 +568,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 		if (timeSinceYears < 0) {
 			timeSinceYears = 0;  
 		}
+		checkInit();
 
 		for(Integer key :faultDroughtLength.keySet()) {
 				if (!eventParentIDS.containsKey(key)) {
@@ -631,6 +639,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 	}
 
 	public HashMap <Integer, Integer> getParentIDsForEvent(SimulatorEvent event) {
+		checkInit();
 		List<List<SubSectionMapping>> mappingsBundled = subSectMapper.getFilteredSubSectionMappings(event);
 		if (mappingsBundled == null)
 			// this will happen for small events which break no subsections
@@ -644,6 +653,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 	}
 
 	public Collection<SimulatorElement> getElementsForSubSect(FaultSectionPrefData subSect) {
+		checkInit();
 		return subSectMapper.getElementsForSection(subSect);
 	}
 

@@ -4,6 +4,7 @@ import org.opensha.commons.data.Named;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.opensha.sha.faultSurface.Surface3D;
+import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 
 public abstract class AbstractFaultSection implements Named {
@@ -50,12 +51,16 @@ public abstract class AbstractFaultSection implements Named {
 	public abstract double getAvgDip();
 	
 	public String getInfo() {
-		return "Name: " + getName()
-		+ "\nID: " + getId()
-		+ "\nSlip Rate: " + (float)getSlipRate()
-		+ "\nAverage Rake: " + (float)getAvgRake()
-		+ "\nAverage Strike: " + (float)getAvgStrike()
-		+ "\nAverage Dip: " + (float)getAvgDip();
+		StringBuilder str = new StringBuilder();
+		str.append("Name: " + getName());
+		str.append("\nID: " + getId());
+		if (this instanceof PrefDataSection)
+			str.append("\nParID: "+((PrefDataSection)this).getFaultSection().getParentSectionId());
+		str.append("\nSlip Rate: " + (float)getSlipRate());
+		str.append("\nAverage Rake: " + (float)getAvgRake());
+		str.append("\nAverage Strike: " + (float)getAvgStrike());
+		str.append("\nAverage Dip: " + (float)getAvgDip());
+		return str.toString();
 	}
 	
 	public String getInfoHTML() {
