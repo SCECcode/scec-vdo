@@ -20,7 +20,9 @@ public class TimeBasedCalc implements StepTimeCalculator {
 		minTime = anim.getTimeForStep(0);
 		double absoluteDuration = anim.getCurrentDuration();
 		double maxTime = minTime + absoluteDuration;
-		Preconditions.checkState(maxTime > minTime, "the time difference for the min and max step must be > 0");
+		Preconditions.checkState(maxTime > minTime,
+				"the time difference for the min and max step must be > 0. min=%s, max=%s",
+				minTime, maxTime);
 		multiplier = duration / absoluteDuration;
 		if (D) System.out.println("Created a new TimeBasedCalc with minTime="+minTime+", multiplier="+multiplier);
 	}
