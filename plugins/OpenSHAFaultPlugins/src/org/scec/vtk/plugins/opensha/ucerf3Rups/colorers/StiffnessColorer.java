@@ -16,6 +16,8 @@ import java.util.concurrent.Future;
 import org.apache.commons.math3.stat.StatUtils;
 import org.opensha.commons.data.function.EvenlyDiscretizedFunc;
 import org.opensha.commons.geo.Location;
+import org.opensha.commons.gui.plot.GraphWidget;
+import org.opensha.commons.gui.plot.GraphWindow;
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
 import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
@@ -40,7 +42,9 @@ import org.opensha.sha.faultSurface.RuptureSurface;
 import org.opensha.sha.simulators.stiffness.RuptureCoulombResult;
 import org.opensha.sha.simulators.stiffness.RuptureCoulombResult.RupCoulombQuantity;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator;
+import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.LogDistributionPlot;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessAggregationMethod;
+import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessDistribution;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessResult;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessType;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
@@ -135,6 +139,11 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	private static final String RUP_QUANTITY_PARAM_NAME = "Rupture Quantity";
 	private EnumParameter<RupQuantity> rupQuantityParam;
 	
+	private static final String REUSE_RECEIVER_WINDOW_PARAM_NAME = "Reuse Receiver Window";
+	private static final boolean REUSE_RECEIVER_WINDOW_PARAM_DEFAULT = true;
+	private BooleanParameter reuseRecieverWindowParam;
+	private GraphWindow receiverGW;
+	
 	private ClusterRupture curRupture;
 	private FaultSubsectionCluster startCluster;
 	private RuptureConnectionSearch search;
@@ -165,6 +174,8 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	private Map<Integer, StiffnessResult> faultResults;
 	private Map<Integer, Double> rupResults;
 	private Map<IDPairing, Double> distances;
+	
+	private FaultSection receiverSection;
 
 	public StiffnessColorer() {
 		super(getDefaultCPT(), false);
@@ -221,6 +232,14 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		rupQuantityParam.getEditor().setEnabled(false);
 		rupQuantityParam.addParameterChangeListener(this);
 		params.addParameter(rupQuantityParam);
+		
+		reuseRecieverWindowParam = new BooleanParameter(
+				REUSE_RECEIVER_WINDOW_PARAM_NAME, REUSE_RECEIVER_WINDOW_PARAM_DEFAULT);
+		reuseRecieverWindowParam.setInfo(
+				"You can ctrl+click on a fault to set a receiver, which will pop up a plot "
+				+ "of the value distribution. If this is selected, the graph window will be "
+				+ "reused for each plot (otherwise a new window will pop up).");
+		params.addParameter(reuseRecieverWindowParam);
 		
 		faultResults = new HashMap<>();
 		distances = new HashMap<>();
@@ -405,6 +424,17 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		updateCPT();
 	}
 	
+	private synchronized void updateReceiver() {
+		if (sourceSection == null || receiverSection == null || calc == null)
+			return;
+		StiffnessDistribution dist = calc.calcStiffnessDistribution(
+				sourceSection, receiverSection);
+		if (!reuseRecieverWindowParam.getValue() || receiverGW == null || !receiverGW.isVisible())
+			receiverGW = new GraphWindow(new GraphWidget());
+		LogDistributionPlot plot = calc.plotDistributionHistograms(dist, typeParam.getValue());
+		plot.plotInGW(receiverGW);
+	}
+	
 	private void calcClusterPath(RuptureTreeNavigator navigator, FaultSubsectionCluster receiver,
 			HashSet<FaultSubsectionCluster> parents) {
 		if (!parents.isEmpty()) {
@@ -500,36 +530,82 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		if (quantityParam.getValue() == StiffnessAggregationMethod.FRACT_POSITIVE) {
 			cpt = getFractCPT();
 		} else {
-			// scale to 95th percentile
-			List<Double> vals = new ArrayList<>();
 			StiffnessAggregationMethod quantity = quantityParam.getValue();
+			double maxVal = 0.1;
+			double minNonZero = 0.01;
 			for (StiffnessResult results : faultResults.values()) {
 				double val = Math.abs(SubSectStiffnessCalculator.getValue(results, quantity));
+				maxVal = Math.max(maxVal, val);
 				if (val > 0)
-					vals.add(val);
+					minNonZero = Math.min(minNonZero, val);
 			}
-			double maxVal;
-			if (vals.isEmpty())
-				maxVal = 1d;
-			else if (vals.size() < 5)
-				maxVal = StatUtils.max(Doubles.toArray(vals));
-			else
-				maxVal = StatUtils.percentile(Doubles.toArray(vals), 95d);
+//			if (vals.isEmpty())
+//				maxVal = 1d;
+//			else if (vals.size() < 5)
+//				maxVal = StatUtils.max(Doubles.toArray(vals));
+//			else
+//				maxVal = StatUtils.percentile(Doubles.toArray(vals), 95d);
 			maxVal = Math.max(maxVal, 0.01);
 //			cpt = getDefaultCPT().rescale(-maxVal, maxVal);
 			
-			double minColorVal = 0.0001;
-			CPT upperCPT = new CPT(minColorVal, maxVal,
-					new Color(255, 180, 180), new Color(255, 0, 0), new Color(100, 0, 0));
-			CPT lowerCPT = new CPT(-maxVal, -minColorVal,
-					new Color(0, 0, 100), new Color(0, 0, 255), new Color(180, 180, 255));
+//			double minColorVal = 0.0001;
+//			CPT upperCPT = new CPT(minColorVal, maxVal,
+//					new Color(255, 180, 180), new Color(255, 0, 0), new Color(100, 0, 0));
+//			CPT lowerCPT = new CPT(-maxVal, -minColorVal,
+//					new Color(0, 0, 100), new Color(0, 0, 255), new Color(180, 180, 255));
+//			cpt = new CPT();
+//			cpt.addAll(lowerCPT);
+//			cpt.add(new CPTVal(lowerCPT.getMaxValue(), lowerCPT.getMaxColor(), 0f, Color.WHITE));
+//			cpt.add(new CPTVal(0f, Color.WHITE, upperCPT.getMinValue(), upperCPT.getMinColor()));
+//			cpt.addAll(upperCPT);
+//			cpt.setBelowMinColor(cpt.getMinColor());
+//			cpt.setAboveMaxColor(cpt.getMaxColor());
+			
+			// another log-ish test
+			double logMinVal = Math.max(-6, Math.floor(Math.log10(minNonZero)));
+			double logMaxVal = Math.ceil(Math.log10(maxVal));
+			if (logMaxVal < -4)
+				logMinVal = logMaxVal - 3;
+			CPT logUpperCPT = new CPT(logMinVal, logMaxVal-1, new Color(255, 220, 220),
+					new Color(255, 0, 0));
+			logUpperCPT.add(new CPTVal(logUpperCPT.getMaxValue(), logUpperCPT.getMaxColor(),
+					(float)logMaxVal, new Color(100, 0, 0)));
+			EvenlyDiscretizedFunc logDiscr = new EvenlyDiscretizedFunc(logMinVal, logMaxVal, 100);
+			CPT logLowerCPT = new CPT(logMinVal, logMaxVal-1, new Color(220, 220, 255),
+					new Color(0, 0, 255));
+			logLowerCPT.add(new CPTVal(logLowerCPT.getMaxValue(), logLowerCPT.getMaxColor(),
+					(float)logMaxVal, new Color(0, 0, 100)));
 			cpt = new CPT();
-			cpt.addAll(lowerCPT);
-			cpt.add(new CPTVal(lowerCPT.getMaxValue(), lowerCPT.getMaxColor(), 0f, Color.WHITE));
-			cpt.add(new CPTVal(0f, Color.WHITE, upperCPT.getMinValue(), upperCPT.getMinColor()));
-			cpt.addAll(upperCPT);
+			for (int i=logDiscr.size(); --i>0;) {
+				double x1 = logDiscr.getX(i); // abs larger value, neg smaller
+				double x2 = logDiscr.getX(i-1); // abs smaller value, neg larger
+				Color c1 = logLowerCPT.getColor((float)x1);
+				Color c2 = logLowerCPT.getColor((float)x2);
+				cpt.add(new CPTVal(-(float)Math.pow(10, x1), c1, -(float)Math.pow(10, x2), c2));
+			}
+			cpt.add(new CPTVal(cpt.getMaxValue(), cpt.getMaxColor(), 0f, Color.WHITE));
+			cpt.add(new CPTVal(0f, Color.WHITE, (float)Math.pow(10, logUpperCPT.getMinValue()),
+					logUpperCPT.getMinColor()));
+			for (int i=0; i<logDiscr.size()-1; i++) {
+				double x1 = logDiscr.getX(i);
+				double x2 = logDiscr.getX(i+1);
+				Color c1 = logUpperCPT.getColor((float)x1);
+				Color c2 = logUpperCPT.getColor((float)x2);
+				cpt.add(new CPTVal((float)Math.pow(10, x1), c1, (float)Math.pow(10, x2), c2));
+			}
 			cpt.setBelowMinColor(cpt.getMinColor());
 			cpt.setAboveMaxColor(cpt.getMaxColor());
+//			
+//			double minNonZero = Double.POSITIVE_INFINITY;
+//			double maxNonZero = 0d;
+//			for (StiffnessResult[] results : faultResults.values()) {
+//				StiffnessResult result = typeParam.getValue() == Type.SIGMA ? results[0] : results[1];
+//				double val = Math.abs(getValue(result));
+//				if (Double.isFinite(val) && val > 0d) {
+//					minNonZero = Math.min(minNonZero, val);
+//					maxNonZero = Math.max(maxNonZero, val);
+//				}
+//			}
 			
 			// do log-ish
 //			double minNonZero = Double.POSITIVE_INFINITY;
@@ -615,8 +691,13 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 			PrefDataSection fault = (PrefDataSection)reference;
 			if (e.getButton() == MouseEvent.BUTTON1 && e.isShiftDown()) {
 				sourceSection = fault.getFaultSection();
-				System.out.println("shift down, picked "+sourceSection.getName());
+				System.out.println("shift down, picked source: "+sourceSection.getName());
 				update();
+			}
+			if (e.getButton() == MouseEvent.BUTTON1 && e.isControlDown()) {
+				receiverSection = fault.getFaultSection();
+				System.out.println("control down, picked receiver: "+sourceSection.getName());
+				updateReceiver();
 			}
 		}
 	}

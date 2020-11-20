@@ -12,10 +12,10 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.RectangleInsets;
 
 /**
  * Mocho makes the Molchan diagrams.
@@ -174,11 +174,11 @@ public class Mocho {
 		XYItemRenderer r = plot.getRenderer();
 		if(r instanceof XYLineAndShapeRenderer){
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
-			renderer.setShape(circle);
-			renderer.setShapesVisible(true);
-			renderer.setLinesVisible(true);
-			renderer.setShapesFilled(false);
-			r.setSeriesVisibleInLegend(true);
+			renderer.setSeriesShape(0, circle);
+			renderer.setSeriesShapesVisible(0, true);
+			renderer.setSeriesLinesVisible(0, true);
+			renderer.setSeriesShapesFilled(0, false);
+			r.setSeriesVisibleInLegend(0, true);
 			//draws circles to mark the points on the molchan diagrams
 		}
 		

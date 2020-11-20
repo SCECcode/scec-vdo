@@ -262,13 +262,14 @@ ParameterChangeListener {
 			return;
 		try {
 			Map<Integer, List<RSQSimStateTime>> trans = transReader.getTransitions(curEvent);
-			Map<Integer, Double> slipVels = null;
-			if (transReader.getVersion() == TransVersion.TRANSV) {
-				slipVels = new HashMap<>();
-				for (SimulatorElement elem : elements)
-					slipVels.put(elem.getID(), slipVelParam.getValue());
-			}
+			System.out.println("Loaded "+trans.size()+" transitions for event "+curEvent.getID());
+			int numActualTrans = 0;
+			for (List<RSQSimStateTime> list : trans.values())
+				numActualTrans += list.size();
+			System.out.println("Loaded "+numActualTrans+" actual values");
 			curSlipTimeFunc = new RSQSimEventSlipTimeFunc(trans);
+			System.out.println("Time range: "+curSlipTimeFunc.getStartTime()+" "+curSlipTimeFunc.getEndTime());
+			curSlipTimeFunc = curSlipTimeFunc.asRelativeTimeFunc();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Error calculating/loading slip time function",
 					e.getMessage(), JOptionPane.ERROR_MESSAGE);
@@ -339,6 +340,12 @@ ParameterChangeListener {
 		if (file != null) {
 			try {
 				transReader = new RSQSimStateTransitionFileReader(file, elements);
+				if (transReader.getVersion() == TransVersion.ORIGINAL) {
+					Map<Integer, Double> slipVels = new HashMap<>();
+					for (SimulatorElement elem : elements)
+						slipVels.put(elem.getID(), slipVelParam.getValue());
+					transReader.setPatchFixedVelocities(slipVels);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
