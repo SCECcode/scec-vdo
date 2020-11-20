@@ -141,7 +141,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	private BooleanParameter hideNansParam;
 	
 	private DoubleParameter magMinParam;
-	private double min = 6.5;
+	private double min = 0d;
 	private double max = 10d;
 	private DoubleParameter magMaxParam;
 	
@@ -561,6 +561,14 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	public void setRupSet(FaultSystemRupSet rupSet, FaultSystemSolution sol) {
 		this.sol = null;
 		update();
+		if (sol == null && rupSet != null) {
+			// just build a fake solution
+			double[] fakeRates = new double[rupSet.getNumRuptures()];
+			double rate = 1d/fakeRates.length;
+			for (int r=0; r<fakeRates.length; r++)
+				fakeRates[r] = rate;
+			sol = new FaultSystemSolution(rupSet, fakeRates);
+		}
 		this.sol = sol;
 		update();
 	}
