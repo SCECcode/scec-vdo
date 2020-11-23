@@ -260,7 +260,7 @@ public abstract class GeometryGenerator implements Named {
 	 * @author kevin
 	 *
 	 */
-	private class PointOrganizer {
+	public static class PointOrganizer {
 		
 		private vtkPoints points;
 		private vtkUnsignedCharArray colorsArray;
