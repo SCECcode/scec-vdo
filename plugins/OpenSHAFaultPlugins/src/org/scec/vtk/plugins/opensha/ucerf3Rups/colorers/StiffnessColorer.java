@@ -41,6 +41,7 @@ import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.opensha.sha.simulators.stiffness.RuptureCoulombResult;
 import org.opensha.sha.simulators.stiffness.RuptureCoulombResult.RupCoulombQuantity;
+import org.opensha.sha.simulators.stiffness.StiffnessCalc.Patch;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.LogDistributionPlot;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessAggregationMethod;
@@ -50,6 +51,9 @@ import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.Stiffness
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
+import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator.PointArray;
+import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator.PointOrganizer;
+import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
@@ -59,7 +63,12 @@ import com.google.common.primitives.Doubles;
 
 import scratch.UCERF3.FaultSystemRupSet;
 import scratch.UCERF3.FaultSystemSolution;
+import vtk.vtkActor;
+import vtk.vtkCellArray;
 import vtk.vtkCellPicker;
+import vtk.vtkPoints;
+import vtk.vtkPolyData;
+import vtk.vtkUnsignedCharArray;
 
 public class StiffnessColorer extends CPTBasedColorer implements PickHandler<AbstractFaultSection>,
 UCERF3RupSetChangeListener, ParameterChangeListener {
@@ -144,6 +153,14 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	private BooleanParameter reuseRecieverWindowParam;
 	private GraphWindow receiverGW;
 	
+	private static final String SHOW_PATCHES_NAME = "Show Src/Receiver Patches";
+	private static final boolean SHOW_PATCHES_PARAM_DEFAULT = false;
+	private BooleanParameter showPatchesParam;
+	
+	private static final String SHOW_LINES_NAME = "Show Src/Receiver Lines";
+	private static final boolean SHOW_LINES_PARAM_DEFAULT = false;
+	private BooleanParameter showLinesParam;
+	
 	private ClusterRupture curRupture;
 	private FaultSubsectionCluster startCluster;
 	private RuptureConnectionSearch search;
@@ -177,8 +194,11 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	
 	private FaultSection receiverSection;
 
-	public StiffnessColorer() {
+	private PluginActors pluginActors;
+
+	public StiffnessColorer(PluginActors pluginActors) {
 		super(getDefaultCPT(), false);
+		this.pluginActors = pluginActors;
 		
 		typeParam = new EnumParameter<StiffnessType>(TYPE_PARAM_NAME,
 				EnumSet.allOf(StiffnessType.class), StiffnessType.CFF, null);
@@ -240,6 +260,14 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 				+ "of the value distribution. If this is selected, the graph window will be "
 				+ "reused for each plot (otherwise a new window will pop up).");
 		params.addParameter(reuseRecieverWindowParam);
+		
+		showPatchesParam = new BooleanParameter(SHOW_PATCHES_NAME, SHOW_PATCHES_PARAM_DEFAULT);
+		showPatchesParam.addParameterChangeListener(this);
+		params.addParameter(showPatchesParam);
+		
+		showLinesParam = new BooleanParameter(SHOW_LINES_NAME, SHOW_LINES_PARAM_DEFAULT);
+		showLinesParam.addParameterChangeListener(this);
+		params.addParameter(showLinesParam);
 		
 		faultResults = new HashMap<>();
 		distances = new HashMap<>();
@@ -433,6 +461,65 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 			receiverGW = new GraphWindow(new GraphWidget());
 		LogDistributionPlot plot = calc.plotDistributionHistograms(dist, typeParam.getValue());
 		plot.plotInGW(receiverGW);
+		if (showPatchesParam.getValue()) {
+			List<Patch> sourcePatches = calc.getPatches(receiverSection);
+		}
+	}
+	
+	private void showPatches(List<Patch> patches, StiffnessDistribution dist) {
+		StiffnessResult fullResult = null;
+		double[][] fullVals = null;
+		if (dist != null) {
+			fullResult = dist.results[typeParam.getValue().getArrayIndex()];
+			switch (typeParam.getValue()) {
+			case CFF:
+				fullVals = dist.cffVals;
+				break;
+			case SIGMA:
+				fullVals = dist.sigmaVals;
+				break;
+			case TAU:
+				fullVals = dist.tauVals;
+				break;
+
+			default:
+				throw new IllegalStateException();
+			}
+		}
+		
+		vtkPolyData polyData = new vtkPolyData();
+		vtkPoints pts = new vtkPoints();
+		vtkCellArray cells = new vtkCellArray();
+		vtkActor actor = new vtkActor();
+		vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
+		colors.SetNumberOfComponents(4);
+		colors.SetName("Colors");
+		
+		for (int i=0; i<patches.size(); i++) {
+			Patch patch = patches.get(i);
+			Color c;
+			if (fullResult == null) {
+				c = highlightColor;
+			} else {
+				// it's a receiver, color according to the CPT
+				StiffnessAggregationMethod aggMethod = quantityParam.getValue();
+				double[][] subVals = new double[fullVals.length][1];
+				for (int j=0; j<subVals.length; j++)
+					subVals[j][0] = fullVals[j][i];
+				StiffnessResult patchResult = new StiffnessResult(fullResult.sourceID, fullResult.receiverID,
+						subVals, typeParam.getValue());
+				double val = patchResult.getValue(aggMethod);
+				c = getCPT().getColor((float)val);
+			}
+			PointOrganizer organizer = new PointOrganizer(pts, colors, c);
+			List<PointArray> polygons = new ArrayList<>();
+			
+			double[][] points = new double[4][];
+			
+//			=
+			
+			polygons.add(new PointArray(points));
+		}
 	}
 	
 	private void calcClusterPath(RuptureTreeNavigator navigator, FaultSubsectionCluster receiver,

@@ -272,7 +272,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		colorers.add(stackedRupColorer);
 		rupSetChangeListeners.add(stackedRupColorer);
 		
-		StiffnessColorer stiffnessColorer = new StiffnessColorer();
+		StiffnessColorer stiffnessColorer = new StiffnessColorer(plugin.getPluginActors());
 		colorers.add(stiffnessColorer);
 		rupSetChangeListeners.add(stiffnessColorer);
 		
