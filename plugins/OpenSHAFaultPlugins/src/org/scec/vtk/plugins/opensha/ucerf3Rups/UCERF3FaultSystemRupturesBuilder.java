@@ -162,6 +162,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	private String name;
 	
 //	private FindEquivUCERF2Anim equivAnim;
+	private StiffnessColorer stiffnessColorer;
 	private EventManager em;
 	private FaultHighlighter highlight;
 	
@@ -272,7 +273,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		colorers.add(stackedRupColorer);
 		rupSetChangeListeners.add(stackedRupColorer);
 		
-		StiffnessColorer stiffnessColorer = new StiffnessColorer(plugin.getPluginActors());
+		stiffnessColorer = new StiffnessColorer(plugin.getPluginActors());
 		colorers.add(stiffnessColorer);
 		rupSetChangeListeners.add(stiffnessColorer);
 		
@@ -899,6 +900,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	public void setEventManager(EventManager em) {
 		this.em = em;
 		highlight = new FaultHighlighter(em, em);
+		stiffnessColorer.setEventManager(em);
 //		etasAnim.setSphereBG(em.getMasterBG());
 	}
 	
