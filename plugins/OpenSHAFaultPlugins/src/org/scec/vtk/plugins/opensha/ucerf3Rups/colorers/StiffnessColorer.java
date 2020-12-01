@@ -4,18 +4,24 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.swing.SwingUtilities;
+
 import org.apache.commons.math3.stat.StatUtils;
 import org.opensha.commons.data.function.EvenlyDiscretizedFunc;
 import org.opensha.commons.geo.Location;
+import org.opensha.commons.geo.LocationList;
 import org.opensha.commons.gui.plot.GraphWidget;
 import org.opensha.commons.gui.plot.GraphWindow;
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
@@ -39,11 +45,14 @@ import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.RuptureTreeNavi
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.SectionDistanceAzimuthCalculator;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.faultSurface.RuptureSurface;
+import org.opensha.sha.faultSurface.Surface3D;
 import org.opensha.sha.simulators.stiffness.RuptureCoulombResult;
 import org.opensha.sha.simulators.stiffness.RuptureCoulombResult.RupCoulombQuantity;
 import org.opensha.sha.simulators.stiffness.StiffnessCalc.Patch;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.LogDistributionPlot;
+import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.PatchAlignment;
+import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.PatchLocation;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessAggregationMethod;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessDistribution;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessResult;
@@ -51,12 +60,23 @@ import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.Stiffness
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
+import org.scec.vtk.commons.opensha.gui.EventManager;
+import org.scec.vtk.commons.opensha.surfaces.FaultActorBundle;
+import org.scec.vtk.commons.opensha.surfaces.FaultActorBundler;
+import org.scec.vtk.commons.opensha.surfaces.FaultSectionActorList;
+import org.scec.vtk.commons.opensha.surfaces.FaultSectionBundledActorList;
+import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator.PointArray;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator.PointOrganizer;
+import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
+import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.commons.opensha.surfaces.PolygonSurfaceGenerator;
+import org.scec.vtk.commons.opensha.surfaces.pickBehavior.NameDispalyPickHandler;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
+import org.scec.vtk.tools.picking.PointPickEnabledActor;
 
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
@@ -66,8 +86,10 @@ import scratch.UCERF3.FaultSystemSolution;
 import vtk.vtkActor;
 import vtk.vtkCellArray;
 import vtk.vtkCellPicker;
+import vtk.vtkLine;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
+import vtk.vtkPolyDataMapper;
 import vtk.vtkUnsignedCharArray;
 
 public class StiffnessColorer extends CPTBasedColorer implements PickHandler<AbstractFaultSection>,
@@ -110,6 +132,9 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	private static final double GRID_SPACING_MIN = 0.1d;
 	private static final double GRID_SPACING_MAX = 10d;
 	private DoubleParameter gridSpacingParam;
+	
+	private static final String PATCH_ALIGNMENT_PARAM_NAME = "Patch Alignment";
+	private EnumParameter<PatchAlignment> alignmentParam;
 	
 	private static final String PARENT_SECT_PARAM_NAME = "Parent Sections";
 	private static final boolean PARENT_SECT_PARAM_DEFAULT = false;
@@ -196,16 +221,18 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 
 	private PluginActors pluginActors;
 
+	private EventManager em;
+
 	public StiffnessColorer(PluginActors pluginActors) {
 		super(getDefaultCPT(), false);
 		this.pluginActors = pluginActors;
 		
-		typeParam = new EnumParameter<StiffnessType>(TYPE_PARAM_NAME,
+		typeParam = new EnumParameter<>(TYPE_PARAM_NAME,
 				EnumSet.allOf(StiffnessType.class), StiffnessType.CFF, null);
 		typeParam.addParameterChangeListener(this);
 		params.addParameter(typeParam);
 		
-		quantityParam = new EnumParameter<StiffnessAggregationMethod>(QUANTITY_PARAM_NAME,
+		quantityParam = new EnumParameter<>(QUANTITY_PARAM_NAME,
 				EnumSet.allOf(StiffnessAggregationMethod.class), StiffnessAggregationMethod.MEDIAN, null);
 		quantityParam.addParameterChangeListener(this);
 		params.addParameter(quantityParam);
@@ -218,6 +245,11 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		gridSpacingParam.setValue(GRID_SPACING_DEFAULT);
 		gridSpacingParam.addParameterChangeListener(this);
 		params.addParameter(gridSpacingParam);
+		
+		alignmentParam = new EnumParameter<>(PATCH_ALIGNMENT_PARAM_NAME,
+				EnumSet.allOf(PatchAlignment.class), PatchAlignment.CENTER, null); // TODO use default
+		alignmentParam.addParameterChangeListener(this);
+		params.addParameter(alignmentParam);
 		
 		maxDistParam = new DoubleParameter(MAX_DIST_PARAM_NAME, MAX_DIST_MIN, MAX_DIST_MAX);
 		maxDistParam.setUnits(MAX_DIST_PARAM_UNITS);
@@ -247,7 +279,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		rupIndexParam.addParameterChangeListener(this);
 		params.addParameter(rupIndexParam);
 		
-		rupQuantityParam = new EnumParameter<RupQuantity>(RUP_QUANTITY_PARAM_NAME, EnumSet.allOf(RupQuantity.class),
+		rupQuantityParam = new EnumParameter<>(RUP_QUANTITY_PARAM_NAME, EnumSet.allOf(RupQuantity.class),
 				RupQuantity.SECTION_NET, null);
 		rupQuantityParam.getEditor().setEnabled(false);
 		rupQuantityParam.addParameterChangeListener(this);
@@ -272,6 +304,10 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		faultResults = new HashMap<>();
 		distances = new HashMap<>();
 		rupResults = new HashMap<>();
+	}
+	
+	public void setEventManager(EventManager em) {
+		this.em = em;
 	}
 
 	@Override
@@ -328,6 +364,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		rupResults.clear();
 		curRupture = null;
 		startCluster = null;
+		clearPatches();
 		
 		if (rupSet == null)
 			return;
@@ -335,6 +372,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		if (calc == null)
 			calc = new SubSectStiffnessCalculator(rupSet.getFaultSectionDataList(), gridSpacingParam.getValue(),
 					lambdaParam.getValue(), muParam.getValue(), coefOfFrictionParam.getValue());
+		calc.setPatchAlignment(alignmentParam.getValue());
 		
 		if (rupIndexParam.getValue() < 0) {
 			if (sourceSection == null)
@@ -346,6 +384,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 				exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			
 			StiffnessType type = typeParam.getValue();
+			HashSet<FaultSection> sourceSects = new HashSet<>();
 			
 			List<Future<?>> futures = new ArrayList<>();
 			if (parentSectParam.getValue()) {
@@ -360,23 +399,46 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 					parentSects.add(sect);
 				}
 				List<RuptureSurface> surfs1 = new ArrayList<>();
-				for (FaultSection sourceSect : parentSectsMap.get(id1))
+				for (FaultSection sourceSect : parentSectsMap.get(id1)) {
 					surfs1.add(sourceSect.getFaultSurface(gridSpacingParam.getValue(), false, false));
+					sourceSects.add(sourceSect);
+				}
 				for (int id2 : parentSectsMap.keySet())
 					futures.add(exec.submit(new ParentCalcRun(type, id1, id2, parentSectsMap, surfs1)));
 			} else {
+				sourceSects.add(sourceSection);
 				RuptureSurface sourceSurf = sourceSection.getFaultSurface(gridSpacingParam.getValue(), false, false);
 				for (FaultSection receiver : rupSet.getFaultSectionDataList())
 					futures.add(exec.submit(new SectCalcRun(type, sourceSection, sourceSurf, receiver)));
 			}
 			
 			System.out.println("Waiting on "+futures.size()+" futures...");
+			Map<FaultSection, StiffnessDistribution> patchDists = null;
+			if (showPatchesParam.getValue())
+				patchDists = new HashMap<>();
 			for (Future<?> future : futures) {
 				try {
-					future.get();
+					Object obj = future.get();
+					if (showPatchesParam.getValue()) {
+						if (obj instanceof SectCalcRun) {
+							SectCalcRun sectCalc = (SectCalcRun)obj;
+							if (patchDists != null && sectCalc.dist != null)
+								patchDists.put(sectCalc.receiver, sectCalc.dist);
+						} else if (obj instanceof ParentCalcRun) {
+							ParentCalcRun parentCalc = (ParentCalcRun)obj;
+							if (patchDists != null && parentCalc.receiverDists != null) {
+								patchDists.putAll(parentCalc.receiverDists);
+							}
+						}
+					}
 				} catch (Exception e) {
 					throw ExceptionUtils.asRuntimeException(e);
 				}
+			}
+			if (patchDists != null) {
+				System.out.println("Displaying patches for "+sourceSects.size()+" source and "
+						+patchDists.size()+" receiver sections");
+				showPatches(sourceSects, patchDists);
 			}
 		} else {
 			int rupIndex = rupIndexParam.getValue();
@@ -446,6 +508,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 					break;
 				}
 			}
+			updateReceiver();
 		}
 		
 		System.out.println("Done calculating");
@@ -453,6 +516,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	}
 	
 	private synchronized void updateReceiver() {
+		clearLines();
 		if (sourceSection == null || receiverSection == null || calc == null)
 			return;
 		StiffnessDistribution dist = calc.calcStiffnessDistribution(
@@ -461,16 +525,308 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 			receiverGW = new GraphWindow(new GraphWidget());
 		LogDistributionPlot plot = calc.plotDistributionHistograms(dist, typeParam.getValue());
 		plot.plotInGW(receiverGW);
-		if (showPatchesParam.getValue()) {
-			List<Patch> sourcePatches = calc.getPatches(receiverSection);
-		}
+//		if (showPatchesParam.getValue()) {
+//			List<PatchLocation> sourcePatches = calc.getPatches(sourceSection);
+//			showPatches(sourcePatches, null);
+//			List<PatchLocation> receiverPatches = calc.getPatches(receiverSection);
+//			showPatches(receiverPatches, dist);
+//		}
+		if (showLinesParam.getValue())
+			showLines(dist);
 	}
 	
-	private void showPatches(List<Patch> patches, StiffnessDistribution dist) {
-		StiffnessResult fullResult = null;
-		double[][] fullVals = null;
-		if (dist != null) {
-			fullResult = dist.results[typeParam.getValue().getArrayIndex()];
+	private HashSet<vtkActor> patchActors;
+	
+	private synchronized void clearPatches() {
+		if (patchActors == null || patchActors.isEmpty())
+			return;
+		System.out.println("Clearing patches");
+		for (vtkActor actor : patchActors)
+			pluginActors.removeActor(actor);
+		patchActors = null;
+		em.updateViewer();
+	}
+	
+	private class PatchSection extends AbstractFaultSection {
+
+		private FaultSection sect;
+		private PatchLocation patch;
+		private int patchIndex;
+		private double val;
+
+		public PatchSection(FaultSection sect, PatchLocation patch, int patchIndex, double val) {
+			super(sect.getName()+", Patch "+patchIndex, 1000*sect.getSectionId()+patchIndex);
+			this.sect = sect;
+			this.patch = patch;
+			this.patchIndex = patchIndex;
+			this.val = val;
+		}
+
+		@Override
+		public String getInfo() {
+			return sect.getName()+", Patch "+patchIndex+", value: "+val;
+		}
+
+		@Override
+		public Surface3D createSurface(ParameterList faultRepresentationParams) {
+			return null;
+		}
+
+		@Override
+		public double getSlipRate() {
+			return Double.NaN;
+		}
+
+		@Override
+		public double getAvgRake() {
+			return Double.NaN;
+		}
+
+		@Override
+		public double getAvgStrike() {
+			return Double.NaN;
+		}
+
+		@Override
+		public double getAvgDip() {
+			return Double.NaN;
+		}
+		
+	}
+	
+	private class PatchSectBundler implements FaultActorBundler {
+		
+		private Map<Integer, FaultActorBundle> bundleMap = new HashMap<>();
+
+		@Override
+		public FaultActorBundle getBundle(AbstractFaultSection fault) {
+			if (!(fault instanceof PatchSection)) {
+				return null;
+			}
+			PatchSection patchSect = (PatchSection)fault;
+			Integer parentID = patchSect.sect.getParentSectionId();
+			if (parentID < 0) {
+				return null;
+			}
+			FaultActorBundle bundle = bundleMap.get(parentID);
+			if (bundle == null) {
+				System.out.println("Building a *new* bundle for "+patchSect.sect.getParentSectionName());
+				bundle = new FaultActorBundle();
+				bundleMap.put(parentID, bundle);
+			}
+			return bundle;
+		}
+
+		@Override
+		public void clearBundles() {
+			bundleMap.clear();
+		}
+		
+	}
+	
+	private void showPatches(Collection<FaultSection> sources, Map<FaultSection, StiffnessDistribution> faultDists) {
+		SwingUtilities.invokeLater(new PatchDisplayRunnable(sources, faultDists));
+	}
+	
+	private class PatchDisplayRunnable implements Runnable {
+		
+		private Collection<FaultSection> sources;
+		private Map<FaultSection, StiffnessDistribution> faultDists;
+
+		public PatchDisplayRunnable(Collection<FaultSection> sources, Map<FaultSection, StiffnessDistribution> faultDists) {
+			this.sources = sources;
+			this.faultDists = faultDists;
+		}
+
+		@Override
+		public void run() {
+			PolygonSurfaceGenerator polyGen = new PolygonSurfaceGenerator();
+			polyGen.setBundlerEneabled(true);
+			polyGen.setFaultActorBundler(new PatchSectBundler());
+//			polyGen.setPickHandler(new NameDispalyPickHandler());
+			polyGen.setPickHandler(StiffnessColorer.this);
+			polyGen.setOpacity(0.8);
+
+			HashSet<FaultSection> allSects = new HashSet<>(sources);
+			allSects.addAll(faultDists.keySet());
+
+			for (FaultSection sect : allSects) {
+				StiffnessDistribution dist = faultDists.get(sect);
+				List<PatchLocation> patches = calc.getPatches(sect);
+
+				StiffnessResult fullResult = null;
+				double[][] fullVals = null;
+				if (dist != null) {
+					fullResult = dist.results[typeParam.getValue().getArrayIndex()];
+					switch (typeParam.getValue()) {
+					case CFF:
+						fullVals = dist.cffVals;
+						break;
+					case SIGMA:
+						fullVals = dist.sigmaVals;
+						break;
+					case TAU:
+						fullVals = dist.tauVals;
+						break;
+
+					default:
+						throw new IllegalStateException();
+					}
+				}
+
+				if (patchActors == null)
+					patchActors = new HashSet<>();
+
+				for (int i=0; i<patches.size(); i++) {
+					PatchLocation patch = patches.get(i);
+					Color c;
+					double val;
+					if (fullResult == null) {
+						c = highlightColor;
+						val = Double.NaN;
+					} else {
+						// it's a receiver, color according to the CPT
+						StiffnessAggregationMethod aggMethod = quantityParam.getValue();
+						double[][] subVals = new double[fullVals.length][1];
+						for (int j=0; j<subVals.length; j++)
+							subVals[j][0] = fullVals[j][i];
+						StiffnessResult patchResult = new StiffnessResult(fullResult.sourceID, fullResult.receiverID,
+								subVals, typeParam.getValue());
+						val = patchResult.getValue(aggMethod);
+						c = getCPT().getColor((float)val);
+					}
+
+					LocationList outline = new LocationList();
+					Preconditions.checkState(patch.corners.length == 4);
+					for (Location corner : patch.corners)
+						outline.add(corner);
+					FaultSectionActorList list = polyGen.buildSimplePolygon(outline, c, new PatchSection(sect, patch, i, val));
+
+					em.displayActors(list, false);
+
+					if (list instanceof FaultSectionBundledActorList) {
+						FaultSectionBundledActorList bundled = (FaultSectionBundledActorList)list;
+						PointPickEnabledActor<AbstractFaultSection> actor = bundled.getBundle().getActor();
+						if (!patchActors.contains(actor)) {
+							patchActors.add(actor);
+							//						pluginActors.addActor(actor);
+						}
+						bundled.getBundle().setVisible(bundled, true);
+					} else {
+						for (vtkActor actor : list) {
+							patchActors.add(actor);
+							//						pluginActors.addActor(actor);
+						}
+					}
+				}
+			}
+
+			em.updateViewer();
+		}
+		
+	}
+	
+	private HashSet<vtkActor> lineActors;
+	
+	private synchronized void clearLines() {
+		if (lineActors == null || lineActors.isEmpty())
+			return;
+		System.out.println("Clearing lines");
+		for (vtkActor actor : lineActors)
+			pluginActors.removeActor(actor);
+		lineActors = null;
+		em.updateViewer();
+	}
+	
+	private class LineSection extends AbstractFaultSection {
+
+		private FaultSection source;
+		private FaultSection receiver;
+		private int sourceIndex;
+		private int receiverIndex;
+		private double val;
+
+		public LineSection(FaultSection source, FaultSection receiver, int sourceIndex,
+				int receiverIndex, double val) {
+			super(source.getSectionId()+"["+sourceIndex+"] => "+receiver.getSectionId()+"["+receiverIndex+"]",
+					source.getSectionId()*10000 + receiver.getSectionId()*1000 + sourceIndex*100 + receiverIndex);
+			this.source = source;
+			this.receiver = receiver;
+			this.sourceIndex = sourceIndex;
+			this.receiverIndex = receiverIndex;
+			this.val = val;
+		}
+
+		@Override
+		public String getInfo() {
+			return getName()+", value: "+val;
+		}
+
+		@Override
+		public Surface3D createSurface(ParameterList faultRepresentationParams) {
+			return null;
+		}
+
+		@Override
+		public double getSlipRate() {
+			return Double.NaN;
+		}
+
+		@Override
+		public double getAvgRake() {
+			return Double.NaN;
+		}
+
+		@Override
+		public double getAvgStrike() {
+			return Double.NaN;
+		}
+
+		@Override
+		public double getAvgDip() {
+			return Double.NaN;
+		}
+		
+	}
+	
+	private class LineSectBundler implements FaultActorBundler {
+		
+		FaultActorBundle bundle;
+
+		@Override
+		public FaultActorBundle getBundle(AbstractFaultSection fault) {
+			if (!(fault instanceof LineSection)) {
+				return null;
+			}
+			
+			if (bundle == null) {
+				System.out.println("Building a *new* line bundle");
+				bundle = new FaultActorBundle();
+			}
+			return bundle;
+		}
+
+		@Override
+		public void clearBundles() {
+			bundle = null;
+		}
+		
+	}
+	
+	private void showLines(StiffnessDistribution dist) {
+		SwingUtilities.invokeLater(new LineDisplayRunnable(dist));
+	}
+	
+	private class LineDisplayRunnable implements Runnable {
+		private StiffnessDistribution dist;
+		
+		private LineDisplayRunnable(StiffnessDistribution dist) {
+			this.dist = dist;
+		}
+		
+		@Override
+		public void run() {
+			double[][] fullVals;
 			switch (typeParam.getValue()) {
 			case CFF:
 				fullVals = dist.cffVals;
@@ -485,40 +841,49 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 			default:
 				throw new IllegalStateException();
 			}
-		}
-		
-		vtkPolyData polyData = new vtkPolyData();
-		vtkPoints pts = new vtkPoints();
-		vtkCellArray cells = new vtkCellArray();
-		vtkActor actor = new vtkActor();
-		vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
-		colors.SetNumberOfComponents(4);
-		colors.SetName("Colors");
-		
-		for (int i=0; i<patches.size(); i++) {
-			Patch patch = patches.get(i);
-			Color c;
-			if (fullResult == null) {
-				c = highlightColor;
-			} else {
-				// it's a receiver, color according to the CPT
-				StiffnessAggregationMethod aggMethod = quantityParam.getValue();
-				double[][] subVals = new double[fullVals.length][1];
-				for (int j=0; j<subVals.length; j++)
-					subVals[j][0] = fullVals[j][i];
-				StiffnessResult patchResult = new StiffnessResult(fullResult.sourceID, fullResult.receiverID,
-						subVals, typeParam.getValue());
-				double val = patchResult.getValue(aggMethod);
-				c = getCPT().getColor((float)val);
+			if (lineActors == null)
+				lineActors = new HashSet<>();
+			
+			LineSurfaceGenerator lineGen = new LineSurfaceGenerator();
+			lineGen.setBundlerEneabled(true);
+			lineGen.setFaultActorBundler(new LineSectBundler());
+			lineGen.setOpacity(0.75d);
+			
+			for (int s=0; s<dist.sourcePatches.size(); s++) {
+				PatchLocation source = dist.sourcePatches.get(s);
+				double[] sourcePt = GeometryGenerator.getPointForLoc(source.center);
+				for (int r=0; r<dist.receiverPatches.size(); r++) {
+					PatchLocation receiver = dist.receiverPatches.get(r);
+					double val = fullVals[s][r];
+					Color c = getCPT().getColor((float)val);
+					
+					LocationList line = new LocationList();
+					line.add(source.center);
+					line.add(receiver.center);
+					
+					FaultSectionActorList list = lineGen.createFaultActors(
+							line, c, new LineSection(sourceSection, receiverSection, s, r, val));
+					
+					em.displayActors(list, false);
+
+					if (list instanceof FaultSectionBundledActorList) {
+						FaultSectionBundledActorList bundled = (FaultSectionBundledActorList)list;
+						PointPickEnabledActor<AbstractFaultSection> actor = bundled.getBundle().getActor();
+						if (!lineActors.contains(actor)) {
+							lineActors.add(actor);
+							//						pluginActors.addActor(actor);
+						}
+						bundled.getBundle().setVisible(bundled, true);
+					} else {
+						for (vtkActor actor : list) {
+							lineActors.add(actor);
+							//						pluginActors.addActor(actor);
+						}
+					}
+				}
 			}
-			PointOrganizer organizer = new PointOrganizer(pts, colors, c);
-			List<PointArray> polygons = new ArrayList<>();
 			
-			double[][] points = new double[4][];
-			
-//			=
-			
-			polygons.add(new PointArray(points));
+			em.updateViewer();
 		}
 	}
 	
@@ -542,13 +907,14 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 			calcClusterPath(navigator, predecessor, newParents);
 	}
 	
-	private class ParentCalcRun implements Runnable {
+	private class ParentCalcRun implements Callable<ParentCalcRun> {
 		
 		private int id1;
 		private int id2;
 		private Map<Integer, List<FaultSection>> parentSectsMap;
 		private List<RuptureSurface> surfs1;
 		private StiffnessType type;
+		private Map<FaultSection, StiffnessDistribution> receiverDists;
 
 		public ParentCalcRun(StiffnessType type, int id1, int id2, Map<Integer, List<FaultSection>> parentSectsMap,
 				List<RuptureSurface> surfs1) {
@@ -560,7 +926,9 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		}
 
 		@Override
-		public void run() {
+		public ParentCalcRun call() {
+			if (id1 == id2)
+				return this;
 			IDPairing pair = id2 > id1 ? new IDPairing(id1, id2) : new IDPairing(id2, id1);
 			Double distance = distances.get(pair);
 			if (distance == null) {
@@ -573,18 +941,91 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 				}
 				distances.put(pair, distance);
 			}
-			if (distance <= maxDistParam.getValue())
-				faultResults.put(id2, calc.calcParentStiffness(type, id1, id2));
+			if (distance <= maxDistParam.getValue()) {
+				if (showPatchesParam.getValue()) {
+					receiverDists = new HashMap<>();
+					// need to aggregate ourselves
+					List<FaultSection> sourceSects = new ArrayList<>();
+					List<FaultSection> receiverSects = new ArrayList<>();
+					for (FaultSection sect : rupSet.getFaultSectionDataList()) {
+						int parentID = sect.getParentSectionId();
+						if (parentID == id1)
+							sourceSects.add(sect);
+						if (parentID == id2)
+							receiverSects.add(sect);
+					}
+					List<StiffnessResult> results = new ArrayList<>();
+					for (FaultSection receiver : receiverSects) {
+						List<PatchLocation> receiverPatches = calc.getPatches(receiverSection);
+						double[][] aggSubVals = null;
+						for (FaultSection source : sourceSects) {
+							StiffnessDistribution dist = calc.calcStiffnessDistribution(source, receiver);
+							results.add(dist.results[type.getArrayIndex()]);
+							double[][] fullVals = null;
+							switch (typeParam.getValue()) {
+							case CFF:
+								fullVals = dist.cffVals;
+								break;
+							case SIGMA:
+								fullVals = dist.sigmaVals;
+								break;
+							case TAU:
+								fullVals = dist.tauVals;
+								break;
+
+							default:
+								throw new IllegalStateException();
+							}
+							for (int r=0; r<dist.receiverPatches.size(); r++) {
+								double[][] subVals = new double[dist.sourcePatches.size()][1];
+								for (int s=0; s<fullVals.length; s++)
+									subVals[s][0] = fullVals[s][r];
+								if (aggSubVals == null)
+									aggSubVals = new double[1][fullVals[0].length];
+								aggSubVals[0][r] += new StiffnessResult(-1, -1, subVals, type).getValue(quantityParam.getValue());
+							}
+						}
+						StiffnessResult[] aggResults = new StiffnessResult[StiffnessType.values().length];
+						aggResults[type.getArrayIndex()] = new StiffnessResult(id1, id2, aggSubVals, type);
+						double[][] sigmaVals = null;
+						double[][] tauVals = null;
+						double[][] cffVals = null;
+						switch (typeParam.getValue()) {
+						case CFF:
+							cffVals = aggSubVals;
+							break;
+						case SIGMA:
+							sigmaVals = aggSubVals;
+							break;
+						case TAU:
+							tauVals = aggSubVals;
+							break;
+
+						default:
+							throw new IllegalStateException();
+						}
+						StiffnessDistribution aggDist = new StiffnessDistribution(aggResults, new ArrayList<>(),
+								receiverPatches, sigmaVals, tauVals, cffVals);
+						receiverDists.put(receiver, aggDist);
+					}
+					faultResults.put(id2, new StiffnessResult(id1, id2, results));
+				} else {
+					faultResults.put(id2, calc.calcParentStiffness(type, id1, id2));
+				}
+			}
+			return this;
 		}
 		
 	}
 	
-	private class SectCalcRun implements Runnable {
+	private class SectCalcRun implements Callable<SectCalcRun> {
 
 		private StiffnessType type;
 		private FaultSection source;
 		private RuptureSurface sourceSurf;
 		private FaultSection receiver;
+		
+		private StiffnessDistribution dist;
 
 		public SectCalcRun(StiffnessType type, FaultSection source, RuptureSurface sourceSurf, FaultSection receiver) {
 			this.type = type;
@@ -594,9 +1035,11 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		}
 
 		@Override
-		public void run() {
+		public SectCalcRun call() {
 			int id1 = source.getSectionId();
 			int id2 = receiver.getSectionId();
+			if (id1 == id2)
+				return this;
 			IDPairing pair = id2 > id1 ? new IDPairing(id1, id2) : new IDPairing(id2, id1);
 			Double distance = distances.get(pair);
 			if (distance == null) {
@@ -606,8 +1049,18 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 					distance = Math.min(distance, destSurf.getQuickDistance(loc));
 				distances.put(pair, distance);
 			}
-			if (distance <= maxDistParam.getValue())
-				faultResults.put(id2, calc.calcStiffness(type, sourceSection, receiver));
+			if (distance <= maxDistParam.getValue()) {
+				StiffnessResult result = null;
+				if (showPatchesParam.getValue()) {
+					dist = calc.calcStiffnessDistribution(source, receiver);
+					result = dist.results[type.getArrayIndex()];
+//					showPatches(dist.receiverPatches, dist);
+				} else {
+					result = calc.calcStiffness(type, sourceSection, receiver);
+				}
+				faultResults.put(id2, result);
+			}
+			return this;
 		}
 		
 	}
@@ -648,9 +1101,9 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 //			cpt.setBelowMinColor(cpt.getMinColor());
 //			cpt.setAboveMaxColor(cpt.getMaxColor());
 			
-			// another log-ish test
+			// another log-ish try
 			double logMinVal = Math.max(-6, Math.floor(Math.log10(minNonZero)));
-			double logMaxVal = Math.ceil(Math.log10(maxVal));
+			double logMaxVal = Math.min(1, Math.ceil(Math.log10(maxVal)));
 			if (logMaxVal < -4)
 				logMinVal = logMaxVal - 3;
 			CPT logUpperCPT = new CPT(logMinVal, logMaxVal-1, new Color(255, 220, 220),
@@ -772,17 +1225,23 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	@Override
 	public void actorPicked(PickEnabledActor<AbstractFaultSection> actor,
 			AbstractFaultSection reference, vtkCellPicker picker, MouseEvent e) {
+		if (reference instanceof PatchSection)
+			System.out.println(((PatchSection)reference).getInfo());
 		
-		if (reference instanceof PrefDataSection) {
+		if (reference instanceof PrefDataSection || reference instanceof PatchSection) {
 			
-			PrefDataSection fault = (PrefDataSection)reference;
+			FaultSection sect;
+			if (reference instanceof PrefDataSection)
+				sect = ((PrefDataSection)reference).getFaultSection();
+			else
+				sect = ((PatchSection)reference).sect;
 			if (e.getButton() == MouseEvent.BUTTON1 && e.isShiftDown()) {
-				sourceSection = fault.getFaultSection();
+				sourceSection = sect;
 				System.out.println("shift down, picked source: "+sourceSection.getName());
 				update();
 			}
-			if (e.getButton() == MouseEvent.BUTTON1 && e.isControlDown()) {
-				receiverSection = fault.getFaultSection();
+			if (e.getButton() == MouseEvent.BUTTON1 && e.isControlDown() && !parentSectParam.getValue()) {
+				receiverSection = sect;
 				System.out.println("control down, picked receiver: "+sourceSection.getName());
 				updateReceiver();
 			}
@@ -804,9 +1263,10 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		Parameter<?> param = event.getParameter();
 		if (param == quantityParam) {
 			updateCPT();
-		} else if (param == gridSpacingParam || param == lambdaParam || param == muParam ||
-				param == parentSectParam || param == typeParam || param == rupIndexParam ||
-				param == rupQuantityParam) {
+			if (showPatchesParam.getValue())
+				update();
+		} else if (param == gridSpacingParam || param == lambdaParam || param == muParam || param == rupIndexParam) {
+			// for these ones we need to rebuild the calculator
 			if (calc != null)
 				calc = null;
 			if (param == gridSpacingParam || param == parentSectParam)
@@ -832,6 +1292,15 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 				rupQuantityParam.getEditor().refreshParamEditor();
 			}
 			update();
+		} else if (param == parentSectParam) {
+			distances.clear();
+			update();
+		} else if (param == typeParam || param == alignmentParam || param == showPatchesParam
+				|| param == rupQuantityParam) {
+			// just need to update (with old calculator)
+			update();
+		} else if (param == showLinesParam) {
+			updateReceiver();
 		}
 	}
 

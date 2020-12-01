@@ -78,6 +78,10 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		faultDisplayParams.addParameter(opacityParam);
 		opacityParam.addParameterChangeListener(this);
 	}
+	
+	public void setOpacity(double opacity) {
+		opacityParam.setValue(opacity);
+	}
 
 	@Override
 	public FaultSectionActorList createFaultActors(Surface3D surface, Color color, AbstractFaultSection fault) {
@@ -90,6 +94,10 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		// this just draws the outline
 		LocationList outline = surface.getPerimeter();
 		
+		return createFaultActors(outline, color, fault);
+	}
+	
+	public FaultSectionActorList createFaultActors(LocationList outline, Color color, AbstractFaultSection fault) {
 		Preconditions.checkState(!outline.isEmpty());
 		
 		List<PointArray> points = new ArrayList<PointArray>();

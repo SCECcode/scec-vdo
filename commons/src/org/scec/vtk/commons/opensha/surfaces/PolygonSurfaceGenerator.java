@@ -13,7 +13,6 @@ import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.sha.faultSurface.CompoundSurface;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
-import org.opensha.sha.faultSurface.RuptureSurface;
 import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 
@@ -82,6 +81,12 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 	}
 	
 	public vtkActor buildSimplePolygon(LocationList outline, Color color) {
+		FaultSectionActorList list = buildSimplePolygon(outline, color, null);
+		Preconditions.checkState(list.size() == 1, "unexpected size: %s", list.size());
+		return list.get(0);
+	}
+	
+	public FaultSectionActorList buildSimplePolygon(LocationList outline, Color color, AbstractFaultSection sect) {
 		List<PointArray> polygons = new ArrayList<>();
 		
 		double[][] points = new double[outline.size()][];
@@ -93,9 +98,8 @@ public class PolygonSurfaceGenerator extends GeometryGenerator implements Parame
 		
 		polygons.add(new PointArray(points));
 		
-		FaultSectionActorList actors = createFaultActors(GeometryType.POLYGON, polygons, color, opacityParam.getValue(), null);
-		Preconditions.checkState(actors.size() == 1, "unexpected size: %s", actors.size());
-		return actors.get(0);
+		FaultSectionActorList actors = createFaultActors(GeometryType.POLYGON, polygons, color, opacityParam.getValue(), sect);
+		return actors;
 	}
 	
 	

@@ -235,6 +235,10 @@ AnimationListener {
 	private void displayFault(AbstractFaultSection fault, boolean updateViewer) {
 		FaultSectionActorList actors = getBuildActors(fault);
 		if (D) System.out.println("Displaying fault: '"+fault.getName()+"'");
+		displayActors(actors, updateViewer);
+	}
+	
+	public void displayActors(FaultSectionActorList actors, boolean updateViewer) {
 		for (vtkActor actor : actors) {
 			actor.SetVisibility(1);
 			actor.SetPickable(1);
