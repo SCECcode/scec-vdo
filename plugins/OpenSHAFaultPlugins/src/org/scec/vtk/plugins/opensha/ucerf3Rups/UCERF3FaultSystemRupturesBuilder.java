@@ -174,8 +174,11 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		faultParams.getParameter(Boolean.class, GridSpacingFitParam.NAME).setValue(false);
 		faultParams.getParameter(Boolean.class, AseismicityParam.NAME).setValue(false);
 		
-		// first look for OpenSHA dir
-		File defaultLoadDir = new File(MainGUI.getCWD().getParentFile(),
+		// try Kevin's directory
+		File defaultLoadDir = new File("/home/kevin/OpenSHA/UCERF4/rup_sets");
+		if (!defaultLoadDir.exists())
+			// then look for OpenSHA dir
+			defaultLoadDir = new File(MainGUI.getCWD().getParentFile(),
 				"OpenSHA"+File.separator+"dev"+File.separator+"scratch"+File.separator+"UCERF3"
 				+File.separator+"data"+File.separator+"scratch");
 		if (!defaultLoadDir.exists())
