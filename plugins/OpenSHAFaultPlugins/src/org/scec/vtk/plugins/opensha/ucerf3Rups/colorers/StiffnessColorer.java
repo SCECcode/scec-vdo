@@ -594,7 +594,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 
 		@Override
 		public String getInfo() {
-			return sect.getName()+", Patch "+patchIndex+", value: "+val;
+			return sect.getSectionId()+". "+sect.getName()+", Patch "+patchIndex+", value: "+val+", parID="+sect.getParentSectionId();
 		}
 
 		@Override
@@ -1197,6 +1197,8 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		this.distances.clear();
 		this.search = null;
 		this.distAzCalc = null;
+		this.subSectCalc = null;
+		this.aggCalc = null;
 		update();
 		this.rupSet = rupSet;
 		if (rupSet != null)

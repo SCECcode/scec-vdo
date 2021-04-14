@@ -462,14 +462,15 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 			System.gc();
 			
 			if (file != null) {
+				sol = null;
 				try {
 					compoundName = null;
 					// first try to load a solution
-					try {
-						sol = loadSolutionFromFile(file, prevRupSet);
+					if (FaultSystemIO.isSolution(file)) {
+						sol = FaultSystemIO.loadSol(file);
+						sol.setShowProgress(true);
 						rupSet = sol.getRupSet();
-					} catch (Exception e) {
-						// now just try rupSet
+					} else {
 						rupSet = loadRupSetFromFile(file);
 					}
 					if (compoundName != null) {
@@ -747,32 +748,32 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		}
 	}
 	
-	private static FaultSystemSolution loadSolutionFromFile(File file, FaultSystemRupSet prevRupSet) throws Exception {
-		FaultSystemSolution sol;
-		try {
-			sol = FaultSystemIO.loadSol(file);
-		} catch (Exception e) {
-			if (prevRupSet != null && (file.getName().toLowerCase().endsWith(".bin") || file.getName().toLowerCase().endsWith(".mat"))) {
-				// maybe it's just a solution?
-				try {
-					double[] solution = MatrixIO.doubleArrayFromFile(file);
-					if (prevRupSet instanceof InversionFaultSystemRupSet) {
-						sol = new InversionFaultSystemSolution((InversionFaultSystemRupSet)prevRupSet, solution, null, null);
-					} else {
-						sol = new FaultSystemSolution(prevRupSet, solution);
-					}
-				} catch (Exception e1) {
-					throw e1;
-				}
-			} else {
-				sol = tryLoadFromCompoundSol(file);
-				if (sol == null)
-					throw e;
-			}
-		}
-		sol.setShowProgress(true);
-		return sol;
-	}
+//	private static FaultSystemSolution loadSolutionFromFile(File file, FaultSystemRupSet prevRupSet) throws Exception {
+//		FaultSystemSolution sol;
+//		try {
+//			sol = FaultSystemIO.loadSol(file);
+//		} catch (Exception e) {
+//			if (prevRupSet != null && (file.getName().toLowerCase().endsWith(".bin") || file.getName().toLowerCase().endsWith(".mat"))) {
+//				// maybe it's just a solution?
+//				try {
+//					double[] solution = MatrixIO.doubleArrayFromFile(file);
+//					if (prevRupSet instanceof InversionFaultSystemRupSet) {
+//						sol = new InversionFaultSystemSolution((InversionFaultSystemRupSet)prevRupSet, solution, null, null);
+//					} else {
+//						sol = new FaultSystemSolution(prevRupSet, solution);
+//					}
+//				} catch (Exception e1) {
+//					throw e1;
+//				}
+//			} else {
+//				sol = tryLoadFromCompoundSol(file);
+//				if (sol == null)
+//					throw e;
+//			}
+//		}
+//		sol.setShowProgress(true);
+//		return sol;
+//	}
 	
 	private static FaultSystemRupSet loadRupSetFromFile(File file) throws Exception {
 		FaultSystemRupSet rupSet = FaultSystemIO.loadRupSet(file);
