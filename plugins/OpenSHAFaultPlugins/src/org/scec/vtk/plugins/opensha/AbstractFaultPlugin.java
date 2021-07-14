@@ -48,7 +48,7 @@ public abstract class AbstractFaultPlugin extends ActionPlugin implements Animat
 				ExceptionUtils.throwAsRuntimeException(e);
 			}
 		}
-		return gui;
+		return gui.getJXLayer();
 	}
 
 	@Override

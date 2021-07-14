@@ -445,6 +445,7 @@ AnimationListener {
 				try {
 					panelLock.setLocked(false);
 				} catch (NullPointerException e) {
+					e.printStackTrace();
 					System.out.println("TODO: NPE unlocking panel");
 				}
 				if (D) System.out.println("Called setLocked(false)...still locked? "+panelLock.isLocked()+"");

@@ -30,9 +30,7 @@ import org.scec.vtk.commons.opensha.gui.ColorerPanel;
 import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.commons.opensha.gui.FaultTablePanel;
 import org.scec.vtk.commons.opensha.gui.GeometryTypeSelectorPanel;
-import org.scec.vtk.commons.opensha.gui.anim.AnimationPanel;
 import org.scec.vtk.commons.opensha.gui.anim.MultiAnimPanel;
-import org.scec.vtk.commons.opensha.gui.dist.DistancesPanel;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.commons.opensha.surfaces.PointSurfaceGenerator;
@@ -41,10 +39,7 @@ import org.scec.vtk.commons.opensha.surfaces.pickBehavior.FaultSectionPickBehavi
 import org.scec.vtk.commons.opensha.tree.builders.FaultSectionInfoViewier;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
-import org.scec.vtk.main.MainGUI;
-import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.tools.Prefs;
-import org.scec.vtk.tools.picking.PickHandler;
 
 public class FaultPluginGUI extends JSplitPane {
 	
