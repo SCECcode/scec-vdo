@@ -219,14 +219,27 @@ public class ColorerPanel extends JPanel implements ParameterChangeListener, Act
 		if (paramCols < 1)
 			paramCols = 2;
 		
-		// remove paramsEdit if any
-		if (paramsEdit != null)
-			this.remove(paramsEdit);
-		if (selected != null) {
-			ParameterList params = selected.getColorerParameters();
-			if (params != null && params.size() > 0) {
-				paramsEdit = new GriddedParameterListEditor(selected.getColorerParameters(), paramCols);
-				this.add(paramsEdit);
+		if (selected == null) {
+			// remove paramsEdit if any
+			if (paramsEdit != null) {
+				this.remove(paramsEdit);
+				paramsEdit = null;
+			}
+		} else {
+			// see if this is new
+			ParameterList newParams = selected.getColorerParameters();
+			ParameterList oldParams = paramsEdit == null ? null : paramsEdit.getParameterList();
+			if (newParams != oldParams || oldParams == null) {
+				// replace parameters
+				if (paramsEdit != null) {
+					this.remove(paramsEdit);
+					paramsEdit = null;
+				}
+				if (newParams != null && newParams.size() > 0) {
+					paramsEdit = new GriddedParameterListEditor(selected.getColorerParameters(), paramCols);
+					this.add(paramsEdit);
+				}
+				this.repaint();
 			}
 		}
 		
