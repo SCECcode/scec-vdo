@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
@@ -52,7 +53,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import scratch.kevin.simulators.MFDCalc;
 import vtk.vtkCellPicker;
 
 public class EQSimsParticipationColorer extends CPTBasedColorer implements EQSimsEventListener, ParameterChangeListener,
@@ -521,7 +521,7 @@ PickHandler<AbstractFaultSection> {
 			List<? extends SimulatorEvent> events = eventLists.get(i);
 			
 			// calc MFD
-			IncrementalMagFreqDist mfd = MFDCalc.calcMFD(events, null, duration, minMag, numMag, deltaMag);
+			IncrementalMagFreqDist mfd = calcMFD(events, duration, minMag, numMag, deltaMag);
 			mfd.setName("Incremental MFD");
 			mfd.setInfo(" ");
 			EvenlyDiscretizedFunc cumMFD = mfd.getCumRateDistWithOffset();
@@ -611,6 +611,27 @@ PickHandler<AbstractFaultSection> {
 		
 		graph.setSelectedTab(0);
 		graph.setVisible(true);
+	}
+	
+	public static IncrementalMagFreqDist calcMFD(
+			List<? extends SimulatorEvent> events, double duration, double minMag, int num, double delta) {
+		
+		IncrementalMagFreqDist mfd = new IncrementalMagFreqDist(minMag, num, delta);
+		double myMin = minMag-0.5*delta;
+		double myMax = mfd.getMaxX()+0.5*delta;
+		for (SimulatorEvent e : events) {
+			double mag = e.getMagnitude();
+			if (mag < myMin || mag > myMax)
+				continue;
+			int ind = mfd.getClosestXIndex(mag);
+			double eventRate = 1d;
+			mfd.set(ind, mfd.getY(ind)+eventRate);
+		}
+		if (duration > 0)
+			for (int i=0; i<mfd.size(); i++)
+				mfd.set(i, mfd.getY(i) / duration);
+		
+		return mfd;
 	}
 
 }

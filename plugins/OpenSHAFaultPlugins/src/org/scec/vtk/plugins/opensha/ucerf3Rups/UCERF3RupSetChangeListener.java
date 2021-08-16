@@ -1,7 +1,7 @@
 package org.scec.vtk.plugins.opensha.ucerf3Rups;
 
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 
 public interface UCERF3RupSetChangeListener {
 	

@@ -6,19 +6,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import org.opensha.commons.data.CSVFile;
-import org.opensha.commons.geo.Location;
-import org.opensha.commons.geo.LocationList;
 import org.opensha.commons.mapping.gmt.elements.GMT_CPT_Files;
 import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
@@ -31,27 +27,19 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
-import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
-import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
-import org.opensha.sha.faultSurface.FaultTrace;
-import org.opensha.sha.faultSurface.GriddedSurfaceImpl;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
-import org.scec.vtk.commons.opensha.surfaces.FaultSectionActorList;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.commons.opensha.surfaces.params.ColorParameter;
-import org.scec.vtk.commons.opensha.surfaces.pickBehavior.NameDispalyPickHandler;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
-import vtk.vtkActor;
 import vtk.vtkCellPicker;
 
 public class MultiFaultRupColorer extends CPTBasedColorer implements PickHandler<AbstractFaultSection>,

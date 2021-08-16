@@ -3,10 +3,8 @@ package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
@@ -14,25 +12,20 @@ import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.IntegerParameter;
-import org.opensha.commons.util.IDPairing;
-import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.simulators.RSQSimEvent;
 import org.opensha.sha.simulators.SimulatorElement;
-import org.opensha.sha.simulators.SimulatorEvent;
 import org.opensha.sha.simulators.iden.EventIDsRupIden;
 import org.opensha.sha.simulators.iden.RuptureIdentifier;
 import org.opensha.sha.simulators.parsers.RSQSimFileReader;
 import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper;
 import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping;
-import org.opensha.sha.simulators.utils.RSQSimUtils;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
-
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
 
 public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChangeListener, UCERF3RupSetChangeListener {
 	
