@@ -64,11 +64,11 @@
 			
 	</plugin>
 	
-	<plugin id="org.scec.vtk.plugins.opensha.nshm.NSHM2023FaultPlugin"
-		name="NSHM 2023 GeoJSON Faults Plugin"
-		short-name="NSHM2023 Faults"
+	<plugin id="org.scec.vtk.plugins.opensha.nshm.GeoJSONFaultPlugin"
+		name="GeoJSON Faults Plugin"
+		short-name="GeoJSON Faults"
 		version="1.0" creator="Kevin Milner"
-		plugin-class="org.scec.vtk.plugins.opensha.nshm.NSHM2023FaultPlugin">
+		plugin-class="org.scec.vtk.plugins.opensha.nshm.GeoJSONFaultPlugin">
 		
 		<menu-item menu="Display" submenu="OpenSHA"/>
 			

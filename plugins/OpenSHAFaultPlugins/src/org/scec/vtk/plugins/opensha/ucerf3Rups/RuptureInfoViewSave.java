@@ -22,13 +22,13 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.util.XMLUtils;
 import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.enumTreeBranches.DeformationModels;
 import scratch.UCERF3.enumTreeBranches.FaultModels;
 import scratch.UCERF3.utils.FaultSectionDataWriter;
-import scratch.UCERF3.utils.FaultSystemIO;
+import scratch.UCERF3.utils.U3FaultSystemIO;
 
 public class RuptureInfoViewSave extends JFrame implements ParameterChangeListener {
 	
@@ -116,7 +116,7 @@ public class RuptureInfoViewSave extends JFrame implements ParameterChangeListen
 			break;
 		case SECTIONS_XML:
 			Document doc = XMLUtils.createDocumentWithRoot();
-			FaultSystemIO.fsDataToXML(doc.getRootElement(), FaultSectionPrefData.XML_METADATA_NAME+"List", rupSet);
+			U3FaultSystemIO.fsDataToXML(doc.getRootElement(), FaultSectionPrefData.XML_METADATA_NAME+"List", rupSet);
 			String text = "";
 			try {
 				text = XMLUtils.getDocumentAsString(doc);

@@ -19,6 +19,7 @@ import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.util.ExceptionUtils;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
 import org.opensha.sha.earthquake.observedEarthquake.ObsEqkRupList;
 import org.opensha.sha.earthquake.observedEarthquake.ObsEqkRupture;
 import org.opensha.sha.earthquake.observedEarthquake.parsers.UCERF3_CatalogParser;
@@ -31,11 +32,9 @@ import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 
 import com.google.common.base.Preconditions;
 
-import scratch.UCERF3.FaultSystemRupSet;
 import scratch.UCERF3.enumTreeBranches.FaultModels;
 import scratch.UCERF3.erf.ETAS.association.FiniteFaultMappingData;
 import scratch.UCERF3.inversion.InversionFaultSystemRupSet;
-import scratch.UCERF3.utils.FaultSystemIO;
 
 public class ObsEqkRupBuilder implements FaultTreeBuilder, ParameterChangeListener {
 	
@@ -169,7 +168,7 @@ public class ObsEqkRupBuilder implements FaultTreeBuilder, ParameterChangeListen
 		} else if (e.getParameter() == rupSetFileParam) {
 			File rupSetFile = rupSetFileParam.getValue();
 			try {
-				rupSet = FaultSystemIO.loadRupSet(rupSetFile);
+				rupSet = FaultSystemRupSet.load(rupSetFile);
 				if (rupSet instanceof InversionFaultSystemRupSet) {
 					fm = ((InversionFaultSystemRupSet)rupSet).getFaultModel();
 				} else {
@@ -188,7 +187,7 @@ public class ObsEqkRupBuilder implements FaultTreeBuilder, ParameterChangeListen
 						System.out.println("Detected Fault Model: "+fm.getShortName());
 					}
 				}
-			} catch (IOException | DocumentException e1) {
+			} catch (IOException e1) {
 				throw ExceptionUtils.asRuntimeException(e1);
 			}
 			if (finiteSurfsFileParam.getValue() != null)

@@ -21,6 +21,8 @@ import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.util.DataUtils.MinMaxAveTracker;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.magdist.IncrementalMagFreqDist;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
@@ -30,8 +32,6 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
 import vtk.vtkActor;
 import vtk.vtkCellPicker;
 

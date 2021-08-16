@@ -26,6 +26,10 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
+import org.opensha.sha.earthquake.faultSysSolution.modules.AveSlipModule;
+import org.opensha.sha.earthquake.faultSysSolution.modules.SlipAlongRuptureModel;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.AnimMultiColorerPickHandlerWrapper;
@@ -41,9 +45,6 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
-import scratch.UCERF3.inversion.InversionFaultSystemRupSet;
 import vtk.vtkCellPicker;
 
 public class RupturesAnim implements IDBasedFaultAnimation,
@@ -273,14 +274,15 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 		
 		@Override
 		public double getValue(AbstractFaultSection fault) {
-			if (invRupSet == null)
+			if (rupSet == null || !rupSet.hasModule(SlipAlongRuptureModel.class) || !rupSet.hasModule(AveSlipModule.class))
 				return Double.NaN;
 			if (curStep < 0)
 				return Double.NaN;
 			int rupID = ruptureIDs.get(curStep);
 			if (slips == null || rupID != this.rupID) {
 				try {
-					slips = invRupSet.getSlipOnSectionsForRup(rupID);
+					slips = rupSet.getModule(SlipAlongRuptureModel.class).calcSlipOnSectionsForRup(
+							rupSet, rupSet.requireModule(AveSlipModule.class), rupID);
 				} catch (NullPointerException e) {
 					// this means that slips are null...normal, but we can't display them
 					return Double.NaN;
@@ -331,7 +333,6 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 	
 	private FaultSystemSolution sol;
 	private FaultSystemRupSet rupSet;
-	private InversionFaultSystemRupSet invRupSet;
 	
 	private List<Integer> ruptureIDs;
 	
@@ -442,16 +443,16 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 	}
 	
 	private double getMomentRate(int rupIndex) {
-		if (invRupSet == null)
+		if (!rupSet.hasModule(AveSlipModule.class))
 			return Double.NaN;
 		return sol.getRateForRup(rupIndex) * FaultMomentCalc.getMoment(
-				invRupSet.getAreaForRup(rupIndex), invRupSet.getAveSlipForRup(rupIndex));
+				rupSet.getAreaForRup(rupIndex), getAveSlip(rupIndex));
 	}
 	
 	private double getAveSlip(int rupIndex) {
-		if (invRupSet == null)
+		if (rupSet == null || !rupSet.hasModule(AveSlipModule.class))
 			return Double.NaN;
-		return invRupSet.getAveSlipForRup(rupIndex);
+		return rupSet.getModule(AveSlipModule.class).getAveSlip(rupIndex);
 	}
 
 	@Override
@@ -550,10 +551,6 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 	@Override
 	public void setRupSet(FaultSystemRupSet rupSet, FaultSystemSolution sol) {
 		this.rupSet = rupSet;
-		if (rupSet instanceof InversionFaultSystemRupSet)
-			invRupSet = (InversionFaultSystemRupSet)rupSet;
-		else
-			invRupSet = null;
 		this.sol = sol;
 		
 		sectionSelect.removeParameterChangeListener(this);

@@ -10,12 +10,12 @@ import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.plugins.opensha.AbstractFaultPlugin;
 import org.scec.vtk.plugins.opensha.FaultPluginGUI;
 
-public class NSHM2023FaultPlugin extends AbstractFaultPlugin {
+public class GeoJSONFaultPlugin extends AbstractFaultPlugin {
 
 	@Override
 	protected FaultPluginGUI buildGUI() throws Exception {
 //		ConnectionPointsDisplayPanel connsPanel = new ConnectionPointsDisplayPanel();
-		NSHM2023FaultBuilder builder = new NSHM2023FaultBuilder();
+		GeoJSONFaultBuilder builder = new GeoJSONFaultBuilder();
 		ArrayList<FaultColorer> colorers = FaultPluginGUI.createDefaultColorers();
 		colorers.add(new AseismicityColorer());
 		colorers.add(new CouplingCoefficientColorer());
