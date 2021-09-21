@@ -27,6 +27,8 @@ import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
@@ -47,15 +49,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.erf.FaultSystemSolutionERF;
 import scratch.UCERF3.erf.ETAS.ETAS_CatalogIO;
 import scratch.UCERF3.erf.ETAS.ETAS_EqkRupture;
 import scratch.UCERF3.erf.ETAS.ETAS_SimAnalysisTools;
 import scratch.UCERF3.erf.ETAS.launcher.ETAS_Launcher;
 import scratch.UCERF3.erf.utils.ProbabilityModelsCalc;
-import scratch.UCERF3.utils.FaultSystemIO;
 import scratch.kevin.ucerf3.etas.MPJ_ETAS_Simulator;
 import vtk.vtkCellPicker;
 import vtk.vtkDoubleArray;
@@ -841,9 +840,9 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSe
 		return false;
 	}
 	
-	public static void main(String[] args) throws IOException, DocumentException {
+	public static void main(String[] args) throws IOException {
 		ETASCatalogAnim anim = new ETASCatalogAnim(null);
-		FaultSystemSolution sol = FaultSystemIO.loadSol(new File("/home/kevin/workspace/OpenSHA/dev/scratch/UCERF3/data/scratch/"
+		FaultSystemSolution sol = FaultSystemSolution.load(new File("/home/kevin/workspace/OpenSHA/dev/scratch/UCERF3/data/scratch/"
 				+ "InversionSolutions/2013_05_10-ucerf3p3-production-10runs_COMPOUND_SOL_FM3_1_SpatSeisU3_MEAN_BRANCH_AVG_SOL.zip"));
 		anim.setRupSet(sol.getRupSet(), sol);
 		anim.catalogFileParam.setValue(new File("/home/kevin/OpenSHA/UCERF3/etas/simulations/"

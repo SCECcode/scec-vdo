@@ -17,6 +17,10 @@ import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.cpt.CPT;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
+import org.opensha.sha.earthquake.faultSysSolution.modules.AveSlipModule;
+import org.opensha.sha.earthquake.faultSysSolution.modules.SlipAlongRuptureModel;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
@@ -25,20 +29,16 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 
 import com.google.common.base.Preconditions;
 
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
-import scratch.UCERF3.inversion.InversionFaultSystemSolution;
 import scratch.UCERF3.inversion.UCERF3InversionInputGenerator;
-import scratch.UCERF3.utils.FaultSystemIO;
 import scratch.UCERF3.utils.paleoRateConstraints.PaleoProbabilityModel;
 
 public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetChangeListener, ParameterChangeListener {
 
-	private InversionFaultSystemSolution sol;
+	private FaultSystemSolution sol;
 	
 	private static final String COMPARISON_FILE_PARAM_NAME = "Load Solution Comparison File";
 	private FileParameter comparisonFileParam;
-	private InversionFaultSystemSolution comparisonSol;
+	private FaultSystemSolution comparisonSol;
 	
 	public enum CompareType {
 		SOLUTION_SLIP_MISFIT("Sol. Slip vs Def Model Slip", 3, 0.005, false),
@@ -217,10 +217,7 @@ public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetCh
 
 	@Override
 	public void setRupSet(FaultSystemRupSet rupSet, FaultSystemSolution sol) {
-		if (sol != null && sol instanceof InversionFaultSystemSolution)
-			this.sol = (InversionFaultSystemSolution)sol;
-		else
-			this.sol = null;
+		this.sol = sol;
 		
 		if (sol != null && comparisonSol != null) {
 			if (comparisonSol.getRupSet().getNumRuptures() != sol.getRupSet().getNumRuptures()) {
@@ -231,7 +228,7 @@ public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetCh
 		valCache.clear();
 	}
 	
-	public void setComparisonSolution(InversionFaultSystemSolution comparisonSol) {
+	public void setComparisonSolution(FaultSystemSolution comparisonSol) {
 		System.out.println("Got new comparison!");
 		valCache.clear();
 		this.comparisonSol = comparisonSol;
@@ -250,9 +247,14 @@ public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetCh
 			val1 = cached[0];
 			val2 = cached[1];
 		} else {
+			FaultSystemRupSet rupSet = sol.getRupSet();
 			switch (comp) {
 			case SOLUTION_SLIP_MISFIT:
-				val1 = sol.calcSlipRateForSect(secID);
+				if (rupSet.hasModule(SlipAlongRuptureModel.class) && rupSet.hasModule(AveSlipModule.class))
+					val1 = rupSet.getModule(SlipAlongRuptureModel.class).calcSlipRateForSect(
+							sol, rupSet.getModule(AveSlipModule.class), secID);
+				else
+					val1 = Double.NaN;
 				val2 = sol.getRupSet().getSlipRateForSection(secID);
 				break;
 			case SOLUTION_RATES_VS_PALEO_VISIBLE:
@@ -269,8 +271,17 @@ public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetCh
 				val2 = comparisonSol.calcParticRateForSect(secID, min_patic_mag, max_patic_mag);
 				break;
 			case SOLUTION_SLIP_RATES_COMPARISON:
-				val1 = sol.calcSlipRateForSect(secID);
-				val2 = comparisonSol.calcSlipRateForSect(secID);
+				if (rupSet.hasModule(SlipAlongRuptureModel.class) && rupSet.hasModule(AveSlipModule.class))
+					val1 = rupSet.getModule(SlipAlongRuptureModel.class).calcSlipRateForSect(
+							sol, rupSet.getModule(AveSlipModule.class), secID);
+				else
+					val1 = Double.NaN;
+				FaultSystemRupSet compRupSet = comparisonSol.getRupSet();
+				if (compRupSet.hasModule(SlipAlongRuptureModel.class) && compRupSet.hasModule(AveSlipModule.class))
+					val2 = compRupSet.getModule(SlipAlongRuptureModel.class).calcSlipRateForSect(
+							comparisonSol, compRupSet.getModule(AveSlipModule.class), secID);
+				else
+					val2 = Double.NaN;
 				break;
 			default:
 				return Double.NaN;
@@ -399,14 +410,12 @@ public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetCh
 		} else if (event.getSource() == comparisonFileParam) {
 			setComparisonSolution(null);
 			System.gc();
-			InversionFaultSystemSolution comp;
+			FaultSystemSolution comp;
 			try {
 				File file = comparisonFileParam.getValue();
 				if (file != null) {
-					FaultSystemSolution newSol = FaultSystemIO.loadSol(file);
-					Preconditions.checkState(newSol instanceof InversionFaultSystemSolution,
-							"Comparison isn't an InversionFaultSystemSolution");
-					comp = (InversionFaultSystemSolution)newSol;
+					FaultSystemSolution newSol = FaultSystemSolution.load(file);
+					comp = newSol;
 					Preconditions.checkState(sol.getRupSet().getNumRuptures() == comp.getRupSet().getNumRuptures(),
 							"Comparison has a different number of ruptures!");
 					builder.setDefaultDir(file.getParentFile());

@@ -3,12 +3,7 @@ package org.scec.vtk.plugins.opensha.ucerf3Rups;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,11 +11,10 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -43,7 +37,8 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ClassUtils;
-import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.AseismicityColorer;
@@ -61,7 +56,6 @@ import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
-import org.scec.vtk.main.Info;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.ETASCatalogAnim;
@@ -79,32 +73,22 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ParentSectColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ParticipationRateColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.RSQSimRuptureMappingColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.StiffnessColorer;
-import org.scec.vtk.tools.Prefs;
 
-import scratch.UCERF3.AverageFaultSystemSolution;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
 import scratch.UCERF3.CompoundFaultSystemSolution;
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.analysis.FaultSpecificSegmentationPlotGen;
 import scratch.UCERF3.inversion.BatchPlotGen;
 import scratch.UCERF3.inversion.CommandLineInversionRunner;
 import scratch.UCERF3.inversion.InversionFaultSystemRupSet;
 import scratch.UCERF3.inversion.InversionFaultSystemSolution;
-import scratch.UCERF3.logicTree.LogicTreeBranch;
-import scratch.UCERF3.utils.MatrixIO;
-import scratch.UCERF3.utils.FaultSystemIO;
-import scratch.UCERF3.utils.UCERF3_DataUtils;
-import scratch.UCERF3.utils.UCERF3_Observed_MFD_Fetcher;
+import scratch.UCERF3.logicTree.U3LogicTreeBranch;
 import scratch.UCERF3.utils.aveSlip.AveSlipConstraint;
 import scratch.UCERF3.utils.paleoRateConstraints.PaleoFitPlotter;
 import scratch.UCERF3.utils.paleoRateConstraints.PaleoRateConstraint;
 import scratch.UCERF3.utils.paleoRateConstraints.PaleoSiteCorrelationData;
 import scratch.UCERF3.utils.paleoRateConstraints.UCERF3_PaleoRateConstraintFetcher;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, ParameterChangeListener {
 
@@ -373,19 +357,9 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		String info = ClassUtils.getClassNameWithoutPackage(rupSet.getClass())
 				+"\nFile Name: "+name
 				+"\nNum Ruptures: "+rupSet.getNumRuptures();
-		try {
-			info += "\nOrig (creep reduced) Moment Rate: "+rupSet.getTotalOrigMomentRate();
-			info += "\nFinal (creep & subseismogenic rup reduced) Moment Rate: "
-						+rupSet.getTotalReducedMomentRate();
-		} catch (RuntimeException e) {
-			
-		}
+		
 		if (sol != null) {
 			try {
-				// calculate the moment
-				double totalSolutionMoment = sol.getTotalFaultSolutionMomentRate();
-				info += "\nSolution Moment Rate: "+totalSolutionMoment;
-				
 				int numNonZeros = 0;
 				for (double rate : sol.getRateForAllRups())
 					if (rate != 0)
@@ -464,14 +438,15 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 			if (file != null) {
 				sol = null;
 				try {
+					ZipFile zip = new ZipFile(file);
 					compoundName = null;
 					// first try to load a solution
-					if (FaultSystemIO.isSolution(file)) {
-						sol = FaultSystemIO.loadSol(file);
+					if (FaultSystemSolution.isSolution(zip)) {
+						sol = FaultSystemSolution.load(zip);
 						sol.setShowProgress(true);
 						rupSet = sol.getRupSet();
 					} else {
-						rupSet = loadRupSetFromFile(file);
+						rupSet = loadRupSetFromFile(zip);
 					}
 					if (compoundName != null) {
 						name = compoundName;
@@ -711,7 +686,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 								public void run() {
 									try {
 										File file = new File(outDir, outDir.getName()+"_sol.zip");
-										FaultSystemIO.writeSol(theSol, file);
+										theSol.write(file);
 										BatchPlotGen.handleSolutionFile(file, outDir.getName(), theSol, null);
 										SwingUtilities.invokeLater(new Runnable() {
 											
@@ -775,8 +750,8 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 //		return sol;
 //	}
 	
-	private static FaultSystemRupSet loadRupSetFromFile(File file) throws Exception {
-		FaultSystemRupSet rupSet = FaultSystemIO.loadRupSet(file);
+	private static FaultSystemRupSet loadRupSetFromFile(ZipFile zip) throws Exception {
+		FaultSystemRupSet rupSet = FaultSystemRupSet.load(zip);
 		rupSet.setShowProgress(true);
 		return rupSet;
 	}
@@ -801,7 +776,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		
 		private CompoundFaultSystemSolution sol;
 		
-		private List<LogicTreeBranch> branches;
+		private List<U3LogicTreeBranch> branches;
 		private ArrayList<String> strings;
 		
 		private GriddedParameterListEditor editor;
@@ -815,16 +790,16 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		public CompoundSelectionGUI(CompoundFaultSystemSolution sol) {
 			this.sol = sol;
 			branches = Lists.newArrayList(sol.getBranches());
-			Collections.sort(branches, new Comparator<LogicTreeBranch>() {
+			Collections.sort(branches, new Comparator<U3LogicTreeBranch>() {
 
 				@Override
-				public int compare(LogicTreeBranch o1, LogicTreeBranch o2) {
+				public int compare(U3LogicTreeBranch o1, U3LogicTreeBranch o2) {
 					return o1.buildFileName().compareTo(o2.buildFileName());
 				}
 				
 			});
 			strings = Lists.newArrayList();
-			for (LogicTreeBranch branch : branches)
+			for (U3LogicTreeBranch branch : branches)
 				strings.add(branch.buildFileName());
 			
 			ParameterList params = new ParameterList();

@@ -2,20 +2,12 @@ package org.scec.vtk.politicalBoundaries;
 
 import java.awt.Color;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.scec.vtk.main.MainGUI;
-
-import jdk.nashorn.api.scripting.URLReader;
 import vtk.vtkCellArray;
-import vtk.vtkDataReader;
-import vtk.vtkGenericDataObjectReader;
 import vtk.vtkPoints;
-import vtk.vtkPolyData;
 
 public class PoliticalBoundariesRegion  {
 		vtkPoints currentBoundary = new vtkPoints();

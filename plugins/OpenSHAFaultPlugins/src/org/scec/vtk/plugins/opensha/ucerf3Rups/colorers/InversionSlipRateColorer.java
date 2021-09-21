@@ -10,6 +10,10 @@ import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.util.cpt.CPT;
 import org.opensha.commons.util.cpt.CPTVal;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
+import org.opensha.sha.earthquake.faultSysSolution.modules.AveSlipModule;
+import org.opensha.sha.earthquake.faultSysSolution.modules.SlipAlongRuptureModel;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
@@ -18,10 +22,6 @@ import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 
 import scratch.UCERF3.AverageFaultSystemSolution;
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
-import scratch.UCERF3.SlipEnabledSolution;
-import scratch.UCERF3.inversion.InversionFaultSystemSolution;
 
 public class InversionSlipRateColorer extends CPTBasedColorer implements UCERF3RupSetChangeListener,
 ParameterChangeListener {
@@ -88,8 +88,9 @@ ParameterChangeListener {
 				if (rupSet != null)
 					return rupSet.getSlipRateForSection(pref.getSectionId())*1e3;
 			case SOLUTION:
-				if (sol != null && sol instanceof SlipEnabledSolution)
-					return ((SlipEnabledSolution)sol).calcSlipRateForSect(pref.getSectionId())*1e3;
+				if (sol != null && rupSet.hasModule(SlipAlongRuptureModel.class) && rupSet.hasModule(AveSlipModule.class))
+					return rupSet.getModule(SlipAlongRuptureModel.class).calcSlipRateForSect(
+							sol, rupSet.getModule(AveSlipModule.class), pref.getSectionId())*1e3;
 			case SOLUTION_STD_DEV:
 				if (sol != null && sol instanceof AverageFaultSystemSolution)
 					return ((AverageFaultSystemSolution)sol).getRupSet().getSlipRateStdDevForSection(pref.getSectionId())*1e3;
