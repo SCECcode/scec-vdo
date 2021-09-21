@@ -23,6 +23,9 @@ import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
+import org.opensha.sha.earthquake.faultSysSolution.modules.PolygonFaultGridAssociations;
 import org.opensha.sha.earthquake.observedEarthquake.ObsEqkRupList;
 import org.opensha.sha.earthquake.observedEarthquake.ObsEqkRupture;
 import org.opensha.sha.earthquake.observedEarthquake.parsers.UCERF3_CatalogParser;
@@ -44,14 +47,13 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 
 import com.google.common.base.Preconditions;
 
-import scratch.UCERF3.FaultSystemRupSet;
-import scratch.UCERF3.FaultSystemSolution;
 import scratch.UCERF3.enumTreeBranches.FaultModels;
 import scratch.UCERF3.erf.ETAS.ETAS_EqkRupture;
 import scratch.UCERF3.erf.ETAS.association.FiniteFaultMappingData;
 import scratch.UCERF3.erf.ETAS.association.FiniteFaultSectionResetCalc;
 import scratch.UCERF3.erf.ETAS.association.FiniteFaultSectionResetCalc.SectRupDistances;
 import scratch.UCERF3.inversion.InversionTargetMFDs;
+import scratch.UCERF3.inversion.U3InversionTargetMFDs;
 import vtk.vtkActor;
 import vtk.vtkProp;
 
@@ -60,7 +62,7 @@ public class SectionResetAnim implements FaultAnimation, ParameterChangeListener
 	private FileParameter catalogFileParam;
 	private FileParameter finiteSurfsFileParam;
 	private DoubleParameter fractAreaParam;
-	private DoubleParameter faultBufferParam;
+//	private DoubleParameter faultBufferParam;
 	private BooleanParameter removeOverlapsParam;
 	private BooleanParameter polygonsParam;
 	
@@ -112,10 +114,10 @@ public class SectionResetAnim implements FaultAnimation, ParameterChangeListener
 		fractAreaParam.addParameterChangeListener(this);
 		params.addParameter(fractAreaParam);
 		
-		faultBufferParam = new DoubleParameter("Fault Poly Buffer", 0.01, 20d);
-		faultBufferParam.setValue(InversionTargetMFDs.FAULT_BUFFER);
-		faultBufferParam.addParameterChangeListener(this);
-		params.addParameter(faultBufferParam);
+//		faultBufferParam = new DoubleParameter("Fault Poly Buffer", 0.01, 20d);
+//		faultBufferParam.setValue(U3InversionTargetMFDs.FAULT_BUFFER);
+//		faultBufferParam.addParameterChangeListener(this);
+//		params.addParameter(faultBufferParam);
 		
 		removeOverlapsParam = new BooleanParameter("Remove Overlaps (dist-weighted)");
 		removeOverlapsParam.setValue(true);
@@ -379,8 +381,8 @@ public class SectionResetAnim implements FaultAnimation, ParameterChangeListener
 				System.out.println("Loaded "+finiteRups.size()+" finite ruptures");
 				
 				this.obsRups = finiteRups;
-				sectCalc = new FiniteFaultSectionResetCalc(rupSet, fractAreaParam.getValue(),
-						faultBufferParam.getValue(), removeOverlapsParam.getValue());
+				sectCalc = new FiniteFaultSectionResetCalc(rupSet, rupSet.requireModule(PolygonFaultGridAssociations.class),
+						fractAreaParam.getValue(), removeOverlapsParam.getValue());
 				
 				fireRangeChangeEvent();
 				colorListener.colorerChanged(this);
@@ -409,11 +411,11 @@ public class SectionResetAnim implements FaultAnimation, ParameterChangeListener
 				sectCalc.setMinFractionalAreaInPolygon(fractAreaParam.getValue());
 				fireRangeChangeEvent();
 			}
-		} else if (e.getParameter() == faultBufferParam) {
-			if (sectCalc != null) {
-				sectCalc.setFaultBuffer(faultBufferParam.getValue());
-				fireRangeChangeEvent();
-			}
+//		} else if (e.getParameter() == faultBufferParam) {
+//			if (sectCalc != null) {
+//				sectCalc.setFaultBuffer(faultBufferParam.getValue());
+//				fireRangeChangeEvent();
+//			}
 		} else if (e.getParameter() == removeOverlapsParam) {
 			if (sectCalc != null) {
 				sectCalc.setRemoveOverlapsWithDist(removeOverlapsParam.getValue());

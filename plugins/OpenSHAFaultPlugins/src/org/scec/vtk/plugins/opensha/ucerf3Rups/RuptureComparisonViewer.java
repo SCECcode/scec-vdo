@@ -25,11 +25,10 @@ import javax.swing.table.TableModel;
 
 import org.opensha.commons.data.CSVFile;
 import org.opensha.commons.util.CustomFileFilter;
+import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.scec.vtk.commons.opensha.gui.FaultHighlighter;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer.ComparePlotType;
-
-import scratch.UCERF3.FaultSystemSolution;
 
 public class RuptureComparisonViewer extends JFrame implements MouseListener, ActionListener {
 	
