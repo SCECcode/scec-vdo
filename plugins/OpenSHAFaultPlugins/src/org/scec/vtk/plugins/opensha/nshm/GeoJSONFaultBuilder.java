@@ -17,7 +17,7 @@ import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.earthquake.faultSysSolution.modules.PolygonFaultGridAssociations;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.GeoJSONFaultReader;
-import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.GeoJSONFaultReader.GeoSlipRateRecord;
+import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.GeoJSONFaultReader.GeoDBSlipRateRecord;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.faultSurface.GeoJSONFaultSection;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
@@ -146,7 +146,7 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 			if (sects != null && slipRateFile != null) {
 				System.out.println("Loading slip rate data from: "+slipRateFile.getAbsolutePath());
 				try {
-					Map<Integer, List<GeoSlipRateRecord>> slipRates = GeoJSONFaultReader.readGeoDB(slipRateFile);
+					Map<Integer, List<GeoDBSlipRateRecord>> slipRates = GeoJSONFaultReader.readGeoDB(slipRateFile);
 					GeoJSONFaultReader.testMapSlipRates(sects, slipRates, Double.NaN, null);
 				} catch (IOException e1) {
 					throw ExceptionUtils.asRuntimeException(e1);
