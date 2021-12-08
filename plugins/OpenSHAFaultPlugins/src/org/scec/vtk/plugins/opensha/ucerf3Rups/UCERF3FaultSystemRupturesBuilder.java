@@ -84,10 +84,10 @@ import scratch.UCERF3.inversion.CommandLineInversionRunner;
 import scratch.UCERF3.inversion.InversionFaultSystemRupSet;
 import scratch.UCERF3.inversion.InversionFaultSystemSolution;
 import scratch.UCERF3.logicTree.U3LogicTreeBranch;
-import scratch.UCERF3.utils.aveSlip.AveSlipConstraint;
+import scratch.UCERF3.utils.aveSlip.U3AveSlipConstraint;
 import scratch.UCERF3.utils.paleoRateConstraints.PaleoFitPlotter;
-import scratch.UCERF3.utils.paleoRateConstraints.PaleoRateConstraint;
 import scratch.UCERF3.utils.paleoRateConstraints.PaleoSiteCorrelationData;
+import scratch.UCERF3.utils.paleoRateConstraints.U3PaleoRateConstraint;
 import scratch.UCERF3.utils.paleoRateConstraints.UCERF3_PaleoRateConstraintFetcher;
 
 public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, ParameterChangeListener {
@@ -481,10 +481,10 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 				case PALEO_CONSTRAINT:
 					if (sol != null && sol instanceof InversionFaultSystemSolution) {
 						try {
-							ArrayList<PaleoRateConstraint> segRateConstraints =
+							ArrayList<U3PaleoRateConstraint> segRateConstraints =
 									UCERF3_PaleoRateConstraintFetcher.getConstraints(rupSet.getFaultSectionDataList());
-							List<AveSlipConstraint> aveSlipConstraints =
-									AveSlipConstraint.load(rupSet.getFaultSectionDataList());
+							List<U3AveSlipConstraint> aveSlipConstraints =
+									U3AveSlipConstraint.load(rupSet.getFaultSectionDataList());
 							PaleoFitPlotter.showSegRateComparison(segRateConstraints, aveSlipConstraints,
 									(InversionFaultSystemSolution)sol);
 						} catch (IOException e) {
@@ -643,9 +643,9 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 							if (!outDir.exists())
 								outDir.mkdir();
 							try {
-								List<PaleoRateConstraint> paleoRateConstraints = CommandLineInversionRunner.getPaleoConstraints(
+								List<U3PaleoRateConstraint> paleoRateConstraints = CommandLineInversionRunner.getPaleoConstraints(
 										invSol.getRupSet().getFaultModel(), invSol.getRupSet());
-								List<AveSlipConstraint> aveSlipConstraints = AveSlipConstraint.load(
+								List<U3AveSlipConstraint> aveSlipConstraints = U3AveSlipConstraint.load(
 										sol.getRupSet().getFaultSectionDataList());
 								Map<String, List<Integer>> namedFaultsMap = invSol.getRupSet().getFaultModel().getNamedFaultsMapAlt();
 								CommandLineInversionRunner.writePaleoFaultPlots(
