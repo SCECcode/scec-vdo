@@ -30,7 +30,6 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 import com.google.common.base.Preconditions;
 
 import scratch.UCERF3.inversion.UCERF3InversionInputGenerator;
-import scratch.UCERF3.utils.paleoRateConstraints.PaleoProbabilityModel;
 
 public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetChangeListener, ParameterChangeListener {
 

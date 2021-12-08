@@ -22,7 +22,6 @@ import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.util.ExceptionUtils;
-import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.opensha.sha.earthquake.faultSysSolution.modules.PolygonFaultGridAssociations;
@@ -52,8 +51,6 @@ import scratch.UCERF3.erf.ETAS.ETAS_EqkRupture;
 import scratch.UCERF3.erf.ETAS.association.FiniteFaultMappingData;
 import scratch.UCERF3.erf.ETAS.association.FiniteFaultSectionResetCalc;
 import scratch.UCERF3.erf.ETAS.association.FiniteFaultSectionResetCalc.SectRupDistances;
-import scratch.UCERF3.inversion.InversionTargetMFDs;
-import scratch.UCERF3.inversion.U3InversionTargetMFDs;
 import vtk.vtkActor;
 import vtk.vtkProp;
 
