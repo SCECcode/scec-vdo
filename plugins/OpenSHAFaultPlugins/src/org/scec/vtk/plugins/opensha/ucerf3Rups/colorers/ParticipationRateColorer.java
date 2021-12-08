@@ -40,6 +40,7 @@ import org.opensha.sha.earthquake.ProbEqkRupture;
 import org.opensha.sha.earthquake.calc.ERF_Calculator;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
+import org.opensha.sha.earthquake.faultSysSolution.reports.plots.SolMFDPlot;
 import org.opensha.sha.earthquake.param.AleatoryMagAreaStdDevParam;
 import org.opensha.sha.earthquake.param.ApplyGardnerKnopoffAftershockFilterParam;
 import org.opensha.sha.earthquake.param.HistoricOpenIntervalParam;
@@ -389,16 +390,34 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 		
 		int faultID = fault.getId();
 		
-		FaultSection sect = sol.getRupSet().getFaultSectionData(faultID);
 		
 		GraphWindow graph = null;
+		
+		FaultSystemRupSet rupSet = sol.getRupSet();
+		
+		FaultSection sect = sol.getRupSet().getFaultSectionData(faultID);
+		
+		// find min/max for parent
+		double minMag = Double.POSITIVE_INFINITY;
+		double maxMag = Double.NEGATIVE_INFINITY;
+		for (FaultSection oSect : rupSet.getFaultSectionDataList()) {
+			if (oSect.getParentSectionId() == sect.getParentSectionId()) {
+				minMag = Math.min(minMag, rupSet.getMinMagForSection(oSect.getSectionId()));
+				maxMag = Math.max(maxMag, rupSet.getMaxMagForSection(oSect.getSectionId()));
+			}
+		}
+		EvenlyDiscretizedFunc refXVals = SolMFDPlot.initDefaultMFD(minMag, maxMag);
+		System.out.println("MFD range: "+refXVals.size()+" values, ["
+				+(float)refXVals.getMinX()+","+(float)refXVals.getMaxX()+"]");
 		
 		for (boolean parent : new boolean[] {false, true}) {
 			IncrementalMagFreqDist mfd;
 			if (parent)
-				mfd = sol.calcParticipationMFD_forParentSect(sect.getParentSectionId(), 5.55d, 8.55d, 31);
+				mfd = sol.calcParticipationMFD_forParentSect(sect.getParentSectionId(),
+						refXVals.getMinX(), refXVals.getMaxX(), refXVals.size());
 			else
-				mfd = sol.calcParticipationMFD_forSect(faultID, 5.55d, 8.55d, 31);
+				mfd = sol.calcParticipationMFD_forSect(faultID,
+						refXVals.getMinX(), refXVals.getMaxX(), refXVals.size());
 			
 			mfd.setName("Incremental MFD");
 			mfd.setInfo(" ");
@@ -436,7 +455,7 @@ public class ParticipationRateColorer extends CPTBasedColorer implements
 				graph.addTab(spec);
 			
 			graph.setYLog(true);
-			graph.setAxisRange(6, 9, 1e-10, 1e-1);
+			graph.setAxisRange(mfd.getMinX()-0.5*mfd.getDelta(), mfd.getMaxX()+0.5*mfd.getDelta(), 1e-10, 1e-1);
 		}
 		
 		graph.setSelectedTab(0);
