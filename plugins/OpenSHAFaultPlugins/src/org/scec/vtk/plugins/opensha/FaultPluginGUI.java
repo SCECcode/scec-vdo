@@ -18,6 +18,7 @@ import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
+import org.opensha.commons.param.editor.impl.ParameterListEditor;
 import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.AseismicityColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.CouplingCoefficientColorer;
@@ -161,20 +162,32 @@ public class FaultPluginGUI extends JSplitPane {
 		FaultTablePanel tablePanel = new FaultTablePanel(table);
 		
 		int tableHeight = 350;
-		
+		int minTableHeight = 100;
+		int prefWidth = Prefs.getPluginWidth() - 20;
 		
 		ParameterList builderParams = builder.getBuilderParams();
 		
 		// add builder params
-		if (builderParams != null) {
-			for (Parameter<?> param : builderParams) {
-				JComponent comp = param.getEditor().getComponent();
-				comp.setMaximumSize(new Dimension(Integer.MAX_VALUE, comp.getPreferredSize().height));
-				topPanel.add(comp);
-				tableHeight -= 50;
-			}
+		if (builderParams != null && !builderParams.isEmpty()) {
+			ParameterListEditor builderEdit = new ParameterListEditor(builderParams);
+			
+			int paramHeight = Integer.min(builderParams.size()*50, tableHeight-minTableHeight);
+			tableHeight -= paramHeight;
+			
+			JScrollPane editScroll = new JScrollPane(builderEdit,
+					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			editScroll.setPreferredSize(new Dimension(prefWidth, paramHeight));
+			editScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, paramHeight));
+			topPanel.add(builderEdit);
+//			for (Parameter<?> param : builderParams) {
+//				JComponent comp = param.getEditor().getComponent();
+//				comp.setMaximumSize(new Dimension(Integer.MAX_VALUE, comp.getPreferredSize().height));
+//				topPanel.add(comp);
+//				tableHeight -= 50;
+//			}
 		}
-		tablePanel.setPreferredSize(new Dimension(Prefs.getPluginWidth()-100, tableHeight));
+		tablePanel.setPreferredSize(new Dimension(prefWidth, tableHeight));
+		tablePanel.setMinimumSize(new Dimension(prefWidth, 50));
 		table.setRowSelectionAllowed(true);
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		

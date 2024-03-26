@@ -186,7 +186,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 	@Override
 	public Color getColor(AbstractFaultSection fault) {
 		if (!isStepValid(currentStep)|| !(fault instanceof SimulatorElementFault)) {
-			return getCPT().getNaNColor();
+			return getCPT().getNanColor();
 		}
 		else {
 			checkInit();
@@ -204,7 +204,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 				c = getColorCacheForStep(currentStep).get(fault.getId());
 			}
 			if (c == null)
-				return getCPT().getNaNColor();
+				return getCPT().getNanColor();
 			else
 				return c;
 		}
@@ -434,7 +434,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 	@Override
 	public Boolean getFaultVisibility(AbstractFaultSection fault) {
 		if (onlyCurrentVisibleParam.getValue()) {
-			return !getColor(fault).equals(getCPT().getNaNColor());
+			return !getColor(fault).equals(getCPT().getNanColor());
 		}
 		return null;
 	}
@@ -542,7 +542,7 @@ implements TimeBasedFaultAnimation, IDBasedFaultAnimation, EQSimsEventListener, 
 	@Override
 	public  boolean timeChanged(double time) {
 		double eventPrevTime = 0;
-		Color nanColor= getCPT().getNaNColor();
+		Color nanColor= getCPT().getNanColor();
 		Color droughtColor;
 		Integer numDroughtLength;
 		if (colorBlender == null) 

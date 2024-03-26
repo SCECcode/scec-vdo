@@ -347,7 +347,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 					// user needs to select a starting point
 					if (curRupture.contains(sect))
 						return new Color(150, 255, 150);
-					return getCPT().getNaNColor();
+					return getCPT().getNanColor();
 				} else if (startCluster.contains(sect)) {
 					return highlightColor;
 				}

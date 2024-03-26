@@ -758,7 +758,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 	public void getComcatData(double minDepth,double maxDepth,double minMagnitude,double maxMagnitude,double minLat,double maxLat,double minLon,double maxLon,String startTime,String endTime,int limit)
 	{
 		EventWebService service = null;
-		
+
 		//masterEarthquakeCatalogBranchGroup = new ArrayList<vtkActor>();
 		try {
 			//call usgs service to obtain earthquake catalog
@@ -766,6 +766,8 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		} catch (MalformedURLException e) {
 			ExceptionUtils.throwAsRuntimeException(e);
 		}
+
+		int queryLimit = Integer.min(20000, limit);
 
 		//create query url
 		EventQuery query = new EventQuery();
@@ -786,7 +788,7 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 		query.setMinLongitude(new BigDecimal(minLon));
 		query.setMaxLongitude(new BigDecimal(maxLon));
 
-		query.setLimit(limit);
+		query.setLimit(queryLimit);
 
 		query.setOrderBy(OrderBy.TIME_ASC);
 
@@ -816,85 +818,105 @@ public class ComcatResourcesDialog  extends JDialog implements ActionListener {
 			throw ExceptionUtils.asRuntimeException(e);
 		}
 		
+		System.out.println("Fetched "+events.size()+" events");
+
 		//Do not make a catalog if there are no events. 
 		if (events.size() ==0) {
 			JOptionPane.showMessageDialog(this, "No events found. Please change your query.");
-		}
-		else {
-		
-		JSONObject obj = new JSONObject();
-		JSONArray catalogList = new JSONArray();
-		masterEarthquakeCatalogsList.clear();
-
-		float min_dep =    5.0f;
-		float max_dep = -600.0f;
-		float min_mag =   10.0f;
-		float max_mag =    0.0f;
-		EQCatalog cat = new EQCatalog(parent);
-		int index=0;
-		cat.initializeArrays(events.size());
-		cat.setDisplayName("_Imported_Catalog_" + count);
-		count ++;
-		for (JsonEvent event : events) {
-			//plot the earthquakes as spheres with radius as magnitude
-			//				double[] xForm = new double[3];
-			double depth=0,mag=0,lon=0,lat=0;
-
-			if(event.getMag()!=null)
-				mag= event.getMag().doubleValue();
-			if(event.getDepth()!=null)
-				depth= -event.getDepth().doubleValue();
-			if(event.getLatitude()!=null)
-				lat= event.getLatitude().doubleValue();
-			if(event.getLongitude()!=null)
-				lon= event.getLongitude().doubleValue();
-			if(event.getDepth()!=null){
-				if (depth <= min_dep) min_dep = (float) depth;
-				if (depth >= max_dep) max_dep = (float) depth;
-			}
-			if(event.getMag()!=null){
-
-				if (mag <= min_mag) min_mag = (float) mag;
-				if (mag >= max_mag) max_mag = (float) mag;
+		} else {
+			
+			if (limit > queryLimit && events.size() >= queryLimit) {
+				// need to stich together multiple calls
+				System.out.println("Stitching together multiple calls");
+				while (events.size() < limit) {
+					query.setOffset(events.size()+1);
+					try {
+						//get the events from the query
+						List<JsonEvent> subEvents = service.getEvents(query);
+						events.addAll(subEvents);
+						System.out.println("Fetched "+subEvents.size()+" events ("+events.size()+" in total)");
+						if (subEvents.size() < queryLimit)
+							break;
+					} catch (Exception e) {
+						throw ExceptionUtils.asRuntimeException(e);
+					}
+				}
+				System.out.println("Fetched "+events.size()+" total events");
 			}
 
-			cat.setEq_depth(index++, (float)depth);
+			JSONObject obj = new JSONObject();
+			JSONArray catalogList = new JSONArray();
+			masterEarthquakeCatalogsList.clear();
 
-			Earthquake eq = new Earthquake(-depth,mag,lat,lon, event.getTime(),limit);
-			if(!masterEarthquakeCatalogsList.contains(eq))
-				masterEarthquakeCatalogsList.add(eq);
+			float min_dep =    5.0f;
+			float max_dep = -600.0f;
+			float min_mag =   10.0f;
+			float max_mag =    0.0f;
+			EQCatalog cat = new EQCatalog(parent);
+			int index=0;
+			cat.initializeArrays(events.size());
+			cat.setDisplayName("_Imported_Catalog_" + count);
+			count ++;
+			for (JsonEvent event : events) {
+				//plot the earthquakes as spheres with radius as magnitude
+				//				double[] xForm = new double[3];
+				double depth=0,mag=0,lon=0,lat=0;
 
-			//create a json object
-			catalogList.add(event);
+				if(event.getMag()!=null)
+					mag= event.getMag().doubleValue();
+				if(event.getDepth()!=null)
+					depth= -event.getDepth().doubleValue();
+				if(event.getLatitude()!=null)
+					lat= event.getLatitude().doubleValue();
+				if(event.getLongitude()!=null)
+					lon= event.getLongitude().doubleValue();
+				if(event.getDepth()!=null){
+					if (depth <= min_dep) min_dep = (float) depth;
+					if (depth >= max_dep) max_dep = (float) depth;
+				}
+				if(event.getMag()!=null){
+
+					if (mag <= min_mag) min_mag = (float) mag;
+					if (mag >= max_mag) max_mag = (float) mag;
+				}
+
+				cat.setEq_depth(index++, (float)depth);
+
+				Earthquake eq = new Earthquake(-depth,mag,lat,lon, event.getTime(),limit);
+				if(!masterEarthquakeCatalogsList.contains(eq))
+					masterEarthquakeCatalogsList.add(eq);
+
+				//create a json object
+				catalogList.add(event);
+			}
+
+			//write json object to file
+			obj.put(cat.getDisplayName(), catalogList);
+			writeToJSONFile(cat,obj);
+
+
+			parent.getCatalogTable().addCatalog(cat);
+
+			if (events.size() != 0) {
+
+				//setting minimas and maximas
+				//		if(events.size()!=0)
+				//		{
+				cat.setComcatQuery(query);
+				cat.setMaxMagnitude((float)max_mag);
+				cat.setMinMagnitude((float)min_mag);
+				cat.setMinDepth((float)-max_dep);
+				cat.setMaxDepth((float)-min_dep);
+				cat.setMinDate(startDate);
+				cat.setMaxDate(endDate);
+				cat.setNumEvents(events.size());
+				cat.setMaxLatitude((float)maxLat);
+				cat.setMinLatitude((float)minLat);
+				cat.setMaxLongitude((float)maxLon);
+				cat.setMinLongitude((float)minLon);
+				cat.addComcatEqList();
+			}
 		}
-		
-		//write json object to file
-		obj.put(cat.getDisplayName(), catalogList);
-		writeToJSONFile(cat,obj);
-
-		
-		parent.getCatalogTable().addCatalog(cat);
-		
-		if (events.size() != 0) {
-		
-		//setting minimas and maximas
-//		if(events.size()!=0)
-//		{
-			cat.setComcatQuery(query);
-			cat.setMaxMagnitude((float)max_mag);
-			cat.setMinMagnitude((float)min_mag);
-			cat.setMinDepth((float)-max_dep);
-			cat.setMaxDepth((float)-min_dep);
-			cat.setMinDate(startDate);
-			cat.setMaxDate(endDate);
-			cat.setNumEvents(events.size());
-			cat.setMaxLatitude((float)maxLat);
-			cat.setMinLatitude((float)minLat);
-			cat.setMaxLongitude((float)maxLon);
-			cat.setMinLongitude((float)minLon);
-			cat.addComcatEqList();
-		}
-	}
 	}
 
 	private void writeToJSONFile(EQCatalog cat,JSONObject obj) {

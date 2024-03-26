@@ -21,7 +21,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
 
-import scratch.UCERF3.AverageFaultSystemSolution;
+import scratch.UCERF3.U3AverageFaultSystemSolution;
 
 public class InversionSlipRateColorer extends CPTBasedColorer implements UCERF3RupSetChangeListener,
 ParameterChangeListener {
@@ -92,8 +92,8 @@ ParameterChangeListener {
 					return rupSet.getModule(SlipAlongRuptureModel.class).calcSlipRateForSect(
 							sol, rupSet.getModule(AveSlipModule.class), pref.getSectionId())*1e3;
 			case SOLUTION_STD_DEV:
-				if (sol != null && sol instanceof AverageFaultSystemSolution)
-					return ((AverageFaultSystemSolution)sol).getRupSet().getSlipRateStdDevForSection(pref.getSectionId())*1e3;
+				if (sol != null && sol instanceof U3AverageFaultSystemSolution)
+					return ((U3AverageFaultSystemSolution)sol).getRupSet().getSlipRateStdDevForSection(pref.getSectionId())*1e3;
 			default:
 				break;
 			}

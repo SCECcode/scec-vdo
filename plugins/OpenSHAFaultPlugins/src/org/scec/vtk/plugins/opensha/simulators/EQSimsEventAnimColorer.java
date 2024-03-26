@@ -231,7 +231,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	@Override
 	public Color getColor(AbstractFaultSection fault) {
 		if (!isStepValid(currentStep))
-			return getCPT().getNaNColor();
+			return getCPT().getNanColor();
 		else {
 			Color c;
 			if (fadeColors != null)
@@ -239,7 +239,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			else
 				c = getColorCacheForStep(currentStep).get(fault.getId());
 			if (c == null)
-				return getCPT().getNaNColor();
+				return getCPT().getNanColor();
 			else
 				return c;
 		}
@@ -616,7 +616,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 	@Override
 	public Boolean getFaultVisibility(AbstractFaultSection fault) {
 		if (onlyCurrentVisibleParam.getValue()) {
-			return !getColor(fault).equals(getCPT().getNaNColor());
+			return !getColor(fault).equals(getCPT().getNanColor());
 		}
 		return null;
 	}
@@ -756,7 +756,7 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 			return false;
 		if (colorBlender == null)
 			colorBlender = new LinearBlender();
-		Color nanColor = getCPT().getNaNColor();
+		Color nanColor = getCPT().getNanColor();
 //		System.out.println("Time changed: "+time);
 		Map<Integer, Color> fadeColors = Maps.newHashMap();
 		for (int step=currentStep; step >= 0; step--) {

@@ -47,7 +47,7 @@ public class FaultModelBuilder extends MultiDBBuilder {
 			List<List<FaultSection>> sectsList = new ArrayList<>();
 			
 			for (FaultModels fm : fms) {
-				List<FaultSection> sects = fm.fetchFaultSections();
+				List<FaultSection> sects = fm.getFaultSections();
 				
 				List<Integer> ids = new ArrayList<>();
 				for (FaultSection sect : sects) {

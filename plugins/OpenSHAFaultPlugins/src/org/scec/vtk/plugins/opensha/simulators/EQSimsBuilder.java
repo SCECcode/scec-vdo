@@ -23,6 +23,7 @@ import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.DoubleParameter;
 import org.opensha.commons.param.impl.FileParameter;
+import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.gui.infoTools.CalcProgressBar;
@@ -129,6 +130,12 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	private static final String EVENT_SELECTOR_PARAM_NAME = "Simulator Event File";
 	private FileParameter eventFileParam = new FileParameter(EVENT_SELECTOR_PARAM_NAME);
 	
+	private static final String UTM_ZONE_NAME = "UTM Zone";
+	private IntegerParameter utmZoneParam = new IntegerParameter(UTM_ZONE_NAME, 1, 60, (Integer)11);
+	
+	private static final String UTM_BAND_NAME = "UTM Band";
+	private StringParameter utmBandParam = new StringParameter(UTM_BAND_NAME, "N");
+	
 	//builderParams is the main list for all objects displayed on this plugin.
 	private ParameterList builderParams = new ParameterList();
 	
@@ -211,6 +218,8 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		eventFileParam.addParameterChangeListener(this);
 		eventFileParam.setShowHiddenFiles(true);
 		
+		builderParams.addParameter(utmZoneParam);
+		builderParams.addParameter(utmBandParam);
 			
 		/*
 		 * Initialization for all Coloring Options
@@ -658,8 +667,11 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 	
 	private List<SimulatorElement> loadGeometry(File file) throws IOException {
 		String name = file.getName().toLowerCase();
-		if (name.endsWith(".flt") || name.endsWith(".in"))
-			return RSQSimFileReader.readGeometryFile(file, 11, 'S'); // TODO make selectable
+		if (name.endsWith(".flt") || name.endsWith(".in")) {
+			int zone = utmZoneParam.getValue();
+			char band = utmBandParam.getValue().charAt(0);
+			return RSQSimFileReader.readGeometryFile(file, zone, band);
+		}
 		return EQSIMv06FileReader.readGeometryFile(file);
 	}
 	

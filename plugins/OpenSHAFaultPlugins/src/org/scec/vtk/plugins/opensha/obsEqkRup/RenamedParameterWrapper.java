@@ -35,4 +35,9 @@ public class RenamedParameterWrapper<E> extends AbstractParameter<E> {
 		return false;
 	}
 
+	@Override
+	public boolean isEditorBuilt() {
+		return param.isEditorBuilt();
+	}
+
 }
