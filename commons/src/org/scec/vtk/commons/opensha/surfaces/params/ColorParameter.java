@@ -42,4 +42,9 @@ public class ColorParameter extends AbstractParameter<Color> {
 		return false;
 	}
 
+	@Override
+	public boolean isEditorBuilt() {
+		return editor != null;
+	}
+
 }

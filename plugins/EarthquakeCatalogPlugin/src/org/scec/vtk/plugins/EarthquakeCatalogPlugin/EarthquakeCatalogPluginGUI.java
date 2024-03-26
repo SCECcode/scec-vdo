@@ -650,7 +650,7 @@ MouseListener
 
 
 		//SCALING
-		this.dispProp_slider=new JSlider(1,10,5);
+		this.dispProp_slider=new JSlider(1,10,2);
 		this.dispProp_slider.setMajorTickSpacing(2);
 		this.dispProp_slider.setMinorTickSpacing(1);
 		//transparencySlider.setPaintLabels(true);

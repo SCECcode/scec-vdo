@@ -77,7 +77,7 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.StiffnessColorer;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-import scratch.UCERF3.CompoundFaultSystemSolution;
+import scratch.UCERF3.U3CompoundFaultSystemSolution;
 import scratch.UCERF3.analysis.FaultSpecificSegmentationPlotGen;
 import scratch.UCERF3.inversion.BatchPlotGen;
 import scratch.UCERF3.inversion.CommandLineInversionRunner;
@@ -758,7 +758,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	
 	private static FaultSystemSolution tryLoadFromCompoundSol(File file) {
 		try {
-			CompoundFaultSystemSolution sol = CompoundFaultSystemSolution.fromZipFile(file);
+			U3CompoundFaultSystemSolution sol = U3CompoundFaultSystemSolution.fromZipFile(file);
 			if (!sol.getBranches().isEmpty()) {
 				CompoundSelectionGUI gui = new CompoundSelectionGUI(sol);
 				int selection = JOptionPane.showConfirmDialog(null, gui.getEditor(),
@@ -774,7 +774,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	
 	private static class CompoundSelectionGUI implements ParameterChangeListener {
 		
-		private CompoundFaultSystemSolution sol;
+		private U3CompoundFaultSystemSolution sol;
 		
 		private List<U3LogicTreeBranch> branches;
 		private ArrayList<String> strings;
@@ -787,7 +787,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		
 		private static final String NONE_STRING = "(none)";
 		
-		public CompoundSelectionGUI(CompoundFaultSystemSolution sol) {
+		public CompoundSelectionGUI(U3CompoundFaultSystemSolution sol) {
 			this.sol = sol;
 			branches = Lists.newArrayList(sol.getBranches());
 			Collections.sort(branches, new Comparator<U3LogicTreeBranch>() {
