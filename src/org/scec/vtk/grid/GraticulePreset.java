@@ -64,25 +64,25 @@ public class GraticulePreset
 				{
 					tokens = new StringTokenizer(line,"=");
 					tokens.nextToken();
-					upperLatitude = new Integer(tokens.nextToken().trim()).intValue();
+					upperLatitude = Integer.valueOf(tokens.nextToken().trim()).intValue();
 				}
 				else if (line.contains("lower-latitude"))
 				{
 					tokens = new StringTokenizer(line,"=");
 					tokens.nextToken();
-					lowerLatitude = new Integer(tokens.nextToken().trim()).intValue();
+					lowerLatitude = Integer.valueOf(tokens.nextToken().trim()).intValue();
 				}
 				else if (line.contains("right-longitude"))
 				{
 					tokens = new StringTokenizer(line,"=");
 					tokens.nextToken();
-					rightLongitude = new Integer(tokens.nextToken().trim()).intValue();
+					rightLongitude = Integer.valueOf(tokens.nextToken().trim()).intValue();
 				}
 				else if (line.contains("left-longitude"))
 				{
 					tokens = new StringTokenizer(line,"=");
 					tokens.nextToken();
-					leftLongitude = new Integer(tokens.nextToken().trim()).intValue();
+					leftLongitude = Integer.valueOf(tokens.nextToken().trim()).intValue();
 				}
 			}
 		}

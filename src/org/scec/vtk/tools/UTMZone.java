@@ -152,7 +152,7 @@ public class UTMZone {
 				  hZone++;
 			  }
 		  }
-		  Integer zoneNum = new Integer(hZone);
+		  Integer zoneNum = Integer.valueOf(hZone);
 		  //utmZone = zoneNum.toString() + zoneLetterArray.charAt(vZone);
 		 // return zoneNum.toString();
 		 return zoneNum.intValue(); 

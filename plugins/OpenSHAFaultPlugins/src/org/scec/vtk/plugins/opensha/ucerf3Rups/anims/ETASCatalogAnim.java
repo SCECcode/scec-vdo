@@ -145,11 +145,11 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSe
 		hideFaultsParam.addParameterChangeListener(this);
 		animParams.addParameter(hideFaultsParam);
 
-		minMagParam = new DoubleParameter("Min Mag", 0d, 10d, new Double(0d));
+		minMagParam = new DoubleParameter("Min Mag", 0d, 10d, Double.valueOf(0d));
 		minMagParam.addParameterChangeListener(this);
 		animParams.addParameter(minMagParam);
 
-		opacityParam = new DoubleParameter("Opacity", 0d, 1d, new Double(0.5d));
+		opacityParam = new DoubleParameter("Opacity", 0d, 1d, Double.valueOf(0.5d));
 		opacityParam.addParameterChangeListener(this);
 		animParams.addParameter(opacityParam);
 		
@@ -162,7 +162,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSe
 		onlyCurrentParam.addParameterChangeListener(this);
 		animParams.addParameter(onlyCurrentParam);
 		
-		catDurationParam = new DoubleParameter("Duration To Animate", 0d, 100000, new Double(0d));
+		catDurationParam = new DoubleParameter("Duration To Animate", 0d, 100000, Double.valueOf(0d));
 		catDurationParam.setUnits("Years");
 		catDurationParam.addParameterChangeListener(this);
 		animParams.addParameter(catDurationParam);

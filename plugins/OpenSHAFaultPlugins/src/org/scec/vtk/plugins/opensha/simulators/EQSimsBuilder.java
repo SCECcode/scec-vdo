@@ -179,11 +179,11 @@ public class EQSimsBuilder implements FaultTreeBuilder, ParameterChangeListener 
 		}
 		
 		//Min Event Mag input area
-		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, new Double(7d));
+		eventMinMagParam = new DoubleParameter(EVENT_MIN_MAG_PARAM_NAME, -10d, 10d, Double.valueOf(7d));
 		builderParams.addParameter(eventMinMagParam);
 		
 		//Max Catalog Yrs Loaded input area
-		catDurationParam = new DoubleParameter(MAX_CAT_DURATION_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
+		catDurationParam = new DoubleParameter(MAX_CAT_DURATION_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, Double.valueOf(0d));
 		builderParams.addParameter(catDurationParam);
 		
 		//Geometry File Presets

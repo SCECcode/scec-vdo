@@ -358,7 +358,7 @@ PluginActorsChangeListener {
 
 		if (legend != null) {
 			try {
-				double scaleFactor = new Double(scaleField.getText()).doubleValue();
+				double scaleFactor = Double.valueOf(scaleField.getText()).doubleValue();
 				System.out.println(scaleFactor);
 				if (scaleFactor == 0)
 					return; // cannot be 0 or a crash will occur

@@ -23,7 +23,7 @@ public class FaultSurfaceTypeParam extends StringParameter {
 	}
 	
 	public FaultSurfaceTypeParam() {
-		super(NAME, getDefaultAllowedStrings(), FaultSurfaceType.STIRLING.getName());
+		super(NAME, getDefaultAllowedStrings(), FaultSurfaceType.DEFAULT.getName());
 	}
 	
 	public FaultSurfaceTypeParam(FaultSurfaceType defaultVal) {

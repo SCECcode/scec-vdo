@@ -161,17 +161,17 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 		siteDataParamsButton.addParameterChangeListener(this);
 		subParams.addParameter(siteDataParamsButton);
 		
-		magMinParam = new DoubleParameter("Min Max", 0d, 10d, new Double(0d));
+		magMinParam = new DoubleParameter("Min Max", 0d, 10d, Double.valueOf(0d));
 		subParams.addParameter(magMinParam);
 		
-		magMaxParam = new DoubleParameter("Max Max", 0d, 10d, new Double(10d));
+		magMaxParam = new DoubleParameter("Max Max", 0d, 10d, Double.valueOf(10d));
 		subParams.addParameter(magMaxParam);
 		
 		subParamsParam = new ParameterListParameter("ERF/IMR/IMT/Site Params", subParams);
 		((ParameterListParameterEditor)subParamsParam.getEditor()).setModal(false);
 		builderParams.addParameter(subParamsParam);
 		
-		imlParam = new DoubleParameter("IML", 0d, 100d, new Double(0.2));
+		imlParam = new DoubleParameter("IML", 0d, 100d, Double.valueOf(0.2));
 		imlParam.addParameterChangeListener(this);
 		builderParams.addParameter(imlParam);
 		
@@ -384,9 +384,9 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 			System.out.println("IMT: "+im.getName());
 			if (im instanceof WarningParameter<?>) {
 				WarningParameter<Double> warnIM = (WarningParameter<Double>)im;
-				warnIM.setValueIgnoreWarning(new Double(iml));
+				warnIM.setValueIgnoreWarning(Double.valueOf(iml));
 			} else {
-				im.setValue(new Double(iml));
+				im.setValue(Double.valueOf(iml));
 			}
 			imr.setSite(site);
 		}
@@ -441,9 +441,9 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 //				Parameter<Double> im = imr.getIntensityMeasure();
 //				if (im instanceof WarningParameter<?>) {
 //					WarningParameter<Double> warnIM = (WarningParameter<Double>)im;
-//					warnIM.setValueIgnoreWarning(new Double(iml));
+//					warnIM.setValueIgnoreWarning(Double.valueOf(iml));
 //				} else {
-//					im.setValue(new Double(iml));
+//					im.setValue(Double.valueOf(iml));
 //				}
 //				imr.setAll(rupture, site, im);
 

@@ -55,7 +55,7 @@ public class BoundSectionsTableModel extends AbstractLibraryModel {
       }
 
       public Object getValueAt(int row, int col) {
-    	  if(col==0) return new Boolean(isSelectedRow[row]);
+    	  if(col==0) return Boolean.valueOf(isSelectedRow[row]);
     	  else if(col==1) return this.traceColor[row];
     	  else if(col == 3) return this.inMem[row];
     	  else  return this.continentsList.get(row);

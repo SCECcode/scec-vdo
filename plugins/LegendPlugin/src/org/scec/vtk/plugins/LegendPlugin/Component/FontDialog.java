@@ -211,7 +211,7 @@ public class FontDialog extends JDialog implements ActionListener, ListSelection
 		Object source = e.getSource();
 		
 		selectedFont = new Font(fontField.getText(),getSelectedFontStyle(),
-				               (new Integer(sizeField.getText()).intValue()));
+				               (Integer.valueOf(sizeField.getText()).intValue()));
 		
 		if (source == fontList)
 		{
@@ -233,7 +233,7 @@ public class FontDialog extends JDialog implements ActionListener, ListSelection
 		Object source = e.getSource();
 		
 		selectedFont = new Font(fontField.getText(),getSelectedFontStyle(),
-	               (new Integer(sizeField.getText()).intValue()));
+	               (Integer.valueOf(sizeField.getText()).intValue()));
 		
 		if (source == colorButton)
 		{
@@ -247,7 +247,7 @@ public class FontDialog extends JDialog implements ActionListener, ListSelection
 		else if (source == okButton)
 		{
 			selectedFont = new Font(fontField.getText(),getSelectedFontStyle(),
-		               				(new Integer(sizeField.getText()).intValue()));
+		               				(Integer.valueOf(sizeField.getText()).intValue()));
 			cancelled = true;
 			okay = true;
 			this.hide();
