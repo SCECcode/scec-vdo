@@ -576,11 +576,11 @@ class GISHazusEventsPluginGUI extends JPanel implements TableModelListener, Acti
 		return ((Boolean)tableModel.getValueAt(i,3)).booleanValue();
 	}
 	public void setContinentSelected(int i) {
-		tableModel.setValueAt(new Boolean(true),i,0);
+		tableModel.setValueAt(Boolean.valueOf(true),i,0);
 	}
 	public void setContinentLoaded(int i){
-		tableModel.setValueAt(new Boolean(true),i,0);
-		tableModel.setValueAt(new Boolean(false),i,0);
+		tableModel.setValueAt(Boolean.valueOf(true),i,0);
+		tableModel.setValueAt(Boolean.valueOf(false),i,0);
 	}
 
 	/********************

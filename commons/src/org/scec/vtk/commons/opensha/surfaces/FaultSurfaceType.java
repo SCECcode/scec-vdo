@@ -4,6 +4,7 @@ import java.util.NoSuchElementException;
 
 public enum FaultSurfaceType {
 	
+	DEFAULT("Default"),
 	FRANKEL("Frankel"),
 	STIRLING("Stirling");
 	

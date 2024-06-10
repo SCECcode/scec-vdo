@@ -175,19 +175,19 @@ public class ETASMultiCatalogColorer extends CPTBasedColorer implements Paramete
 		displayTypeParam.addParameterChangeListener(this);
 		params.addParameter(displayTypeParam);
 		
-		minMagParam = new DoubleParameter("Min Mag", 0d, 10d, new Double(0d));
+		minMagParam = new DoubleParameter("Min Mag", 0d, 10d, Double.valueOf(0d));
 		minMagParam.addParameterChangeListener(this);
 		params.addParameter(minMagParam);
 		
-		maxDaysParam = new DoubleParameter("Max Days After", 0d, 100*365.25d, new Double(365.25d));
+		maxDaysParam = new DoubleParameter("Max Days After", 0d, 100*365.25d, Double.valueOf(365.25d));
 		maxDaysParam.addParameterChangeListener(this);
 		params.addParameter(maxDaysParam);
 		
-		descendantsOfParam = new IntegerParameter("Only Descendants Of", -1, Integer.MAX_VALUE, new Integer(-1));
+		descendantsOfParam = new IntegerParameter("Only Descendants Of", -1, Integer.MAX_VALUE, Integer.valueOf(-1));
 		descendantsOfParam.addParameterChangeListener(this);
 		params.addParameter(descendantsOfParam);
 		
-		scenIndexParam = new IntegerParameter("Scenario FSS Index", -1, Integer.MAX_VALUE, new Integer(-1));
+		scenIndexParam = new IntegerParameter("Scenario FSS Index", -1, Integer.MAX_VALUE, Integer.valueOf(-1));
 		scenIndexParam.addParameterChangeListener(this);
 		params.addParameter(scenIndexParam);
 		

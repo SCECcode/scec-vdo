@@ -184,11 +184,11 @@ public class EQSimsEventAnimColorer extends CPTBasedColorer implements
 		animParams.addParameter(startIDParam);
 		startIDParam.addParameterChangeListener(this);
 		
-		durationYearsParam = new DoubleParameter(DURATION_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
+		durationYearsParam = new DoubleParameter(DURATION_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, Double.valueOf(0d));
 		animParams.addParameter(durationYearsParam);
 		durationYearsParam.addParameterChangeListener(this);
 		
-		fadeYearsParam = new DoubleParameter(FADE_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, new Double(0d));
+		fadeYearsParam = new DoubleParameter(FADE_YEARS_PARAM_NAME, 0d, Double.POSITIVE_INFINITY, Double.valueOf(0d));
 		animParams.addParameter(fadeYearsParam);
 		fadeYearsParam.addParameterChangeListener(this);
 		

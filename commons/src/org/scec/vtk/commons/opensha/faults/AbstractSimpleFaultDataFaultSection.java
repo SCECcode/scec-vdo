@@ -3,6 +3,7 @@ package org.scec.vtk.commons.opensha.faults;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.sha.faultSurface.EvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.FrankelGriddedSurface;
+import org.opensha.sha.faultSurface.RuptureSurface;
 import org.opensha.sha.faultSurface.SimpleFaultData;
 import org.opensha.sha.faultSurface.StirlingGriddedSurface;
 import org.scec.vtk.commons.opensha.faults.params.FaultSurfaceTypeParam;
@@ -19,7 +20,7 @@ public abstract class AbstractSimpleFaultDataFaultSection extends AbstractFaultS
 	protected abstract SimpleFaultData getSimpleFaultData(ParameterList faultRepresentationParams);
 
 	@Override
-	public EvenlyGriddedSurface createSurface(
+	public RuptureSurface createSurface(
 			ParameterList faultRepresentationParams) {
 //		System.out.println("creating surface for: "+this.getName());
 		SimpleFaultData data = getSimpleFaultData(faultRepresentationParams);
@@ -37,6 +38,10 @@ public abstract class AbstractSimpleFaultDataFaultSection extends AbstractFaultS
 		checkHasParam(faultRepresentationParams, GridSpacingFitParam.NAME);
 		GridSpacingFitParam spacingFitParam = 
 			(GridSpacingFitParam)faultRepresentationParams.getParameter(GridSpacingFitParam.NAME);
+		
+		if (type == FaultSurfaceType.DEFAULT)
+			// set default to stirling if we're using simple fault data (not overridden)
+			type = FaultSurfaceType.STIRLING;
 		
 		double spacing = spacingParam.getValue();
 		if (spacingFitParam.getValue()) {
