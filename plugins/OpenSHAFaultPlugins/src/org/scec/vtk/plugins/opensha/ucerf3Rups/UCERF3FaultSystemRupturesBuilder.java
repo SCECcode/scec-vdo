@@ -59,6 +59,7 @@ import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.ETASCatalogAnim;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.GridSourceAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.RupturesAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.SectionResetAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
@@ -221,6 +222,10 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		SectionResetAnim sectResetAnim = new SectionResetAnim(plugin.getPluginActors());
 		anims.add(sectResetAnim);
 		rupSetChangeListeners.add(sectResetAnim);
+		
+		GridSourceAnim gridSourceAnim = new GridSourceAnim(plugin.getPluginActors());
+		anims.add(gridSourceAnim);
+		rupSetChangeListeners.add(gridSourceAnim);
 		
 		RupturesAnim rupturesAnim = new RupturesAnim();
 		anims.add(rupturesAnim);

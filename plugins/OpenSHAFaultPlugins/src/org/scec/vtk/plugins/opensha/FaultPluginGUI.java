@@ -146,8 +146,9 @@ public class FaultPluginGUI extends JSplitPane {
 			if (colorers == null)
 				colorers = new ArrayList<FaultColorer>();
 			for (FaultAnimation faultAnim : faultAnims) {
-				if (!colorers.contains(faultAnim.getFaultColorer()))
-					colorers.add(faultAnim.getFaultColorer());
+				FaultColorer animColorer = faultAnim.getFaultColorer();
+				if (animColorer != null && !colorers.contains(animColorer))
+					colorers.add(animColorer);
 			}
 		}
 		if (colorers != null && colorers.size() > 0)
