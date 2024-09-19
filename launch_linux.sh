@@ -8,4 +8,4 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 cd $DIR
-./.do_launch.sh vtkLibs/linux_64bit/vtk.jar
+./.do_launch.sh

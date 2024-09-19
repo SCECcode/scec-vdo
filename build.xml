@@ -209,6 +209,13 @@
             <classpath refid="run.SCEC-VDO MacOSX.classpath"/>
         </java>
     </target>
+    <target name="SCEC-VDO MacOSX Arm">
+        <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
+            <env key="DYLD_LIBRARY_PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/macosx_arm}"/>
+            <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
+            <classpath refid="run.SCEC-VDO MacOSX Arm.classpath"/>
+        </java>
+    </target>
     <target name="SCEC-VDO Windows64 LargeMem">
         <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
             <env key="PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/windows_64bit}"/>
