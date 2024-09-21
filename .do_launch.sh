@@ -26,9 +26,10 @@ if [[ -e $JAVA_HOME ]];then
 else
 	JAVA=`which java`
 fi
+
 echo "===== JAVA ======"
 echo "Launching with: $JAVA"
-$JAVA -version
+"$JAVA" -version
 echo "================="
 
-$JAVA -splash:resources/SCECVDOlogo.png -Xms1G -Xmx${MEM_GIGS}G -cp $CLASSPATH org.scec.vtk.main.MainGUI
+"$JAVA" -splash:resources/SCECVDOlogo.png -Xms1G -Xmx${MEM_GIGS}G -cp $CLASSPATH org.scec.vtk.main.MainGUI

@@ -33,32 +33,36 @@
         <pathelement location="lib/jogl-all-natives-solaris-i586.jar"/>
         <pathelement location="lib/jogl-all-natives-windows-amd64.jar"/>
         <pathelement location="lib/jogl-all.jar"/>
-        <pathelement location="lib/vtk.jar"/>
+        <pathelement location="lib/vtk-9.1.0.jar"/>
         <pathelement location="lib/jcodec-0.2.0.jar"/>
         <pathelement location="lib/opensha.jar"/>
     </path>
     <path id="run.SCEC-VDO Linux64 LargeMem.classpath">
-        <pathelement location="vtkLibs/linux_64bit/vtk.jar"/>
+        <pathelement location="lib/vtk-9.1.0.jar"/>
         <path refid="scec_vdo_vtk.classpath"/>
     </path>
     <path id="run.SCEC-VDO Linux64.classpath">
-        <pathelement location="vtkLibs/linux_64bit/vtk.jar"/>
+        <pathelement location="lib/vtk-9.1.0.jar"/>
         <path refid="scec_vdo_vtk.classpath"/>
     </path>
     <path id="run.SCEC-VDO MacOSX LargeMem.classpath">
-        <pathelement location="vtkLibs/macosx_64bit/vtk.jar"/>
+        <pathelement location="lib/vtk-9.1.0.jar"/>
         <path refid="scec_vdo_vtk.classpath"/>
     </path>
     <path id="run.SCEC-VDO MacOSX.classpath">
-        <pathelement location="vtkLibs/macosx_64bit/vtk.jar"/>
+        <pathelement location="lib/vtk-9.1.0.jar"/>
+        <path refid="scec_vdo_vtk.classpath"/>
+    </path>
+    <path id="run.SCEC-VDO MacOSX Arm.classpath">
+        <pathelement location="lib/vtk-9.1.0.jar"/>
         <path refid="scec_vdo_vtk.classpath"/>
     </path>
     <path id="run.SCEC-VDO Windows64 LargeMem.classpath">
-        <pathelement location="vtkLibs/windows_64bit/vtk.jar"/>
+        <pathelement location="lib/vtk-9.1.0.jar"/>
         <path refid="scec_vdo_vtk.classpath"/>
     </path>
     <path id="run.SCEC-VDO Windows64.classpath">
-        <pathelement location="vtkLibs/windows_64bit/vtk.jar"/>
+        <pathelement location="lib/vtk-9.1.0.jar"/>
         <path refid="scec_vdo_vtk.classpath"/>
     </path>
     <target name="init">
