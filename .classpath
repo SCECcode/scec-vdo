@@ -24,9 +24,9 @@
 	<classpathentry kind="lib" path="lib/org-netbeans-swing-outline.jar"/>
 	<classpathentry kind="lib" path="lib/jcodec-0.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/opensha.jar"/>
-	<classpathentry kind="lib" path="lib/vtk.jar"/>
 	<classpathentry kind="lib" path="lib/jxlayer.jar"/>
 	<classpathentry kind="lib" path="lib/useit-fast.jar"/>
 	<classpathentry kind="lib" path="lib/jogamp-fat.jar"/>
+	<classpathentry kind="lib" path="lib/vtk-9.1.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
