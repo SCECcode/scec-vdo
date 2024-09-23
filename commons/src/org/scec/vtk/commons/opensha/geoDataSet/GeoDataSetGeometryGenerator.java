@@ -181,7 +181,7 @@ public class GeoDataSetGeometryGenerator {
 		actor.GetProperty().SetAmbient(1);
 		actor.GetProperty().SetSpecular(0);
 		actor.GetProperty().SetDiffuse(0);
-		actor.GetProperty().SetPointSize(pointSize);
+		actor.GetProperty().SetPointSize((float) pointSize);
 		return actor; // TODO
 	}
 

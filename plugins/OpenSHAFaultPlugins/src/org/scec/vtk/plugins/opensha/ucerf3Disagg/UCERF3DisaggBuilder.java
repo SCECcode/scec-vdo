@@ -640,7 +640,6 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 		
 		double size = 2d;
 		
-		int index = points.GetNumberOfPoints();
 		points.InsertNextPoint(pt);
 		radiusArray.InsertNextTuple1(size);
 		colorArray.InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), 255);
