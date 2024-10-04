@@ -32,6 +32,7 @@ if not "%VDO_MEM_GB%"=="" (
 	echo VDO_MEM_GB environmental variable is not set, will automatically detect maximum memory as 80%% of total system memory
 	for /f "delims=" %%a in ('.get_memory.bat') do set /a "MEM_GIGS=(%%a * 80) / 100"
 )
+echo "     will use up to %MEM_GIGS% GB of memory"
 
 echo ===== JAVA ======
 echo Launching with: %JAVA%
