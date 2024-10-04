@@ -165,7 +165,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 		
 		int firstIndex;
 		synchronized (synchOn) {
-			firstIndex = pts.GetNumberOfPoints();
+			firstIndex = (int) pts.GetNumberOfPoints();
 			
 			for (double[] point : points) {
 				pts.InsertNextPoint(point);
@@ -195,7 +195,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 				}
 				
 				actor.SetMapper(mapper);
-				actor.GetProperty().SetPointSize(pointSizeParam.getValue());
+				actor.GetProperty().SetPointSize(pointSizeParam.getValue().floatValue());
 				setActorProperties(actor, bundle, color, 1d);
 			} else {
 				if (currentBundle != null)
@@ -206,7 +206,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 		FaultSectionActorList list;
 		if (bundle) {
 			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
-			int totNumPoints = pts.GetNumberOfPoints()-firstIndex;
+			int totNumPoints = (int) (pts.GetNumberOfPoints()-firstIndex);
 			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, totNumPoints, totNumPoints, 255);
 		} else {
 			list = new FaultSectionActorList(fault);
@@ -373,7 +373,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 		int firstIndex;
 		int numMainColor = 0;
 		synchronized (synchOn) {
-			firstIndex = pts.GetNumberOfPoints();
+			firstIndex = (int) pts.GetNumberOfPoints();
 			
 			if (drawCenter) {
 				for (double[] point : center) {
@@ -425,7 +425,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 				}
 				
 				actor.SetMapper(mapper);
-				actor.GetProperty().SetPointSize(pointSizeParam.getValue());
+				actor.GetProperty().SetPointSize(pointSizeParam.getValue().floatValue());
 				setActorProperties(actor, bundle, color, 1d);
 			} else {
 				if (currentBundle != null)
@@ -436,7 +436,7 @@ public class PointSurfaceGenerator extends GeometryGenerator implements Paramete
 		FaultSectionActorList list;
 		if (bundle) {
 			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
-			int totNumPoints = pts.GetNumberOfPoints()-firstIndex;
+			int totNumPoints = (int) (pts.GetNumberOfPoints()-firstIndex);
 //			System.out.println("Adding "+totNumPoints+" points");
 			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, totNumPoints, numMainColor, 255);
 		} else {

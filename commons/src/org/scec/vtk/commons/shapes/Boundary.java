@@ -57,7 +57,7 @@ public class Boundary {
 		
 		actor.SetMapper(mapper);
 		actor.GetProperty().SetColor(getColorDoubleArray(color));
-		actor.GetProperty().SetLineWidth(lineWidth);
+		actor.GetProperty().SetLineWidth((float) lineWidth);
 		actor.GetProperty().SetOpacity(opacity);
 		actor.Modified();
 	}
@@ -73,7 +73,7 @@ public class Boundary {
 	
 	public void addSegment(List<Location> locs, boolean close) {
 		Preconditions.checkArgument(locs.size() > 1);
-		int startIndex = pts.GetNumberOfPoints();
+		int startIndex = (int) pts.GetNumberOfPoints();
 		
 		if (close && !locs.get(0).equals(locs.get(locs.size()-1))) {
 			// close it
@@ -99,7 +99,7 @@ public class Boundary {
 	}
 	
 	public void setWidth(double width) {
-		actor.GetProperty().SetLineWidth(width);
+		actor.GetProperty().SetLineWidth((float) width);
 		this.lineWidth = width;
 		actor.Modified();
 	}
