@@ -469,7 +469,6 @@ public class RupturesAnim implements IDBasedFaultAnimation,
 
 	@Override
 	public void setCurrentStep(int step) {
-		
 		this.curStep = step;
 	}
 
