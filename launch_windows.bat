@@ -4,7 +4,7 @@
 set JAVA_HOME=%USERPROFILE%\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_22.0.1.v20240426-1149\jre
 :: Use locally packaged JRE for distribution.
 ::set JAVA_HOME=%CD%\jre
-set JAVA=%JAVA_HOME%\bin\java.exe
+set JAVA=%JAVA_HOME%\bin\javaw.exe
 set VTK_LIBS=%CD%\vtkLibs\windows_64bit
 set PATH=%PATH%;%JAVA_HOME%\bin;%VTK_LIBS%
 
@@ -38,6 +38,5 @@ echo Launching with: %JAVA%
 %JAVA% -version
 echo =================
 
-::"%JAVA%" -splash:resources\SCECVDOlogo.png -Xms1G -Xmx%MEM_GIGS%G -cp %CLASSPATH% org.scec.vtk.main.MainGUI
-"%JAVA%" -splash:resources\SCECVDOlogo.png -Xms1G -Xmx20G -cp %CLASSPATH% org.scec.vtk.main.MainGUI
+"%JAVA%" -splash:resources\SCECVDOlogo.png -Xms1G -Xmx%MEM_GIGS%G -cp %CLASSPATH% org.scec.vtk.main.MainGUI
 
