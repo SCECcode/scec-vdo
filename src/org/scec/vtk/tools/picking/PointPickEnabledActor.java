@@ -38,7 +38,7 @@ public class PointPickEnabledActor<E> extends PickEnabledActor<E> {
 	public void picked(vtkCellPicker picker, MouseEvent e) {
 		if (handler == null)
 			return;
-		Integer pointID = picker.GetPointId();
+		Integer pointID = (int) picker.GetPointId();
 		E reference = pointIDreferenceMap.get(pointID);
 		handler.actorPicked(this, reference, picker, e);
 	}

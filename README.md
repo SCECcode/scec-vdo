@@ -3,7 +3,8 @@
 
 Researchers and interns at the Southern California Earthquake Center (SCEC) have built a seismic data visualization software tool called the SCEC Virtual Display of Objects (SCEC-VDO). Written in Java with the Swing GUI toolkit to create interactive menus and the Visualization Toolkit (VTK) to render 3D content, SCEC-VDO allows for the visualization of 3D earthquake and fault objects on maps and the creation of images and movies for analysis, presentation, and publication. 
 
-To download latest packaged version of SCEC-VDO visit: [http://scecvdo.usc.edu/](http://scecvdo.usc.edu/)
+To download latest packaged version of SCEC-VDO visit: [https://strike.scec.org/scecpedia/SCEC_VDO](https://strike.scec.org/scecpedia/SCEC_VDO)
+
 
 ### Importing SCEC-VDO as an Eclipse project
 
@@ -17,8 +18,24 @@ To download latest packaged version of SCEC-VDO visit: [http://scecvdo.usc.edu/]
 6)   Check import an existing project and specify the local path.
 7)   Click Finish
 
-### Steps for packaging SCEC-VDO on Windows
+### Steps for packaging SCEC-VDO
+Currently, we package applications as zip files, bundled with their JRE.
+In the future, we intend to package APP files for macOS and EXE files for Windows.
 
+In each zip file, I add only the platform-specific script files, vtkLibs, and bundled JREs.
+JREs available at https://developer.ibm.com/languages/java/semeru-runtimes/downloads/
+
+In each launcher script I also define a JAVA_HOME to use the bundled JRE.
+This code is present in the scripts in this repository and just need to be uncommented.
+
+The following document provides support on how I added support for Apple Silicon Macs, how to build shared VTK libraries, and testing across platforms.
+[M1 Mac Support Documentation](https://docs.google.com/document/d/16bD83jedZaHi_q-HEjz3SYC8Afct3LJUjrUpepj44Ec/edit?usp=sharing)
+
+<!-- The following links are unavailable due to insufficient permissions.
+Previous methods of packaging are unknown.
+
+
+### Steps for packaging SCEC-VDO on Windows
 Please refer to the steps in the following link:
 [Package on Windows](https://drive.google.com/file/d/1-obw71GBGWEqQ6OoJglAgLLq6xxs-joy/view?usp=sharing)
 
@@ -26,3 +43,5 @@ Please refer to the steps in the following link:
 
 Please refer to the steps in the following link:
 [Package on Mac](https://drive.google.com/open?id=16KSD43eVX6ebS-5oMUwmDkHriPAMAYzx)
+-->
+
