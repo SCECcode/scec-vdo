@@ -12,6 +12,7 @@ fi
 # If apt is installed and the package is not already installed, install the package
 PACKAGE_NAME="freeglut3-dev"
 if command -v apt &> /dev/null && ! dpkg -l | grep -q "^ii  $PACKAGE_NAME"; then
+	echo SCEC-VDO requires freeglut3-dev. Enter password to install.
 	sudo apt update
 	sudo apt install -y $PACKAGE_NAME
 fi
