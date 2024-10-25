@@ -175,49 +175,49 @@
     </target>
     <target name="SCEC-VDO Linux64 LargeMem">
         <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
-            <env key="LD_LIBRARY_PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/linux_64bit}"/>
+            <env key="LD_LIBRARY_PATH" value="vtkLibs/linux_64bit"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png} -Xms2G -Xmx20G"/>
             <classpath refid="run.SCEC-VDO Linux64 LargeMem.classpath"/>
         </java>
     </target>
     <target name="SCEC-VDO Linux64">
         <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
-            <env key="LD_LIBRARY_PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/linux_64bit}"/>
+            <env key="LD_LIBRARY_PATH" value="vtkLibs/linux_64bit"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
             <classpath refid="run.SCEC-VDO Linux64.classpath"/>
         </java>
     </target>
     <target name="SCEC-VDO MacOSX LargeMem">
         <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
-            <env key="DYLD_LIBRARY_PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/macosx_64bit}"/>
+            <env key="DYLD_LIBRARY_PATH" value="vtkLibs/macosx_64bit}"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png} -Xms1G -Xmx6G"/>
             <classpath refid="run.SCEC-VDO MacOSX LargeMem.classpath"/>
         </java>
     </target>
     <target name="SCEC-VDO MacOSX">
         <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
-            <env key="DYLD_LIBRARY_PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/macosx_64bit}"/>
+            <env key="DYLD_LIBRARY_PATH" value="vtkLibs/macosx_64bit"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
             <classpath refid="run.SCEC-VDO MacOSX.classpath"/>
         </java>
     </target>
     <target name="SCEC-VDO MacOSX Arm">
         <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
-            <env key="DYLD_LIBRARY_PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/macosx_arm}"/>
+            <env key="DYLD_LIBRARY_PATH" value="vtkLibs/macosx_arm"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
             <classpath refid="run.SCEC-VDO MacOSX Arm.classpath"/>
         </java>
     </target>
     <target name="SCEC-VDO Windows64 LargeMem">
         <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
-            <env key="PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/windows_64bit}"/>
+            <env key="PATH" value="vtkLibs/windows_64bit"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png} -Xms1G -Xmx6G"/>
             <classpath refid="run.SCEC-VDO Windows64 LargeMem.classpath"/>
         </java>
     </target>
     <target name="SCEC-VDO Windows64">
         <java classname="org.scec.vtk.main.MainGUI" failonerror="true" fork="yes">
-            <env key="PATH" value="${workspace_loc:scec_vdo_vtk/vtkLibs/windows_64bit}"/>
+            <env key="PATH" value="vtkLibs/windows_64bit"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
             <classpath refid="run.SCEC-VDO Windows64.classpath"/>
         </java>
