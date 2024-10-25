@@ -8,34 +8,22 @@
     <property name="ECLIPSE_HOME" value="../../Documents/eclipse/"/>
     <property name="workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png" value="resources/SCECVDOlogo.png"/>
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.7"/>
-    <property name="source" value="1.7"/>
+    <property name="target" value="11"/>
+    <property name="source" value="11"/>
     <path id="scec_vdo_vtk.classpath">
         <pathelement location="classes"/>
-        <pathelement location="lib/jdom.jar"/>
-        <pathelement location="lib/log4j-1.2.9.jar"/>
-        <pathelement location="lib/jmf.jar"/>
         <pathelement location="lib/EventWebService.jar"/>
-        <pathelement location="lib/sdoutl.jar"/>
-        <pathelement location="lib/org-netbeans-swing-outline.jar"/>
-        <pathelement location="lib/gluegen-rt-natives-linux-amd64.jar"/>
-        <pathelement location="lib/gluegen-rt-natives-linux-armv6.jar"/>
-        <pathelement location="lib/gluegen-rt-natives-linux-armv6hf.jar"/>
-        <pathelement location="lib/gluegen-rt-natives-linux-i586.jar"/>
-        <pathelement location="lib/gluegen-rt-natives-macosx-universal.jar"/>
-        <pathelement location="lib/gluegen-rt-natives-windows-amd64.jar"/>
-        <pathelement location="lib/gluegen-rt.jar"/>
-        <pathelement location="lib/jogl-all-natives-linux-amd64.jar"/>
-        <pathelement location="lib/jogl-all-natives-linux-armv6.jar"/>
-        <pathelement location="lib/jogl-all-natives-linux-armv6hf.jar"/>
-        <pathelement location="lib/jogl-all-natives-linux-i586.jar"/>
-        <pathelement location="lib/jogl-all-natives-macosx-universal.jar"/>
-        <pathelement location="lib/jogl-all-natives-solaris-i586.jar"/>
-        <pathelement location="lib/jogl-all-natives-windows-amd64.jar"/>
-        <pathelement location="lib/jogl-all.jar"/>
-        <pathelement location="lib/vtk-9.1.0.jar"/>
         <pathelement location="lib/jcodec-0.2.0.jar"/>
+        <pathelement location="lib/jdom.jar"/>
+        <pathelement location="lib/jmf.jar"/>
+        <pathelement location="lib/jogamp-fat.jar"/>
+        <pathelement location="lib/jxlayer.jar"/>
+        <pathelement location="lib/log4j-1.2.9.jar"/>
         <pathelement location="lib/opensha.jar"/>
+        <pathelement location="lib/org-netbeans-swing-outline.jar"/>
+        <pathelement location="lib/sdoutl.jar"/>
+        <pathelement location="lib/useit-fast.jar"/>
+        <pathelement location="lib/vtk-9.1.0.jar"/>
     </path>
     <path id="run.SCEC-VDO Linux64 LargeMem.classpath">
         <pathelement location="lib/vtk-9.1.0.jar"/>
