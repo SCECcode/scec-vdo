@@ -123,7 +123,7 @@
         <jar destfile="${jar.output.path}">
     	<manifest>
     	    <attribute name="Main-Class" value="${main.class}"/>
-    	    <attribute name="Class-Path" value="scec_vdo_vtk.classpathut.SCEC-VDO.classpath"/>
+    	    <attribute name="Class-Path" value="scec_vdo_vtk.classpath"/>
     	</manifest>
         </jar>
     </target>
