@@ -5,9 +5,16 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="11"/>
     <property name="source" value="11"/>
+    <property name="version" value="24.10.0"/>
 
     <property name="main.class" value="org.scec.vtk.main.MainGUI"/>
-    <property name="jar.output.path" value="dist/SCEC-VDO.jar"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="output.app.arm" value="${dist.dir}/SCEC-VDO-arm.app"/>
+    <property name="output.app.x86" value="${dist.dir}/SCEC-VDO-x86.app"/>
+    <property name="jar.file" value="SCEC-VDO.jar"/>
+    <property name="jar.output.path" value="${dist.dir}/${jar.file}"/>
+    <property name="icon.path" value="resources/SCECVDOlogo.icns"/>
+
     <property name="macOS.arm.vtklibs.path" value="vtkLibs/macosx_arm"/>
     <property name="macOS.x86.vtklibs.path" value="vtkLibs/macosx_x86"/>
     <property name="windows.vtklibs.path" value="vtkLibs/windows"/>
@@ -27,10 +34,6 @@
         <pathelement location="lib/sdoutl.jar"/>
         <pathelement location="lib/useit-fast.jar"/>
         <pathelement location="lib/vtk-9.1.0.jar"/>
-    </path>
-    <path id="run.SCEC-VDO.classpath">
-        <pathelement location="lib/vtk-9.1.0.jar"/>
-        <path refid="scec_vdo_vtk.classpath"/>
     </path>
     <target name="init">
         <mkdir dir="classes"/>
@@ -92,6 +95,7 @@
     </target>
     <target name="clean">
         <delete dir="classes"/>
+	<delete dir="${dist.dir}"/>
     </target>
     <target depends="clean" name="cleanall"/>
     <target depends="build-subprojects,build-project" name="build"/>
@@ -115,11 +119,11 @@
     </target>
 
     <target name="create-jar" depends="clean, build">
-        <mkdir dir="dist"/>
+        <mkdir dir="${dist.dir}"/>
         <jar destfile="${jar.output.path}">
     	<manifest>
     	    <attribute name="Main-Class" value="${main.class}"/>
-    	    <attribute name="Class-Path" value="run.SCEC-VDO.classpath"/>
+    	    <attribute name="Class-Path" value="scec_vdo_vtk.classpathut.SCEC-VDO.classpath"/>
     	</manifest>
         </jar>
     </target>
@@ -129,7 +133,7 @@
             <env key="PATH" value="${env.PATH}:${windows.vtklibs.path}"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
             <classpath path="${jar.output.path}"/>
-            <classpath refid="run.SCEC-VDO.classpath"/>
+            <classpath refid="scec_vdo_vtk.classpath"/>
         </java>
     </target>
     
@@ -138,7 +142,7 @@
             <env key="LD_LIBRARY_PATH" value="${env.PATH}:${linux.vtklibs.path}"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
             <classpath path="${jar.output.path}"/>
-            <classpath refid="run.SCEC-VDO.classpath"/>
+            <classpath refid="scec_vdo_vtk.classpath"/>
         </java>
     </target>
     
@@ -147,7 +151,7 @@
             <env key="DYLD_LIBRARY_PATH" value="${env.PATH}:${macOS.arm.vtklibs.path}"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
             <classpath path="${jar.output.path}"/>
-            <classpath refid="run.SCEC-VDO.classpath"/>
+            <classpath refid="scec_vdo_vtk.classpath"/>
         </java>
     </target>
     
@@ -156,9 +160,8 @@
             <env key="DYLD_LIBRARY_PATH" value="${env.PATH}:${macOS.x86.vtklibs.path}"/>
             <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
             <classpath path="${jar.output.path}"/>
-            <classpath refid="run.SCEC-VDO.classpath"/>
+            <classpath refid="scec_vdo_vtk.classpath"/>
         </java>
     </target>
-
-    <!-- TODO: Create app bundle targets using https://github.com/joshmarinacci/AppBundler -->
+    <!-- TODO: Bundle executable jar from manifest jar, then package with jpackage -->
 </project>
