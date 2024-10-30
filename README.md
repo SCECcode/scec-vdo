@@ -19,9 +19,24 @@ To download latest packaged version of SCEC-VDO visit: [https://strike.scec.org/
 7)   Click Finish
 
 ### Steps for packaging SCEC-VDO
-Currently, we package applications as zip files, bundled with their JRE.
-In the future, we intend to package APP files for macOS and EXE files for Windows.
+#### v24.11.0
+First we build the SCEC-VDO.jar, bundled with its Manifest and compiled class files.
+```ant create-jar```
+If you just want to execute SCEC-VDO without packaging, you can use
+* Apple Silicon Macs: `ant run-macOS-arm`
+* Intel Macs: `ant run-macOS-x86`
+* Linux: `ant run-linux`
+* Windows: `ant run-windows`
 
+We then package the jar into an application with specified dynamic library path,
+external JARs and native libraries, and other resources and data.
+Packaging for macOS requires us to create an application folder. We can do so
+using Eclipse.
+
+We package the JAR using packr: https://github.com/libgdx/packr
+See the following document for detailed packaging instructions: TODO
+
+#### v24.10.0
 In each zip file, I add only the platform-specific script files, vtkLibs, and bundled JREs.
 JREs available at https://developer.ibm.com/languages/java/semeru-runtimes/downloads/
 

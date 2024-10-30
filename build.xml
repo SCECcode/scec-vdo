@@ -1,167 +1,231 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="build" name="scec_vdo_vtk">
-    <property environment="env"/>
-    <property name="workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png" value="resources/SCECVDOlogo.png"/>
-    <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="11"/>
-    <property name="source" value="11"/>
-    <property name="version" value="24.10.0"/>
+	<property environment="env"/>
+	<property name="workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png" value="resources/SCECVDOlogo.png"/>
+	<property name="debuglevel" value="source,lines,vars"/>
+	<property name="target" value="11"/>
+	<property name="source" value="11"/>
+	<property name="version" value="24.10.0"/>
 
-    <property name="main.class" value="org.scec.vtk.main.MainGUI"/>
-    <property name="dist.dir" value="dist"/>
-    <property name="output.app.arm" value="${dist.dir}/SCEC-VDO-arm.app"/>
-    <property name="output.app.x86" value="${dist.dir}/SCEC-VDO-x86.app"/>
-    <property name="jar.file" value="SCEC-VDO.jar"/>
-    <property name="jar.output.path" value="${dist.dir}/${jar.file}"/>
-    <property name="icon.path" value="resources/SCECVDOlogo.icns"/>
+	<property name="main.class" value="org.scec.vtk.main.MainGUI"/>
+	<property name="dist.dir" value="dist"/>
+	<property name="jar.file" value="SCEC-VDO.jar"/>
+	<property name="jar.output.path" value="${dist.dir}/${jar.file}"/>
+	<property name="icon.path" value="resources/SCECVDOlogo.icns"/>
 
-    <property name="macOS.arm.vtklibs.path" value="vtkLibs/macosx_arm"/>
-    <property name="macOS.x86.vtklibs.path" value="vtkLibs/macosx_x86"/>
-    <property name="windows.vtklibs.path" value="vtkLibs/windows"/>
-    <property name="linux.vtklibs.path" value="vtkLibs/linux"/>
+	<property name="macOS.arm.vtklibs.path" value="vtkLibs/macosx_arm"/>
+	<property name="macOS.x86.vtklibs.path" value="vtkLibs/macosx_64bit"/>
+	<property name="windows.vtklibs.path" value="vtkLibs/windows_64bit"/>
+	<property name="linux.vtklibs.path" value="vtkLibs/linux_64bit"/>
 
-    <path id="scec_vdo_vtk.classpath">
-        <pathelement location="classes"/>
-        <pathelement location="lib/EventWebService.jar"/>
-        <pathelement location="lib/jcodec-0.2.0.jar"/>
-        <pathelement location="lib/jdom.jar"/>
-        <pathelement location="lib/jmf.jar"/>
-        <pathelement location="lib/jogamp-fat.jar"/>
-        <pathelement location="lib/jxlayer.jar"/>
-        <pathelement location="lib/log4j-1.2.9.jar"/>
-        <pathelement location="lib/opensha.jar"/>
-        <pathelement location="lib/org-netbeans-swing-outline.jar"/>
-        <pathelement location="lib/sdoutl.jar"/>
-        <pathelement location="lib/useit-fast.jar"/>
-        <pathelement location="lib/vtk-9.1.0.jar"/>
-    </path>
-    <target name="init">
-        <mkdir dir="classes"/>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/PickingTestPlugin/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/GISHazusEventsPlugin/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/OpenSHAFaultPlugins/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/DummyPlugin/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/CommunityFaultModelPlugin/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/EarthquakeCatalogPlugin/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/SurfacePlugin/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="commons/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/ShakeMapPlugin/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="classes">
-            <fileset dir="plugins/LegendPlugin/src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-    </target>
-    <target name="clean">
-        <delete dir="classes"/>
-	<delete dir="${dist.dir}"/>
-    </target>
-    <target depends="clean" name="cleanall"/>
-    <target depends="build-subprojects,build-project" name="build"/>
-    <target name="build-subprojects"/>
-    <target depends="init" name="build-project">
-        <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="classes" includeantruntime="false" source="${source}" target="${target}">
-            <src path="src"/>
-            <src path="plugins/PickingTestPlugin/src"/>
-            <src path="plugins/GISHazusEventsPlugin/src"/>
-            <src path="plugins/OpenSHAFaultPlugins/src"/>
-            <src path="plugins/DummyPlugin/src"/>
-            <src path="plugins/CommunityFaultModelPlugin/src"/>
-            <src path="plugins/EarthquakeCatalogPlugin/src"/>
-            <src path="plugins/SurfacePlugin/src"/>
-            <src path="commons/src"/>
-            <src path="plugins/ShakeMapPlugin/src"/>
-            <src path="plugins/LegendPlugin/src"/>
-            <classpath refid="scec_vdo_vtk.classpath"/>
-        </javac>
-    </target>
+	<path id="scec_vdo_vtk.classpath">
+		<pathelement location="classes"/>
+		<fileset dir="lib">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+	<pathconvert property="manifest.classpath" pathsep=" ">
+		<path refid="scec_vdo_vtk.classpath"/>
+		<mapper>
+			<chainedmapper>
+				<flattenmapper/>
+				<globmapper from="*.jar" to="lib/*.jar"/>
+			</chainedmapper>
+		</mapper>
+	</pathconvert>
 
-    <target name="create-jar" depends="clean, build">
-        <mkdir dir="${dist.dir}"/>
-        <jar destfile="${jar.output.path}">
-    	<manifest>
-    	    <attribute name="Main-Class" value="${main.class}"/>
-    	    <attribute name="Class-Path" value="scec_vdo_vtk.classpath"/>
-    	</manifest>
-        </jar>
-    </target>
+	<target name="init">
+		<mkdir dir="classes"/>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/PickingTestPlugin/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/GISHazusEventsPlugin/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/OpenSHAFaultPlugins/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/DummyPlugin/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/CommunityFaultModelPlugin/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/EarthquakeCatalogPlugin/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/SurfacePlugin/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="commons/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/ShakeMapPlugin/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy includeemptydirs="false" todir="classes">
+			<fileset dir="plugins/LegendPlugin/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+	<target name="clean">
+		<delete dir="classes"/>
+		<delete dir="${dist.dir}"/>
+	</target>
+	<target depends="clean" name="cleanall"/>
+	<target depends="build-subprojects,build-project" name="build"/>
+	<target name="build-subprojects"/>
+	<target depends="init" name="build-project">
+		<echo message="${ant.project.name}: ${ant.file}"/>
+		<javac debug="true" debuglevel="${debuglevel}" destdir="classes" includeantruntime="true" source="${source}" target="${target}">
+		<src path="src"/>
+		<src path="plugins/PickingTestPlugin/src"/>
+		<src path="plugins/GISHazusEventsPlugin/src"/>
+		<src path="plugins/OpenSHAFaultPlugins/src"/>
+		<src path="plugins/DummyPlugin/src"/>
+		<src path="plugins/CommunityFaultModelPlugin/src"/>
+		<src path="plugins/EarthquakeCatalogPlugin/src"/>
+		<src path="plugins/SurfacePlugin/src"/>
+		<src path="commons/src"/>
+		<src path="plugins/ShakeMapPlugin/src"/>
+		<src path="plugins/LegendPlugin/src"/>
+		<classpath refid="scec_vdo_vtk.classpath"/>
+		</javac>
+	</target>
 
-    <target name="run-windows" depends="create-jar">
-        <java classname="${main.class}" fork="yes" failonerror="true">
-            <env key="PATH" value="${env.PATH}:${windows.vtklibs.path}"/>
-            <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
-            <classpath path="${jar.output.path}"/>
-            <classpath refid="scec_vdo_vtk.classpath"/>
-        </java>
-    </target>
-    
-    <target name="run-linux" depends="create-jar">
-        <java classname="${main.class}" fork="yes" failonerror="true">
-            <env key="LD_LIBRARY_PATH" value="${env.PATH}:${linux.vtklibs.path}"/>
-            <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
-            <classpath path="${jar.output.path}"/>
-            <classpath refid="scec_vdo_vtk.classpath"/>
-        </java>
-    </target>
-    
-    <target name="run-macOS-arm" depends="create-jar">
-        <java classname="${main.class}" fork="yes" failonerror="true">
-            <env key="DYLD_LIBRARY_PATH" value="${env.PATH}:${macOS.arm.vtklibs.path}"/>
-            <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
-            <classpath path="${jar.output.path}"/>
-            <classpath refid="scec_vdo_vtk.classpath"/>
-        </java>
-    </target>
-    
-    <target name="run-macOS-x86" depends="create-jar">
-        <java classname="${main.class}" fork="yes" failonerror="true">
-            <env key="DYLD_LIBRARY_PATH" value="${env.PATH}:${macOS.x86.vtklibs.path}"/>
-            <jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
-            <classpath path="${jar.output.path}"/>
-            <classpath refid="scec_vdo_vtk.classpath"/>
-        </java>
-    </target>
-    <!-- TODO: Bundle executable jar from manifest jar, then package with jpackage -->
+	<!-- Execute SCEC-VDO for all platforms without bundling an app -->
+	<target name="run-windows" depends="clean, build">
+		<java classname="${main.class}" fork="yes" failonerror="true">
+			<env key="PATH" value="${env.PATH}:${windows.vtklibs.path}"/>
+			<jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
+			<classpath refid="scec_vdo_vtk.classpath"/>
+		</java>
+	</target>
+	<target name="run-linux" depends="clean, build">
+		<java classname="${main.class}" fork="yes" failonerror="true">
+			<env key="LD_LIBRARY_PATH" value="${env.PATH}:${linux.vtklibs.path}"/>
+			<jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
+			<classpath refid="scec_vdo_vtk.classpath"/>
+		</java>
+	</target>
+	<target name="run-macOS-arm" depends="clean, build">
+		<java classname="${main.class}" fork="yes" failonerror="true">
+			<env key="DYLD_LIBRARY_PATH" value="${env.PATH}:${macOS.arm.vtklibs.path}"/>
+			<jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
+			<classpath refid="scec_vdo_vtk.classpath"/>
+		</java>
+	</target>
+	<target name="run-macOS-x86" depends="clean, build">
+		<java classname="${main.class}" fork="yes" failonerror="true">
+			<env key="DYLD_LIBRARY_PATH" value="${env.PATH}:${macOS.x86.vtklibs.path}"/>
+			<jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
+			<classpath refid="scec_vdo_vtk.classpath"/>
+		</java>
+	</target>
+
+	<target name="create-jar" depends="clean, build">
+		<mkdir dir="${dist.dir}"/>
+		<copy todir="${dist.dir}/lib">
+			<fileset dir="lib/"/>
+		</copy>
+		<jar destfile="${jar.output.path}">
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}"/>
+				<attribute name="Class-Path" value="${manifest.classpath}"/>
+			</manifest>
+			<fileset dir="classes"/>
+		</jar>
+	</target>
+
+<target name="bundle-macos-app" depends="create-jar">
+    <exec executable="jpackage">
+        <!-- Specify type for macOS -->
+        <arg value="--type"/>
+        <arg value="app-image"/>
+        
+        <!-- Input and Output -->
+        <arg value="--input"/>
+        <arg path="lib"/> <!-- Directory with dependencies -->
+        
+        <arg value="--dest"/>
+        <arg path="${dist.dir}"/>
+        
+        <!-- Main JAR File -->
+        <arg value="--main-jar"/>
+        <arg value="YourApp.jar"/>
+        
+        <!-- Main Class -->
+        <arg value="--main-class"/>
+        <arg value="${main.class}"/>
+        
+        <!-- Application Name -->
+        <arg value="--name"/>
+        <arg value="SCEC-VDO"/>
+        
+        <!-- Application Icon -->
+        <arg value="--icon"/>
+        <arg path="resources/SCECVDOlogo.icns"/>
+        
+        <!-- Runtime JRE -->
+        <arg value="--runtime-image"/>
+        <arg path="/Users/bhatthal/Downloads/jdk-23+37-jre"/> <!-- NOTE: Download JRE and update path -->
+        
+        <!-- JVM Options -->
+        <arg value="--java-options"/>
+        <arg value="-Xmx1024m -splash:resources/SCECVDOlogo.png"/>
+
+        <!-- Resources -->
+        <arg value="--resource-dir"/>
+        <arg path="resources vtkLibs/macosx_arm"/>
+    </exec>
+</target>
+
+
+    <!-- TODO: Try bundling them externally first -->
+	<!-- Create a platform-specific jar with bundled VTK library -->
+	<target name="create-jar-windows" depends="create-jar">
+		<jar destfile="${jar.output.path}" update="true">
+			<fileset dir="${windows.vtklibs.path}"/>
+		</jar>
+	</target>
+	<target name="create-jar-linux" depends="create-jar">
+		<jar destfile="${jar.output.path}" update="true">
+			<fileset dir="${linux.vtklibs.path}"/>
+		</jar>
+	</target>
+	<target name="create-jar-macOS-x86" depends="create-jar">
+		<jar destfile="${jar.output.path}" update="true">
+			<fileset dir="${macOS.x86.vtklibs.path}"/>
+		</jar>
+	</target>
+	<target name="create-jar-macOS-arm" depends="create-jar">
+		<jar destfile="${jar.output.path}" update="true">
+			<fileset dir="${macOS.arm.vtklibs.path}"/>
+		</jar>
+	</target>
+
 </project>
