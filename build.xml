@@ -172,22 +172,22 @@
 			<fileset dir="classes"/>
 		</jar>
 	</target>
-	<target name="create-jar-windows" depends="create-jar">
+	<target name="build-windows" depends="create-jar">
 		<copy todir="${dist.dir}\${windows.vtklibs.path}">
 			<fileset dir="${windows.vtklibs.path}"/>
 		</copy>
 	</target>
-	<target name="create-jar-linux" depends="create-jar">
+	<target name="build-linux" depends="create-jar">
 		<copy todir="${dist.dir}/${linux.vtklibs.path}">
 			<fileset dir="${linux.vtklibs.path}"/>
 		</copy>
 	</target>
-	<target name="create-jar-macOS-x86" depends="create-jar">
+	<target name="build-macOS-x86" depends="create-jar">
 		<copy todir="${dist.dir}/${macOS.x86.vtklibs.path}">
 			<fileset dir="${macOS.x86.vtklibs.path}"/>
 		</copy>
 	</target>
-	<target name="create-jar-macOS-arm" depends="create-jar">
+	<target name="build-macOS-arm" depends="create-jar">
 		<copy todir="${dist.dir}/${macOS.arm.vtklibs.path}">
 			<fileset dir="${macOS.arm.vtklibs.path}"/>
 		</copy>
