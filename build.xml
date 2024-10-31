@@ -117,7 +117,7 @@
 		</javac>
 	</target>
 
-	<!-- Execute SCEC-VDO for all platforms without bundling an app -->
+	<!-- Execute SCEC-VDO for all platforms without building a jar file -->
 	<target name="run-windows" depends="clean, build">
 		<java classname="${main.class}" fork="yes" failonerror="true">
 			<env key="PATH" value="${env.PATH};${windows.vtklibs.path}"/>
@@ -170,7 +170,6 @@
 				<attribute name="Class-Path" value="${manifest.classpath}"/>
 			</manifest>
 			<fileset dir="classes"/>
-			<!--<fileset dir="${macOS.arm.vtklibs.path}"/>-->
 		</jar>
 	</target>
 	<target name="create-jar-windows" depends="create-jar">
@@ -193,5 +192,4 @@
 			<fileset dir="${macOS.arm.vtklibs.path}"/>
 		</copy>
 	</target>
-
 </project>
