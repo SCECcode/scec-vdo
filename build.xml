@@ -147,85 +147,51 @@
 		</java>
 	</target>
 
+	<!-- Create a JAR and copy resources for packaging -->
 	<target name="create-jar" depends="clean, build">
+		<!-- Copy resources and libs -->
 		<mkdir dir="${dist.dir}"/>
 		<copy todir="${dist.dir}/lib">
-			<fileset dir="lib/"/>
+			<fileset dir="lib"/>
 		</copy>
+		<copy todir="${dist.dir}/resources">
+			<fileset dir="resources"/>
+		</copy>
+		<copy todir="${dist.dir}/data">
+			<fileset dir="data"/>
+		</copy>
+		<copy todir="${dist.dir}/conf">
+			<fileset dir="conf"/>
+		</copy>
+		<!-- Create the JAR with bundled class files -->
 		<jar destfile="${jar.output.path}">
 			<manifest>
 				<attribute name="Main-Class" value="${main.class}"/>
 				<attribute name="Class-Path" value="${manifest.classpath}"/>
 			</manifest>
 			<fileset dir="classes"/>
+			<!--<fileset dir="${macOS.arm.vtklibs.path}"/>-->
 		</jar>
 	</target>
-
-<target name="bundle-macos-app" depends="create-jar">
-    <exec executable="jpackage">
-        <!-- Specify type for macOS -->
-        <arg value="--type"/>
-        <arg value="app-image"/>
-        
-        <!-- Input and Output -->
-        <arg value="--input"/>
-        <arg path="lib"/> <!-- Directory with dependencies -->
-        
-        <arg value="--dest"/>
-        <arg path="${dist.dir}"/>
-        
-        <!-- Main JAR File -->
-        <arg value="--main-jar"/>
-        <arg value="YourApp.jar"/>
-        
-        <!-- Main Class -->
-        <arg value="--main-class"/>
-        <arg value="${main.class}"/>
-        
-        <!-- Application Name -->
-        <arg value="--name"/>
-        <arg value="SCEC-VDO"/>
-        
-        <!-- Application Icon -->
-        <arg value="--icon"/>
-        <arg path="resources/SCECVDOlogo.icns"/>
-        
-        <!-- Runtime JRE -->
-        <arg value="--runtime-image"/>
-        <arg path="/Users/bhatthal/Downloads/jdk-23+37-jre"/> <!-- NOTE: Download JRE and update path -->
-        
-        <!-- JVM Options -->
-        <arg value="--java-options"/>
-        <arg value="-Xmx1024m -splash:resources/SCECVDOlogo.png"/>
-
-        <!-- Resources -->
-        <arg value="--resource-dir"/>
-        <arg path="resources vtkLibs/macosx_arm"/>
-    </exec>
-</target>
-
-
-    <!-- TODO: Try bundling them externally first -->
-	<!-- Create a platform-specific jar with bundled VTK library -->
 	<target name="create-jar-windows" depends="create-jar">
-		<jar destfile="${jar.output.path}" update="true">
+		<copy todir="${dist.dir}/${windows.vtklibs.path}">
 			<fileset dir="${windows.vtklibs.path}"/>
-		</jar>
+		</copy>
 	</target>
 	<target name="create-jar-linux" depends="create-jar">
-		<jar destfile="${jar.output.path}" update="true">
+		<copy todir="${dist.dir}/${linux.vtklibs.path}">
 			<fileset dir="${linux.vtklibs.path}"/>
-		</jar>
+		</copy>
 	</target>
 	<target name="create-jar-macOS-x86" depends="create-jar">
-		<jar destfile="${jar.output.path}" update="true">
+		<copy todir="${dist.dir}/${macOS.x86.vtklibs.path}">
 			<fileset dir="${macOS.x86.vtklibs.path}"/>
-		</jar>
+		</copy>
 	</target>
 	<target name="create-jar-macOS-arm" depends="create-jar">
-		<jar destfile="${jar.output.path}" update="true">
+		<copy todir="${dist.dir}/${macOS.arm.vtklibs.path}">
 			<fileset dir="${macOS.arm.vtklibs.path}"/>
-		</jar>
+		</copy>
 	</target>
 
 </project>
