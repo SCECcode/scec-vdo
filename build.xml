@@ -15,7 +15,7 @@
 
 	<property name="macOS.arm.vtklibs.path" value="vtkLibs/macosx_arm"/>
 	<property name="macOS.x86.vtklibs.path" value="vtkLibs/macosx_64bit"/>
-	<property name="windows.vtklibs.path" value="vtkLibs/windows_64bit"/>
+	<property name="windows.vtklibs.path" value="vtkLibs\windows_64bit"/>
 	<property name="linux.vtklibs.path" value="vtkLibs/linux_64bit"/>
 
 	<path id="scec_vdo_vtk.classpath">
@@ -120,7 +120,7 @@
 	<!-- Execute SCEC-VDO for all platforms without bundling an app -->
 	<target name="run-windows" depends="clean, build">
 		<java classname="${main.class}" fork="yes" failonerror="true">
-			<env key="PATH" value="${env.PATH}:${windows.vtklibs.path}"/>
+			<env key="PATH" value="${env.PATH};${windows.vtklibs.path}"/>
 			<jvmarg line="-splash:${workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png}"/>
 			<classpath refid="scec_vdo_vtk.classpath"/>
 		</java>
@@ -174,7 +174,7 @@
 		</jar>
 	</target>
 	<target name="create-jar-windows" depends="create-jar">
-		<copy todir="${dist.dir}/${windows.vtklibs.path}">
+		<copy todir="${dist.dir}\${windows.vtklibs.path}">
 			<fileset dir="${windows.vtklibs.path}"/>
 		</copy>
 	</target>
