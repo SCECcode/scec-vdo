@@ -163,6 +163,9 @@
 		<copy todir="${dist.dir}/conf">
 			<fileset dir="conf"/>
 		</copy>
+		<copy todir="${dist.dir}/plugins">
+			<fileset dir="plugins"/>
+		</copy>
 		<!-- Create the JAR with bundled class files -->
 		<jar destfile="${jar.output.path}">
 			<manifest>
