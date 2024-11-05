@@ -3,8 +3,7 @@
 	<property environment="env"/>
 	<property name="workspace_loc:scec_vdo_vtk/resources/SCECVDOlogo.png" value="resources/SCECVDOlogo.png"/>
 	<property name="debuglevel" value="source,lines,vars"/>
-	<property name="target" value="11"/>
-	<property name="source" value="11"/>
+	<property name="release" value="11"/>
 	<property name="version" value="24.10.0"/>
 
 	<property name="main.class" value="org.scec.vtk.main.MainGUI"/>
@@ -101,7 +100,7 @@
 	<target name="build-subprojects"/>
 	<target depends="init" name="build-project">
 		<echo message="${ant.project.name}: ${ant.file}"/>
-		<javac debug="true" debuglevel="${debuglevel}" destdir="classes" includeantruntime="true" source="${source}" target="${target}">
+		<javac debug="true" debuglevel="${debuglevel}" destdir="classes" includeantruntime="true" release="${release}">
 		<src path="src"/>
 		<src path="plugins/PickingTestPlugin/src"/>
 		<src path="plugins/GISHazusEventsPlugin/src"/>
