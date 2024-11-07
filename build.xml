@@ -175,7 +175,8 @@
 		</jar>
 	</target>
 	<target name="build-windows" depends="create-jar">
-		<copy todir="${dist.dir}\${windows.vtklibs.path}">
+		<!-- Flatten DLLs to identify dependent libs -->
+		<copy todir="${dist.dir}">
 			<fileset dir="${windows.vtklibs.path}"/>
 		</copy>
 	</target>
