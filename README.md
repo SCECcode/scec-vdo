@@ -35,7 +35,8 @@ First we build the SCEC-VDO.jar, bundled with its Manifest and compiled class fi
 We then package the jar into an application with specified dynamic library path,
 external JARs and native libraries, and other resources and data.
 
-See the following document for detailed packaging instructions: TODO
+See the following document for detailed packaging instructions:
+[SCEC-VDO Packaging](https://docs.google.com/document/d/135xI0n7cgce3PGLWkvfQ-3silFck3fQHeVdXnj_H-W8/edit?usp=sharing)
 
 #### v24.10.0
 In each zip file, I add only the platform-specific script files, vtkLibs, and bundled JREs.
