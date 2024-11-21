@@ -71,7 +71,7 @@ public class FaultActorBundle {
 			opacity = faultBundle.getMyOpacity();
 		else
 			opacity = 0;
-		int totNumTuples = colorArray.GetNumberOfTuples();
+		int totNumTuples = (int) colorArray.GetNumberOfTuples();
 		for (int index=firstIndex; index<=lastIndex; index++) {
 			Preconditions.checkState(index < totNumTuples, "Bad tuple index. index=%s, num tuples=%s", index, totNumTuples);
 			double[] orig = colorArray.GetTuple4(index);

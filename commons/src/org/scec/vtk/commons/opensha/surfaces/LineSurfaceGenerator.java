@@ -175,7 +175,7 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 	@Override
 	protected void setActorProperties(vtkActor actor, boolean bundle, Color color, double opacity) {
 		super.setActorProperties(actor, bundle, color, opacity);
-		actor.GetProperty().SetLineWidth(lineSizeParam.getValue());
+		actor.GetProperty().SetLineWidth(lineSizeParam.getValue().floatValue());
 	}
 	
 	public void setSize(double size) {

@@ -272,7 +272,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSe
 
 			Color color = getColorForValue(rup.getMag());
 			
-			int index = spherePoints[i].GetNumberOfPoints();
+			int index = (int) spherePoints[i].GetNumberOfPoints();
 			spherePoints[i].InsertNextPoint(pt);
 			sphereRadius[i].InsertNextTuple1(size);
 			sphereColors[i].InsertNextTuple4(color.getRed(), color.getGreen(), color.getBlue(), 255);

@@ -99,7 +99,7 @@ public abstract class GeometryGenerator implements Named {
 				vtkUnsignedCharArray colors = bundle.getColorArray();
 				int firstIndex = bundleList.getMyFirstPointIndex();
 				int lastIndex = firstIndex + bundleList.getMyNumPointsForColoring() - 1;
-				int totNumTuples = colors.GetNumberOfTuples();
+				int totNumTuples = (int) colors.GetNumberOfTuples();
 //				System.out.println("Updating color for points at index "+firstIndex+" through "+lastIndex);
 				for (int index=firstIndex; index<=lastIndex; index++) {
 					Preconditions.checkState(index < totNumTuples, "Bad tuple index. index=%s, num tuples=%s", index, totNumTuples);
@@ -284,7 +284,7 @@ public abstract class GeometryGenerator implements Named {
 			Integer index = pointsIndexMap.get(point);
 			if (index == null) {
 				// new point
-				index = points.GetNumberOfPoints();
+				index = (int) points.GetNumberOfPoints();
 				points.InsertNextPoint(point);
 				if (colorsArray != null)
 					colorsArray.InsertNextTuple4(r, g, b, a);
@@ -347,7 +347,7 @@ public abstract class GeometryGenerator implements Named {
 		}
 		int firstIndex;
 		synchronized (synchOn) {
-			firstIndex = pts.GetNumberOfPoints();
+			firstIndex = (int) pts.GetNumberOfPoints();
 			PointOrganizer organizer = new PointOrganizer(pts, colors, color);
 			for (PointArray cell : cellDatas) {
 				switch (type) {
@@ -412,7 +412,7 @@ public abstract class GeometryGenerator implements Named {
 		FaultSectionActorList list;
 		if (bundle) {
 			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
-			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, pts.GetNumberOfPoints()-firstIndex, myOpacity);
+			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, (int) (pts.GetNumberOfPoints()-firstIndex), myOpacity);
 		} else {
 			list = new FaultSectionActorList(fault);
 			list.add(actor);

@@ -149,7 +149,7 @@ public class PluginActors {
 				copy.SetMapper(((vtkActor) actor).GetMapper());
 				copy.GetProperty().SetColor(((vtkActor) actor).GetProperty().GetColor());
 				copy.GetProperty().SetOpacity(((vtkActor) actor).GetProperty().GetOpacity());
-				copy.GetProperty().SetTexture(0,((vtkActor) actor).GetProperty().GetTexture(0));
+				copy.GetProperty().SetTexture("0",((vtkActor) actor).GetProperty().GetTexture("0"));
 				copy.SetPosition(((vtkActor) actor).GetPosition());
 				System.out.println(copy.GetProperty().GetColor()[0]);
 				addActor(copy);
