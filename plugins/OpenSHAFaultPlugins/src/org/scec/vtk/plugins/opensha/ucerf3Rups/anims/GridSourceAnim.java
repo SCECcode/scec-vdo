@@ -226,7 +226,7 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 			allLocsActor = new vtkActor();
 			allLocsActor.SetMapper(mapper);
 //			curActor.GetProperty().SetPointSize(pointSizeParam.getValue());
-			allLocsActor.GetProperty().SetPointSize(3d);
+			allLocsActor.GetProperty().SetPointSize(3f);
 			allLocsActor.GetProperty().SetColor(GeometryGenerator.getColorDoubleArray(Color.GREEN.darker()));
 			allLocsActor.GetProperty().SetOpacity(1d);
 			allLocsActor.Modified();
@@ -318,7 +318,7 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 				singleLocActor = new vtkActor();
 				singleLocActor.SetMapper(mapper);
 //				curActor.GetProperty().SetPointSize(pointSizeParam.getValue());
-				singleLocActor.GetProperty().SetPointSize(7d);
+				singleLocActor.GetProperty().SetPointSize(7f);
 				singleLocActor.GetProperty().SetColor(GeometryGenerator.getColorDoubleArray(surfActor == null ? Color.RED : Color.BLUE));
 				singleLocActor.GetProperty().SetOpacity(1d);
 				singleLocActor.Modified();

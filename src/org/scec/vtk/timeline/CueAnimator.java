@@ -257,7 +257,7 @@ public class CueAnimator {
 				vtkRenderWindow rw = MainGUI.getRenderWindow().getRenderWindow();
 				vtkUnsignedCharArray data = new vtkUnsignedCharArray();
 				int front = 1;
-				rw.GetPixelData(0, 0, dims.width-1, dims.height-1, front, data);
+				rw.GetPixelData(0, 0, dims.width-1, dims.height-1, front, data, 0);
 				int index = 0;
 				boolean nonZero = false;
 				for (int y=0; y<dims.height; y++) {

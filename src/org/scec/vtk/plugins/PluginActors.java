@@ -126,31 +126,32 @@ public class PluginActors {
 	 */
 	public void deepCopy(PluginActors source) {
 		
-		for (vtkProp actor : source.getActors())
+		for (vtkProp prop : source.getActors())
 		{
-			if (actor instanceof vtkActor)
+			if (prop instanceof vtkActor)
 			{
+				vtkActor actor = (vtkActor)prop;
 				vtkActor copy = new vtkActor();
-				copy.SetVisibility(actor.GetVisibility());
-				copy.SetPickable(actor.GetPickable());
-				copy.SetDragable(actor.GetDragable());
-				copy.SetUseBounds(actor.GetUseBounds());
-				copy.SetAllocatedRenderTime(actor.GetAllocatedRenderTime(), null);
-				copy.SetEstimatedRenderTime(actor.GetEstimatedRenderTime());
-				copy.SetRenderTimeMultiplier(actor.GetRenderTimeMultiplier());
+				copy.SetVisibility(prop.GetVisibility());
+				copy.SetPickable(prop.GetPickable());
+				copy.SetDragable(prop.GetDragable());
+				copy.SetUseBounds(prop.GetUseBounds());
+				copy.SetAllocatedRenderTime(prop.GetAllocatedRenderTime(), null);
+				copy.SetEstimatedRenderTime(prop.GetEstimatedRenderTime());
+				copy.SetRenderTimeMultiplier(prop.GetRenderTimeMultiplier());
 			
-				for (int i=0; i<actor.GetNumberOfConsumers(); i++)
+				for (int i=0; i<prop.GetNumberOfConsumers(); i++)
 				{
-					copy.AddConsumer(actor.GetConsumer(i));
+					copy.AddConsumer(prop.GetConsumer(i));
 				}
-				copy.SetPropertyKeys(actor.GetPropertyKeys());
-				copy.SetDebug(actor.GetDebug());
-				copy.SetReferenceCount(actor.GetReferenceCount());
-				copy.SetMapper(((vtkActor) actor).GetMapper());
-				copy.GetProperty().SetColor(((vtkActor) actor).GetProperty().GetColor());
-				copy.GetProperty().SetOpacity(((vtkActor) actor).GetProperty().GetOpacity());
-				copy.GetProperty().SetTexture(0,((vtkActor) actor).GetProperty().GetTexture(0));
-				copy.SetPosition(((vtkActor) actor).GetPosition());
+				copy.SetPropertyKeys(prop.GetPropertyKeys());
+				copy.SetDebug(prop.GetDebug());
+				copy.SetReferenceCount(prop.GetReferenceCount());
+				copy.SetMapper(actor.GetMapper());
+				copy.GetProperty().SetColor(actor.GetProperty().GetColor());
+				copy.GetProperty().SetOpacity(actor.GetProperty().GetOpacity());
+				copy.SetTexture(actor.GetTexture());
+				copy.SetPosition(actor.GetPosition());
 				System.out.println(copy.GetProperty().GetColor()[0]);
 				addActor(copy);
 			}
