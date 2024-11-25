@@ -13,6 +13,7 @@ import org.opensha.commons.geo.LocationList;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.BooleanParameter;
 import org.opensha.sha.earthquake.ProbEqkRupture;
 import org.opensha.sha.earthquake.ProbEqkSource;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
@@ -25,7 +26,6 @@ import org.opensha.sha.earthquake.param.BackgroundRupType;
 import org.opensha.sha.faultSurface.PointSurface;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
-import org.scec.vtk.commons.opensha.faults.anim.FaultAnimation;
 import org.scec.vtk.commons.opensha.faults.anim.IDBasedFaultAnimation;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
@@ -42,7 +42,6 @@ import vtk.vtkActor;
 import vtk.vtkDataSetMapper;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
-import vtk.vtkUnstructuredGrid;
 import vtk.vtkVertexGlyphFilter;
 
 public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChangeListener, ParameterChangeListener {
@@ -59,13 +58,15 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 	
 	private int curStep = -1;
 	private int curSourceIndex = -1;
-	private vtkActor locActor;
+	private vtkActor singleLocActor;
+	private vtkActor allLocsActor;
 	private vtkActor surfActor;
 	private ProbEqkSource curSource;
 	private ProbEqkRupture curRupture;
 	
 	private BackgroundRupType bgType = BackgroundRupType.POINT;
 	private BackgroundRupParam bgTypeParam;
+	private BooleanParameter showAllSourceLocsParam;
 	private ParameterList params;
 
 	private PluginActors actors;
@@ -79,7 +80,10 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 		bgTypeParam = new BackgroundRupParam();
 		bgTypeParam.setValue(bgType);
 		bgTypeParam.addParameterChangeListener(this);
+		showAllSourceLocsParam = new BooleanParameter("Show all source locations");
+		showAllSourceLocsParam.addParameterChangeListener(this);
 		params.addParameter(bgTypeParam);
+		params.addParameter(showAllSourceLocsParam);
 	}
 
 	@Override
@@ -135,10 +139,18 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 	@Override
 	public synchronized void setCurrentStep(int step) {
 		if (step <= 0 || sol == null) {
-			if (locActor != null || surfActor != null) {
-				if (locActor != null) {
-					actors.removeActor(locActor);
-					locActor = null;
+			if (allLocsActor != null || singleLocActor == null || surfActor != null) {
+				if (allLocsActor != null) {
+					actors.removeActor(allLocsActor);
+					allLocsActor = null;
+				}
+				if (singleLocActor != null) {
+					actors.removeActor(singleLocActor);
+					singleLocActor = null;
+				}
+				if (allLocsActor != null) {
+					actors.removeActor(allLocsActor);
+					allLocsActor = null;
 				}
 				if (surfActor != null) {
 					actors.removeActor(surfActor);
@@ -151,14 +163,20 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 		}
 		checkInit();
 		
+		boolean showAll = showAllSourceLocsParam.getValue();
+		if (allLocsActor != null && !showAll) {
+			actors.removeActor(allLocsActor);
+			allLocsActor = null;
+		}
+		
 		if (step == curStep)
 			return;
 		
 		curStep = step;
 		
-		if (locActor != null) {
-			actors.removeActor(locActor);
-			locActor = null;
+		if (singleLocActor != null) {
+			actors.removeActor(singleLocActor);
+			singleLocActor = null;
 		}
 		if (surfActor != null) {
 			actors.removeActor(surfActor);
@@ -166,8 +184,9 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 		}
 		
 		int index = getIDForStep(step);
-		if (index == totNumRups) {
-			// special case to show them all
+		
+		if ((index == totNumRups || showAll) && allLocsActor == null) {
+			// show them all
 			LocationList uniqueLocs = new LocationList();
 			Preconditions.checkState(gridProv instanceof GridSourceList);
 			GridSourceList gridSources = (GridSourceList)gridProv;
@@ -204,39 +223,47 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 			
 			mapper.SetInputConnection(vertexGlyphFilter.GetOutputPort());
 			
-			locActor = new vtkActor();
-			locActor.SetMapper(mapper);
+			allLocsActor = new vtkActor();
+			allLocsActor.SetMapper(mapper);
 //			curActor.GetProperty().SetPointSize(pointSizeParam.getValue());
-			locActor.GetProperty().SetPointSize(3f);
-			locActor.GetProperty().SetColor(GeometryGenerator.getColorDoubleArray(Color.GREEN.darker()));
-			locActor.GetProperty().SetOpacity(1d);
-			locActor.Modified();
-			actors.addActor(locActor);
-		} else {
+			allLocsActor.GetProperty().SetPointSize(3f);
+			allLocsActor.GetProperty().SetColor(GeometryGenerator.getColorDoubleArray(Color.GREEN.darker()));
+			allLocsActor.GetProperty().SetOpacity(1d);
+			allLocsActor.Modified();
+			actors.addActor(allLocsActor);
+		}
+		if (index < totNumRups) {
+			System.out.println("index="+index);
 			Preconditions.checkState(index < totNumRups, "Bad index=%s for step=%s, totNumRups=%s", index, step, totNumRups);
 			ProbEqkRupture rupture = null;
 			if (curSourceIndex >= 0 && index >= sourceRupIndexes[curSourceIndex]) {
 				// see if it's the same or nexmyNumt source
 				int delta = index - sourceRupIndexes[curSourceIndex];
+				System.out.println("\tdelta="+delta+" for source "+curSourceIndex);
 				int myNum = gridSources[curSourceIndex].getNumRuptures();
 				if (delta < myNum) {
 					// still within the same source
+					System.out.println("\tstill within same source (rupture "+delta+")");
 					rupture = gridSources[curSourceIndex].getRupture(delta);
 				} else if (delta == myNum) {
-					rupture = gridSources[curSourceIndex+1].getRupture(0);
 					curSourceIndex++;
+					rupture = gridSources[curSourceIndex].getRupture(0);
+					System.out.println("\tFirst rupture of next source (source "+curSourceIndex+" rupture 0)");
 				}
 			}
 			if (rupture == null) {
 				// need to do a search
 				curSourceIndex = Arrays.binarySearch(sourceRupIndexes, index);
+				System.out.println("\tDid a new search, sourceIndex="+curSourceIndex);
 				if (curSourceIndex < 0) {
 					// this is an "insertion index"
 					curSourceIndex = -(curSourceIndex + 1);
 					// we actually need one minus that
 					curSourceIndex--;
+					System.out.println("\tAfter conversion from insertion index: "+curSourceIndex);
 				}
 				int rupIndex = index - sourceRupIndexes[curSourceIndex];
+				System.out.println("\trupIndex = "+index+" - "+sourceRupIndexes[curSourceIndex]+" = "+rupIndex);
 				Preconditions.checkState(rupIndex >= 0, "rupIndex=%s, curStep=%s, sourceRupIndexes[%s] = %s",
 						rupIndex, index, curSourceIndex, sourceRupIndexes[curSourceIndex]);
 				rupture = gridSources[curSourceIndex].getRupture(rupIndex);
@@ -288,14 +315,14 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 				
 				mapper.SetInputConnection(vertexGlyphFilter.GetOutputPort());
 				
-				locActor = new vtkActor();
-				locActor.SetMapper(mapper);
+				singleLocActor = new vtkActor();
+				singleLocActor.SetMapper(mapper);
 //				curActor.GetProperty().SetPointSize(pointSizeParam.getValue());
-				locActor.GetProperty().SetPointSize(5f);
-				locActor.GetProperty().SetColor(GeometryGenerator.getColorDoubleArray(surfActor == null ? Color.RED : Color.BLUE));
-				locActor.GetProperty().SetOpacity(1d);
-				locActor.Modified();
-				actors.addActor(locActor);
+				singleLocActor.GetProperty().SetPointSize(7f);
+				singleLocActor.GetProperty().SetColor(GeometryGenerator.getColorDoubleArray(surfActor == null ? Color.RED : Color.BLUE));
+				singleLocActor.GetProperty().SetOpacity(1d);
+				singleLocActor.Modified();
+				actors.addActor(singleLocActor);
 			}
 		}
 		
@@ -374,7 +401,13 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 
 	@Override
 	public void parameterChange(ParameterChangeEvent event) {
-		fireRangeChangeEvent();
+		if (event.getParameter() == bgTypeParam) {
+			fireRangeChangeEvent();
+		} else if (event.getParameter() == showAllSourceLocsParam) {
+			int curStep = this.curStep;
+			setCurrentStep(-1);
+			setCurrentStep(curStep);
+		}
 	}
 
 	@Override
