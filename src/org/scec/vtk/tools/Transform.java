@@ -12,7 +12,7 @@ public class Transform {
 	public static double calcRadius(double lat) {
 		double radius =
 				re * Math.pow((1 + (((re * re - rp * rp) / (rp * rp))
-						* (Math.sin(Math.toRadians(lat)) * Math.sin(Math.toRadians(lat))))),-0.5);
+						* (Math.pow(Math.sin(Math.toRadians(lat)), 2)))),-0.5);
 		return radius;
 	}
 
@@ -27,21 +27,27 @@ public class Transform {
 	public static double[] customTransform(double[] latlon)
 	{
 
-		double phi = latlon[1];
-		double theta = latlon[2];
+		double phi = latlon[1]; // lat
+		double theta = latlon[2]; // lon
 
 		// Clamp to lat/long bounds
-		theta = (theta >  180.0) ?  180.0 : theta;
-		theta = (theta < -180.0) ? -180.0 : theta;
+//		theta = (theta >  180.0) ?  180.0 : theta;
+//		theta = (theta < -180.0) ? -180.0 : theta;
+		while (theta < -180)
+			theta += 360;
+		while (theta > 180)
+			theta -= 360;
 		phi = (phi >  90.0) ?  90.0 : phi;
 		phi = (phi < -90.0) ? -90.0 : phi;
-
+		
+		double thetaRad = Math.toRadians(theta);
+		double phiRad = Math.toRadians(phi);
 
 		// Lets keep this conversion code in a single place.
-		double tmp = Math.cos(Math.toRadians( phi ) );
-		double n0 = -tmp * Math.sin( Math.toRadians( theta ) );
-		double n1 = tmp * Math.cos( Math.toRadians( theta ) );
-		double n2 = Math.sin( Math.toRadians( phi ) );
+		double tmp = Math.cos(phiRad);
+		double n0 = -tmp * Math.sin(thetaRad);
+		double n1 = tmp * Math.cos(thetaRad);
+		double n2 = Math.sin(phiRad);
 
 		double[] x = new double[3];
 		x[0] = n0 * latlon[0];
