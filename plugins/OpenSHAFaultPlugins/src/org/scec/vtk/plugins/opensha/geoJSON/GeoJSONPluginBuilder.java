@@ -18,6 +18,7 @@ import org.opensha.commons.geo.json.Geometry.DepthSerializationType;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.ButtonParameter;
 import org.opensha.commons.param.impl.EnumParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
@@ -30,6 +31,7 @@ import com.google.gson.Gson;
 public class GeoJSONPluginBuilder implements FaultTreeBuilder, ParameterChangeListener {
 	
 	private FileParameter loadParam;
+	private ButtonParameter reloadButton;
 	private EnumParameter<DepthSerializationType> depthTypeParam;
 	
 	private ParameterList params;
@@ -41,11 +43,16 @@ public class GeoJSONPluginBuilder implements FaultTreeBuilder, ParameterChangeLi
 		loadParam = new FileParameter("GeoJSON File");
 		loadParam.addParameterChangeListener(this);
 		
+		reloadButton = new ButtonParameter("Reload GeoJSON File?", "Reload");
+		reloadButton.addParameterChangeListener(this);
+		reloadButton.getEditor().setEnabled(false);
+		
 		depthTypeParam = new EnumParameter<>("Depth Type",
 				EnumSet.allOf(DepthSerializationType.class), Geometry.DEPTH_SERIALIZATION_DEFAULT, null);
 		depthTypeParam.addParameterChangeListener(this);
 
 		params.addParameter(loadParam);
+		params.addParameter(reloadButton);
 		params.addParameter(depthTypeParam);
 	}
 
@@ -109,6 +116,9 @@ public class GeoJSONPluginBuilder implements FaultTreeBuilder, ParameterChangeLi
 	@Override
 	public void parameterChange(ParameterChangeEvent event) {
 		l.treeChanged(null);
+		reloadButton.getEditor().setEnabled(loadParam.getValue() != null);
+		reloadButton.getEditor().refreshParamEditor();
+		
 	}
 
 }

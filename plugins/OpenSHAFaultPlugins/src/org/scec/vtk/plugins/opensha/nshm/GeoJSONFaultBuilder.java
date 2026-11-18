@@ -13,6 +13,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.param.impl.ButtonParameter;
 import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.earthquake.faultSysSolution.modules.PolygonFaultGridAssociations;
@@ -29,6 +30,7 @@ import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeListener {
 	
 	private FileParameter loadParam;
+	private ButtonParameter reloadButton;
 	private FileParameter slipRatesParam;
 	
 	private ParameterList params;
@@ -45,6 +47,11 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 		loadParam = new FileParameter("Load Fault Sections GeoJSON");
 		loadParam.addParameterChangeListener(this);
 		params.addParameter(loadParam);
+		
+		reloadButton = new ButtonParameter("Reload GeoJSON File?", "Reload");
+		reloadButton.addParameterChangeListener(this);
+		reloadButton.getEditor().setEnabled(false);
+		params.addParameter(reloadButton);
 		
 		slipRatesParam = new FileParameter("Load/Map (Kludgy) Slip Rates GeoDB");
 		slipRatesParam.addParameterChangeListener(this);
@@ -125,7 +132,7 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 
 	@Override
 	public void parameterChange(ParameterChangeEvent e) {
-		if (e.getParameter() == loadParam) {
+		if (e.getParameter() == loadParam || e.getParameter() == reloadButton) {
 			sects = null;
 			File sectsFile = loadParam.getValue();
 			System.out.println("Loading fault sections from: "+sectsFile.getAbsolutePath());
@@ -154,6 +161,8 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 			}
 		}
 		l.treeChanged(null);
+		reloadButton.getEditor().setEnabled(loadParam.getValue() != null);
+		reloadButton.getEditor().refreshParamEditor();
 	}
 
 }
