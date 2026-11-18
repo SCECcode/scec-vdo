@@ -91,6 +91,8 @@ public class Boundary {
 		Preconditions.checkState((pts.GetNumberOfPoints() - startIndex) == locs.size());
 		
 		lines.InsertNextCell(line);
+		// A previous pick may have built a lookup that does not include this segment.
+		polyData.DeleteCells();
 		
 		lines.Modified();
 		pts.Modified();

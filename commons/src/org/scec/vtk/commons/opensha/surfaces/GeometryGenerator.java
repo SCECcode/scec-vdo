@@ -404,8 +404,12 @@ public abstract class GeometryGenerator implements Named {
 				actor.SetMapper(mapper);
 				setActorProperties(actor, bundle, color, opacity);
 			} else {
-				if (currentBundle != null)
+				if (currentBundle != null) {
+					// Appending cells invalidates VTK's cached cell lookup used by picking.
+					// DeleteCells clears that lookup, not the underlying lines/polygons.
+					polyData.DeleteCells();
 					currentBundle.modified();
+				}
 			}
 		}
 		
