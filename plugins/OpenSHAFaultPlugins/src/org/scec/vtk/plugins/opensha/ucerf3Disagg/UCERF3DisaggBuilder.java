@@ -206,7 +206,7 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 		imtBean.setPreferredSize(new Dimension(290, 220));
 		
 		siteBean = new Site_GuiBean();
-		siteBean.addSiteParams(imrBean.getMultiIMRSiteParamIterator());
+		siteBean.addSiteParams(imrBean.getMultiIMRSiteParams());
 		
 		loadERF();
 	}
@@ -778,7 +778,7 @@ public class UCERF3DisaggBuilder implements FaultTreeBuilder, ParameterChangeLis
 	@Override
 	public void imrChange(ScalarIMRChangeEvent event) {
 		// then update site params
-		siteBean.replaceSiteParams(imrBean.getMultiIMRSiteParamIterator());
+		siteBean.replaceSiteParams(imrBean.getMultiIMRSiteParams());
 		siteBean.validate();
 		siteBean.repaint();
 	}

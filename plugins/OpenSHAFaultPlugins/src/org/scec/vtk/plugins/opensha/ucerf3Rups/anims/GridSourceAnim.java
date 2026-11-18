@@ -280,7 +280,7 @@ public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChange
 			Location pointLoc = null;
 			if (surf instanceof PointSurface) {
 				pointLoc = ((PointSurface)surf).getLocation();
-				pointLoc = new Location(pointLoc.lat, pointLoc.lon, ((PointSurface)surf).getDepth());
+				pointLoc = new Location(pointLoc.lat, pointLoc.lon, ((PointSurface)surf).getAveRupTopDepth());
 			} else {
 				pointLoc = rupture.getHypocenterLocation();
 				
