@@ -45,7 +45,7 @@ import org.opensha.sha.simulators.stiffness.AggregatedStiffnessCalculator;
 import org.opensha.sha.simulators.stiffness.AggregatedStiffnessCalculator.AggregationMethod;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.LogDistributionPlot;
-import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.PatchAlignment;
+import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.PatchGenerationStrategy;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessDistribution;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessType;
 import org.opensha.sha.simulators.stiffness.patches.PatchLocation;
@@ -115,8 +115,8 @@ FaultSectionsChangeListener, ParameterChangeListener {
 	private static final boolean PARENT_SECT_PARAM_DEFAULT = false;
 	private BooleanParameter parentSectParam;
 	
-	private static final String PATCH_ALIGNMENT_PARAM_NAME = "Patch Alignment";
-	private EnumParameter<PatchAlignment> alignmentParam;
+	private static final String PATCH_STRATEGY_PARAM_NAME = "Patch Generation Strategy";
+	private EnumParameter<PatchGenerationStrategy> strategyParam;
 	
 	private static final String GRID_SPACING_PARAM_NAME = "Grid Spacing";
 	private static final double GRID_SPACING_DEFAULT = 2d;
@@ -271,10 +271,10 @@ FaultSectionsChangeListener, ParameterChangeListener {
 		selfStiffParam.addParameterChangeListener(this);
 		params.addParameter(selfStiffParam);
 		
-		alignmentParam = new EnumParameter<>(PATCH_ALIGNMENT_PARAM_NAME,
-				EnumSet.allOf(PatchAlignment.class), SubSectStiffnessCalculator.alignment_default, null);
-		alignmentParam.addParameterChangeListener(this);
-		params.addParameter(alignmentParam);
+		strategyParam = new EnumParameter<>(PATCH_STRATEGY_PARAM_NAME,
+				EnumSet.allOf(PatchGenerationStrategy.class), PatchGenerationStrategy.AUTO, null);
+		strategyParam.addParameterChangeListener(this);
+		params.addParameter(strategyParam);
 		
 		maxDistParam = new DoubleParameter(MAX_DIST_PARAM_NAME, MAX_DIST_MIN, MAX_DIST_MAX);
 		maxDistParam.setUnits(MAX_DIST_PARAM_UNITS);
@@ -383,7 +383,7 @@ FaultSectionsChangeListener, ParameterChangeListener {
 		
 		if (subSectCalc == null)
 			subSectCalc = new SubSectStiffnessCalculator(sects, gridSpacingParam.getValue(),
-					lambdaParam.getValue(), muParam.getValue(), coefOfFrictionParam.getValue(), alignmentParam.getValue(), selfStiffParam.getValue());
+					lambdaParam.getValue(), muParam.getValue(), coefOfFrictionParam.getValue(), strategyParam.getValue(), selfStiffParam.getValue());
 		if (aggCalc == null)
 			aggCalc = new AggregatedStiffnessCalculator(typeParam.getValue(), subSectCalc, false,
 					agg1Param.getValue(), agg2Param.getValue(), agg3Param.getValue(), agg4Param.getValue());
@@ -1229,7 +1229,8 @@ FaultSectionsChangeListener, ParameterChangeListener {
 			update();
 			if (receivers != null && !receivers.isEmpty())
 				updateReceiver();
-		} else if (param == gridSpacingParam || param == lambdaParam || param == muParam || param == rupIndexParam || param == selfStiffParam) {
+		} else if (param == gridSpacingParam || param == lambdaParam || param == muParam
+				|| param == rupIndexParam || param == selfStiffParam || param == strategyParam) {
 			// for these ones we need to rebuild the calculator
 			subSectCalc = null;
 			aggCalc = null;
@@ -1250,10 +1251,12 @@ FaultSectionsChangeListener, ParameterChangeListener {
 				rupQuantityParam.getEditor().refreshParamEditor();
 			}
 			update();
+			if (param == strategyParam && receivers != null && !receivers.isEmpty())
+				updateReceiver();
 		} else if (param == parentSectParam) {
 			distances.clear();
 			update();
-		} else if (param == typeParam || param == alignmentParam || param == showPatchesParam
+		} else if (param == typeParam || param == showPatchesParam
 				|| param == rupQuantityParam) {
 			// just need to update (with old calculator)
 			update();
