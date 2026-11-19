@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
 
-import org.opensha.commons.data.function.EvenlyDiscretizedFunc;
 import org.opensha.commons.geo.Location;
 import org.opensha.commons.geo.LocationList;
 import org.opensha.commons.gui.plot.GraphWidget;
@@ -36,25 +35,20 @@ import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.commons.util.IDPairing;
 import org.opensha.commons.util.cpt.CPT;
-import org.opensha.commons.util.cpt.CPTVal;
-import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
-import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.ClusterRupture;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.FaultSubsectionCluster;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.RuptureConnectionSearch;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.SectionDistanceAzimuthCalculator;
 import org.opensha.sha.faultSurface.FaultSection;
-import org.opensha.sha.faultSurface.RuptureSurface;
 import org.opensha.sha.faultSurface.Surface3D;
 import org.opensha.sha.simulators.stiffness.AggregatedStiffnessCalculator;
 import org.opensha.sha.simulators.stiffness.AggregatedStiffnessCalculator.AggregationMethod;
-import org.opensha.sha.simulators.stiffness.StiffnessCalc;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.LogDistributionPlot;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.PatchAlignment;
-import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.PatchLocation;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessDistribution;
 import org.opensha.sha.simulators.stiffness.SubSectStiffnessCalculator.StiffnessType;
+import org.opensha.sha.simulators.stiffness.patches.PatchLocation;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
@@ -68,7 +62,6 @@ import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.commons.opensha.surfaces.PolygonSurfaceGenerator;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.FaultSectionsChangeListener;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 import org.scec.vtk.tools.picking.PointPickEnabledActor;
@@ -709,7 +702,10 @@ FaultSectionsChangeListener, ParameterChangeListener {
 					}
 
 					LocationList outline = new LocationList();
-					Preconditions.checkState(patch.corners.length == 4);
+					// Render the supplied polygon for both triangular and rectangular patches.
+					Preconditions.checkState(patch.corners.length >= 3,
+							"Patch %s on section %s needs at least 3 corners; have %s",
+							i, sect.getSectionId(), patch.corners.length);
 					for (Location corner : patch.corners)
 						outline.add(corner);
 					FaultSectionActorList list = polyGen.buildSimplePolygon(outline, c, new PatchSection(sect, patch, i, val));
