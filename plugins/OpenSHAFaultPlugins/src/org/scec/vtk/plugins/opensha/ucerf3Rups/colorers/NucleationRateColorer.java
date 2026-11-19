@@ -28,7 +28,7 @@ import org.opensha.sha.magdist.IncrementalMagFreqDist;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.surfaces.FaultSectionActorList;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 
@@ -36,7 +36,7 @@ import vtk.vtkActor;
 import vtk.vtkCellPicker;
 
 public class NucleationRateColorer extends CPTBasedColorer implements
-		UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
+		RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
 	
 	private ParameterList params;
 	

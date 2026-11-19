@@ -38,7 +38,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 import org.scec.vtk.tools.Transform;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
@@ -67,7 +67,7 @@ import vtk.vtkUnsignedCharArray;
 import vtk.vtkVertexGlyphFilter;
 
 public class ETASCatalogAnim extends CPTBasedColorer implements TimeBasedFaultAnimation, IDBasedFaultAnimation,
-UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
+RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
 
 	private FileParameter catalogFileParam;
 	private BooleanParameter hideFaultsParam;

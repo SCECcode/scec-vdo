@@ -15,11 +15,8 @@ public class GeoJSONFaultPlugin extends AbstractFaultPlugin {
 	@Override
 	protected FaultPluginGUI buildGUI() throws Exception {
 //		ConnectionPointsDisplayPanel connsPanel = new ConnectionPointsDisplayPanel();
-		GeoJSONFaultBuilder builder = new GeoJSONFaultBuilder();
-		ArrayList<FaultColorer> colorers = FaultPluginGUI.createDefaultColorers();
-		colorers.add(new AseismicityColorer());
-		colorers.add(new CouplingCoefficientColorer());
-//		colorers.add(new OnlyNewColorer(false)); // TODO
+		GeoJSONFaultBuilder builder = new GeoJSONFaultBuilder(this);
+		ArrayList<FaultColorer> colorers = builder.getColorers();
 		ArrayList<GeometryGenerator> geomGens = FaultPluginGUI.createDefaultGeomGens();
 		
 		FaultPluginGUI gui = new FaultPluginGUI(this, builder, colorers, geomGens, Color.GRAY);

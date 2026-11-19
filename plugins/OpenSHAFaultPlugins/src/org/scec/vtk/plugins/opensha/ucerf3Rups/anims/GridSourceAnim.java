@@ -35,7 +35,7 @@ import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 
 import com.google.common.base.Preconditions;
 
@@ -45,7 +45,7 @@ import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkVertexGlyphFilter;
 
-public class GridSourceAnim implements IDBasedFaultAnimation, UCERF3RupSetChangeListener, ParameterChangeListener {
+public class GridSourceAnim implements IDBasedFaultAnimation, RupSetChangeListener, ParameterChangeListener {
 	
 	private ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
 	

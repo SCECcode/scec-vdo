@@ -25,9 +25,9 @@ import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 
-public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChangeListener, UCERF3RupSetChangeListener {
+public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChangeListener, RupSetChangeListener {
 	
 	private FileParameter geomFileParam;
 	private IntegerParameter eventIDParam;

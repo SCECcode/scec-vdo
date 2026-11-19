@@ -19,11 +19,11 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 
 import scratch.UCERF3.U3AverageFaultSystemSolution;
 
-public class InversionSlipRateColorer extends CPTBasedColorer implements UCERF3RupSetChangeListener,
+public class InversionSlipRateColorer extends CPTBasedColorer implements RupSetChangeListener,
 ParameterChangeListener {
 
 	/**

@@ -9,9 +9,9 @@ import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 
-public class MaxMagColorer extends CPTBasedColorer implements UCERF3RupSetChangeListener {
+public class MaxMagColorer extends CPTBasedColorer implements RupSetChangeListener {
 	
 	private FaultSystemRupSet rupSet;
 	

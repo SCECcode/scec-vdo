@@ -56,7 +56,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.geoDataSet.GeoDataSetGeometryGenerator;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 
@@ -73,7 +73,7 @@ import vtk.vtkActor;
 import vtk.vtkCellPicker;
 
 public class ParticipationRateColorer extends CPTBasedColorer implements
-		UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
+		RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
 	
 	private ParameterList params;
 	

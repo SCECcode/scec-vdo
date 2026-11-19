@@ -42,7 +42,7 @@ import org.scec.vtk.commons.opensha.surfaces.PolygonSurfaceGenerator;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.opensha.obsEqkRup.ObsEqkRupBuilder;
 import org.scec.vtk.plugins.opensha.obsEqkRup.RenamedParameterWrapper;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 
 import com.google.common.base.Preconditions;
 
@@ -54,7 +54,7 @@ import scratch.UCERF3.erf.ETAS.association.FiniteFaultSectionResetCalc.SectRupDi
 import vtk.vtkActor;
 import vtk.vtkProp;
 
-public class SectionResetAnim implements FaultAnimation, ParameterChangeListener, UCERF3RupSetChangeListener, FaultColorer {
+public class SectionResetAnim implements FaultAnimation, ParameterChangeListener, RupSetChangeListener, FaultColorer {
 	
 	private FileParameter catalogFileParam;
 	private FileParameter finiteSurfsFileParam;

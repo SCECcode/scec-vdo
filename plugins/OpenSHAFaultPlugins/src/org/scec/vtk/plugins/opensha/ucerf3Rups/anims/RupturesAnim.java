@@ -41,14 +41,14 @@ import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.RakeColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.StrikeColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 
 import vtk.vtkCellPicker;
 
 public class RupturesAnim implements IDBasedFaultAnimation,
-		UCERF3RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
+		RupSetChangeListener, ParameterChangeListener, PickHandler<AbstractFaultSection> {
 	
 	private static final String SECTION_SELECT_PARAM_NAME = "Ruptures for Section";
 	private static final String SECTION_SELECT_PARAM_INFO = "Filters the rupture list to only include\n" +

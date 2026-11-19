@@ -14,37 +14,48 @@ import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.ButtonParameter;
-import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.earthquake.faultSysSolution.modules.PolygonFaultGridAssociations;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.GeoJSONFaultReader;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.GeoJSONFaultReader.GeoDBSlipRateRecord;
 import org.opensha.sha.faultSurface.FaultSection;
 import org.opensha.sha.faultSurface.GeoJSONFaultSection;
+import org.scec.vtk.commons.opensha.faults.colorers.AseismicityColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.CouplingCoefficientColorer;
+import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 import org.scec.vtk.commons.opensha.tree.FaultCategoryNode;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
+import org.scec.vtk.tools.RememberedFileParameter;
+import org.scec.vtk.plugins.Plugin;
+import org.scec.vtk.plugins.opensha.FaultPluginGUI;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.FaultSectionsChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.StiffnessColorer;
 
 public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeListener {
 	
-	private FileParameter loadParam;
+	private RememberedFileParameter loadParam;
 	private ButtonParameter reloadButton;
-	private FileParameter slipRatesParam;
+	private RememberedFileParameter slipRatesParam;
 	
 	private ParameterList params;
 	
 	private ParameterList faultParams = PrefDataSection.createPrefDataParams();
 
+	private ArrayList<FaultColorer> colorers;
+	private ArrayList<FaultSectionsChangeListener> sectChangeListeners;
+
 	private TreeChangeListener l;
 	
 	private List<GeoJSONFaultSection> sects;
 	
-	public GeoJSONFaultBuilder() {
+	public GeoJSONFaultBuilder(Plugin plugin) {
 		params = new ParameterList();
 		
-		loadParam = new FileParameter("Load Fault Sections GeoJSON");
+		loadParam = new RememberedFileParameter("Load Fault Sections GeoJSON",
+				GeoJSONFaultBuilder.class, "faultSectionsDirectory");
 		loadParam.addParameterChangeListener(this);
 		params.addParameter(loadParam);
 		
@@ -53,9 +64,22 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 		reloadButton.getEditor().setEnabled(false);
 		params.addParameter(reloadButton);
 		
-		slipRatesParam = new FileParameter("Load/Map (Kludgy) Slip Rates GeoDB");
+		slipRatesParam = new RememberedFileParameter("Load/Map (Kludgy) Slip Rates GeoDB",
+				GeoJSONFaultBuilder.class, "slipRatesDirectory");
 		slipRatesParam.addParameterChangeListener(this);
 		params.addParameter(slipRatesParam);
+		
+		sectChangeListeners = new ArrayList<>();
+		colorers = FaultPluginGUI.createDefaultColorers();
+		colorers.add(new AseismicityColorer());
+		colorers.add(new CouplingCoefficientColorer());
+		StiffnessColorer stiff = new StiffnessColorer(plugin.getPluginActors());
+		colorers.add(stiff);
+		sectChangeListeners.add(stiff);
+	}
+	
+	public ArrayList<FaultColorer> getColorers() {
+		return colorers;
 	}
 
 	@Override
@@ -75,8 +99,10 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 
 	@Override
 	public void buildTree(DefaultMutableTreeNode root) {
-		if (sects == null || sects.isEmpty())
+		if (sects == null || sects.isEmpty()) {
+			fireSectsNullEvent();
 			return;
+		}
 		boolean hasStates = false;
 		for (GeoJSONFaultSection sect : sects) {
 			if (sect.getProperty("State") != null || sect.getProperty("PrimState") != null) {
@@ -128,6 +154,7 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 				root.add(faultNode);
 			}
 		}
+		fireSectsChangedEvent();
 	}
 
 	@Override
@@ -139,6 +166,7 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 			try {
 //				sects = GeoJSONFaultReader.readFaultSections(sectsFile, false);
 				sects = GeoJSONFaultReader.readFaultSections(sectsFile);
+				loadParam.rememberLoadedFile(sectsFile);
 			} catch (IOException e1) {
 				throw ExceptionUtils.asRuntimeException(e1);
 			}
@@ -155,6 +183,7 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 				try {
 					Map<Integer, List<GeoDBSlipRateRecord>> slipRates = GeoJSONFaultReader.readGeoDB(slipRateFile);
 					GeoJSONFaultReader.testMapSlipRates(sects, slipRates, Double.NaN, null);
+					slipRatesParam.rememberLoadedFile(slipRateFile);
 				} catch (IOException e1) {
 					throw ExceptionUtils.asRuntimeException(e1);
 				}
@@ -163,6 +192,16 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 		l.treeChanged(null);
 		reloadButton.getEditor().setEnabled(loadParam.getValue() != null);
 		reloadButton.getEditor().refreshParamEditor();
+	}
+	
+	private void fireSectsNullEvent() {
+		for (FaultSectionsChangeListener l : sectChangeListeners)
+			l.setFaultSections(null);
+	}
+	
+	private void fireSectsChangedEvent() {
+		for (FaultSectionsChangeListener l : sectChangeListeners)
+			l.setFaultSections(sects);
 	}
 
 }

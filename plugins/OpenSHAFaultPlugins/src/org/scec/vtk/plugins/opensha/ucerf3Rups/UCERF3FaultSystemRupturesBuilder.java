@@ -28,13 +28,11 @@ import org.opensha.commons.gui.plot.PlotCurveCharacterstics;
 import org.opensha.commons.gui.plot.PlotLineType;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.constraint.impl.StringConstraint;
-import org.opensha.commons.param.editor.impl.FileParameterEditor;
 import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.ButtonParameter;
 import org.opensha.commons.param.impl.EnumParameter;
-import org.opensha.commons.param.impl.FileParameter;
 import org.opensha.commons.param.impl.StringParameter;
 import org.opensha.commons.util.ClassUtils;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
@@ -57,6 +55,7 @@ import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.main.MainGUI;
+import org.scec.vtk.tools.RememberedFileParameter;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.ETASCatalogAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.GridSourceAnim;
@@ -98,13 +97,14 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	
 	private ArrayList<FaultAnimation> anims;
 	private ArrayList<FaultColorer> colorers;
-	
-	private ArrayList<UCERF3RupSetChangeListener> rupSetChangeListeners;
+
+	private ArrayList<RupSetChangeListener> rupSetChangeListeners;
+	private ArrayList<FaultSectionsChangeListener> sectChangeListeners;
 
 	private ParameterList faultParams = PrefDataSection.createPrefDataParams();
 	
 	private static final String RUP_SET_FILE_PARAM_NAME = "Load Rupture Set/Solution File";
-	private FileParameter rupSetFileParam;
+	private RememberedFileParameter rupSetFileParam;
 	
 	private enum Figures {
 		
@@ -153,7 +153,6 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	
 //	private File dataDir;
 	
-	private File defaultLoadDir;
 
 	public UCERF3FaultSystemRupturesBuilder(Plugin plugin) {
 		faultParams.getParameter(Boolean.class, GridSpacingFitParam.NAME).setValue(false);
@@ -173,8 +172,9 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		if (!defaultLoadDir.exists())
 			defaultLoadDir = null;
 		
-		rupSetFileParam = new FileParameter(RUP_SET_FILE_PARAM_NAME);
-		setDefaultDir(defaultLoadDir);
+		rupSetFileParam = new RememberedFileParameter(RUP_SET_FILE_PARAM_NAME,
+				UCERF3FaultSystemRupturesBuilder.class, "ruptureSetDirectory");
+		rupSetFileParam.setDefaultInitialDir(defaultLoadDir);
 		rupSetFileParam.addParameterChangeListener(this);
 		
 		figureParam = new EnumParameter<UCERF3FaultSystemRupturesBuilder.Figures>(
@@ -187,7 +187,8 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		builderParams.addParameter(rupSetFileParam);
 		builderParams.addParameter(figureParam);
 
-		rupSetChangeListeners = new ArrayList<UCERF3RupSetChangeListener>();
+		rupSetChangeListeners = new ArrayList<>();
+		sectChangeListeners = new ArrayList<>();
 		anims = new ArrayList<FaultAnimation>();
 		colorers = new ArrayList<FaultColorer>();
 		colorers.add(new AseismicityColorer());
@@ -267,7 +268,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		
 		stiffnessColorer = new StiffnessColorer(plugin.getPluginActors());
 		colorers.add(stiffnessColorer);
-		rupSetChangeListeners.add(stiffnessColorer);
+		sectChangeListeners.add(stiffnessColorer);
 		
 		colorers.add(new EternalDatasetColorer());
 		
@@ -461,8 +462,8 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 					} else {
 						name = file.getName();
 					}
-					defaultLoadDir = file.getParentFile();
-					compColor.setLoadDir(defaultLoadDir);
+					if (rupSet != null) rupSetFileParam.rememberLoadedFile(file);
+					compColor.setLoadDir(getDefaultDir());
 				} catch (Exception e) {
 					e.printStackTrace();
 					showErrorMessage(e);
@@ -889,8 +890,10 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 	}
 	
 	private void fireRupSetNullEvent() {
-		for (UCERF3RupSetChangeListener l : rupSetChangeListeners)
+		for (RupSetChangeListener l : rupSetChangeListeners)
 			l.setRupSet(null, null);
+		for (FaultSectionsChangeListener l : sectChangeListeners)
+			l.setFaultSections(null);
 	}
 	
 	private void fireRupSetChangedEvent() {
@@ -902,21 +905,27 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		for (UCERF3RupSetChangeListener l : rupSetChangeListeners)
+		for (RupSetChangeListener l : rupSetChangeListeners)
 			l.setRupSet(rupSet, sol);
+		List<? extends FaultSection> sects = rupSet == null ? null : rupSet.getFaultSectionDataList();
+		for (FaultSectionsChangeListener l : sectChangeListeners)
+			l.setFaultSections(sects);
 	}
 	
-	public void addRupSetChangeListener(UCERF3RupSetChangeListener l) {
+	public void addRupSetChangeListener(RupSetChangeListener l) {
 		rupSetChangeListeners.add(l);
 	}
 	
+	public void addFaultSectionChangeListener(FaultSectionsChangeListener l) {
+		sectChangeListeners.add(l);
+	}
+	
 	public File getDefaultDir() {
-		return defaultLoadDir;
+		return rupSetFileParam.getDefaultInitialDir();
 	}
 	
 	public void setDefaultDir(File defaultLoadDir) {
-		this.defaultLoadDir = defaultLoadDir;
-		((FileParameterEditor)rupSetFileParam.getEditor()).setDefaultDir(defaultLoadDir);
+		rupSetFileParam.rememberDirectory(defaultLoadDir);
 	}
 
 }

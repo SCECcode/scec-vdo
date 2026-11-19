@@ -34,7 +34,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.commons.opensha.surfaces.params.ColorParameter;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 
@@ -43,7 +43,7 @@ import com.google.common.collect.Lists;
 import vtk.vtkCellPicker;
 
 public class MultiFaultRupColorer extends CPTBasedColorer implements PickHandler<AbstractFaultSection>,
-UCERF3RupSetChangeListener, ParameterChangeListener {
+RupSetChangeListener, ParameterChangeListener {
 	
 	private static CPT getDefaultCPT() {
 		CPT cpt;

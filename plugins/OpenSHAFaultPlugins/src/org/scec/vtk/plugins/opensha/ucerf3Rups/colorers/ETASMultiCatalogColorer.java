@@ -41,7 +41,7 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.ETASCatalogAnim;
 
 import com.google.common.base.Preconditions;
@@ -56,7 +56,7 @@ import scratch.UCERF3.erf.utils.ProbabilityModelsCalc;
 import scratch.UCERF3.utils.LastEventData;
 import vtk.vtkActor;
 
-public class ETASMultiCatalogColorer extends CPTBasedColorer implements ParameterChangeListener, UCERF3RupSetChangeListener {
+public class ETASMultiCatalogColorer extends CPTBasedColorer implements ParameterChangeListener, RupSetChangeListener {
 	
 	private FileParameter catalogFileParam;
 	private EnumParameter<DisplayType> displayTypeParam;

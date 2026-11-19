@@ -67,7 +67,8 @@ import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.commons.opensha.surfaces.PolygonSurfaceGenerator;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.FaultSectionsChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 import org.scec.vtk.tools.picking.PointPickEnabledActor;
@@ -78,7 +79,7 @@ import vtk.vtkActor;
 import vtk.vtkCellPicker;
 
 public class StiffnessColorer extends CPTBasedColorer implements PickHandler<AbstractFaultSection>,
-UCERF3RupSetChangeListener, ParameterChangeListener {
+FaultSectionsChangeListener, ParameterChangeListener {
 	
 	private static CPT getDefaultCPT() {
 		CPT cpt = SubSectStiffnessCalculator.getPreferredPosNegCPT();
@@ -98,7 +99,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		return cpt;
 	}
 	
-	private FaultSystemRupSet rupSet;
+	private List<? extends FaultSection> sects;
 	private SectionDistanceAzimuthCalculator distAzCalc;
 	
 	private static final String AGG_1_NAME = "Patch-To-Patch Agg";
@@ -384,11 +385,11 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 		startCluster = null;
 		clearPatches();
 		
-		if (rupSet == null)
+		if (sects == null)
 			return;
 		
 		if (subSectCalc == null)
-			subSectCalc = new SubSectStiffnessCalculator(rupSet.getFaultSectionDataList(), gridSpacingParam.getValue(),
+			subSectCalc = new SubSectStiffnessCalculator(sects, gridSpacingParam.getValue(),
 					lambdaParam.getValue(), muParam.getValue(), coefOfFrictionParam.getValue(), alignmentParam.getValue(), selfStiffParam.getValue());
 		if (aggCalc == null)
 			aggCalc = new AggregatedStiffnessCalculator(typeParam.getValue(), subSectCalc, false,
@@ -403,6 +404,11 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 			else
 				System.out.println("Computing from "+sources.size()+" sources");
 			
+			// This initializes patches for ALL sections. Do it before submitting receiver
+			// tasks so a geometry failure is reported once, instead of each task retrying
+			// initialization while the first exception waits inside a Future.
+			subSectCalc.getPatches(sources.get(0));
+
 			if (exec == null) {
 				int threads = Integer.min(32, Runtime.getRuntime().availableProcessors());
 				if (threads >= 8)
@@ -411,7 +417,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 				exec = Executors.newFixedThreadPool(threads);
 			}
 			
-			List<? extends FaultSection> subSects = rupSet.getFaultSectionDataList();
+			List<? extends FaultSection> subSects = sects;
 			
 			HashSet<FaultSection> calcReceiverPatches = null;
 			if (showPatchesParam.getValue()) {
@@ -1163,7 +1169,7 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 					sectList.remove(sect);
 				} else {
 					if (parentSectParam.getValue()) {
-						for (FaultSection s : rupSet.getFaultSectionDataList().stream().filter(
+						for (FaultSection s : sects.stream().filter(
 								S -> S.getParentSectionId() == sect.getParentSectionId()).collect(Collectors.toList())) {
 							if (!sectList.contains(s)) {
 								System.out.println("\tadding new section on parentID="+s.getParentSectionId()+": "+s.getName());
@@ -1191,17 +1197,31 @@ UCERF3RupSetChangeListener, ParameterChangeListener {
 	}
 
 	@Override
-	public void setRupSet(FaultSystemRupSet rupSet, FaultSystemSolution sol) {
-		this.rupSet = null;
+	public void setFaultSections(List<? extends FaultSection> sects) {
+		if (sects != null) {
+			if (sects.isEmpty()) {
+				sects = null;
+			} else {
+				// make sure they're indexed
+				for (int i=0; i<sects.size(); i++) {
+					if (sects.get(i).getSectionId() != i) {
+						System.err.println("Stiffness colorer only works with 0-indexed subsections");
+						sects = null;
+						break;
+					}
+				}
+			}
+		}
+		this.sects = null;
 		this.distances.clear();
 		this.search = null;
 		this.distAzCalc = null;
 		this.subSectCalc = null;
 		this.aggCalc = null;
 		update();
-		this.rupSet = rupSet;
-		if (rupSet != null)
-			distAzCalc = new SectionDistanceAzimuthCalculator(rupSet.getFaultSectionDataList());
+		this.sects = sects;
+		if (sects != null)
+			distAzCalc = new SectionDistanceAzimuthCalculator(sects);
 		update();
 	}
 

@@ -25,13 +25,13 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesBuilder;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
 
 import com.google.common.base.Preconditions;
 
 import scratch.UCERF3.inversion.UCERF3InversionInputGenerator;
 
-public class ComparisonColorer extends CPTBasedColorer implements UCERF3RupSetChangeListener, ParameterChangeListener {
+public class ComparisonColorer extends CPTBasedColorer implements RupSetChangeListener, ParameterChangeListener {
 
 	private FaultSystemSolution sol;
 	
