@@ -1,9 +1,12 @@
 package org.scec.vtk.commons.opensha.gui;
 
 import java.awt.Color;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingUtilities;
@@ -14,6 +17,7 @@ import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
+import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.faultSurface.RuptureSurface;
 import org.opensha.sha.faultSurface.Surface3D;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
@@ -88,7 +92,11 @@ AnimationListener {
 	private FaultSectionPickBehavior pickBehavior;
 	
 	private LockableUI panelLock;
-	private Thread currentCalcThread;
+	private volatile ColorChangeThread currentCalcThread;
+	// Only the event thread applies scene updates. Nested callbacks defer rendering
+	// until the whole color/animation batch has been applied.
+	private int sceneUpdateDepth;
+	private boolean sceneRenderPending;
 	
 	
 	public EventManager(		PluginActors pluginActors,
@@ -239,6 +247,10 @@ AnimationListener {
 	}
 	
 	public void displayActors(FaultSectionActorList actors, boolean updateViewer) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> displayActors(actors, updateViewer));
+			return;
+		}
 		for (vtkActor actor : actors) {
 			actor.SetVisibility(1);
 			actor.SetPickable(1);
@@ -287,7 +299,7 @@ AnimationListener {
 				Stopwatch watch;
 				if (D) watch = Stopwatch.createStarted();
 				long myRenderTime = System.nanoTime();
-				MainGUI.updateRenderWindow();
+				renderScene();
 				if (D) watch.stop();
 				if (D) System.out.println("Took "+watch.elapsed(TimeUnit.MILLISECONDS)+" ms to render");
 				if (myRenderTime > lastCompletedRender)
@@ -296,7 +308,16 @@ AnimationListener {
 		}
 	}
 	
+	/** Called on Swing after pending scene changes have been applied. */
+	protected void renderScene() {
+		MainGUI.updateRenderWindow();
+	}
+
 	public synchronized void updateViewer() {
+		if (SwingUtilities.isEventDispatchThread() && sceneUpdateDepth > 0) {
+			sceneRenderPending = true;
+			return;
+		}
 		if (D) System.out.println("Update viewer called. queue? "+queue_renders);
 //		upToDate = false;
 		long curTime = System.nanoTime();
@@ -312,31 +333,24 @@ AnimationListener {
 	}
 	
 	/**
-	 * If <code>queue_renders</code> is set then this can be called to ensure that all rendering events have
-	 * been processed. It accomplishes this by calling <code>SwingUtilities.invokeAndWait(Runnable);</code>
-	 * with an empty event, which blocks until all other events have finished. This should NOT be called from
-	 * within the event dispatch thread!
+	 * Wait for queued scene updates and the renders those updates enqueue. Animation
+	 * callbacks can originate off-thread, so one barrier alone can precede their
+	 * resulting render. Must not be called from the event thread.
 	 */
 	public static void flushRenders() {
 		if (queue_renders) {
-			if (D) System.out.println("Flushing...");
 			Preconditions.checkState(!SwingUtilities.isEventDispatchThread(),
-					"You just tried to deadlock me! Flush must be called outside of the event dispatch thread.");
+					"Flush must be called outside of the event dispatch thread");
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					
-					@Override
-					public void run() {
-						// do nothing
-					}
-				});
-			} catch (Exception e) {
-				e.printStackTrace();
+				onEventThreadAndWait(() -> {}); // apply earlier scene changes
+				onEventThreadAndWait(() -> {}); // finish the renders they requested
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw ExceptionUtils.asRuntimeException(e);
 			}
-			if (D) System.out.println("Done flushing!");
 		}
 	}
-	
+
 	private void hideFault(AbstractFaultSection fault) {
 		FaultSectionActorList actors = actorsMap.get(fault);
 		if (actors == null)
@@ -380,6 +394,10 @@ AnimationListener {
 
 	@Override
 	public void geometryGeneratorChanged(GeometryGenerator geomGen) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> geometryGeneratorChanged(geomGen));
+			return;
+		}
 		// this is called when the geometry generator is changed
 		
 		if (this.geomGen != null)
@@ -392,6 +410,10 @@ AnimationListener {
 	
 	@Override
 	public void geometrySettingsChanged(GeometrySettingsChangedEvent e) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> geometrySettingsChanged(e));
+			return;
+		}
 		// this is called when one of the geometry generator's params is changed
 		
 		if (D) System.out.println("Geometry Settings changed");
@@ -400,6 +422,10 @@ AnimationListener {
 
 	@Override
 	public void colorChanged(AbstractFaultSection fault, Color newColor) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> colorChanged(fault, newColor));
+			return;
+		}
 		// this is called when the color of an individual fault changes
 		
 		if (newColor == null) {
@@ -409,7 +435,7 @@ AnimationListener {
 		
 		if (D) System.out.println("Color changed for fault: '"+fault.getName()+"'");
 		FaultSectionActorList actors = actorsMap.get(fault);
-		if (actors != null) {
+		if (actors != null && nodes.containsKey(fault)) {
 			if (D) System.out.println("Trying to update color for fault: '"+fault.getName()+"'");
 			boolean success;
 			try {
@@ -430,102 +456,149 @@ AnimationListener {
 	}
 	
 	private void lockGUI() {
-		if (D) System.out.println("Calling setLocked(true)...already locked? "+panelLock.isLocked()+"");
-		panelLock.setLocked(true);
-		if (D) System.out.println("after lock: locked? "+panelLock.isLocked());
+		if (panelLock != null) panelLock.setLocked(true);
 	}
-	
+
 	private void unlockGUI() {
-		if (D) System.out.println("before unlock: locked? "+panelLock.isLocked());
-		// we do it this way so that it is enabled in the AWT event queue, which prevents deadlock (hopefully)
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					panelLock.setLocked(false);
-				} catch (NullPointerException e) {
-					e.printStackTrace();
-					System.out.println("TODO: NPE unlocking panel");
-				}
-				if (D) System.out.println("Called setLocked(false)...still locked? "+panelLock.isLocked()+"");
+		if (panelLock != null) panelLock.setLocked(false);
+	}
+
+	/** Apply a complete scene update before allowing its queued render to run. */
+	private void applySceneUpdate(Runnable update) {
+		Preconditions.checkState(SwingUtilities.isEventDispatchThread(), "Scene updates require the event thread");
+		sceneUpdateDepth++;
+		try {
+			update.run();
+		} finally {
+			if (--sceneUpdateDepth == 0 && sceneRenderPending) {
+				sceneRenderPending = false;
+				updateViewer();
 			}
-		});
+		}
+	}
+
+	/** The worker never waits for Swing, so joining its computation here cannot wait on our own queued apply. */
+	private void cancelColorCalculation() {
+		ColorChangeThread task = currentCalcThread;
+		if (task != null) {
+			task.cancelled = true;
+			try {
+				task.join();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw ExceptionUtils.asRuntimeException(e);
+			}
+		}
 	}
 
 	@Override
-	public synchronized void colorerChanged(final FaultColorer newColorer) {
-		// this is called when the fault colorer is changed
-		if (pickBehavior != null)
-			pickBehavior.setColorer(null);
-		
+	public void colorerChanged(final FaultColorer newColorer) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> colorerChanged(newColorer));
+			return;
+		}
+		cancelColorCalculation();
+		if (pickBehavior != null) pickBehavior.setColorer(null);
 		if (newColorer == null) {
-			// if it's null, then they switched to custom and we don't have to do anything
-		} else {
-			// this can take a while, depending, so lets do it threaded and lock the UI
-			
-			// if the thread is already going, lets make sure that it has fully exited.
-			if (currentCalcThread != null && currentCalcThread.isAlive()) {
-				try {
-					if (D) System.out.println("Joining old colorer changed thread");
-					currentCalcThread.join();
-					if (D) System.out.println("DONE Joining old colorer changed thread");
-				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
-			}
-			
-			lockGUI();
-			currentCalcThread = new ColorChangeThread(newColorer);
-			currentCalcThread.start();
+			unlockGUI();
+			return;
 		}
+		lockGUI();
+		// Snapshot on Swing; the worker must not traverse a changing tree or touch nodes/VTK.
+		currentCalcThread = new ColorChangeThread(newColorer, new ArrayList<>(nodes.values()));
+		currentCalcThread.start();
 	}
-	
-	private class ColorChangeThread extends Thread {
-		
-		private FaultColorer newColorer;
 
-		public ColorChangeThread(FaultColorer newColorer) {
-			this.newColorer = newColorer;
+	private class ColorChangeThread extends Thread {
+		private final FaultColorer colorer;
+		private final List<FaultSectionNode> targetNodes;
+		private final AbstractFaultSection[] faults;
+		private final Color[] colors;
+		private volatile boolean cancelled;
+		private boolean applied; // event thread only
+		private Throwable failure;
+
+		ColorChangeThread(FaultColorer colorer, List<FaultSectionNode> targetNodes) {
+			super("VDO color calculation");
+			this.colorer = colorer;
+			this.targetNodes = targetNodes;
+			this.faults = new AbstractFaultSection[targetNodes.size()];
+			for (int i=0; i<faults.length; i++) faults[i] = targetNodes.get(i).getFault();
+			this.colors = new Color[faults.length];
 		}
-		
+
 		@Override
 		public void run() {
 			try {
-//				if (pickBehavior != null
-//						&& newColorer instanceof PickHandler)
-//					pickBehavior
-//							.setPickHandler((PickHandler) newColorer);
-				if (D) System.out.println("Colorer change thread running");
-				for (FaultSectionNode node : nodes.values()) {
-//					if (D) System.out.println("getting color for "+node.getName());
-					Color color = newColorer.getColor(node.getFault());
-//					if (D) System.out.println("got color for "+node.getName());
-					if (color == null || !color.equals(node.getColor())) {
-//						if (D) System.out.println("setting color for "+node.getName());
-						node.setColor(color);
-//						if (D) System.out.println("done setting color for "+node.getName());
-					}
-				}
-				if (D) System.out.println("Colorer change thread loop done");
+				for (int i=0; i<faults.length && !cancelled; i++)
+					colors[i] = colorer.getColor(faults[i]);
+			} catch (RuntimeException | Error e) {
+				failure = e;
 			} finally {
-				if (D) System.out.println("Colorer change thread unlocking");
+				// Never invokeAndWait here: state loading can join this worker on Swing.
+				SwingUtilities.invokeLater(this::applyColors);
+			}
+		}
+
+		void applyColors() {
+			Preconditions.checkState(SwingUtilities.isEventDispatchThread(), "Colors require the event thread");
+			if (cancelled || currentCalcThread != this || applied)
+				return;
+			applied = true;
+			try {
+				if (failure != null) throw ExceptionUtils.asRuntimeException(failure);
+				applySceneUpdate(() -> {
+					for (int i=0; i<targetNodes.size(); i++) {
+						FaultSectionNode node = targetNodes.get(i);
+						// A replaced tree must never receive results for its former nodes.
+						if (nodes.get(node.getFault()) != node) continue;
+						Color color = colors[i];
+						if (color == null || !color.equals(node.getColor())) node.setColor(color);
+					}
+				});
+				if (pickBehavior != null) pickBehavior.setColorer(colorer);
+			} finally {
 				unlockGUI();
-				if (pickBehavior != null)
-					pickBehavior.setColorer(newColorer);
-				if (D) System.out.println("Colorer change thread done");
 			}
 		}
 	}
-	
-	public void waitOnCalcThread() throws InterruptedException {
-		if (currentCalcThread != null && currentCalcThread.isAlive()) {
-			currentCalcThread.join();
+
+	private static void onEventThreadAndWait(Runnable task) throws InterruptedException {
+		if (SwingUtilities.isEventDispatchThread()) {
+			task.run();
+		} else {
+			try {
+				SwingUtilities.invokeAndWait(task);
+			} catch (InvocationTargetException e) {
+				throw ExceptionUtils.asRuntimeException(e.getCause());
+			}
 		}
 	}
-	
+
+	/**
+	 * Wait for computation AND application. An event-thread caller joins only the
+	 * pure Java worker, then applies its result itself instead of waiting on Swing.
+	 * Off-thread callers first drain earlier requests so they wait for the right task.
+	 */
+	public void waitOnCalcThread() throws InterruptedException {
+		// Check before any Swing handoff: the event thread may already be joining us.
+		Preconditions.checkState(Thread.currentThread() != currentCalcThread,
+				"A colorer cannot wait for its own calculation");
+		ColorChangeThread[] snapshot = new ColorChangeThread[1];
+		onEventThreadAndWait(() -> snapshot[0] = currentCalcThread);
+		ColorChangeThread task = snapshot[0];
+		if (task != null) {
+			task.join();
+			onEventThreadAndWait(task::applyColors);
+		}
+	}
+
 	@Override
 	public void customColorSelected() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> customColorSelected());
+			return;
+		}
 		// this is called when the user selects a custom color
 		
 		if (D) System.out.println("Custom colorer selected");
@@ -536,6 +609,10 @@ AnimationListener {
 	@Override
 	public void visibilityChanged(AbstractFaultSection fault,
 			boolean newVisibility) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> visibilityChanged(fault, newVisibility));
+			return;
+		}
 		// this is called when the visibility of a fault changes
 		
 		if (D) System.out.println("Visibility changed for fault: '"+fault.getName()+"' (visible="+newVisibility+")");
@@ -550,7 +627,13 @@ AnimationListener {
 
 	@Override
 	public void treeChanged(TreeNode newRoot) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> treeChanged(newRoot));
+			return;
+		}
 		// this is called when the entire tree is rebuilt
+		cancelColorCalculation();
+		unlockGUI();
 		
 		if (D) System.out.println("Tree changed!");
 		for (AbstractFaultSection fault : new ArrayList<>(actorsMap.keySet()))
@@ -597,6 +680,10 @@ AnimationListener {
 
 	@Override
 	public void parameterChange(ParameterChangeEvent event) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> parameterChange(event));
+			return;
+		}
 		// this is called when a fault parameter changes
 		
 		if (faultParams != null && faultParams.containsParameter(event.getParameterName())) {
@@ -636,8 +723,12 @@ AnimationListener {
 
 	@Override
 	public void animationRangeChanged(FaultAnimation anim) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> animationRangeChanged(anim));
+			return;
+		}
 		FaultColorer colorer = anim.getFaultColorer();
-		if (anim.getNumSteps() > 0 && colorer != null) {
+		if (anim.getNumSteps() > 0 && colorer != null && colorerPanel != null) {
 			if (colorerPanel.getSelectedColorer() != colorer)
 				colorerPanel.setSelectedColorer(colorer);
 		}
@@ -645,27 +736,31 @@ AnimationListener {
 
 	@Override
 	public void animationStepChanged(FaultAnimation anim) {
-		FaultColorer colorer = anim.getFaultColorer();
-		if (colorer != null)
-			if (colorerPanel.getSelectedColorer() != colorer)
-				colorerPanel.setSelectedColorer(colorer);
-		for (AbstractFaultSection fault : nodes.keySet()) {
-			AbstractFaultNode node = nodes.get(fault);
-			
-			Boolean newVisibility = anim.getFaultVisibility(fault);
-			// if the visibliity is set and it's false, but this fault is visible, hide it
-			if (newVisibility != null && !newVisibility && node.isVisible())
-				node.setVisible(false);
-			// update the color if applicable
-			if (colorer != null) {
-				Color newColor = colorer.getColor(fault);
-				if (!newColor.equals(node.getColor()))
-					node.setColor(newColor);
-			}
-			// set it visible if we're supposed to
-			if (newVisibility != null && newVisibility)
-				node.setVisible(true);
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> animationStepChanged(anim));
+			return;
 		}
+		FaultColorer colorer = anim.getFaultColorer();
+		if (colorer != null) {
+			if (colorerPanel != null && colorerPanel.getSelectedColorer() != colorer)
+				colorerPanel.setSelectedColorer(colorer);
+			// This frame supplies all colors; discard any older asynchronous recolor.
+			cancelColorCalculation();
+			unlockGUI();
+			if (pickBehavior != null) pickBehavior.setColorer(colorer);
+		}
+		applySceneUpdate(() -> {
+			for (AbstractFaultSection fault : nodes.keySet()) {
+				AbstractFaultNode node = nodes.get(fault);
+				Boolean visible = anim.getFaultVisibility(fault);
+				if (Boolean.FALSE.equals(visible) && node.isVisible()) node.setVisible(false);
+				if (colorer != null) {
+					Color color = colorer.getColor(fault);
+					if (!Objects.equals(color, node.getColor())) node.setColor(color);
+				}
+				if (Boolean.TRUE.equals(visible)) node.setVisible(true);
+			}
+		});
 	}
 
 }
