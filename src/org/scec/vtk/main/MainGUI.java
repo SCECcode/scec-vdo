@@ -77,6 +77,7 @@ import org.scec.vtk.plugins.PluginInfo;
 import org.scec.vtk.politicalBoundaries.PoliticalBoundariesGUI;
 import org.scec.vtk.timeline.Timeline;
 import org.scec.vtk.timeline.gui.TimelineGUI;
+import org.scec.vtk.tools.CameraNavigation;
 import org.scec.vtk.tools.Prefs;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.plugins.Plugins;
@@ -89,6 +90,7 @@ import vtk.vtkCellPicker;
 import vtk.vtkNativeLibrary;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
+import vtk.vtkRenderer;
 import vtk.vtkSphereSource;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
 
@@ -164,6 +166,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private ArrayList<PluginActorsChangeListener> actorsChangeListeners = new ArrayList<>();
 	
 	vtkCamera cam = new vtkCamera();
+	private final vtkCamera startupCamera = new vtkCamera();
 
 	public MainGUI() {
 		Prefs.init();
@@ -263,7 +266,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		cam.SetViewUp(camCord[6],camCord[7],camCord[8]);
 
 		vtkSphereSource focalPoint = new vtkSphereSource();
-		focalPoint.SetRadius(20);
+		focalPoint.SetRadius(10);
+		focalPoint.SetThetaResolution(15);
+		focalPoint.SetPhiResolution(15);
 		vtkPolyDataMapper focalPointMapper = new vtkPolyDataMapper();
 		focalPointMapper.SetInputConnection(focalPoint.GetOutputPort());
 		focalPointActor.SetMapper(focalPointMapper);
@@ -360,6 +365,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			mainMenu.availablePlugins = Plugins.getAvailablePlugins();
 			mainMenu.setupPluginMenus();
 			addDefaultActors();
+			// Capture the view after the default layers have fitted the camera.
+			startupCamera.DeepCopy(renderWindow.getRenderer().GetActiveCamera());
 			setMainFrame();
 			
 			//Update the divider location so that the plugin pane doesn't require horizontal scrolling
@@ -474,6 +481,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		}
 	};
 	public void setFocalPointVisible(boolean visible) {
+		mainMenu.setFocalPointSelected(visible);
 		int newVis = visible ? 1 : 0;
 		int curVis = focalPointActor.GetVisibility();
 		if (newVis != curVis) {
@@ -486,6 +494,40 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 	
 	
+	void snapFocalPointToSurface() {
+		var lock = renderWindow.getVTKLock();
+		lock.lock();
+		try {
+			vtkRenderer renderer = renderWindow.getRenderer();
+			if (!CameraNavigation.snapFocalPointToSurface(renderer.GetActiveCamera()))
+				return;
+			updateCameraView(renderer);
+		} finally {
+			lock.unlock();
+		}
+		updateRenderWindow();
+	}
+
+	void resetView() {
+		var lock = renderWindow.getVTKLock();
+		lock.lock();
+		try {
+			vtkRenderer renderer = renderWindow.getRenderer();
+			renderer.GetActiveCamera().DeepCopy(startupCamera);
+			updateCameraView(renderer);
+		} finally {
+			lock.unlock();
+		}
+		updateRenderWindow();
+	}
+
+	private void updateCameraView(vtkRenderer renderer) {
+		updateFocalPointLocation();
+		renderer.ResetCameraClippingRange();
+		if (renderWindow.getRenderWindowInteractor().GetLightFollowCamera() != 0)
+			renderer.UpdateLightsGeometryToFollowCamera();
+	}
+
 	public void updateFocalPointLocation() {
 		focalPointActor.SetPosition(renderWindow.getRenderer().GetActiveCamera().GetFocalPoint());
 		focalPointActor.Modified();
@@ -608,20 +650,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		} catch(IOException ex) {
 			System.out.println("focal point: " + ex);
 		}
-		focalPoint.addActionListener(new ActionListener() {
-			boolean on = false;
-			public void actionPerformed(ActionEvent e) {
-				if (!on) {
-					Info.getMainGUI().setFocalPointVisible(true);
-					on = true;
-				}
-				else if (on) {
-					Info.getMainGUI().setFocalPointVisible(false);
-					on = false;
-				}
-			}
-		});
-		
+		focalPoint.addActionListener(e -> setFocalPointVisible(focalPointActor.GetVisibility() == 0));
+
 		focalPoint.setOpaque(false);
 		focalPoint.setToolTipText("Focal Point");
 		JButton zoomIn = new JButton();

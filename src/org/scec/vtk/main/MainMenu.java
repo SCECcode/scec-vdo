@@ -5,10 +5,13 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -49,6 +52,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -137,21 +141,34 @@ public class MainMenu implements ActionListener, ItemListener{
 
 		displayMenu.setLabel("Display");
 		displayMenu.setName("Display");
-		focalPointItem = new JCheckBoxMenuItem("Focal Point", false);
-		JMenu trainingMenu = getCreateSubMenu(displayMenu, "Training");
-		trainingMenu.add(focalPointItem);
-		focalPointItem.addItemListener(new ItemListener() {
-			
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				Info.getMainGUI().setFocalPointVisible(focalPointItem.getState());
-
-			}
-		});
 		menuBar.add(displayMenu);
+		setupNavigationMenu();
 		setupWindowMenu();
 	}
 
+	private void setupNavigationMenu() {
+		JMenu navigationMenu = new JMenu("Navigation");
+		navigationMenu.setName("Navigation");
+
+		JMenuItem snapFocalPoint = new JMenuItem("Snap Focal Point to Surface");
+		int shortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() | InputEvent.SHIFT_DOWN_MASK;
+		snapFocalPoint.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, shortcut));
+		snapFocalPoint.addActionListener(e -> Info.getMainGUI().snapFocalPointToSurface());
+		navigationMenu.add(snapFocalPoint);
+
+		JMenuItem resetView = new JMenuItem("Reset View");
+		resetView.addActionListener(e -> Info.getMainGUI().resetView());
+		navigationMenu.add(resetView);
+
+		focalPointItem = new JCheckBoxMenuItem("Show Focal Point");
+		focalPointItem.addActionListener(e -> Info.getMainGUI().setFocalPointVisible(focalPointItem.isSelected()));
+		navigationMenu.add(focalPointItem);
+		menuBar.add(navigationMenu);
+	}
+
+	void setFocalPointSelected(boolean selected) {
+		focalPointItem.setSelected(selected);
+	}
 
 	@SuppressWarnings("deprecation")
 	private void setupWindowMenu() {
