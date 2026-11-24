@@ -1,5 +1,6 @@
 package org.scec.vtk.plugins.opensha.nshm;
 
+import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,14 +9,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.opensha.commons.param.ParameterList;
+import org.opensha.commons.param.editor.impl.ParameterListEditor;
 import org.opensha.commons.param.event.ParameterChangeEvent;
 import org.opensha.commons.param.event.ParameterChangeListener;
 import org.opensha.commons.param.impl.ButtonParameter;
+import org.opensha.commons.param.impl.DoubleParameter;
+import org.opensha.commons.param.impl.IntegerParameter;
 import org.opensha.commons.util.ExceptionUtils;
 import org.opensha.sha.earthquake.faultSysSolution.modules.PolygonFaultGridAssociations;
+import org.opensha.sha.earthquake.faultSysSolution.util.SubSectionBuilder;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.GeoJSONFaultReader;
 import org.opensha.sha.earthquake.faultSysSolution.ruptures.util.GeoJSONFaultReader.GeoDBSlipRateRecord;
 import org.opensha.sha.faultSurface.FaultSection;
@@ -39,6 +47,15 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 	
 	private RememberedFileParameter loadParam;
 	private ButtonParameter reloadButton;
+	private ButtonParameter subsectionButton;
+
+	private final IntegerParameter minPerFaultParam = new IntegerParameter("Minimum Subsections Per Fault",
+			1, Integer.MAX_VALUE, Integer.valueOf(SubSectionBuilder.MIN_SUB_SECTS_PER_FAULT_DEFAULT));
+	private final DoubleParameter ddwFractParam = new DoubleParameter("DDW Fraction",
+			SubSectionBuilder.DOWN_DIP_FRACT_DEFAULT);
+	private final DoubleParameter fixedLengthParam = new DoubleParameter("Fixed Length", "km",
+			SubSectionBuilder.MAX_LEN_DEFAULT);
+	private final ParameterList subsectionParams = new ParameterList();
 //	private RememberedFileParameter slipRatesParam;
 	
 	private ParameterList params;
@@ -51,6 +68,8 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 	private TreeChangeListener l;
 	
 	private List<GeoJSONFaultSection> sects;
+	// Rebuild from the file's sections each time, rather than subdividing the previous result again.
+	private List<GeoJSONFaultSection> loadedSects;
 	
 	public GeoJSONFaultBuilder(Plugin plugin) {
 		params = new ParameterList();
@@ -64,6 +83,21 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 		reloadButton.addParameterChangeListener(this);
 		reloadButton.getEditor().setEnabled(false);
 		params.addParameter(reloadButton);
+
+		subsectionButton = new ButtonParameter("Subsection Faults", "Subsection...");
+		subsectionButton.addParameterChangeListener(this);
+		subsectionButton.getEditor().setEnabled(false);
+		params.addParameter(subsectionButton);
+
+		minPerFaultParam.setDefaultValue(SubSectionBuilder.MIN_SUB_SECTS_PER_FAULT_DEFAULT);
+		ddwFractParam.setDefaultValue(SubSectionBuilder.DOWN_DIP_FRACT_DEFAULT);
+		fixedLengthParam.setDefaultValue(SubSectionBuilder.MAX_LEN_DEFAULT);
+		minPerFaultParam.setInfo("Minimum number of subsections for each loaded fault, regardless of length.");
+		ddwFractParam.setInfo("Maximum subsection length as a fraction of down-dip width; NaN or 0 disables this limit.");
+		fixedLengthParam.setInfo("Maximum subsection length in kilometers; NaN or 0 disables this limit.");
+		subsectionParams.addParameter(minPerFaultParam);
+		subsectionParams.addParameter(ddwFractParam);
+		subsectionParams.addParameter(fixedLengthParam);
 		
 //		slipRatesParam = new RememberedFileParameter("Load/Map (Kludgy) Slip Rates GeoDB",
 //				GeoJSONFaultBuilder.class, "slipRatesDirectory");
@@ -164,13 +198,19 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 
 	@Override
 	public void parameterChange(ParameterChangeEvent e) {
+		if (e.getParameter() == subsectionButton) {
+			showSubsectionOptions();
+			return;
+		}
 		if (e.getParameter() == loadParam || e.getParameter() == reloadButton) {
 			sects = null;
+			loadedSects = null;
 			File sectsFile = loadParam.getValue();
 			System.out.println("Loading fault sections from: "+sectsFile.getAbsolutePath());
 			try {
 //				sects = GeoJSONFaultReader.readFaultSections(sectsFile, false);
-				sects = GeoJSONFaultReader.readFaultSections(sectsFile);
+				loadedSects = GeoJSONFaultReader.readFaultSections(sectsFile);
+				sects = loadedSects;
 				loadParam.rememberLoadedFile(sectsFile);
 			} catch (IOException e1) {
 				throw ExceptionUtils.asRuntimeException(e1);
@@ -197,8 +237,56 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 		l.treeChanged(null);
 		reloadButton.getEditor().setEnabled(loadParam.getValue() != null);
 		reloadButton.getEditor().refreshParamEditor();
+		subsectionButton.getEditor().setEnabled(loadedSects != null && !loadedSects.isEmpty());
 	}
-	
+
+	private void showSubsectionOptions() {
+		if (loadedSects == null || loadedSects.isEmpty())
+			return;
+		ParameterListEditor editor = new ParameterListEditor(subsectionParams);
+		editor.setTitle("Subsectioning Options");
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(editor, BorderLayout.CENTER);
+		panel.add(new JLabel("<html>Use NaN or 0 to disable either length limit.<br>"
+				+ "If both limits are positive, the shorter limit is used.</html>"), BorderLayout.SOUTH);
+		while (true) {
+			int choice = JOptionPane.showConfirmDialog(subsectionButton.getEditor().getComponent(), panel,
+					"Subsection Faults", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (choice != JOptionPane.OK_OPTION)
+				return;
+			try {
+				buildSubsections();
+				return;
+			} catch (RuntimeException exception) {
+				JOptionPane.showMessageDialog(subsectionButton.getEditor().getComponent(), exception.getMessage(),
+						"Could Not Build Subsections", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
+
+	private void buildSubsections() {
+		Integer minPerFault = minPerFaultParam.getValue();
+		Double ddwFract = ddwFractParam.getValue();
+		Double fixedLength = fixedLengthParam.getValue();
+		if (minPerFault == null || minPerFault < 1)
+			throw new IllegalArgumentException("Minimum subsections per fault must be at least 1.");
+		if (ddwFract == null || !(Double.isNaN(ddwFract) || (Double.isFinite(ddwFract) && ddwFract >= 0)))
+			throw new IllegalArgumentException("DDW fraction must be nonnegative and finite, or NaN to disable it.");
+		if (fixedLength == null || !(Double.isNaN(fixedLength) || (Double.isFinite(fixedLength) && fixedLength >= 0)))
+			throw new IllegalArgumentException("Fixed length must be nonnegative and finite, or NaN to disable it.");
+		if (!(ddwFract > 0 || fixedLength > 0))
+			throw new IllegalArgumentException("Set a positive DDW fraction or fixed length.");
+
+		List<FaultSection> built = SubSectionBuilder.buildSubSects(loadedSects, minPerFault, ddwFract, fixedLength);
+		List<GeoJSONFaultSection> subsections = new ArrayList<>(built.size());
+		for (FaultSection subsection : built)
+			subsections.add(subsection instanceof GeoJSONFaultSection jsonSection ? jsonSection
+					: GeoJSONFaultSection.fromFaultSection(subsection));
+		// Keep the previous display intact if validation or subsection generation fails.
+		sects = subsections;
+		l.treeChanged(null);
+	}
+
 	private void fireSectsNullEvent() {
 		for (FaultSectionsChangeListener l : sectChangeListeners)
 			l.setFaultSections(null);

@@ -35,3 +35,20 @@ replacement preserve those guarantees.
 
 These checks do not exercise screen rendering or actual mouse interaction; inspect the line styles in the
 viewer as well when changing the rendering pipeline.
+
+## GeoJSON subsectioning
+
+The builder checks below use Swing without native VTK or a render window. A temporary preferences directory
+keeps the remembered input directory separate from the viewer's normal preferences.
+
+```sh
+javac -cp 'classes:lib/*' -d build/test-classes \
+    tests/org/scec/vtk/plugins/opensha/nshm/GeoJSONFaultBuilderTest.java
+java -Djava.awt.headless=true -Djava.util.prefs.userRoot=/tmp/vdo-subsection-test-prefs \
+    -cp 'build/test-classes:classes:lib/*' \
+    org.scec.vtk.plugins.opensha.nshm.GeoJSONFaultBuilderTest
+```
+
+This checks the OpenSHA defaults, button availability, generation and tree notifications, parent IDs and
+state metadata, repeated generation from the original sections, fixed-length limits, invalid settings,
+empty input, and Reload restoring the original sections. The modal dialog itself requires a viewer check.
