@@ -32,6 +32,7 @@ import org.scec.vtk.tools.RememberedFileParameter;
 import org.scec.vtk.plugins.Plugin;
 import org.scec.vtk.plugins.opensha.FaultPluginGUI;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.FaultSectionsChangeListener;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.DistinctSectColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.StiffnessColorer;
 
 public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeListener {
@@ -76,6 +77,10 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 		StiffnessColorer stiff = new StiffnessColorer(plugin.getPluginActors());
 		colorers.add(stiff);
 		sectChangeListeners.add(stiff);
+		
+		DistinctSectColorer distinctColorer = new DistinctSectColorer();
+		colorers.add(distinctColorer);
+		sectChangeListeners.add(distinctColorer);
 	}
 	
 	public ArrayList<FaultColorer> getColorers() {

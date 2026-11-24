@@ -63,6 +63,7 @@ import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.RupturesAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.SectionResetAnim;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.DateLastEventColorer;
+import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.DistinctSectColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ETASMultiCatalogColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.EternalDatasetColorer;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.InversionSlipRateColorer;
@@ -328,6 +329,10 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		RSQSimRuptureMappingColorer rsqsimMapping = new RSQSimRuptureMappingColorer();
 		rupSetChangeListeners.add(rsqsimMapping);
 		colorers.add(rsqsimMapping);
+		
+		DistinctSectColorer distinctColorer = new DistinctSectColorer();
+		colorers.add(distinctColorer);
+		rupSetChangeListeners.add(distinctColorer);
 	}
 	
 	public void setGeometryTypeSelector(GeometryTypeSelectorPanel geomSelect) {
