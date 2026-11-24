@@ -162,7 +162,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 			this.pluginActors.addActor(labelActor);
 		else
 			this.pluginActors.removeActor(labelActor);
-		Info.getMainGUI().getRenderWindow().getRenderer().ResetCamera(tempGlobeScene.GetBounds());
+		Info.getMainGUI().fitViewToSurface(tempGlobeScene.GetBounds());
 	}
 	
 	public void toggleGridDisplay() {

@@ -163,6 +163,12 @@ public class MainMenu implements ActionListener, ItemListener{
 		focalPointItem = new JCheckBoxMenuItem("Show Focal Point");
 		focalPointItem.addActionListener(e -> Info.getMainGUI().setFocalPointVisible(focalPointItem.isSelected()));
 		navigationMenu.add(focalPointItem);
+
+		navigationMenu.addSeparator();
+		JCheckBoxMenuItem globePanDefault = new JCheckBoxMenuItem("Globe Pan by Default", Prefs.isGlobePanDefault());
+		globePanDefault.setToolTipText("Swap the actions for middle drag and Shift+middle drag.");
+		globePanDefault.addActionListener(e -> Info.getMainGUI().setGlobePanDefault(globePanDefault.isSelected()));
+		navigationMenu.add(globePanDefault);
 		menuBar.add(navigationMenu);
 	}
 

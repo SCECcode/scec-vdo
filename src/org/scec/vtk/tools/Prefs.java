@@ -137,6 +137,14 @@ public class Prefs {
     	return prefs.getInt("MAIN_HEIGHT", defaultMainHeight);
     }
     
+	public static boolean isGlobePanDefault() {
+		return prefs.getBoolean("GLOBE_PAN_DEFAULT", true);
+	}
+
+	public static void setGlobePanDefault(boolean enabled) {
+		prefs.putBoolean("GLOBE_PAN_DEFAULT", enabled);
+	}
+
     public static void setMainWidth(int width) {
     	prefs.putInt("MAIN_WIDTH", width);
     }

@@ -58,6 +58,10 @@ public class Transform {
 		return new double[] { (x + distance * dx) * re, (y + distance * dy) * re, (z + distance * dz) * rp };
 	}
 
+	static boolean isOnEarthSurface(double[] point) {
+		return Math.abs(scaledRadius(point) - 1d) <= 1e-12;
+	}
+
 	static boolean isInsideEarth(double[] point) {
 		return scaledRadius(point) < 1d - 1e-12;
 	}

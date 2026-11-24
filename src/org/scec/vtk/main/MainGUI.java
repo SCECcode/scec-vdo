@@ -167,10 +167,14 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	
 	vtkCamera cam = new vtkCamera();
 	private final vtkCamera startupCamera = new vtkCamera();
+	private final GlobePanInteraction globePan;
 
 	public MainGUI() {
 		Prefs.init();
 		renderWindow = new vtkJoglPanelComponent();
+		globePan = new GlobePanInteraction(renderWindow, this::updateCameraView);
+		globePan.setGlobePanDefault(Prefs.isGlobePanDefault());
+		renderWindow.getInteractorForwarder().setEventInterceptor(globePan);
 		mainPanel = new JPanel(new BorderLayout());
 		renderWindow.getRenderer().SetBackground(0,0,0);
 		
@@ -494,6 +498,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 	
 	
+	void setGlobePanDefault(boolean enabled) {
+		globePan.setGlobePanDefault(enabled);
+		Prefs.setGlobePanDefault(enabled);
+	}
+
 	void snapFocalPointToSurface() {
 		var lock = renderWindow.getVTKLock();
 		lock.lock();
@@ -506,6 +515,18 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			lock.unlock();
 		}
 		updateRenderWindow();
+	}
+
+	public void fitViewToSurface(double[] bounds) {
+		var lock = renderWindow.getVTKLock();
+		lock.lock();
+		try {
+			vtkRenderer renderer = renderWindow.getRenderer();
+			CameraNavigation.fitViewToSurface(renderer, bounds);
+			updateCameraView(renderer);
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	void resetView() {
