@@ -153,6 +153,14 @@ public class Prefs {
 		prefs.putBoolean("PRESERVE_FOCAL_DEPTH", enabled);
 	}
 
+	public static boolean isFocalPointOverlayEnabled() {
+		return prefs.getBoolean("FOCAL_POINT_OVERLAY_ENABLED", true);
+	}
+
+	public static void setFocalPointOverlayEnabled(boolean enabled) {
+		prefs.putBoolean("FOCAL_POINT_OVERLAY_ENABLED", enabled);
+	}
+
     public static void setMainWidth(int width) {
     	prefs.putInt("MAIN_WIDTH", width);
     }

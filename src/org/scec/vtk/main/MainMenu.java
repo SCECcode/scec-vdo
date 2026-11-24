@@ -114,7 +114,8 @@ public class MainMenu implements ActionListener, ItemListener{
 	private JMenuItem wizardActivation;
 	private JMenuItem escapeWindow; 
 	private ViewerSizePanel sizePanel;
-	private JCheckBoxMenuItem focalPointItem;
+	private JCheckBoxMenuItem focalPointOverlayItem;
+	private JCheckBoxMenuItem focalPoint3DItem;
 	private String currFileName;
 	static public Boolean Wizard = true; // default value for new users
 	static public JMenu helpMenu;
@@ -160,9 +161,14 @@ public class MainMenu implements ActionListener, ItemListener{
 		resetView.addActionListener(e -> Info.getMainGUI().resetView());
 		navigationMenu.add(resetView);
 
-		focalPointItem = new JCheckBoxMenuItem("Show Focal Point");
-		focalPointItem.addActionListener(e -> Info.getMainGUI().setFocalPointVisible(focalPointItem.isSelected()));
-		navigationMenu.add(focalPointItem);
+		focalPointOverlayItem = new JCheckBoxMenuItem("Overlay Focal Point", Prefs.isFocalPointOverlayEnabled());
+		focalPointOverlayItem.addActionListener(
+				e -> Info.getMainGUI().setFocalPointOverlayEnabled(focalPointOverlayItem.isSelected()));
+		navigationMenu.add(focalPointOverlayItem);
+
+		focalPoint3DItem = new JCheckBoxMenuItem("Show 3D Focal Point");
+		focalPoint3DItem.addActionListener(e -> Info.getMainGUI().setFocalPointVisible(focalPoint3DItem.isSelected()));
+		navigationMenu.add(focalPoint3DItem);
 
 		navigationMenu.addSeparator();
 		JCheckBoxMenuItem globePanDefault = new JCheckBoxMenuItem("Globe Pan by Default", Prefs.isGlobePanDefault());
@@ -177,8 +183,12 @@ public class MainMenu implements ActionListener, ItemListener{
 		menuBar.add(navigationMenu);
 	}
 
-	void setFocalPointSelected(boolean selected) {
-		focalPointItem.setSelected(selected);
+	void setFocalPointOverlaySelected(boolean selected) {
+		focalPointOverlayItem.setSelected(selected);
+	}
+
+	void setFocalPoint3DSelected(boolean selected) {
+		focalPoint3DItem.setSelected(selected);
 	}
 
 	@SuppressWarnings("deprecation")

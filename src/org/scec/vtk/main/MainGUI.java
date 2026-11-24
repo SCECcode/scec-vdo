@@ -141,7 +141,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private JPanel searchBarGUI;
 	
 	private JToolBar toolBar;
-	private final JToggleButton focalPointButton = new JToggleButton();
+	private final JToggleButton focalPointOverlayButton = new JToggleButton();
 	private JPanel toolBarGUI;
 
 	//default starting cam coordinates
@@ -162,6 +162,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	vtkCamera cam = new vtkCamera();
 	private final vtkCamera startupCamera = new vtkCamera();
 	private final GlobePanInteraction globePan;
+	private final FocalPointOverlay focalPointOverlay;
 
 	public MainGUI() {
 		Prefs.init();
@@ -170,6 +171,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		globePan.setGlobePanDefault(Prefs.isGlobePanDefault());
 		globePan.setPreserveFocalDepth(Prefs.isPreserveFocalDepth());
 		renderWindow.getInteractorForwarder().setEventInterceptor(globePan);
+		focalPointOverlay = new FocalPointOverlay(renderWindow);
+		boolean overlayEnabled = Prefs.isFocalPointOverlayEnabled();
+		focalPointOverlay.setEnabled(overlayEnabled);
+		focalPointOverlayButton.setSelected(overlayEnabled);
 		mainPanel = new JPanel(new BorderLayout());
 		renderWindow.getRenderer().SetBackground(0,0,0);
 		
@@ -358,7 +363,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			}
 		});
 
-		mainPanel.add(renderWindow.getComponent(), BorderLayout.CENTER);
+		mainPanel.add(focalPointOverlay.getLayer(), BorderLayout.CENTER);
 		try {
 			mainMenu.availablePlugins = Plugins.getAvailablePlugins();
 			mainMenu.setupPluginMenus();
@@ -405,9 +410,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 	}
 
+	void setFocalPointOverlayEnabled(boolean enabled) {
+		focalPointOverlay.setEnabled(enabled);
+		focalPointOverlayButton.setSelected(enabled);
+		mainMenu.setFocalPointOverlaySelected(enabled);
+		Prefs.setFocalPointOverlayEnabled(enabled);
+	}
+
 	public void setFocalPointVisible(boolean visible) {
-		mainMenu.setFocalPointSelected(visible);
-		focalPointButton.setSelected(visible);
+		mainMenu.setFocalPoint3DSelected(visible);
 		int newVis = visible ? 1 : 0;
 		int curVis = focalPointActor.GetVisibility();
 		if (newVis != curVis) {
@@ -588,10 +599,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		JButton open = toolbarButton("Open", "open.png");
 		open.addActionListener(e -> mainMenu.openForToolbar());
 
-		focalPointButton.setToolTipText("Show Focal Point");
-		focalPointButton.getAccessibleContext().setAccessibleName("Show Focal Point");
-		focalPointButton.setIcon(ThemedImageIcon.load("resources/FocalPointIcon.png", 16));
-		focalPointButton.addActionListener(e -> setFocalPointVisible(focalPointButton.isSelected()));
+		focalPointOverlayButton.setToolTipText("Overlay Focal Point");
+		focalPointOverlayButton.getAccessibleContext().setAccessibleName("Overlay Focal Point");
+		focalPointOverlayButton.setIcon(ThemedImageIcon.load("resources/FocalPointIcon.png", 16));
+		focalPointOverlayButton.addActionListener(
+				e -> setFocalPointOverlayEnabled(focalPointOverlayButton.isSelected()));
 
 		JButton snapFocalPoint = new JButton(new SnapToSurfaceIcon());
 		snapFocalPoint.setToolTipText("Snap Focal Point to Surface");
@@ -603,7 +615,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		toolBar.add(zoomOut);
 		toolBar.add(save);
 		toolBar.add(open);
-		toolBar.add(focalPointButton);
+		toolBar.add(focalPointOverlayButton);
 		toolBar.add(snapFocalPoint);
 		toolBar.setOpaque(false);
 		
