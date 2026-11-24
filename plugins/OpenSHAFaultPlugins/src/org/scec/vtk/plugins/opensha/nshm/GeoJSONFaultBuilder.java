@@ -39,7 +39,7 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 	
 	private RememberedFileParameter loadParam;
 	private ButtonParameter reloadButton;
-	private RememberedFileParameter slipRatesParam;
+//	private RememberedFileParameter slipRatesParam;
 	
 	private ParameterList params;
 	
@@ -65,10 +65,10 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 		reloadButton.getEditor().setEnabled(false);
 		params.addParameter(reloadButton);
 		
-		slipRatesParam = new RememberedFileParameter("Load/Map (Kludgy) Slip Rates GeoDB",
-				GeoJSONFaultBuilder.class, "slipRatesDirectory");
-		slipRatesParam.addParameterChangeListener(this);
-		params.addParameter(slipRatesParam);
+//		slipRatesParam = new RememberedFileParameter("Load/Map (Kludgy) Slip Rates GeoDB",
+//				GeoJSONFaultBuilder.class, "slipRatesDirectory");
+//		slipRatesParam.addParameterChangeListener(this);
+//		params.addParameter(slipRatesParam);
 		
 		sectChangeListeners = new ArrayList<>();
 		colorers = FaultPluginGUI.createDefaultColorers();
@@ -175,24 +175,24 @@ public class GeoJSONFaultBuilder implements FaultTreeBuilder, ParameterChangeLis
 			} catch (IOException e1) {
 				throw ExceptionUtils.asRuntimeException(e1);
 			}
-			if (slipRatesParam.getValue() != null) {
-				slipRatesParam.removeParameterChangeListener(this);
-				slipRatesParam.setValue(null);
-				slipRatesParam.getEditor().refreshParamEditor();
-				slipRatesParam.addParameterChangeListener(this);
-			}
-		} else if (e.getParameter() == slipRatesParam) {
-			File slipRateFile = slipRatesParam.getValue();
-			if (sects != null && slipRateFile != null) {
-				System.out.println("Loading slip rate data from: "+slipRateFile.getAbsolutePath());
-				try {
-					Map<Integer, List<GeoDBSlipRateRecord>> slipRates = GeoJSONFaultReader.readGeoDB(slipRateFile);
-					GeoJSONFaultReader.testMapSlipRates(sects, slipRates, Double.NaN, null);
-					slipRatesParam.rememberLoadedFile(slipRateFile);
-				} catch (IOException e1) {
-					throw ExceptionUtils.asRuntimeException(e1);
-				}
-			}
+//			if (slipRatesParam.getValue() != null) {
+//				slipRatesParam.removeParameterChangeListener(this);
+//				slipRatesParam.setValue(null);
+//				slipRatesParam.getEditor().refreshParamEditor();
+//				slipRatesParam.addParameterChangeListener(this);
+//			}
+//		} else if (e.getParameter() == slipRatesParam) {
+//			File slipRateFile = slipRatesParam.getValue();
+//			if (sects != null && slipRateFile != null) {
+//				System.out.println("Loading slip rate data from: "+slipRateFile.getAbsolutePath());
+//				try {
+//					Map<Integer, List<GeoDBSlipRateRecord>> slipRates = GeoJSONFaultReader.readGeoDB(slipRateFile);
+//					GeoJSONFaultReader.testMapSlipRates(sects, slipRates, Double.NaN, null);
+//					slipRatesParam.rememberLoadedFile(slipRateFile);
+//				} catch (IOException e1) {
+//					throw ExceptionUtils.asRuntimeException(e1);
+//				}
+//			}
 		}
 		l.treeChanged(null);
 		reloadButton.getEditor().setEnabled(loadParam.getValue() != null);

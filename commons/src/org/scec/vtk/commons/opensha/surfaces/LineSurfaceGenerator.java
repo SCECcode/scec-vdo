@@ -49,7 +49,7 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 	// Each outline bundle has one companion because VTK line width applies to an entire actor.
 	private final Map<FaultActorBundle, FaultActorBundle> interiorBundles = new IdentityHashMap<>();
 
-	private enum SurfaceType {
+	public enum SurfaceType {
 		SOLID("All Lines"),
 		OUTLINE_ONLY("Outline Only"),
 		TRACE_ONLY("Trace Only");
@@ -112,6 +112,26 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 		coloringParam.getEditor().setEnabled(allLines);
 		interiorSizeParam.getEditor().setEnabled(allLines);
 		fixedColorParam.getEditor().setEnabled(allLines && coloringParam.getValue() != LineColoring.SUPPLIED);
+	}
+
+	/** Select All Lines, Outline Only, or Trace Only. */
+	public void setSurfaceType(SurfaceType type) {
+		surfaceTypeParam.setValue(Preconditions.checkNotNull(type));
+	}
+
+	/** Select which portion of All Lines follows the supplied color. */
+	public void setLineColoring(LineColoring coloring) {
+		coloringParam.setValue(Preconditions.checkNotNull(coloring));
+	}
+
+	/** Set the color used by Fixed Outline and Fixed Interior. */
+	public void setFixedLineColor(Color color) {
+		fixedColorParam.setValue(Preconditions.checkNotNull(color));
+	}
+
+	/** Set the width of interior grid lines, in pixels. */
+	public void setInteriorSize(double size) {
+		interiorSizeParam.setValue(size);
 	}
 
 	public void setOpacity(double opacity) {

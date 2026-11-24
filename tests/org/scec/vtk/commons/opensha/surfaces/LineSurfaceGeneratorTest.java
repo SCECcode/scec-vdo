@@ -13,7 +13,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 import org.opensha.commons.geo.Location;
-import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.faultSurface.ApproxEvenlyGriddedSurface;
@@ -24,6 +23,7 @@ import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
 import org.scec.vtk.commons.opensha.gui.EventManager;
 import org.scec.vtk.commons.opensha.gui.GeometryTypeSelectorPanel;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator.LineColoring;
+import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator.SurfaceType;
 import org.scec.vtk.commons.opensha.surfaces.pickBehavior.FaultSectionPickBehavior;
 import org.scec.vtk.commons.opensha.tree.FaultSectionNode;
 import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
@@ -47,22 +47,6 @@ public class LineSurfaceGeneratorTest {
 		checks++;
 		if (!condition)
 			throw new AssertionError(message);
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static void set(LineSurfaceGenerator generator, String name, Object value) {
-		((Parameter) generator.getDisplayParams().getParameter(name)).setValue(value);
-	}
-
-	private static void surfaceType(LineSurfaceGenerator generator, String displayName) {
-		Enum<?> current = (Enum<?>) generator.getDisplayParams().getParameter("Surface Type").getValue();
-		for (Object option : current.getDeclaringClass().getEnumConstants()) {
-			if (option.toString().equals(displayName)) {
-				set(generator, "Surface Type", option);
-				return;
-			}
-		}
-		throw new AssertionError("Unknown surface type: " + displayName);
 	}
 
 	private static ApproxEvenlyGriddedSurface surface(int rows, int cols, double offset) {
@@ -138,7 +122,7 @@ public class LineSurfaceGeneratorTest {
 			for (LineColoring mode : LineColoring.values()) {
 				LineSurfaceGenerator generator = new LineSurfaceGenerator();
 				generator.setBundlerEneabled(bundled);
-				set(generator, LineSurfaceGenerator.COLORING_PARAM_NAME, mode);
+				generator.setLineColoring(mode);
 				generator.setOpacity(.5);
 				Fault fault = new Fault(0);
 				FaultSectionActorList list = generator.createFaultActors(fault.createSurface(null), Color.RED, fault);
@@ -150,7 +134,7 @@ public class LineSurfaceGeneratorTest {
 					vtkPolyData data = ((vtkPolyDataMapper) actor.GetMapper()).GetInput();
 					check(data.GetNumberOfLines() == (i == 0 ? 10 : 7), "Missing or duplicate grid edges");
 					boolean fixed = i == 0 ? mode == LineColoring.FIXED_OUTLINE : mode == LineColoring.FIXED_INTERIOR;
-					color(parts.get(i), fixed ? Color.GRAY : Color.RED, 0);
+					color(parts.get(i), fixed ? Color.LIGHT_GRAY : Color.RED, 0);
 				}
 				for (var part : parts) {
 					if (part instanceof FaultSectionBundledActorList)
@@ -160,18 +144,18 @@ public class LineSurfaceGeneratorTest {
 						check(actor(part).GetProperty().GetOpacity() == .5, "Incorrect standalone opacity");
 				}
 				check(generator.updateColor(list, Color.BLUE), "Color update failed");
-				color(parts.get(0), mode == LineColoring.FIXED_OUTLINE ? Color.GRAY : Color.BLUE, 127);
-				color(parts.get(1), mode == LineColoring.FIXED_INTERIOR ? Color.GRAY : Color.BLUE, 127);
+				color(parts.get(0), mode == LineColoring.FIXED_OUTLINE ? Color.LIGHT_GRAY : Color.BLUE, 127);
+				color(parts.get(1), mode == LineColoring.FIXED_INTERIOR ? Color.LIGHT_GRAY : Color.BLUE, 127);
 
 				// Matching initial colors must still behave differently on subsequent recoloring.
-				set(generator, LineSurfaceGenerator.FIXED_COLOR_PARAM_NAME, Color.RED);
+				generator.setFixedLineColor(Color.RED);
 				list = generator.createFaultActors(fault.createSurface(null), Color.RED, fault);
 				generator.updateColor(list, Color.GREEN);
 				parts = leaves(list);
 				color(parts.get(0), mode == LineColoring.FIXED_OUTLINE ? Color.RED : Color.GREEN, 0);
 				color(parts.get(1), mode == LineColoring.FIXED_INTERIOR ? Color.RED : Color.GREEN, 0);
-				set(generator, LineSurfaceGenerator.LINE_SIZE_PARAM_NAME, 4d);
-				set(generator, LineSurfaceGenerator.INTERIOR_LINE_SIZE_PARAM_NAME, 3d);
+				generator.setSize(4d);
+				generator.setInteriorSize(3d);
 				parts = leaves(generator.createFaultActors(fault.createSurface(null), Color.RED, fault));
 				check(actor(parts.get(0)).GetProperty().GetLineWidth() == 4, "Outline width not applied");
 				check(actor(parts.get(1)).GetProperty().GetLineWidth() == 3, "Interior width not applied");
@@ -182,19 +166,19 @@ public class LineSurfaceGeneratorTest {
 	private static void outlinesAndCompounds() {
 		Fault fault = new Fault(0);
 		LineSurfaceGenerator generator = new LineSurfaceGenerator();
-		set(generator, LineSurfaceGenerator.COLORING_PARAM_NAME, LineColoring.FIXED_OUTLINE);
-		for (String mode : new String[] { "Outline Only", "Trace Only" }) {
-			surfaceType(generator, mode);
+		generator.setLineColoring(LineColoring.FIXED_OUTLINE);
+		for (SurfaceType mode : new SurfaceType[] { SurfaceType.OUTLINE_ONLY, SurfaceType.TRACE_ONLY }) {
+			generator.setSurfaceType(mode);
 			FaultSectionActorList part = generator.createFaultActors(surface(3, 4, 0), Color.RED, fault);
 			check(!(part instanceof CompositeFaultSectionActorList), "Unexpected interior geometry");
 			check(((FaultSectionBundledActorList) part).getBundle().getPolyData()
-					.GetNumberOfLines() == (mode.equals("Outline Only") ? 10 : 3),
+					.GetNumberOfLines() == (mode == SurfaceType.OUTLINE_ONLY ? 10 : 3),
 					"Incorrect outline/trace edge count");
 			generator.updateColor(part, Color.BLUE);
 			color(part, Color.BLUE, 0);
 		}
-		surfaceType(generator, "All Lines");
-		set(generator, LineSurfaceGenerator.COLORING_PARAM_NAME, LineColoring.FIXED_INTERIOR);
+		generator.setSurfaceType(SurfaceType.SOLID);
+		generator.setLineColoring(LineColoring.FIXED_INTERIOR);
 		for (int[] shape : new int[][] { { 1, 4 }, { 3, 1 }, { 2, 2 }, { 1, 1 } }) {
 			FaultSectionActorList part = generator.createFaultActors(surface(shape[0], shape[1], 0), Color.RED, fault);
 			check(!(part instanceof CompositeFaultSectionActorList), "Degenerate grid has interior lines");
@@ -206,7 +190,7 @@ public class LineSurfaceGeneratorTest {
 		check(parts.size() == 4, "Compound surface lost bundle ranges");
 		generator.updateColor(list, Color.BLUE);
 		for (int i = 0; i < parts.size(); i++)
-			color(parts.get(i), i % 2 == 0 ? Color.BLUE : Color.GRAY, 0);
+			color(parts.get(i), i % 2 == 0 ? Color.BLUE : Color.LIGHT_GRAY, 0);
 	}
 
 	private static PrefDataSection parentFault(int id, int parent) {
@@ -274,7 +258,7 @@ public class LineSurfaceGeneratorTest {
 
 	private static void lifecycle() {
 		RecordingGenerator generator = new RecordingGenerator();
-		set(generator, LineSurfaceGenerator.COLORING_PARAM_NAME, LineColoring.FIXED_OUTLINE);
+		generator.setLineColoring(LineColoring.FIXED_OUTLINE);
 		FaultSectionNode first = new FaultSectionNode(new Fault(0));
 		FaultSectionNode second = new FaultSectionNode(new Fault(1));
 		FaultTreeBuilder builder = new FaultTreeBuilder() {
@@ -320,14 +304,14 @@ public class LineSurfaceGeneratorTest {
 			check(picked.get() == first.getFault(), "Wrong fault picked from component");
 		}
 		first.setColor(Color.BLUE);
-		color(firstParts.get(0), Color.GRAY, 255);
+		color(firstParts.get(0), Color.LIGHT_GRAY, 255);
 		color(firstParts.get(1), Color.BLUE, 255);
 		color(secondParts.get(1), Color.RED, 255);
 		first.setVisible(false);
 		for (int i = 0; i < 2; i++) {
 			FaultSectionBundledActorList hidden = (FaultSectionBundledActorList) firstParts.get(i);
 			FaultSectionBundledActorList visible = (FaultSectionBundledActorList) secondParts.get(i);
-			color(hidden, i == 0 ? Color.GRAY : Color.BLUE, 0);
+			color(hidden, i == 0 ? Color.LIGHT_GRAY : Color.BLUE, 0);
 			check(hidden.getBundle().getActor().GetVisibility() == 1, "Hiding one fault hid its neighbor");
 			check(hidden.getBundle().getActor().getNumRegisteredPoints() == visible.getMyNumPoints(),
 					"Hidden points still registered for picking");
@@ -343,7 +327,7 @@ public class LineSurfaceGeneratorTest {
 					"Empty bundle still visible/pickable");
 		first.setVisible(true);
 		second.setVisible(true);
-		set(generator, LineSurfaceGenerator.INTERIOR_LINE_SIZE_PARAM_NAME, 3d);
+		generator.setInteriorSize(3d);
 		check(actors.getActors().size() == 2, "Settings rebuild left old rendering actors");
 		for (var list : generator.built.values()) {
 			List<FaultSectionActorList> parts = leaves(list);

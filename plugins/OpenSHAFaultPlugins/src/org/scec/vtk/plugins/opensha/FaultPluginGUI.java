@@ -171,6 +171,7 @@ public class FaultPluginGUI extends JSplitPane {
 		// add builder params
 		if (builderParams != null && !builderParams.isEmpty()) {
 			ParameterListEditor builderEdit = new ParameterListEditor(builderParams);
+			builderEdit.setTitle(plugin.getMetadata().getName());
 			
 			int paramHeight = Integer.min(builderParams.size()*50, tableHeight-minTableHeight);
 			tableHeight -= paramHeight;
