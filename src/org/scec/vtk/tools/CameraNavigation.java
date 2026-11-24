@@ -68,11 +68,11 @@ public final class CameraNavigation {
 			return snapped;
 		Vector3D planarFocal = new Vector3D(world[0] / world[3], world[1] / world[3], world[2] / world[3]);
 
-		// Remove the radial part of the drag before projecting onto the ellipsoid. An oblique drag can include
-		// substantial vertical motion, which would otherwise skew the pan or send a long drag through the Earth.
+		// Rotate the screen plane onto the local tangent plane to preserve the drag length at any camera tilt.
 		Vector3D normal = surfaceNormal(focal);
-		Vector3D motion = planarFocal.subtract(focal);
-		Vector3D tangent = motion.subtract(normal.scalarMultiply(motion.dotProduct(normal)));
+		Vector3D viewNormal = new Vector3D(camera.GetViewPlaneNormal());
+		Rotation screenToSurface = new Rotation(viewNormal, normal);
+		Vector3D tangent = screenToSurface.applyTo(planarFocal.subtract(focal));
 		double[] projected = Transform.projectToEarthSurface(focal.add(tangent).toArray());
 		if (projected == null)
 			return snapped;

@@ -106,6 +106,32 @@ public class GlobePanInteractionTest {
 		}
 	}
 
+	private static void verifyPanSensitivity(Viewer viewer) {
+		var renderer = viewer.getRenderer();
+		var camera = renderer.GetActiveCamera();
+		double[][] drags = { { 60, 0 }, { 0, 60 }, { 60, 60 } };
+		for (int parallel : new int[] { 0, 1 }) {
+			camera.SetParallelProjection(parallel);
+			for (double[] drag : drags) {
+				Vector3D headOn = null;
+				for (int tilt : new int[] { 0, 60, 85 }) {
+					double angle = Math.toRadians(tilt);
+					camera.SetPosition(Transform.re + 1500 * Math.cos(angle), 0, 1500 * Math.sin(angle));
+					camera.SetFocalPoint(Transform.re, 0, 0);
+					camera.SetViewUp(-Math.sin(angle), 0, Math.cos(angle));
+					camera.SetClippingRange(1, 30000);
+					check(CameraNavigation.globePan(renderer, drag[0], drag[1]), "Drag did not move the pivot");
+					Vector3D point = new Vector3D(camera.GetFocalPoint());
+					if (headOn == null)
+						headOn = point;
+					else
+						check(Vector3D.distance(headOn, point) < TOLERANCE, "Pan changed at " + tilt + "° tilt"
+								+ " for drag (" + drag[0] + ", " + drag[1] + ")");
+				}
+			}
+		}
+	}
+
 	private static void verifyGridFit(Viewer viewer) {
 		var renderer = viewer.getRenderer();
 		var camera = renderer.GetActiveCamera();
@@ -149,6 +175,7 @@ public class GlobePanInteractionTest {
 			check(isOnSurface(viewer.getRenderer().GetActiveCamera()), "First globe drag did not snap the pivot");
 			viewer.getRenderer().GetActiveCamera().ParallelProjectionOff();
 			verifyGridFit(viewer);
+			verifyPanSensitivity(viewer);
 		});
 		System.out.println("PASS: native pan gestures, camera motion, and graticule fitting");
 	}
