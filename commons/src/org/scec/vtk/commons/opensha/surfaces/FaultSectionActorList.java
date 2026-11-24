@@ -6,30 +6,30 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 
 import vtk.vtkActor;
 
-/**
- * Inner class designed to allow pick behaviors to discern instances of FaultSection objects.
- * Wrapping a Shape3D in this way ensures future compatibility if pick behaviors
- * are added to other SCEC-VIDEO objects.
- * THIS IS JUST COPIED FROM FaultAccessor class in Fault3DPlugin. Ideally, it can be put in some
- * UTILS package.
- */
+/** Actors belonging to one fault, with optional support for a fixed color. */
 public class FaultSectionActorList extends ArrayList<vtkActor> {
-	private AbstractFaultSection fault;
-	
-    public FaultSectionActorList(AbstractFaultSection fault) {
-        this.fault = fault;
-    }
-    
-    /**
-     * Returns the display name of this <code>FaultShape3D</code>.
-     * 
-     * @return the display name of this fault
-     */
-    public String getInfo() {
-        return fault.getInfo();
-    }
-    
-    public AbstractFaultSection getFault() {
-    	return fault;
-    }
+	private final AbstractFaultSection fault;
+	private final boolean colorUpdateEnabled;
+
+	public FaultSectionActorList(AbstractFaultSection fault) {
+		this(fault, true);
+	}
+
+	public FaultSectionActorList(AbstractFaultSection fault, boolean colorUpdateEnabled) {
+		this.fault = fault;
+		this.colorUpdateEnabled = colorUpdateEnabled;
+	}
+
+	public String getInfo() {
+		return fault.getInfo();
+	}
+
+	public AbstractFaultSection getFault() {
+		return fault;
+	}
+
+	/** Whether unbundled actors follow subsequent colorer changes. Bundled lists use their point ranges instead. */
+	public boolean isColorUpdateEnabled() {
+		return colorUpdateEnabled;
+	}
 }

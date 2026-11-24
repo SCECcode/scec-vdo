@@ -67,14 +67,14 @@ public abstract class GeometryGenerator implements Named {
 			AbstractFaultSection fault);
 	
 	protected FaultSectionActorList handleCompound(CompoundSurface surface, Color color, AbstractFaultSection fault) {
-		FaultSectionActorList list = new FaultSectionActorList(fault);
+		CompositeFaultSectionActorList list = new CompositeFaultSectionActorList(fault);
 		for (RuptureSurface subSurf : surface.getSurfaceList()) {
 			FaultSectionActorList sub;
 			if (subSurf instanceof EvenlyGriddedSurface)
 				sub = createFaultActors((EvenlyGriddedSurface)subSurf, color, fault);
 			else
 				sub = createFaultActors(subSurf, color, fault);
-			list.addAll(sub);
+			list.addPart(sub);
 		}
 		return list;
 	}
@@ -90,8 +90,16 @@ public abstract class GeometryGenerator implements Named {
 	 * @return success
 	 */
 	public boolean updateColor(FaultSectionActorList actorList, Color color) {
+		if (actorList instanceof CompositeFaultSectionActorList) {
+			boolean success = true;
+			for (FaultSectionActorList part : ((CompositeFaultSectionActorList)actorList).getParts())
+				success &= updateColor(part, color);
+			return success;
+		}
 		if (actorList instanceof FaultSectionBundledActorList) {
 			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actorList;
+			if (bundleList.getMyNumPointsForColoring() == 0)
+				return true;
 			FaultActorBundle bundle = bundleList.getBundle();
 //			System.out.println("Entering bundle synchronized block (updateColor)");
 			synchronized (bundle) {
@@ -118,6 +126,8 @@ public abstract class GeometryGenerator implements Named {
 //			System.out.println("Left bundle synchronized block (updateColor)");
 			return true;
 		} else {
+			if (!actorList.isColorUpdateEnabled())
+				return true;
 			for (vtkActor actor : actorList) {
 				actor.GetProperty().SetColor(getColorDoubleArray(color));
 				actor.Modified();
@@ -296,15 +306,22 @@ public abstract class GeometryGenerator implements Named {
 	
 	public synchronized FaultSectionActorList createFaultActors(
 			GeometryType type, List<PointArray> cellDatas, Color color, double opacity, AbstractFaultSection fault) {
-		int myOpacity = (int)(255d*opacity);
 		FaultActorBundle currentBundle;
 		if (bundler != null && bundlerEnabled && fault != null)
 			currentBundle = bundler.getBundle(fault);
 		else
 			currentBundle = null;
 		
+		return createFaultActors(type, cellDatas, color, opacity, fault, currentBundle, true);
+	}
+
+	/** Build a part using an explicit bundle, or standalone actors when the bundle is null. */
+	protected synchronized FaultSectionActorList createFaultActors(GeometryType type, List<PointArray> cellDatas,
+			Color color, double opacity, AbstractFaultSection fault, FaultActorBundle currentBundle,
+			boolean colorUpdateEnabled) {
+		int myOpacity = (int)(255d * opacity);
 		boolean bundle = currentBundle != null;
-		
+
 		vtkPolyData polyData;
 		vtkPoints pts;
 		vtkUnsignedCharArray colors;
@@ -416,9 +433,11 @@ public abstract class GeometryGenerator implements Named {
 		FaultSectionActorList list;
 		if (bundle) {
 			Preconditions.checkState(pts.GetNumberOfPoints() == colors.GetNumberOfTuples());
-			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, (int) (pts.GetNumberOfPoints()-firstIndex), myOpacity);
+			int numPoints = (int)(pts.GetNumberOfPoints() - firstIndex);
+			list = new FaultSectionBundledActorList(fault, currentBundle, firstIndex, numPoints,
+					colorUpdateEnabled ? numPoints : 0, myOpacity);
 		} else {
-			list = new FaultSectionActorList(fault);
+			list = new FaultSectionActorList(fault, colorUpdateEnabled);
 			list.add(actor);
 		}
 		

@@ -26,6 +26,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.gui.anim.AnimationListener;
 import org.scec.vtk.commons.opensha.gui.dist.VisibleFaultSurfacesProvider;
+import org.scec.vtk.commons.opensha.surfaces.CompositeFaultSectionActorList;
 import org.scec.vtk.commons.opensha.surfaces.FaultActorBundle;
 import org.scec.vtk.commons.opensha.surfaces.FaultSectionActorList;
 import org.scec.vtk.commons.opensha.surfaces.FaultSectionBundledActorList;
@@ -202,20 +203,33 @@ AnimationListener {
 	}
 	
 	private void unCacheBranch(AbstractFaultSection fault) {
-		if (D) System.out.println("UnCaching BG for fault: '"+fault.getName()+"'");
-		FaultSectionActorList actors = actorsMap.remove(fault);
-		for (vtkActor actor : actors) {
-			if (isActorDisplayed(actor))
-				pluginActors.removeActor(actor);
-		}
-		if (actors instanceof FaultSectionBundledActorList) {
-			vtkActor actor = ((FaultSectionBundledActorList)actors).getBundle().getActor();
-			if (isActorDisplayed(actor))
-				pluginActors.removeActor(actor);
-		}
+		if (D) System.out.println("UnCaching BG for fault: '" + fault.getName() + "'");
+		removeActors(actorsMap.remove(fault));
 		updateViewer();
 	}
-	
+
+	private void removeActors(FaultSectionActorList actors) {
+		if (actors == null)
+			return;
+		if (actors instanceof CompositeFaultSectionActorList) {
+			for (FaultSectionActorList part : ((CompositeFaultSectionActorList)actors).getParts())
+				removeActors(part);
+		} else if (actors instanceof FaultSectionBundledActorList) {
+			FaultSectionBundledActorList part = (FaultSectionBundledActorList)actors;
+			FaultActorBundle bundle = part.getBundle();
+			synchronized (bundle) {
+				setBundledOpacity(part, false);
+				// Other faults can still be using this actor. Remove it only after its last contribution is hidden.
+				if (!bundle.areAnyPointVisible() && isActorDisplayed(bundle.getActor()))
+					pluginActors.removeActor(bundle.getActor());
+			}
+		} else {
+			for (vtkActor actor : actors)
+				if (isActorDisplayed(actor))
+					pluginActors.removeActor(actor);
+		}
+	}
+
 	private void rebuildAllVisibleFaults() {
 		if (D) System.out.println("Rebuilding all visible faults");
 		for (FaultSectionNode node : nodes.values()) {
@@ -251,39 +265,39 @@ AnimationListener {
 			SwingUtilities.invokeLater(() -> displayActors(actors, updateViewer));
 			return;
 		}
-		for (vtkActor actor : actors) {
-			actor.SetVisibility(1);
-			actor.SetPickable(1);
-			if (isActorDisplayed(actor)) {
-				// it's already in there, update it
-				actor.Modified();
-			} else {
-				// add it
-				pluginActors.addActor(actor);
-			}
-		}
-		if (actors instanceof FaultSectionBundledActorList) {
-			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actors;
-			FaultActorBundle bundle = bundleList.getBundle();
-			if (D) System.out.println("Entering bundle synchronized block (display)");
-			synchronized (bundle) {
-				if (D) System.out.println("Inside bundle synchronized block (display)");
-				vtkActor actor = bundle.getActor();
-				Preconditions.checkNotNull(actor);
-				actor.SetVisibility(1); // always visible in bundled view
-				setBundledOpacity(bundleList, true);
-				if (isActorDisplayed(actor))
-					actor.Modified();
-				else
-					pluginActors.addActor(actor);
-				if (D) System.out.println("Leaving bundle synchronized block (display)");
-			}
-			if (D) System.out.println("Left bundle synchronized block (display)");
-		}
+		setActorsVisible(actors, true);
 		if (updateViewer)
 			updateViewer();
 	}
-	
+
+	/** Apply visibility to each component without rendering between outline/interior or compound-surface parts. */
+	private void setActorsVisible(FaultSectionActorList actors, boolean visible) {
+		if (actors == null)
+			return;
+		if (actors instanceof CompositeFaultSectionActorList) {
+			for (FaultSectionActorList part : ((CompositeFaultSectionActorList)actors).getParts())
+				setActorsVisible(part, visible);
+		} else if (actors instanceof FaultSectionBundledActorList) {
+			FaultSectionBundledActorList part = (FaultSectionBundledActorList)actors;
+			FaultActorBundle bundle = part.getBundle();
+			synchronized (bundle) {
+				setBundledOpacity(part, visible);
+				vtkActor actor = bundle.getActor();
+				actor.Modified();
+				if (visible && !isActorDisplayed(actor))
+					pluginActors.addActor(actor);
+			}
+		} else {
+			for (vtkActor actor : actors) {
+				actor.SetVisibility(visible ? 1 : 0);
+				actor.SetPickable(visible ? 1 : 0);
+				actor.Modified();
+				if (visible && !isActorDisplayed(actor))
+					pluginActors.addActor(actor);
+			}
+		}
+	}
+
 	private long lastRequestedRender = Long.MIN_VALUE;
 	private long lastCompletedRender = Long.MIN_VALUE;
 //	private boolean upToDate = true;
@@ -352,32 +366,10 @@ AnimationListener {
 	}
 
 	private void hideFault(AbstractFaultSection fault) {
-		FaultSectionActorList actors = actorsMap.get(fault);
-		if (actors == null)
-			return;
-		for (vtkActor actor : actors) {
-			actor.SetVisibility(0);
-			actor.SetPickable(0);
-			actor.Modified(); // TODO needed?
-		}
-		if (actors instanceof FaultSectionBundledActorList) {
-			FaultSectionBundledActorList bundleList = (FaultSectionBundledActorList)actors;
-			FaultActorBundle bundle = bundleList.getBundle();
-			if (D) System.out.println("Entering bundle synchronized block (hide)");
-			synchronized (bundle) {
-				if (D) System.out.println("Inside bundle synchronized block (hide)");
-				vtkActor actor = bundle.getActor();
-				Preconditions.checkNotNull(actor);
-				actor.SetVisibility(1); // always visible in bundled view
-				setBundledOpacity(bundleList, false);
-				actor.Modified();
-				if (D) System.out.println("Leaving bundle synchronized block (hide)");
-			}
-			if (D) System.out.println("Left bundle synchronized block (hide)");
-		}
+		setActorsVisible(actorsMap.get(fault), false);
 		updateViewer();
 	}
-	
+
 	// synchroinzed externally
 	private void setBundledOpacity(FaultSectionBundledActorList bundleList, boolean visible) {
 		FaultActorBundle bundle = bundleList.getBundle();
