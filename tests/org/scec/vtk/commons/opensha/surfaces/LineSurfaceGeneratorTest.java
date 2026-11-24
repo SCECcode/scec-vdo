@@ -8,12 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 import org.opensha.commons.geo.Location;
 import org.opensha.commons.param.ParameterList;
+import org.opensha.commons.param.editor.AbstractParameterEditor;
 import org.opensha.refFaultParamDb.vo.FaultSectionPrefData;
 import org.opensha.sha.faultSurface.ApproxEvenlyGriddedSurface;
 import org.opensha.sha.faultSurface.CompoundSurface;
@@ -30,6 +33,7 @@ import org.scec.vtk.commons.opensha.tree.builders.FaultTreeBuilder;
 import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
 import org.scec.vtk.plugins.PluginActors;
+import org.scec.vtk.plugins.utils.components.ColorWellButton;
 import org.scec.vtk.plugins.opensha.ucerf3Rups.ParentFaultSectionBundler;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 
@@ -115,6 +119,52 @@ public class LineSurfaceGeneratorTest {
 					&& Math.abs(rgb[1] * 255 - expected.getGreen()) < 1e-6
 					&& Math.abs(rgb[2] * 255 - expected.getBlue()) < 1e-6, "Incorrect standalone color");
 		}
+	}
+
+	private static JComponent widget(LineSurfaceGenerator generator, String parameterName) {
+		return ((AbstractParameterEditor<?>)generator.getDisplayParams().getParameter(parameterName).getEditor())
+				.getWidget();
+	}
+
+	private static void editors() {
+		LineSurfaceGenerator generator = new LineSurfaceGenerator();
+		// Match the plugin startup sequence, including editors that exist before their values are configured.
+		for (var parameter : generator.getDisplayParams())
+			parameter.getEditor();
+		generator.setLineColoring(LineColoring.FIXED_OUTLINE);
+		generator.setSize(1d);
+		generator.setInteriorSize(1d);
+		generator.setFixedLineColor(Color.WHITE);
+		JComboBox<?> coloring = (JComboBox<?>)widget(generator, LineSurfaceGenerator.COLORING_PARAM_NAME);
+		ColorWellButton fixedColor = (ColorWellButton)widget(generator, LineSurfaceGenerator.FIXED_COLOR_PARAM_NAME);
+		JComboBox<?> outlineSize = (JComboBox<?>)widget(generator, LineSurfaceGenerator.LINE_SIZE_PARAM_NAME);
+		JComboBox<?> interiorSize = (JComboBox<?>)widget(generator, LineSurfaceGenerator.INTERIOR_LINE_SIZE_PARAM_NAME);
+		check(coloring.getSelectedItem() == LineColoring.FIXED_OUTLINE, "Coloring editor displays a stale value");
+		check(Color.WHITE.equals(fixedColor.getColor1()) && Color.WHITE.equals(fixedColor.getColor2()),
+				"Fixed-color editor displays a stale color");
+		check(Double.valueOf(1d).equals(outlineSize.getSelectedItem()), "Outline-width editor displays a stale value");
+		check(Double.valueOf(1d).equals(interiorSize.getSelectedItem()), "Interior-width editor displays a stale value");
+		check(fixedColor.isEnabled() && interiorSize.isEnabled(), "All Lines controls should be enabled");
+
+		generator.setSurfaceType(SurfaceType.OUTLINE_ONLY);
+		check(((JComboBox<?>)widget(generator, "Surface Type")).getSelectedItem() == SurfaceType.OUTLINE_ONLY,
+				"Surface-type editor displays a stale value");
+		check(!coloring.isEnabled() && !fixedColor.isEnabled() && !interiorSize.isEnabled(),
+				"Interior/coloring controls should be disabled for outlines");
+		generator.setSurfaceType(SurfaceType.SOLID);
+		generator.setInteriorSize(3d);
+		check(Double.valueOf(3d).equals(interiorSize.getSelectedItem()), "Interior-width editor did not refresh");
+		generator.setLineColoring(LineColoring.SUPPLIED);
+		check(coloring.getSelectedItem() == LineColoring.SUPPLIED && !fixedColor.isEnabled(),
+				"Supplied-color mode did not refresh its controls");
+
+		// Refreshing a combo box must not feed back into extra geometry rebuilds or undo the user's selection.
+		int[] changes = { 0 };
+		generator.addPlotSettingsChangeListener(event -> changes[0]++);
+		coloring.setSelectedItem(LineColoring.FIXED_INTERIOR);
+		check(generator.getDisplayParams().getParameter(LineSurfaceGenerator.COLORING_PARAM_NAME).getValue()
+				== LineColoring.FIXED_INTERIOR, "Editor change did not reach the parameter");
+		check(changes[0] == 1, "Refreshing the editor caused duplicate geometry changes");
 	}
 
 	private static void styles() {
@@ -344,6 +394,7 @@ public class LineSurfaceGeneratorTest {
 				vtkNativeLibrary.vtkCommonExecutionModel, vtkNativeLibrary.vtkFiltersCore,
 				vtkNativeLibrary.vtkRenderingCore, vtkNativeLibrary.vtkRenderingOpenGL2);
 		SwingUtilities.invokeAndWait(() -> {
+			editors();
 			styles();
 			outlinesAndCompounds();
 			grouping();

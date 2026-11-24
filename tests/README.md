@@ -23,7 +23,8 @@ LD_LIBRARY_PATH="$PWD/vtkLibs/linux_64bit${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" 
 ```
 
 `LineSurfaceGeneratorTest` covers supplied and fixed colors, matching initial colors followed by recoloring,
-independent outline/interior widths (defaults 2/1), opacity, unique grid edges, outline/trace modes, thin grids,
+independent outline/interior widths (defaults 2/1), editor refresh after programmatic changes, opacity,
+unique grid edges, outline/trace modes, thin grids,
 compound surfaces, parent-based and bounded bundlers, bundle clearing, picking registration, visibility,
 settings rebuilds, and tree replacement. Both bundled and standalone coloring paths are exercised. It also
 builds the VTK cell lookup before appending more lines to check the picking-cache invalidation path.

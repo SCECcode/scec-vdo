@@ -117,25 +117,30 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 	/** Select All Lines, Outline Only, or Trace Only. */
 	public void setSurfaceType(SurfaceType type) {
 		surfaceTypeParam.setValue(Preconditions.checkNotNull(type));
+		surfaceTypeParam.refreshEditor();
 	}
 
 	/** Select which portion of All Lines follows the supplied color. */
 	public void setLineColoring(LineColoring coloring) {
 		coloringParam.setValue(Preconditions.checkNotNull(coloring));
+		coloringParam.refreshEditor();
 	}
 
 	/** Set the color used by Fixed Outline and Fixed Interior. */
 	public void setFixedLineColor(Color color) {
 		fixedColorParam.setValue(Preconditions.checkNotNull(color));
+		fixedColorParam.refreshEditor();
 	}
 
 	/** Set the width of interior grid lines, in pixels. */
 	public void setInteriorSize(double size) {
 		interiorSizeParam.setValue(size);
+		interiorSizeParam.refreshEditor();
 	}
 
 	public void setOpacity(double opacity) {
 		opacityParam.setValue(opacity);
+		opacityParam.refreshEditor();
 	}
 
 	@Override
@@ -249,6 +254,7 @@ public class LineSurfaceGenerator extends GeometryGenerator implements Parameter
 	/** Set the width of outlines, traces, and explicit line lists. */
 	public void setSize(double size) {
 		lineSizeParam.setValue(size);
+		lineSizeParam.refreshEditor();
 	}
 
 	@Override
