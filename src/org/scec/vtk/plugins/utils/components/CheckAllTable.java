@@ -164,16 +164,22 @@ public class CheckAllTable extends JPanel {
         controlPanel = new ControlPanel();												//Add ControlPanel.					
         this.add(controlPanel, BorderLayout.NORTH);
 
-        table = new JTable(dataModel) {													//Create the table using dataModel.
-        	public Component prepareRenderer(											//prepareRenderer sets GUI properties for the entire table. Currently,
-        		TableCellRenderer renderer, int row, int column) {							//it makes the rows alternate in color between white and light blue.
-        		Component c = super.prepareRenderer(renderer, row, column);
-        		if (!isRowSelected(row) && column != 2) {
-        			c.setBackground(row % 2 == 0 ? getBackground() : new Color(240, 254, 255));
-        		}
-        		return c;
-        	}
-        };
+		table = new JTable(dataModel) {
+			@Override
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+				Component cell = super.prepareRenderer(renderer, row, column);
+				if (!isCellSelected(row, column) && convertColumnIndexToModel(column) != COLOR_COL) {
+					if (renderer == controlColumnRenderer && row == hoverRow && column == hoverColumn) {
+						cell.setBackground(getSelectionBackground());
+						cell.setForeground(getSelectionForeground());
+					} else {
+						Color background = getBackground();
+						cell.setBackground(row % 2 == 0 ? background : alternateRowColor(background, getForeground()));
+					}
+				}
+				return cell;
+			}
+		};
 
         table.getModel().addTableModelListener(tableListener);								//Add tableListener to model.
         selectionModel = (DefaultListSelectionModel) table.getSelectionModel();				//selectionModel keeps track of which rows are highlighted
@@ -190,6 +196,14 @@ public class CheckAllTable extends JPanel {
         
     }
     
+	private static Color alternateRowColor(Color background, Color foreground) {
+		// A small step toward the text color gives a stripe that works on both light and dark backgrounds.
+		return new Color(
+				(int)Math.round(0.92 * background.getRed() + 0.08 * foreground.getRed()),
+				(int)Math.round(0.92 * background.getGreen() + 0.08 * foreground.getGreen()),
+				(int)Math.round(0.92 * background.getBlue() + 0.08 * foreground.getBlue()));
+	}
+
     public void addColumn(ArrayList<String> columnData, String columnTitle) {
     	Object[] cData = new Object[columnData.size()];
     	for (int i = 0; i < columnData.size(); i++) {
@@ -345,10 +359,7 @@ public class CheckAllTable extends JPanel {
     		setBorder(padding);
     		setHorizontalAlignment(JLabel.CENTER);
     		setFont(new Font(Font.MONOSPACED, Font.BOLD, 13));			
-    		if(row == hoverRow && column == hoverColumn)							//Controls the hover effect colors
-    			this.setForeground(new Color(127, 255, 0));
-    		else
-    			this.setForeground(Color.DARK_GRAY);
+
     		return this;
     	}
     };

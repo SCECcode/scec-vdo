@@ -16,6 +16,7 @@ final class GlobePanInteraction extends vtkAbstractEventInterceptor {
 	private final vtkComponent<? extends Component> viewer;
 	private final Consumer<vtkRenderer> cameraChanged;
 	private boolean globePanDefault;
+	private boolean preserveFocalDepth;
 	private boolean globeDrag;
 	private int lastX;
 	private int lastY;
@@ -27,6 +28,10 @@ final class GlobePanInteraction extends vtkAbstractEventInterceptor {
 
 	void setGlobePanDefault(boolean globePanDefault) {
 		this.globePanDefault = globePanDefault;
+	}
+
+	void setPreserveFocalDepth(boolean enabled) {
+		preserveFocalDepth = enabled;
 	}
 
 	@Override
@@ -66,7 +71,7 @@ final class GlobePanInteraction extends vtkAbstractEventInterceptor {
 			double displayDX = (double)dx * size[0] / canvas.getWidth();
 			double displayDY = (double)dy * size[1] / canvas.getHeight();
 			vtkRenderer renderer = viewer.getRenderer();
-			if (!CameraNavigation.globePan(renderer, displayDX, displayDY))
+			if (!CameraNavigation.globePan(renderer, displayDX, displayDY, preserveFocalDepth))
 				return true;
 			cameraChanged.accept(renderer);
 		} finally {

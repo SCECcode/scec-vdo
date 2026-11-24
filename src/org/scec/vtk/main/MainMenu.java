@@ -169,6 +169,11 @@ public class MainMenu implements ActionListener, ItemListener{
 		globePanDefault.setToolTipText("Swap the actions for middle drag and Shift+middle drag.");
 		globePanDefault.addActionListener(e -> Info.getMainGUI().setGlobePanDefault(globePanDefault.isSelected()));
 		navigationMenu.add(globePanDefault);
+
+		JCheckBoxMenuItem preserveFocalDepth = new JCheckBoxMenuItem("Preserve Focal Depth", Prefs.isPreserveFocalDepth());
+		preserveFocalDepth.setToolTipText("Keep the current focal depth or height during globe pan.");
+		preserveFocalDepth.addActionListener(e -> Info.getMainGUI().setPreserveFocalDepth(preserveFocalDepth.isSelected()));
+		navigationMenu.add(preserveFocalDepth);
 		menuBar.add(navigationMenu);
 	}
 

@@ -132,6 +132,40 @@ public class GlobePanInteractionTest {
 		}
 	}
 
+	private static void verifyFocalDepth(Viewer viewer, GlobePanInteraction globePan) {
+		vtkCamera camera = viewer.getRenderer().GetActiveCamera();
+		globePan.setPreserveFocalDepth(true);
+		for (double height : new double[] { -10d, 100d }) {
+			setCamera(camera, Transform.re + height);
+			double distance = camera.GetDistance();
+			Vector3D initialFocal = new Vector3D(camera.GetFocalPoint());
+			for (int i = 0; i < 4; i++) {
+				drag(viewer, false, false);
+				double[] focal = camera.GetFocalPoint();
+				double surfaceRadius = new Vector3D(Transform.projectToEarthSurface(focal)).getNorm();
+				check(Math.abs(new Vector3D(focal).getNorm() - surfaceRadius - height) < TOLERANCE,
+						"Globe pan changed the focal depth or height");
+			}
+			check(Vector3D.distance(initialFocal, new Vector3D(camera.GetFocalPoint())) > 1d,
+					"Globe pan did not move the offset pivot");
+			check(Math.abs(camera.GetDistance() - distance) < TOLERANCE, "Offset pan changed camera distance");
+		}
+
+		setCamera(camera, Transform.re - 10d);
+		check(CameraNavigation.snapFocalPointToSurface(camera), "Could not snap a buried pivot to the surface");
+		drag(viewer, false, false);
+		check(isOnSurface(camera), "Globe pan restored an offset after snapping to the surface");
+
+		setCamera(camera, 0d);
+		drag(viewer, false, false);
+		check(isOnSurface(camera), "Globe pan did not recover from a pivot at the Earth's center");
+
+		globePan.setPreserveFocalDepth(false);
+		setCamera(camera, Transform.re - 10d);
+		drag(viewer, false, false);
+		check(isOnSurface(camera), "Disabling preservation did not restore surface panning");
+	}
+
 	private static void verifyGridFit(Viewer viewer) {
 		var renderer = viewer.getRenderer();
 		var camera = renderer.GetActiveCamera();
@@ -176,7 +210,9 @@ public class GlobePanInteractionTest {
 			viewer.getRenderer().GetActiveCamera().ParallelProjectionOff();
 			verifyGridFit(viewer);
 			verifyPanSensitivity(viewer);
+			viewer.getRenderer().GetActiveCamera().ParallelProjectionOff();
+			verifyFocalDepth(viewer, globePan);
 		});
-		System.out.println("PASS: native pan gestures, camera motion, and graticule fitting");
+		System.out.println("PASS: native pan gestures, camera motion, depth preservation, and graticule fitting");
 	}
 }

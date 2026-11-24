@@ -145,6 +145,14 @@ public class Prefs {
 		prefs.putBoolean("GLOBE_PAN_DEFAULT", enabled);
 	}
 
+	public static boolean isPreserveFocalDepth() {
+		return prefs.getBoolean("PRESERVE_FOCAL_DEPTH", true);
+	}
+
+	public static void setPreserveFocalDepth(boolean enabled) {
+		prefs.putBoolean("PRESERVE_FOCAL_DEPTH", enabled);
+	}
+
     public static void setMainWidth(int width) {
     	prefs.putInt("MAIN_WIDTH", width);
     }

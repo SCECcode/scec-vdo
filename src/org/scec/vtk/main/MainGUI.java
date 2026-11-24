@@ -6,13 +6,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.MenuItem;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -22,7 +17,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.GeneralPath;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -49,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -60,7 +54,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.basic.BasicButtonUI;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -148,6 +141,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private JPanel searchBarGUI;
 	
 	private JToolBar toolBar;
+	private final JToggleButton focalPointButton = new JToggleButton();
 	private JPanel toolBarGUI;
 
 	//default starting cam coordinates
@@ -174,6 +168,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		renderWindow = new vtkJoglPanelComponent();
 		globePan = new GlobePanInteraction(renderWindow, this::updateCameraView);
 		globePan.setGlobePanDefault(Prefs.isGlobePanDefault());
+		globePan.setPreserveFocalDepth(Prefs.isPreserveFocalDepth());
 		renderWindow.getInteractorForwarder().setEventInterceptor(globePan);
 		mainPanel = new JPanel(new BorderLayout());
 		renderWindow.getRenderer().SetBackground(0,0,0);
@@ -240,7 +235,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
   //HELP BUTTON
 		pluginTabPane =  new JTabbedPane();
 		//pluginTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-		pluginTabPane.setUI(tabbedPaneUI);
 		//Set up all default GUI elements
 		Info.setMainGUI(this);
 		setUpPluginTabs();
@@ -410,82 +404,10 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		}
 
 	}
-	final Color selectedTabColor = new Color(239,239,239);
-    final Color tabBackgroundColor = Color.LIGHT_GRAY;
-    final Color tabBorderColor = Color.LIGHT_GRAY;
 
-	BasicTabbedPaneUI tabbedPaneUI = new BasicTabbedPaneUI() {
-		private final Insets borderInsets = new Insets(-5, 0, 0, 0);
-        @Override
-        protected Insets getContentBorderInsets(int tabPlacement) {
-            return borderInsets;
-        }
-        @Override
-        protected Insets getTabInsets(int tabPlacement, int tabIndex)  {
-        	return new Insets(3, 6, 3, 6);
-        }
-        @Override
-        protected Insets getTabAreaInsets(int tabPlacement) {
-        	return new Insets(5, 5, 5, 5);
-        }
-		@Override protected void paintContentBorder(Graphics g,
-                int tabPlacement,
-                int selectedIndex) {
-		}
-		@Override protected void paintTabBorder(
-				Graphics g, int tabPlacement, int tabIndex,
-				int x, int y, int w, int h, boolean isSelected) {
-		}
-		@Override protected void paintFocusIndicator(
-				Graphics g, int tabPlacement, Rectangle[] rects, int tabIndex,
-				Rectangle iconRect, Rectangle textRect, boolean isSelected) {
-		}
-		@Override protected void paintContentBorderTopEdge(
-				Graphics g, int tabPlacement, int selectedIndex,
-				int x, int y, int w, int h) {
-			super.paintContentBorderTopEdge(g, tabPlacement, selectedIndex, x, y, w, h);
-			Rectangle selRect = getTabBounds(selectedIndex, calcRect);
-			Graphics2D g2 = (Graphics2D) g.create();
-			g2.setColor(Color.cyan);
-			g2.drawLine(selRect.x - 2, y, selRect.x + selRect.width + 2, y);
-			g2.dispose();
-		}
-		@Override protected void paintTabBackground(
-				Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h,
-				boolean isSelected) {
-
-			Graphics2D g2 = (Graphics2D) g.create();
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-					RenderingHints.VALUE_ANTIALIAS_ON);
-			int a = isSelected ? 0 : 1;
-
-			GeneralPath shape = new GeneralPath();
-			shape.moveTo(x - 3, y + h);
-			shape.lineTo(x + 3, y + a);
-			shape.lineTo(x + w - 3, y + a);
-			shape.lineTo(x + w + 3, y + h);
-			shape.closePath();
-			g2.setColor(isSelected ? selectedTabColor : tabBackgroundColor);
-			g2.fill(shape);
-
-			GeneralPath border = new GeneralPath();
-			if (isSelected || tabIndex == 0) {
-				border.moveTo(x - 3, y + h - 1);
-			} else {
-				border.moveTo(x + 3, y + h - 1);
-				border.lineTo(x, (y + h - 1) / 2);
-			}
-			border.lineTo(x + 3, y + a);
-			border.lineTo(x + w - 3, y + a);
-			border.lineTo(x + w + 3, y + h - 1);
-
-			g2.setColor(tabBorderColor);
-			g2.draw(border);
-			g2.dispose();
-		}
-	};
 	public void setFocalPointVisible(boolean visible) {
 		mainMenu.setFocalPointSelected(visible);
+		focalPointButton.setSelected(visible);
 		int newVis = visible ? 1 : 0;
 		int curVis = focalPointActor.GetVisibility();
 		if (newVis != curVis) {
@@ -501,6 +423,11 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	void setGlobePanDefault(boolean enabled) {
 		globePan.setGlobePanDefault(enabled);
 		Prefs.setGlobePanDefault(enabled);
+	}
+
+	void setPreserveFocalDepth(boolean enabled) {
+		globePan.setPreserveFocalDepth(enabled);
+		Prefs.setPreserveFocalDepth(enabled);
 	}
 
 	void snapFocalPointToSurface() {
@@ -633,154 +560,51 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		toolBar = new JToolBar();
 		//toolBar.setLayout(new BorderLayout());
 		//toolBar.setSize(new Dimension(200, 20));
-		JButton centerImage = new JButton();
-		try {
-			// sets hover text
-			centerImage.setToolTipText("Center Image");
-			File file = new File("resources/Center.png");
-		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-		    centerImage.setIcon(new ImageIcon(img));
-		  } catch (IOException ex) {
-			
-		    System.out.println("centerImage: " + ex);
-		  }
-		centerImage.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) { 
-				
-				//if(renderWindow.getRenderer().GetViewProps().IsItemPresent(PoliticalBoundariesGUI.mainFocusReginActor)!=) {
-					renderWindow.getRenderer().GetActiveCamera().SetPosition(MainGUI.camCord[0], MainGUI.camCord[1],MainGUI.camCord[2]);
-					renderWindow.getRenderer().GetActiveCamera().SetFocalPoint(MainGUI.camCord[3], MainGUI.camCord[4],MainGUI.camCord[5]);
-					renderWindow.getRenderer().GetActiveCamera().SetViewUp(MainGUI.camCord[6], MainGUI.camCord[7],MainGUI.camCord[8]);
-					renderWindow.getRenderer().ResetCameraClippingRange();
-					renderWindow.getComponent().repaint();
-					
-			//}
-			  } 
-		});
-		centerImage.setOpaque(false);
-		centerImage.setToolTipText("Center");
-		
-		JButton focalPoint = new JButton();
-		try {
-			focalPoint.setToolTipText("Focal Point");
-			File file = new File("resources/FocalPointIcon.png");
-			Image img = ImageIO.read(file);
-			img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-			focalPoint.setIcon(new ImageIcon(img));
-		} catch(IOException ex) {
-			System.out.println("focal point: " + ex);
-		}
-		focalPoint.addActionListener(e -> setFocalPointVisible(focalPointActor.GetVisibility() == 0));
+		JButton resetViewButton = toolbarButton("Reset View", "Center.png");
+		resetViewButton.addActionListener(e -> resetView());
 
-		focalPoint.setOpaque(false);
-		focalPoint.setToolTipText("Focal Point");
-		JButton zoomIn = new JButton();
-		
-		try {
-			// sets hover text
-			zoomIn.setToolTipText("Zoom In");
-			zoomIn.setOpaque(false);
-			File file = new File("resources/zoomIn.png");
-		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-		    zoomIn.setIcon(new ImageIcon(img));
-		  } catch (IOException ex) {
-		    System.out.println("zoomIn: " + ex);
-		  }
-		zoomIn.addActionListener(new ActionListener() { 
-			  public void actionPerformed(ActionEvent e) { 
-			    cam.Zoom(1.2);
-			    renderWindow.getRenderer().ResetCameraClippingRange();
-			    renderWindow.getComponent().repaint();
-			    		
-			  } 
-		} );
-		
-		zoomIn.setToolTipText("Zoom In");
-		
-		JButton zoomOut = new JButton();
-		try {
-			// sets hover text
-			zoomOut.setToolTipText("Zoom Out");
-			zoomOut.setOpaque(false);
-			File file = new File("resources/zoomOut.png");
-		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-		    zoomOut.setIcon(new ImageIcon(img));
-		  } catch (IOException ex) {
-		    System.out.println("zoomOut: " +  ex);
-		  }
-		zoomOut.addActionListener(new ActionListener() { 
-			  public void actionPerformed(ActionEvent e) { 
-				  cam.Zoom(.8);
-				  renderWindow.getRenderer().ResetCameraClippingRange();
-				  renderWindow.getComponent().repaint();
-			  } 
-		} );
-		
-		zoomOut.setToolTipText("Zoom Out");
-		
-		JButton save = new JButton();
-		
-		try {
-			// sets hover text
-			save.setToolTipText("Save file");
-			save.setOpaque(false);
-			File file = new File("resources/save.png");
-		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-		    save.setIcon(new ImageIcon(img));
-		  } catch (IOException ex) {
-		    System.out.println("zoomOut: " +  ex);
-		  }
-		save.addActionListener(new ActionListener() { 
-			  public void actionPerformed(ActionEvent e) {
-				 // checks whether file has been created
-				 if (mainMenu.isSaved()) {
-					 System.out.println("autoSave()");
-					 mainMenu.autoSave();
-				 }
-				 else {
-					 // creates new file
-					 System.out.println("saveForToolbar");
-					 mainMenu.saveForToolbar();
-				 }
-			  } 
-		} );
-		
-		save.setToolTipText("Save");
-		
-		JButton open = new JButton();
-		
-		try {
-			// sets hover text
-			open.setToolTipText("Open a file");
-			open.setOpaque(false);
-			File file = new File("resources/open.png");
-		    Image img = ImageIO.read(file);
-		    img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
-		    open.setIcon(new ImageIcon(img));
-		  } catch (IOException ex) {
-		    System.out.println("zoomOut: " +  ex);
-		  }
-		open.addActionListener(new ActionListener() { 
-			  public void actionPerformed(ActionEvent e) { 
-				  mainMenu.openForToolbar();
-			  } 
-		} );
-		
-		open.setToolTipText("Open");
-		
-		
-		//adds buttons to toolbar
-		toolBar.add(centerImage);
+		JButton zoomIn = toolbarButton("Zoom In", "zoomIn.png");
+		zoomIn.addActionListener(e -> {
+			cam.Zoom(1.2);
+			renderWindow.getRenderer().ResetCameraClippingRange();
+			renderWindow.getComponent().repaint();
+		});
+
+		JButton zoomOut = toolbarButton("Zoom Out", "zoomOut.png");
+		zoomOut.addActionListener(e -> {
+			cam.Zoom(0.8);
+			renderWindow.getRenderer().ResetCameraClippingRange();
+			renderWindow.getComponent().repaint();
+		});
+
+		JButton save = toolbarButton("Save", "save.png");
+		save.addActionListener(e -> {
+			if (mainMenu.isSaved())
+				mainMenu.autoSave();
+			else
+				mainMenu.saveForToolbar();
+		});
+
+		JButton open = toolbarButton("Open", "open.png");
+		open.addActionListener(e -> mainMenu.openForToolbar());
+
+		focalPointButton.setToolTipText("Show Focal Point");
+		focalPointButton.getAccessibleContext().setAccessibleName("Show Focal Point");
+		focalPointButton.setIcon(ThemedImageIcon.load("resources/FocalPointIcon.png", 16));
+		focalPointButton.addActionListener(e -> setFocalPointVisible(focalPointButton.isSelected()));
+
+		JButton snapFocalPoint = new JButton(new SnapToSurfaceIcon());
+		snapFocalPoint.setToolTipText("Snap Focal Point to Surface");
+		snapFocalPoint.getAccessibleContext().setAccessibleName("Snap Focal Point to Surface");
+		snapFocalPoint.addActionListener(e -> snapFocalPointToSurface());
+
+		toolBar.add(resetViewButton);
 		toolBar.add(zoomIn);
 		toolBar.add(zoomOut);
 		toolBar.add(save);
 		toolBar.add(open);
-		//JOSES add 
-		toolBar.add(focalPoint);
+		toolBar.add(focalPointButton);
+		toolBar.add(snapFocalPoint);
 		toolBar.setOpaque(false);
 		
 		toolBarGUI = new JPanel(new BorderLayout());
@@ -791,6 +615,14 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		mainPanel.add(toolBarGUI, BorderLayout.PAGE_START);
 	}
 	
+	private static JButton toolbarButton(String name, String iconFile) {
+		JButton button = new JButton(ThemedImageIcon.load("resources/" + iconFile, 16));
+		button.setOpaque(false);
+		button.setToolTipText(name);
+		button.getAccessibleContext().setAccessibleName(name);
+		return button;
+	}
+
 	private void setUpSearchBar() {
 		searchBar = new JTextField();
 		searchBarGUI = new JPanel(new BorderLayout());
@@ -876,11 +708,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		JScrollPane pluginTab = new JScrollPane(allPanel);
 		pluginTab.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		pluginTab.setBorder(BorderFactory.createEmptyBorder());
-		//pluginTab.setOpaque(true);
-		//pluginTab.setColor(Color.white);
 		pluginTab.setName(id);
 		pluginTab.setOpaque(true);
-		pluginTab.setBackground(Color.black);
 		// Add the tab to the tab panel
 		
 		pluginTabPane.addTab(title, pluginTab);
@@ -894,7 +723,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 //			scriptingPluginObj = (ScriptingPlugin) mainMenu.getActivePlugins().get(id);		
 
 		SwingUtilities.updateComponentTreeUI(this);
-		pluginTabPane.setUI(tabbedPaneUI);
 		pluginTabPane.repaint();
 		//pluginTabPane.set
 	}
@@ -1019,8 +847,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		private static final long serialVersionUID = 1L;
 		private final JTabbedPane pane;
 		private String pluginID;
-		private Icon icon = new ImageIcon("data/MiscImages/closeTabButton.png");
-		private Icon redIcon = new ImageIcon("data/MiscImages/closeTabButtonRed_1.png");
+		private final Icon icon = ThemedImageIcon.load("data/MiscImages/closeTabButton.png", 11);
+		private final Icon rolloverIcon = new ImageIcon("data/MiscImages/closeTabButtonRed_1.png");
 
 		public ButtonTabComponent(final JTabbedPane pane, String id) {    	
 			//unset default FlowLayout' gaps
@@ -1077,10 +905,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 				setBorderPainted(false);
 
 				setIcon(icon);
+				setRolloverIcon(rolloverIcon);
 				setRolloverEnabled(true);
-
-				//we use the same listener for all buttons
-				addMouseListener(buttonMouseListener);
 				//Close the proper tab by clicking the button
 				addActionListener(this);
 			}
@@ -1101,29 +927,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 
 		}
 
-		private final MouseListener buttonMouseListener = new MouseAdapter(){
-		
-		
-			public void mouseEntered(MouseEvent e) {
-				Component component = e.getComponent();
-				if (component instanceof AbstractButton) {
-					AbstractButton button = (AbstractButton) component;
-					//button.setBorderPainted(true);
-					button.setIcon(redIcon);
-				}
-			}
-		
-			public void mouseExited(MouseEvent e) {
-				Component component = e.getComponent();
-				if (component instanceof AbstractButton) {
-					AbstractButton button = (AbstractButton) component;
-					//button.setBorderPainted(false);
-					button.setIcon(icon);
-				}
-			}
-		};
-		};
-	
+	}
 
 	private MenuShiftDetector shiftDetector = new MenuShiftDetector();
 

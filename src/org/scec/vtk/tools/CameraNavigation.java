@@ -44,19 +44,33 @@ public final class CameraNavigation {
 		snapFocalPointToSurface(renderer.GetActiveCamera());
 	}
 
-	/** Pan by a drag in VTK display pixels, with positive y pointing up. */
+	/** Pan along the Earth surface by a drag in VTK display pixels, with positive y pointing up. */
 	public static boolean globePan(vtkRenderer renderer, double dx, double dy) {
+		return globePan(renderer, dx, dy, false);
+	}
+
+	/** Pan with the option to keep the pivot at its current radial height or depth. */
+	public static boolean globePan(vtkRenderer renderer, double dx, double dy, boolean preserveFocalDepth) {
 		if (dx == 0d && dy == 0d)
 			return false;
 		vtkCamera camera = renderer.GetActiveCamera();
+		double[] focalPoint = camera.GetFocalPoint();
+		double height = 0d;
 		boolean snapped = false;
-		if (!Transform.isOnEarthSurface(camera.GetFocalPoint())) {
-			snapped = snapFocalPointToSurface(camera);
-			if (!snapped)
-				return false;
+		if (!Transform.isOnEarthSurface(focalPoint)) {
+			if (preserveFocalDepth)
+				height = focalHeight(focalPoint);
+			// A constant-depth shell must stay clear of the center at every latitude, including the poles.
+			if (!preserveFocalDepth || !Double.isFinite(height) || height <= -Transform.rp) {
+				snapped = snapFocalPointToSurface(camera);
+				if (!snapped)
+					return false;
+				focalPoint = camera.GetFocalPoint();
+				height = 0d;
+			}
 		}
 
-		Vector3D focal = new Vector3D(camera.GetFocalPoint());
+		Vector3D focal = new Vector3D(focalPoint);
 		// Use the same depth as VTK's planar pan. Moving the camera opposite the drag makes the scene follow the mouse.
 		renderer.SetWorldPoint(focal.getX(), focal.getY(), focal.getZ(), 1d);
 		renderer.WorldToDisplay();
@@ -77,17 +91,25 @@ public final class CameraNavigation {
 		if (projected == null)
 			return snapped;
 
-		Vector3D next = new Vector3D(projected);
+		Vector3D nextSurface = new Vector3D(projected);
+		Vector3D next = nextSurface.scalarMultiply(1d + height / nextSurface.getNorm());
 		// Carry the eye offset and view-up with the surface normal, preserving the tilt and distance to the pivot.
-		Rotation rotation = new Rotation(normal, surfaceNormal(next));
+		Rotation rotation = new Rotation(normal, surfaceNormal(nextSurface));
 		double[] eye = camera.GetPosition();
 		double[] nextEye = next.add(rotation.applyTo(new Vector3D(eye).subtract(focal))).toArray();
 		if (Transform.isInsideEarth(nextEye) && !Transform.isInsideEarth(eye))
 			return snapped;
 		camera.SetPosition(nextEye);
-		camera.SetFocalPoint(projected);
+		camera.SetFocalPoint(next.toArray());
 		camera.SetViewUp(rotation.applyTo(new Vector3D(camera.GetViewUp())).toArray());
 		return true;
+	}
+
+	private static double focalHeight(double[] focalPoint) {
+		double[] surface = Transform.projectToEarthSurface(focalPoint);
+		if (surface == null)
+			return Double.NaN;
+		return new Vector3D(focalPoint).getNorm() - new Vector3D(surface).getNorm();
 	}
 
 	private static Vector3D surfaceNormal(Vector3D point) {
