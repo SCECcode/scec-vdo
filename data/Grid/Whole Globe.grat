@@ -1,0 +1,4 @@
+upper-latitude = 90
+lower-latitude = -90
+right-longitude = 180
+left-longitude = -180

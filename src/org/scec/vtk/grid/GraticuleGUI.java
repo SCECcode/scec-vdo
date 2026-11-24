@@ -113,10 +113,10 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 	private ArrayList<GlobeBox> grids;
 
 	private IntegerTextField
-	relIntensityProp_extentsNval1 = new IntegerTextField(2, false, 3),
-	relIntensityProp_extentsWval1 = new IntegerTextField(3, false, 3),
-	relIntensityProp_extentsEval1 = new IntegerTextField(3, false, 3),
-	relIntensityProp_extentsSval1 = new IntegerTextField(2, false, 3);
+	relIntensityProp_extentsNval1 = gridExtentField(2),
+	relIntensityProp_extentsWval1 = gridExtentField(3),
+	relIntensityProp_extentsEval1 = gridExtentField(3),
+	relIntensityProp_extentsSval1 = gridExtentField(2);
 
 	public int upperLat, lowerLat, upperLon, lowerLon;
 	private vtkActor tempGlobeScene=new vtkActor();
@@ -534,6 +534,13 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		compassPanel.add(lonField);
 	}
 
+	private static IntegerTextField gridExtentField(int maxDigits) {
+		IntegerTextField field = new IntegerTextField(maxDigits, false, 5);
+		// GTK's minimum size can be just one character. Keep room for the sign and all digits.
+		field.setMinimumSize(field.getPreferredSize());
+		return field;
+	}
+
 	private void makeGridDimensionsPanel()
 	{
 		gridDimensionsPanel = new JPanel();
@@ -562,7 +569,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		NorthPanel.add(relIntensityProp_extentsNval1);
 		//NorthPanel.add(Box.createRigidArea(new Dimension(4, 0)));
 		NorthPanel.add(relIntensityProp_extentsMax2);
-		NorthPanel.setMaximumSize(new Dimension(100, 22));
+		NorthPanel.setMaximumSize(NorthPanel.getPreferredSize());
 
 		// make the East-West Panel
 		EWPanel = new JPanel();
@@ -572,15 +579,15 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		EWPanel.add(relIntensityProp_extentsWval1);
 		EWPanel.add(Box.createRigidArea(new Dimension(4, 0)));
 		EWPanel.add(relIntensityProp_extentsMax);
-		EWPanel.add(Box.createRigidArea(new Dimension(40, 0)));
+		EWPanel.add(Box.createHorizontalStrut(10));
 		EWPanel.add(relIntensityProp_Extents_to);
-		EWPanel.add(Box.createRigidArea(new Dimension(40, 0)));
+		EWPanel.add(Box.createHorizontalStrut(10));
 		EWPanel.add(relIntensityProp_extentsLon);
 		EWPanel.add(Box.createRigidArea(new Dimension(4, 0)));
 		EWPanel.add(relIntensityProp_extentsEval1);
 		EWPanel.add(Box.createRigidArea(new Dimension(4, 0)));
 		EWPanel.add(relIntensityProp_extentsMin2);
-		EWPanel.setMaximumSize(new Dimension(300, 22));
+		EWPanel.setMaximumSize(EWPanel.getPreferredSize());
 
 		// make the South Panel
 		SouthPanel = new JPanel();
@@ -591,7 +598,7 @@ public class GraticuleGUI extends JPanel implements ActionListener{
 		SouthPanel.add(relIntensityProp_extentsSval1);
 		SouthPanel.add(Box.createRigidArea(new Dimension(4, 0)));
 		SouthPanel.add(relIntensityProp_extentsMin);
-		SouthPanel.setMaximumSize(new Dimension(100, 22));
+		SouthPanel.setMaximumSize(SouthPanel.getPreferredSize());
 		// make the entire NSEW Panel
 		gridDimensionsPanel.setLayout(new BoxLayout(gridDimensionsPanel, BoxLayout.PAGE_AXIS));
 		gridDimensionsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
