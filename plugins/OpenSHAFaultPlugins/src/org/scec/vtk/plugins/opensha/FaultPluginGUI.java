@@ -1,11 +1,11 @@
 package org.scec.vtk.plugins.opensha;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -15,7 +15,6 @@ import javax.swing.ListSelectionModel;
 
 import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
-import org.opensha.commons.param.Parameter;
 import org.opensha.commons.param.ParameterList;
 import org.opensha.commons.param.editor.impl.GriddedParameterListEditor;
 import org.opensha.commons.param.editor.impl.ParameterListEditor;
@@ -128,8 +127,7 @@ public class FaultPluginGUI extends JSplitPane {
 							ArrayList<FaultAnimation> faultAnims) {
 		super(VERTICAL_SPLIT);
 		
-		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+		JPanel topPanel = new JPanel(new BorderLayout());
 		// this allows the entire UI to be locked during long calculations
 		lockUI = new LockableUI();
 		jxLayer = new JXLayer<JComponent>(this, lockUI);
@@ -158,8 +156,6 @@ public class FaultPluginGUI extends JSplitPane {
 		if (builder.getFaultParams() != null && builder.getFaultParams().size() > 0)
 			faultParamEditor = new GriddedParameterListEditor(builder.getFaultParams());
 		
-//		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		
 		FaultTablePanel tablePanel = new FaultTablePanel(table);
 		
 		int tableHeight = 350;
@@ -176,24 +172,14 @@ public class FaultPluginGUI extends JSplitPane {
 			int paramHeight = Integer.min(builderParams.size()*50, tableHeight-minTableHeight);
 			tableHeight -= paramHeight;
 			
-			JScrollPane editScroll = new JScrollPane(builderEdit,
-					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			editScroll.setPreferredSize(new Dimension(prefWidth, paramHeight));
-			editScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, paramHeight));
-			topPanel.add(builderEdit);
-//			for (Parameter<?> param : builderParams) {
-//				JComponent comp = param.getEditor().getComponent();
-//				comp.setMaximumSize(new Dimension(Integer.MAX_VALUE, comp.getPreferredSize().height));
-//				topPanel.add(comp);
-//				tableHeight -= 50;
-//			}
+			topPanel.add(builderEdit, BorderLayout.PAGE_START);
 		}
 		tablePanel.setPreferredSize(new Dimension(prefWidth, tableHeight));
 		tablePanel.setMinimumSize(new Dimension(prefWidth, 50));
 		table.setRowSelectionAllowed(true);
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		
-		topPanel.add(tablePanel);
+		topPanel.add(tablePanel, BorderLayout.CENTER);
 		
 		if (colorPanel != null)
 			settingsPanel.addTab("Color", null, wrapInScrollPane(colorPanel), "Fault color settings");
@@ -205,6 +191,7 @@ public class FaultPluginGUI extends JSplitPane {
 		
 		setTopComponent(topPanel);
 		setBottomComponent(settingsPanel);
+		setResizeWeight(0.5);
 		
 		pickhandler = new FaultSectionPickBehavior();
 		for (GeometryGenerator geomGen : geomGens)

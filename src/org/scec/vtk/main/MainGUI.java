@@ -6,8 +6,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.MenuItem;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -27,8 +29,6 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -39,7 +39,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -88,6 +87,10 @@ import vtk.vtkSphereSource;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
 
 public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsChangeListener{
+	private static final int PREFERRED_WINDOW_WIDTH = 1780;
+	private static final int PREFERRED_WINDOW_HEIGHT = 1060;
+	private static final int STARTUP_SCREEN_MARGIN = 24;
+	private static final double PLUGIN_RESIZE_FRACTION = 0.125;
 	private final int BORDER_SIZE = 10;
 	//	private static JFrame frame ;
 	private static vtkJoglPanelComponent  renderWindow;
@@ -126,8 +129,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	private JPanel helpPanel;
 	//pluginGUIScrollPane contains the scroll bar.
 	private JScrollPane pluginGUIScrollPane;
-	//pluginSplitPane splits mainPanel and pluginGUIPanel
-	private JSplitPane pluginSplitPane;
+	private JPanel viewerAndPlugins;
+	private int pluginWidthOffset;
 	private int xeBorder=0;
 	private int ysBorder=0;
 	private vtkActor tempGlobeScene = new vtkActor();
@@ -190,7 +193,15 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 //		renderWindow.getRenderer().SetOcclusionRatio(0);
 		mainMenu = new MainMenu();
 		
-		pluginGUIPanel = new JPanel(new BorderLayout());
+		pluginGUIPanel = new JPanel(new BorderLayout()) {
+			@Override
+			public Dimension getPreferredSize() {
+				// The scroll pane can grow past this size, or scroll the contents when space is limited.
+				Dimension content = super.getPreferredSize();
+				return new Dimension(Math.max(Prefs.getPluginWidth(), content.width),
+						Math.max(Prefs.getPluginHeight(), content.height));
+			}
+		};
 		helpPanel = new JPanel();
 		helpPanel.setBorder(new EmptyBorder(10, 30, 10, 30));
 		helpPanel.setLayout(new FlowLayout());
@@ -246,20 +257,12 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		//setUpSearchBar();
 		setUpToolBar();
 
-		pluginSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, mainPanel, pluginGUIScrollPane);
-		pluginSplitPane.setOneTouchExpandable(false);
-		pluginSplitPane.setBorder(BorderFactory.createEmptyBorder());
-		pluginSplitPane.setResizeWeight(1);
-		pluginSplitPane.setDividerLocation(0.5);
-		
-		//Set preferred sizes
-		Dimension d = new Dimension(Prefs.getPluginWidth(), Prefs.getPluginHeight());
-		pluginGUIScrollPane.setMinimumSize(d);
-		pluginGUIScrollPane.setPreferredSize(d);
+		viewerAndPlugins = new JPanel(new BorderLayout());
+		viewerAndPlugins.add(mainPanel, BorderLayout.CENTER);
+		viewerAndPlugins.add(pluginGUIScrollPane, BorderLayout.EAST);
 		pluginTabPane.setOpaque(true);
-		Dimension minimumSize = new Dimension(100, 50);
-		mainPanel.setMinimumSize(minimumSize);//new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
-		renderWindow.getComponent().setMinimumSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
+		mainPanel.setMinimumSize(new Dimension(100, 50));
+		mainPanel.setPreferredSize(new Dimension(Prefs.getMainWidth(), Prefs.getMainHeight()));
 		timeline = new Timeline();
 		timelineGUI = new TimelineGUI(timeline);
 		mainMenu.setupTimeline(timeline, timelineGUI);
@@ -371,9 +374,6 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 			// Capture the view after the default layers have fitted the camera.
 			startupCamera.DeepCopy(renderWindow.getRenderer().GetActiveCamera());
 			setMainFrame();
-			
-			//Update the divider location so that the plugin pane doesn't require horizontal scrolling
-			pluginSplitPane.setDividerLocation(this.getWidth() - pluginTabPane.getPreferredSize().width - 60);
 
 		} catch (IOException ioe) {
 			throw new RuntimeException("Unable to get available plugins", ioe);
@@ -645,27 +645,51 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 	
 	private void setUpPluginTabs() {
-		//pluginTabPane.setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
-		pluginGUIPanel.add(pluginTabPane, BorderLayout.PAGE_START);
-		pluginTabPane.addChangeListener((ChangeListener) this);
+		pluginGUIPanel.add(pluginTabPane, BorderLayout.CENTER);
+		pluginTabPane.addChangeListener(this);
 		pluginTabPane.setBorder(BorderFactory.createEmptyBorder());
-		pluginGUIScrollPane = new JScrollPane(pluginGUIPanel);
+		pluginGUIScrollPane = new JScrollPane(pluginGUIPanel) {
+			@Override
+			public Dimension getPreferredSize() {
+				int width = Prefs.getPluginWidth();
+				if (viewerAndPlugins != null && viewerAndPlugins.getWidth() > 0) {
+					int contentWidth = viewerAndPlugins.getWidth();
+					int available = Math.max(0, contentWidth - mainPanel.getMinimumSize().width);
+					width = Math.min(available, Math.max(0, preferredPluginWidth(contentWidth) + pluginWidthOffset));
+				}
+				return new Dimension(width, Prefs.getPluginHeight());
+			}
+		};
 		pluginGUIScrollPane.setBorder(BorderFactory.createEmptyBorder());
-		//		pluginSplitPane = null;
 	}
-	
-	//create frame and tabbed pane in main window
-	private void setMainFrame() {	
-		this.setTitle("SCEC VDO VTK");
-		this.setJMenuBar(mainMenu.getMenuBar());
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setSize(new Dimension(Prefs.getTotalWidth(), Prefs.getMainHeight()));
-		this.setContentPane(pluginSplitPane);
-		//This has to be done here, after the pluginSplitPane has been added to the GUI
-		pluginSplitPane.setDividerSize(0);
-		this.setLocationRelativeTo(null);
-		this.setVisible(true);
 
+	private static int preferredPluginWidth(int contentWidth) {
+		// Base the split on the current width so consecutive small resizes cannot accumulate rounding errors.
+		int extraWidth = contentWidth - Prefs.getTotalWidth();
+		return Prefs.getPluginWidth() + (int)Math.round(extraWidth * PLUGIN_RESIZE_FRACTION);
+	}
+
+	static Dimension getDefaultInitialDimension(Rectangle usableBounds) {
+		return new Dimension(initialExtent(Prefs.getTotalWidth(), PREFERRED_WINDOW_WIDTH, usableBounds.width),
+				initialExtent(Prefs.getMainHeight(), PREFERRED_WINDOW_HEIGHT, usableBounds.height));
+	}
+
+	private static int initialExtent(int previousDefault, int preferred, int available) {
+		// Keep the old startup size as a floor when it fits, and fit the usable screen on smaller displays.
+		return Math.min(available, Math.max(previousDefault, Math.min(preferred, available - STARTUP_SCREEN_MARGIN)));
+	}
+
+	private void setMainFrame() {
+		setTitle("SCEC VDO VTK");
+		setJMenuBar(mainMenu.getMenuBar());
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setContentPane(viewerAndPlugins);
+		Rectangle usableBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+		Dimension size = getDefaultInitialDimension(usableBounds);
+		setSize(size);
+		setLocation(usableBounds.x + (usableBounds.width - size.width) / 2,
+				usableBounds.y + (usableBounds.height - size.height) / 2);
+		setVisible(true);
 	}
 	public JPanel getmainFrame() {
 		return mainPanel;
@@ -709,19 +733,9 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		isPluginGuiShowing();
 
 		// Create a new plugin tab
-		JPanel allPanel = new JPanel();
-		allPanel.setLayout(new BoxLayout(allPanel, BoxLayout.PAGE_AXIS));
-		allPanel.setBorder(BorderFactory.createEmptyBorder());
-		allPanel.add(gui);
-		allPanel.setOpaque(true);
-	    allPanel.setFocusable (false);
-		allPanel.add(Box.createVerticalGlue());
-		//allPanel.add(new JPanel());
-		JScrollPane pluginTab = new JScrollPane(allPanel);
-		pluginTab.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		pluginTab.setBorder(BorderFactory.createEmptyBorder());
+		JPanel pluginTab = new JPanel(new BorderLayout());
+		pluginTab.add(gui, BorderLayout.CENTER);
 		pluginTab.setName(id);
-		pluginTab.setOpaque(true);
 		// Add the tab to the tab panel
 		
 		pluginTabPane.addTab(title, pluginTab);
@@ -804,9 +818,7 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 	}
 
 	public void removeSplitPane() {
-		// TODO Auto-generated method stub
-		remove(pluginSplitPane);
-		pluginSplitPane = null;
+		viewerAndPlugins = null;
 		setContentPane(mainPanel);
 		updateCanvasSize();
 		SwingUtilities.updateComponentTreeUI(this);
@@ -1134,6 +1146,8 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		int curWindowHeight = getHeight();
 		int curViewerWidth = comp.getWidth();
 		int curViewerHeight = comp.getHeight();
+		if (curViewerWidth == width && curViewerHeight == height)
+			return;
 		Preconditions.checkState(curWindowHeight > curViewerHeight);
 		Preconditions.checkState(curWindowWidth > curViewerWidth);
 		int widthBuffer = curWindowWidth - curViewerWidth;
@@ -1142,8 +1156,13 @@ public  class MainGUI extends JFrame implements  ChangeListener, PluginActorsCha
 		int newWindowHeight = height + heightBuffer;
 		System.out.println("Resiging viewer to "+width+"x"+height+". Current: "+curViewerWidth+"x"+curViewerHeight
 				+". Buffer: "+widthBuffer+"x"+heightBuffer);
+		if (viewerAndPlugins != null) {
+			// Hold the plugin pane width here so the requested size goes entirely to the 3D view.
+			int pluginWidth = pluginGUIScrollPane.getWidth();
+			pluginWidthOffset = pluginWidth - preferredPluginWidth(width + pluginWidth);
+		}
 		setSize(newWindowWidth, newWindowHeight);
-		comp.setSize(width, height);
+		validate();
 		updateRenderWindow();
 		//			renderWindow.getComponent().validate();
 		int newViewerWidth = comp.getWidth();
