@@ -316,7 +316,7 @@ public class MainMenu implements ActionListener, ItemListener{
 
 				Plugin plugin = activePlugins.get(pluginDescriptor.getId());
 				if (plugin instanceof StatefulPlugin) {
-					Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
+					Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getStateElementName());
 					((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
 
 				}
@@ -370,7 +370,7 @@ public class MainMenu implements ActionListener, ItemListener{
 			System.out.println("active plugins in autoSave: " + plugin.getId());
 			System.out.println("pluginDescriptor: " + pluginDescriptor.getId());
 			if (plugin instanceof StatefulPlugin) {
-				Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
+				Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getStateElementName());
 				((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
 			}
 		}
@@ -476,7 +476,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				Vector<PluginInfo> pluginDescriptors = new Vector<PluginInfo>(
 						availablePlugins.values());
 				for(PluginInfo pluginDescriptor:pluginDescriptors) {
-					for ( Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
+					for ( Iterator i = root.elementIterator(pluginDescriptor.getStateElementName()); i.hasNext(); ) {
 						Element pluginNameElement = (Element) i.next();
 						try {
 							if(!activePlugins.containsKey(pluginDescriptor.getId()))
@@ -530,7 +530,7 @@ public class MainMenu implements ActionListener, ItemListener{
 				
 				for(PluginInfo pluginDescriptor:pluginDescriptors) {
 					//System.out.println(pluginDescriptor.getName());
-					for (Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
+					for (Iterator i = root.elementIterator(pluginDescriptor.getStateElementName()); i.hasNext(); ) {
 						Element pluginNameElement = (Element) i.next();
 						try {
 							if(!activePlugins.containsKey(pluginDescriptor.getId()))
@@ -703,7 +703,7 @@ public class MainMenu implements ActionListener, ItemListener{
 							availablePlugins.values());
 					for(PluginInfo pluginDescriptor:pluginDescriptors) {
 						//System.out.println(pluginDescriptor.getName());
-						for ( Iterator i = root.elementIterator(pluginDescriptor.getName().replace(' ' ,'-')); i.hasNext(); ) {
+						for ( Iterator i = root.elementIterator(pluginDescriptor.getStateElementName()); i.hasNext(); ) {
 							Element pluginNameElement = (Element) i.next();
 							try {
 								if(!activePlugins.containsKey(pluginDescriptor.getId()))
@@ -1482,7 +1482,7 @@ public class MainMenu implements ActionListener, ItemListener{
 					if (plugin instanceof StatefulPlugin) { //what plug ins are not Stateful plugins??
 						System.out.println("Stateful plug-in #" + stateCntr + ": " + plugin.toString()); //debugging stateful plugins 
 						stateCntr++;
-						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getName().replace(' ','-'));
+						Element pluginNameElement = root.addElement(pluginDescriptor.getMetadata().getStateElementName());
 						//((StatefulPlugin)plugin).getState().deepCopy().toXML(pluginNameElement);
 						((StatefulPlugin)plugin).getState().toXML(pluginNameElement);
 					}

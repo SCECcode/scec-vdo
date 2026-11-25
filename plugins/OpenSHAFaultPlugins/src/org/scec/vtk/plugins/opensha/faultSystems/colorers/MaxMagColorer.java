@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 
 public class MaxMagColorer extends CPTBasedColorer implements RupSetChangeListener {
 	

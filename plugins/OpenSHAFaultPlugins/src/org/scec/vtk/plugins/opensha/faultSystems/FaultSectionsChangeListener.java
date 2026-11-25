@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups;
+package org.scec.vtk.plugins.opensha.faultSystems;
 
 import java.util.List;
 

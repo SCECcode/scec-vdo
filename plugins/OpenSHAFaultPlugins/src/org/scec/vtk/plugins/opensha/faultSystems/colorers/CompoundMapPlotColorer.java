@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -56,7 +56,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.geoDataSet.GeoDataSetGeometryGenerator;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 

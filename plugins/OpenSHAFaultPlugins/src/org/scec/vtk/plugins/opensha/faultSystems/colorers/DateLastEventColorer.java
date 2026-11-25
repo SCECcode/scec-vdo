@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.faultSectionImpl.PrefDataSection;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 
 import scratch.UCERF3.utils.LastEventData;
 import scratch.UCERF3.utils.paleoRateConstraints.UCERF3_PaleoProbabilityModel;

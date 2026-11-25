@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.anims;
+package org.scec.vtk.plugins.opensha.faultSystems.anims;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
@@ -41,7 +41,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.RakeColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.SlipRateColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.StrikeColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 

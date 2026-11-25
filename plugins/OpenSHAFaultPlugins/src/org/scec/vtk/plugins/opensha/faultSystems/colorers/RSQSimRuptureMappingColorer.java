@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import org.opensha.sha.simulators.utils.RSQSimSubSectionMapper.SubSectionMapping
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 
 public class RSQSimRuptureMappingColorer implements FaultColorer, ParameterChangeListener, RupSetChangeListener {
 	

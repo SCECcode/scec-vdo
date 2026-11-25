@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups;
+package org.scec.vtk.plugins.opensha.faultSystems;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,8 +27,8 @@ import org.opensha.commons.data.CSVFile;
 import org.opensha.commons.util.CustomFileFilter;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;
 import org.scec.vtk.commons.opensha.gui.FaultHighlighter;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer.ComparePlotType;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.ComparisonColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.ComparisonColorer.ComparePlotType;
 
 public class RuptureComparisonViewer extends JFrame implements MouseListener, ActionListener {
 	

@@ -34,7 +34,7 @@ import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.commons.opensha.tree.gui.FaultTreeTable;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.utils.components.ColorWellButton;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.ParentFaultSectionBundler;
+import org.scec.vtk.plugins.opensha.faultSystems.ParentFaultSectionBundler;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 
 import vtk.vtkActor;

@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups;
+package org.scec.vtk.plugins.opensha.faultSystems;
 
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemRupSet;
 import org.opensha.sha.earthquake.faultSysSolution.FaultSystemSolution;

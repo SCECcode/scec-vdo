@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups;
+package org.scec.vtk.plugins.opensha.faultSystems;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -10,12 +10,12 @@ import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.opensha.AbstractFaultPlugin;
 import org.scec.vtk.plugins.opensha.FaultPluginGUI;
 
-public class UCERF3FaultSystemRupturesPlugin extends AbstractFaultPlugin {
+public class FaultSystemRupturesPlugin extends AbstractFaultPlugin {
 	
 	@Override
 	protected FaultPluginGUI buildGUI() throws Exception {
 		//changed the parameter to take a branch group
-		UCERF3FaultSystemRupturesBuilder builder = new UCERF3FaultSystemRupturesBuilder(this);
+		FaultSystemRupturesBuilder builder = new FaultSystemRupturesBuilder(this);
 
 		ArrayList<FaultAnimation> faultAnims = builder.getFaultAnimations();
 		ArrayList<FaultColorer> faultColorers = builder.getFaultColorers();

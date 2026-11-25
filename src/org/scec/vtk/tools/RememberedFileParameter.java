@@ -2,6 +2,7 @@ package org.scec.vtk.tools;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -17,7 +18,13 @@ public class RememberedFileParameter extends FileParameter {
 	private transient FileParameterEditor rememberedEditor;
 
 	public RememberedFileParameter(String name, Class<?> preferenceOwner, String preferenceKey) {
-		this(name, preferencesFor(preferenceOwner), preferenceKey);
+		this(name, preferencesFor(() -> Preferences.userNodeForPackage(preferenceOwner)), preferenceKey);
+	}
+
+	/** Uses an explicit preference node so a package rename can preserve the remembered directory. */
+	public static RememberedFileParameter forPreferenceNode(String name, String nodePath, String preferenceKey) {
+		return new RememberedFileParameter(name, preferencesFor(() -> Preferences.userRoot().node(nodePath)),
+				preferenceKey);
 	}
 
 	RememberedFileParameter(String name, Preferences preferences, String preferenceKey) {
@@ -34,9 +41,9 @@ public class RememberedFileParameter extends FileParameter {
 		}
 	}
 
-	private static Preferences preferencesFor(Class<?> owner) {
+	private static Preferences preferencesFor(Supplier<Preferences> location) {
 		try {
-			return Preferences.userNodeForPackage(owner);
+			return location.get();
 		} catch (SecurityException e) {
 			System.err.println("File chooser preferences unavailable: " + e.getMessage());
 			return null;

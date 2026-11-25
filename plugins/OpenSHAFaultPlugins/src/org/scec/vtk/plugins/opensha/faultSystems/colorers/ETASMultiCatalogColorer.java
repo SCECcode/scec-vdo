@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.awt.Color;
 import java.io.File;
@@ -41,8 +41,8 @@ import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.ETASCatalogAnim;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.anims.ETASCatalogAnim;
 
 import com.google.common.base.Preconditions;
 

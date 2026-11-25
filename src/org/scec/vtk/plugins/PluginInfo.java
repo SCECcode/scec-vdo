@@ -16,6 +16,7 @@ public class PluginInfo implements Comparable<PluginInfo>{
 	private String id;
 	private String name;
 	private String shortName;
+	private String stateElementName;
 	private String creator;
 	private String version;
 	private String pluginClass;
@@ -59,6 +60,15 @@ public class PluginInfo implements Comparable<PluginInfo>{
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/** Returns the element used for this plugin in saved sessions. */
+	public String getStateElementName() {
+		return stateElementName == null ? name.replace(' ', '-') : stateElementName;
+	}
+
+	public void setStateElementName(String stateElementName) {
+		this.stateElementName = stateElementName;
 	}
 
 	public String getShortName() {

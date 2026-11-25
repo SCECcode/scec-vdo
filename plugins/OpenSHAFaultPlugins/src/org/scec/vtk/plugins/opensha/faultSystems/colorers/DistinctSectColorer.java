@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -15,8 +15,8 @@ import org.opensha.sha.faultSurface.FaultSection;
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
 import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.FaultSectionsChangeListener;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.FaultSectionsChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 
 public class DistinctSectColorer implements FaultColorer, FaultSectionsChangeListener, RupSetChangeListener {
 	

@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups;
+package org.scec.vtk.plugins.opensha.faultSystems;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -57,23 +57,23 @@ import org.scec.vtk.commons.opensha.tree.events.TreeChangeListener;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.tools.RememberedFileParameter;
 import org.scec.vtk.plugins.Plugin;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.ETASCatalogAnim;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.GridSourceAnim;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.RupturesAnim;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.anims.SectionResetAnim;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ComparisonColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.DateLastEventColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.DistinctSectColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ETASMultiCatalogColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.EternalDatasetColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.InversionSlipRateColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.MaxMagColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.MultiFaultRupColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.NucleationRateColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ParentSectColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.ParticipationRateColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.RSQSimRuptureMappingColorer;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.colorers.StiffnessColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.anims.ETASCatalogAnim;
+import org.scec.vtk.plugins.opensha.faultSystems.anims.GridSourceAnim;
+import org.scec.vtk.plugins.opensha.faultSystems.anims.RupturesAnim;
+import org.scec.vtk.plugins.opensha.faultSystems.anims.SectionResetAnim;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.ComparisonColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.DateLastEventColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.DistinctSectColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.ETASMultiCatalogColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.EternalDatasetColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.InversionSlipRateColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.MaxMagColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.MultiFaultRupColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.NucleationRateColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.ParentSectColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.ParticipationRateColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.RSQSimRuptureMappingColorer;
+import org.scec.vtk.plugins.opensha.faultSystems.colorers.StiffnessColorer;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -91,7 +91,7 @@ import scratch.UCERF3.utils.paleoRateConstraints.PaleoSiteCorrelationData;
 import scratch.UCERF3.utils.paleoRateConstraints.U3PaleoRateConstraint;
 import scratch.UCERF3.utils.paleoRateConstraints.UCERF3_PaleoRateConstraintFetcher;
 
-public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, ParameterChangeListener {
+public class FaultSystemRupturesBuilder implements FaultTreeBuilder, ParameterChangeListener {
 
 	private FaultSystemRupSet rupSet;
 	private FaultSystemSolution sol;
@@ -155,7 +155,7 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 //	private File dataDir;
 	
 
-	public UCERF3FaultSystemRupturesBuilder(Plugin plugin) {
+	public FaultSystemRupturesBuilder(Plugin plugin) {
 		faultParams.getParameter(Boolean.class, GridSpacingFitParam.NAME).setValue(false);
 		faultParams.getParameter(Boolean.class, AseismicityParam.NAME).setValue(false);
 		
@@ -173,12 +173,13 @@ public class UCERF3FaultSystemRupturesBuilder implements FaultTreeBuilder, Param
 		if (!defaultLoadDir.exists())
 			defaultLoadDir = null;
 		
-		rupSetFileParam = new RememberedFileParameter(RUP_SET_FILE_PARAM_NAME,
-				UCERF3FaultSystemRupturesBuilder.class, "ruptureSetDirectory");
+		// Keep using the existing file chooser preferences after the package rename.
+		rupSetFileParam = RememberedFileParameter.forPreferenceNode(RUP_SET_FILE_PARAM_NAME,
+				"/org/scec/vtk/plugins/opensha/ucerf3Rups", "ruptureSetDirectory");
 		rupSetFileParam.setDefaultInitialDir(defaultLoadDir);
 		rupSetFileParam.addParameterChangeListener(this);
 		
-		figureParam = new EnumParameter<UCERF3FaultSystemRupturesBuilder.Figures>(
+		figureParam = new EnumParameter<FaultSystemRupturesBuilder.Figures>(
 				FIGURE_PARAM_NAME, EnumSet.allOf(Figures.class), null, FIGURE_PARAM_DEFAULT);
 		figureParam.setValue(null);
 		figureParam.addParameterChangeListener(this);

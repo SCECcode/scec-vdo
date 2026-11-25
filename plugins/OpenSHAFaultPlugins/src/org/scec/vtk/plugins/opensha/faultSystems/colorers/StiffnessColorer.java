@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
@@ -61,7 +61,7 @@ import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.commons.opensha.surfaces.PolygonSurfaceGenerator;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.FaultSectionsChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.FaultSectionsChangeListener;
 import org.scec.vtk.tools.picking.PickEnabledActor;
 import org.scec.vtk.tools.picking.PickHandler;
 import org.scec.vtk.tools.picking.PointPickEnabledActor;

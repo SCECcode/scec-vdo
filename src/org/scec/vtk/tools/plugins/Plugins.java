@@ -163,6 +163,7 @@ public class Plugins {
 				current.setId(attributes.getValue("id"));
 				current.setName(attributes.getValue("name"));
 				current.setShortName(attributes.getValue("short-name"));
+				current.setStateElementName(attributes.getValue("state-element"));
 				current.setCreator(attributes.getValue("creator"));
 				current.setVersion(attributes.getValue("version"));
 				current.setPluginClass(attributes.getValue("plugin-class"));

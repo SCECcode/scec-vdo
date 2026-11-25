@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.anims;
+package org.scec.vtk.plugins.opensha.faultSystems.anims;
 
 import java.awt.Color;
 import java.io.File;
@@ -42,7 +42,7 @@ import org.scec.vtk.commons.opensha.surfaces.PolygonSurfaceGenerator;
 import org.scec.vtk.plugins.PluginActors;
 import org.scec.vtk.plugins.opensha.obsEqkRup.ObsEqkRupBuilder;
 import org.scec.vtk.plugins.opensha.obsEqkRup.RenamedParameterWrapper;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 
 import com.google.common.base.Preconditions;
 

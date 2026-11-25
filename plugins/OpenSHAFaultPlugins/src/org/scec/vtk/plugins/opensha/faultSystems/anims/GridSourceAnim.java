@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.anims;
+package org.scec.vtk.plugins.opensha.faultSystems.anims;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.commons.opensha.surfaces.LineSurfaceGenerator;
 import org.scec.vtk.main.MainGUI;
 import org.scec.vtk.plugins.PluginActors;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 
 import com.google.common.base.Preconditions;
 

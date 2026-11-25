@@ -8,7 +8,7 @@ import org.scec.vtk.commons.opensha.faults.colorers.FaultColorer;
 import org.scec.vtk.commons.opensha.surfaces.GeometryGenerator;
 import org.scec.vtk.plugins.opensha.AbstractFaultPlugin;
 import org.scec.vtk.plugins.opensha.FaultPluginGUI;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.ParentFaultSectionBundler;
+import org.scec.vtk.plugins.opensha.faultSystems.ParentFaultSectionBundler;
 
 public class UCERF3DisaggPlugin extends AbstractFaultPlugin {
 	

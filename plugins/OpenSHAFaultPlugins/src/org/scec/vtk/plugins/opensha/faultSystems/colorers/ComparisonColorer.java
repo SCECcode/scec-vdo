@@ -1,4 +1,4 @@
-package org.scec.vtk.plugins.opensha.ucerf3Rups.colorers;
+package org.scec.vtk.plugins.opensha.faultSystems.colorers;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +24,8 @@ import org.opensha.sha.earthquake.faultSysSolution.modules.SlipAlongRuptureModel
 import org.scec.vtk.commons.opensha.faults.AbstractFaultSection;
 import org.scec.vtk.commons.opensha.faults.colorers.CPTBasedColorer;
 import org.scec.vtk.commons.opensha.faults.colorers.ColorerChangeListener;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesBuilder;
-import org.scec.vtk.plugins.opensha.ucerf3Rups.RupSetChangeListener;
+import org.scec.vtk.plugins.opensha.faultSystems.FaultSystemRupturesBuilder;
+import org.scec.vtk.plugins.opensha.faultSystems.RupSetChangeListener;
 
 import com.google.common.base.Preconditions;
 
@@ -126,9 +126,9 @@ public class ComparisonColorer extends CPTBasedColorer implements RupSetChangeLi
 	
 	private HashMap<Integer, double[]> valCache;
 	
-	private UCERF3FaultSystemRupturesBuilder builder;
+	private FaultSystemRupturesBuilder builder;
 	
-	public ComparisonColorer(UCERF3FaultSystemRupturesBuilder builder) {
+	public ComparisonColorer(FaultSystemRupturesBuilder builder) {
 		super(null, false);
 		
 		this.builder = builder;
@@ -423,7 +423,7 @@ public class ComparisonColorer extends CPTBasedColorer implements RupSetChangeLi
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				UCERF3FaultSystemRupturesBuilder.showErrorMessage(e);
+				FaultSystemRupturesBuilder.showErrorMessage(e);
 				comparisonFileParam.setValue(null);
 				return;
 			}

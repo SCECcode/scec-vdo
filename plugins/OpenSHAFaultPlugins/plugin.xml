@@ -14,11 +14,13 @@
 			
 	</plugin>
 	
+	<!-- The ID is also used in saved timelines. -->
 	<plugin id="org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesPlugin"
-		name="UCERF3 Fault System Ruptures Plugin"
-		short-name="UCERF3 Fault System Ruptures Plugin"
+		name="Fault-System Ruptures &amp; Solutions"
+		short-name="Fault-System Ruptures &amp; Solutions"
+		state-element="UCERF3-Fault-System-Ruptures-Plugin"
 		version="1.0" creator="Kevin Milner"
-		plugin-class="org.scec.vtk.plugins.opensha.ucerf3Rups.UCERF3FaultSystemRupturesPlugin">
+		plugin-class="org.scec.vtk.plugins.opensha.faultSystems.FaultSystemRupturesPlugin">
 		
 		<menu-item menu="Display" submenu="OpenSHA"/>
 			
