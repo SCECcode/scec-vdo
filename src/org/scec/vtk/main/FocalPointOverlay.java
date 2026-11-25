@@ -60,8 +60,7 @@ final class FocalPointOverlay extends LayerUI<JComponent> {
 
 			@Override
 			public void mouseDragged(MouseEvent event) {
-				if (dragButton != 0 && (event.getModifiersEx() & MOUSE_BUTTONS) == dragButton
-						&& canvas.contains(event.getPoint()))
+				if (dragButton != 0 && (event.getModifiersEx() & MOUSE_BUTTONS) == dragButton)
 					showMarker(viewer);
 				else
 					hideMarker();
@@ -87,7 +86,9 @@ final class FocalPointOverlay extends LayerUI<JComponent> {
 
 			@Override
 			public void mouseExited(MouseEvent event) {
-				hideMarker();
+				// The canvas still receives drag and release events after the pointer leaves.
+				if (dragButton == 0)
+					hideMarker();
 			}
 		};
 		// The viewer has already installed its listeners, so read the camera after it handles the event.
@@ -170,8 +171,8 @@ final class FocalPointOverlay extends LayerUI<JComponent> {
 		Graphics2D g = (Graphics2D)graphics.create();
 		try {
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.translate(Math.round(focalPosition.x * component.getWidth()),
-					Math.round(focalPosition.y * component.getHeight()));
+			g.translate(roundToPixel(focalPosition.x * component.getWidth()),
+					roundToPixel(focalPosition.y * component.getHeight()));
 			g.setStroke(OUTLINE_STROKE);
 			g.setColor(OUTLINE);
 			g.draw(CROSSHAIR);
@@ -181,6 +182,11 @@ final class FocalPointOverlay extends LayerUI<JComponent> {
 		} finally {
 			g.dispose();
 		}
+	}
+
+	private static long roundToPixel(double coordinate) {
+		// A half-pixel center can land just above or below the tie because of projection roundoff.
+		return Math.round(coordinate + 1e-6);
 	}
 
 	private static Path2D buildCrosshair() {

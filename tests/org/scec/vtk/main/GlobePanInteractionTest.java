@@ -1,8 +1,12 @@
 package org.scec.vtk.main;
 
+import java.awt.Color;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -187,6 +191,58 @@ public class GlobePanInteractionTest {
 		}
 	}
 
+	private static void verifyOverlayStableAfterResize() {
+		Viewer viewer = new Viewer();
+		JPanel canvas = viewer.getComponent();
+		canvas.setBackground(Color.BLACK);
+		canvas.addMouseListener(viewer.getInteractorForwarder());
+		canvas.addMouseMotionListener(viewer.getInteractorForwarder());
+		var layer = new FocalPointOverlay(viewer).getLayer();
+
+		// An odd logical size puts the focal point between two pixels on both axes.
+		int width = 599;
+		int height = 403;
+		viewer.setSize(2 * width, 2 * height);
+		layer.setSize(width, height);
+		layer.doLayout();
+		setCamera(viewer.getRenderer().GetActiveCamera(), Transform.re);
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		int[] firstCrosshair = null;
+		int button = InputEvent.BUTTON1_DOWN_MASK;
+		canvas.dispatchEvent(event(viewer, MouseEvent.MOUSE_PRESSED, button, 260, 200, MouseEvent.BUTTON1));
+		for (int i = 0; i < 40; i++) {
+			int x = 260 + (int)(Math.sin(0.4 * i) * 50);
+			int y = 200 + (int)(Math.cos(0.18 * i) * 35);
+			canvas.dispatchEvent(event(viewer, MouseEvent.MOUSE_DRAGGED, button, x, y, MouseEvent.NOBUTTON));
+			int[] crosshair = paintCrosshair(layer, image);
+			if (firstCrosshair == null) {
+				check(Arrays.stream(crosshair).anyMatch(pixel -> pixel != Color.BLACK.getRGB()), "Missing crosshair");
+				firstCrosshair = crosshair;
+			} else {
+				check(Arrays.equals(firstCrosshair, crosshair), "Focal point overlay moved during a centered drag");
+			}
+		}
+		canvas.dispatchEvent(event(viewer, MouseEvent.MOUSE_EXITED, button, width, 200, MouseEvent.NOBUTTON));
+		check(Arrays.equals(firstCrosshair, paintCrosshair(layer, image)),
+				"Crosshair disappeared on leaving the canvas");
+		canvas.dispatchEvent(event(viewer, MouseEvent.MOUSE_DRAGGED, button, width + 10, 200, MouseEvent.NOBUTTON));
+		check(Arrays.equals(firstCrosshair, paintCrosshair(layer, image)),
+				"Crosshair disappeared during an outside drag");
+		canvas.dispatchEvent(event(viewer, MouseEvent.MOUSE_RELEASED, 0, width + 10, 200, MouseEvent.BUTTON1));
+		check(Arrays.stream(paintCrosshair(layer, image)).allMatch(pixel -> pixel == Color.BLACK.getRGB()),
+				"Crosshair stayed visible after release outside the canvas");
+	}
+
+	private static int[] paintCrosshair(JComponent layer, BufferedImage image) {
+		var graphics = image.createGraphics();
+		try {
+			layer.paint(graphics);
+		} finally {
+			graphics.dispose();
+		}
+		return image.getRGB(image.getWidth() / 2 - 16, image.getHeight() / 2 - 16, 33, 33, null, 0, 33);
+	}
+
 	public static void main(String[] args) throws Exception {
 		vtkNativeLibrary.LoadNativeLibraries(vtkNativeLibrary.vtkCommonCore, vtkNativeLibrary.vtkCommonMath,
 				vtkNativeLibrary.vtkCommonTransforms, vtkNativeLibrary.vtkCommonDataModel,
@@ -212,7 +268,8 @@ public class GlobePanInteractionTest {
 			verifyPanSensitivity(viewer);
 			viewer.getRenderer().GetActiveCamera().ParallelProjectionOff();
 			verifyFocalDepth(viewer, globePan);
+			verifyOverlayStableAfterResize();
 		});
-		System.out.println("PASS: native pan gestures, camera motion, depth preservation, and graticule fitting");
+		System.out.println("PASS: native pan gestures, camera motion, depth preservation, grid fitting, and overlay");
 	}
 }
